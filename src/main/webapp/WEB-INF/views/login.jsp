@@ -50,7 +50,7 @@
                                                 <span class="input-group-addon">
                                                     <i class="glyphicon glyphicon-user pitt-color"></i>
                                                 </span> 
-                                                <input class="form-control" placeholder="Username" name="username" type="text" required="required" autofocus>
+                                                <input class="form-control" placeholder="Username" name="username" type="text" required autofocus />
                                             </div>
                                         </div>
                                         <div class="form-group">
@@ -58,7 +58,7 @@
                                                 <span class="input-group-addon">
                                                     <i class="glyphicon glyphicon-lock pitt-color"></i>
                                                 </span>
-                                                <input class="form-control" placeholder="Password" name="password" type="password" required="required" value="">
+                                                <input class="form-control" placeholder="Password" name="password" type="password" required value="" />
                                             </div>
                                         </div>
                                         <div class="form-group">
@@ -98,7 +98,7 @@
                                         <span class="input-group-addon">
                                             <i class="glyphicon glyphicon-user pitt-color"></i>
                                         </span> 
-                                        <input value="kvb2" class="form-control" placeholder="Username" name="username" type="text" required="required" autofocus>
+                                        <input class="form-control" placeholder="Username" name="username" type="text" required autofocus />
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -106,7 +106,7 @@
                                         <span class="input-group-addon">
                                             <i class="glyphicon glyphicon-envelope pitt-color"></i>
                                         </span> 
-                                        <input value="kvb2@pitt.edu" class="form-control" placeholder="Email" name="email" type="text" required="required" autofocus>
+                                        <input class="form-control" placeholder="Email" name="email" type="text" required />
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -114,7 +114,7 @@
                                         <span class="input-group-addon">
                                             <i class="glyphicon glyphicon-lock pitt-color"></i>
                                         </span> 
-                                        <input value="hello" id="password" class="form-control" placeholder="Password" name="password" type="password" required="required" autofocus>
+                                        <input id="password" class="form-control" placeholder="Password" name="password" type="password" required />
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -122,7 +122,7 @@
                                         <span class="input-group-addon">
                                             <i class="glyphicon glyphicon-lock pitt-color"></i>
                                         </span> 
-                                        <input value="hello" class="form-control" placeholder="Confirm Password" name="confirmPassword" type="password" required="required" autofocus>
+                                        <input id="confirmPassword" class="form-control" placeholder="Confirm Password" name="confirmPassword" type="password" required />
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -142,7 +142,8 @@
                         <h4 class="modal-title pitt-color">Terms &amp; Conditions</h4>
                     </div>
                     <div class="modal-body">
-                        <p>You agree to Blah blah blah blah...</p>
+                        <p>By using this software you agree to blah blah blah...</p>
+                        <p>And, also, blah blah blah..</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
@@ -153,81 +154,6 @@
         <script src="vendor/jquery/jquery-2.1.3.min.js"></script>
         <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
         <script src="vendor/jquery/jquery.validate.min.js"></script>
-        <script>
-            $(document).ready(function () {
-                $('#login').validate({
-                    rules: {
-                        username: {
-                            minlength: 4,
-                            required: true
-                        },
-                        password: {
-                            minlength: 5,
-                            maxlength: 25,
-                            required: true
-                        }
-                    },
-                    messages: {
-                        username: "Please enter your username.",
-                        password: "Please enter your password."
-                    },
-                    highlight: function (element) {
-                        $(element).closest('.form-group').addClass('has-error');
-                    },
-                    unhighlight: function (element) {
-                        $(element).closest('.form-group').removeClass('has-error');
-                    },
-                    errorElement: 'span',
-                    errorClass: 'help-block',
-                    errorPlacement: function (error, element) {
-                        if (element.parent('.input-group').length) {
-                            error.insertAfter(element.parent());
-                        } else {
-                            error.insertAfter(element);
-                        }
-                    }
-                });
-                $('#registration').validate({
-                    rules: {
-                        username: {
-                            minlength: 4,
-                            required: true
-                        },
-                        email: {
-                            email: true,
-                            required: true
-                        },
-                        password: {
-                            minlength: 5,
-                            maxlength: 25,
-                            required: true
-                        },
-                        confirmPassword: {
-                            equalTo: "#password"
-                        }
-                    },
-                    messages: {
-                        username: "Please enter a username.",
-                        email: "Please enter a valid email.",
-                        password: "Please enter a password."
-                    },
-                    highlight: function (element) {
-                        $(element).closest('.form-group').addClass('has-error');
-                    },
-                    unhighlight: function (element) {
-                        $(element).closest('.form-group').removeClass('has-error');
-                    },
-                    errorElement: 'span',
-                    errorClass: 'help-block',
-                    errorPlacement: function (error, element) {
-                        if (element.parent('.input-group').length) {
-                            error.insertAfter(element.parent());
-                        } else {
-                            error.insertAfter(element);
-                        }
-                    }
-                });
-            });
-        </script>
+        <script src="js/login.js"></script>
     </body>
 </html>

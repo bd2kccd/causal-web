@@ -18,7 +18,12 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl;
 
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.subject.Subject;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -34,8 +39,49 @@ public class ApplicationController implements ViewController {
     public ApplicationController() {
     }
 
+    @RequestMapping(value = HOME, method = RequestMethod.GET)
+    public String goHome(Model model) {
+        return HOME;
+    }
+
+    @RequestMapping(value = "/logout", method = RequestMethod.GET)
+    public String logOut(Model model) {
+        String url;
+
+        Subject currentUser = SecurityUtils.getSubject();
+        if (currentUser.isAuthenticated()) {
+            currentUser.logout();
+            model.addAttribute("successMsg", "You Have Successfully Logged Out.");
+            url = LOGIN;
+        } else {
+            url = REDIRECT_LOGIN;
+        }
+
+        return url;
+    }
+
+    @RequestMapping(value = LOGIN, method = RequestMethod.POST)
+    public String processLogin(final UsernamePasswordToken credentials, final Model model) {
+        String url;
+
+        Subject currentUser = SecurityUtils.getSubject();
+        try {
+            currentUser.login(credentials);
+            url = REDIRECT_HOME;
+        } catch (AuthenticationException exception) {
+            model.addAttribute("errorMsg", "Invalid username and/or password.");
+            url = LOGIN;
+        }
+
+        return url;
+    }
+
     @RequestMapping(value = LOGIN, method = RequestMethod.GET)
     public String showLoginPage() {
+        if (SecurityUtils.getSubject().isAuthenticated()) {
+            return REDIRECT_HOME;
+        }
+
         return LOGIN;
     }
 

@@ -18,12 +18,14 @@
  */
 package edu.pitt.dbmi.ccd.web.conf;
 
+import edu.pitt.dbmi.ccd.db.CCDDatabaseApplication;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
 import org.springframework.boot.context.embedded.ErrorPage;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
@@ -38,6 +40,7 @@ import org.springframework.web.servlet.view.JstlView;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @Configuration
+@Import(CCDDatabaseApplication.class)
 public class WebConfigurer extends WebMvcConfigurerAdapter {
 
     @Bean(name = "ccd")
