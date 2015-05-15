@@ -22,6 +22,7 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,7 +37,19 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Controller
 public class ApplicationController implements ViewController {
 
+    @Value("${app.webapp:true}")
+    private boolean isWebApplication;
+
     public ApplicationController() {
+    }
+
+    @RequestMapping(value = SETUP, method = RequestMethod.GET)
+    public String setupNewUser(Model model) {
+        if (SecurityUtils.getSubject().isAuthenticated()) {
+            return REDIRECT_HOME;
+        }
+
+        return SETUP;
     }
 
     @RequestMapping(value = HOME, method = RequestMethod.GET)
@@ -80,9 +93,13 @@ public class ApplicationController implements ViewController {
     public String showLoginPage() {
         if (SecurityUtils.getSubject().isAuthenticated()) {
             return REDIRECT_HOME;
+        } else {
+            if (isWebApplication) {
+                return LOGIN;
+            } else {
+                return SETUP;
+            }
         }
-
-        return LOGIN;
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)

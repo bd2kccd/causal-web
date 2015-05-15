@@ -28,6 +28,7 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,6 +43,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Controller
 public class UserAccountController implements ViewController {
 
+    @Value("${app.setup.error:Unable to setup initial settings.}")
+    private String setupErrMsg;
+
+    @Value("${app.login.error:Unable to setup initial settings.}")
+    private String signInErrMsg;
+
     private final UserAccountService userAccountService;
 
     private final DefaultPasswordService passwordService;
@@ -52,8 +59,38 @@ public class UserAccountController implements ViewController {
         this.passwordService = passwordService;
     }
 
+    @RequestMapping(value = SETUP, method = RequestMethod.POST)
+    public String setupNewUserAccount(Person person, Model model) {
+        String pwd = "default";
+        UserAccount userAccount = new UserAccount();
+        userAccount.setActive(true);
+        userAccount.setPassword(passwordService.encryptPassword(pwd));
+        userAccount.setCreatedDate(new Date(System.currentTimeMillis()));
+        userAccount.setUsername(System.getProperty("user.name"));
+        userAccount.setPerson(person);
+
+        try {
+            userAccount = userAccountService.createNewUserAccount(userAccount);
+        } catch (Exception exception) {
+            model.addAttribute("errorMsg", setupErrMsg);
+            return SETUP;
+        }
+
+        UsernamePasswordToken token = new UsernamePasswordToken(userAccount.getUsername(), pwd);
+        token.setRememberMe(true);
+        Subject currentUser = SecurityUtils.getSubject();
+        try {
+            currentUser.login(token);
+        } catch (AuthenticationException exception) {
+            model.addAttribute("errorMsg", signInErrMsg);
+            return SETUP;
+        }
+
+        return REDIRECT_HOME;
+    }
+
     @RequestMapping(value = "/registration", method = RequestMethod.POST)
-    public String registerNewUser(final UserAccount userAccount, Model model) {
+    public String registerNewUserAccount(final UserAccount userAccount, Model model) {
         String username = userAccount.getUsername();
         if (userAccountService.findByUsername(username) != null) {
             model.addAttribute("errorMsg", String.format("Username '%s' is already taken.", username));
