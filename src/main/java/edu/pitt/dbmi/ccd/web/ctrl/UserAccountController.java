@@ -43,28 +43,35 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Controller
 public class UserAccountController implements ViewController {
 
-    @Value("${app.setup.error:Unable to setup initial settings.}")
-    private String setupErrMsg;
+    private final String defaultPassword;
 
-    @Value("${app.login.error:Unable to setup initial settings.}")
-    private String signInErrMsg;
+    private final String setupErrMsg;
+
+    private final String signInErrMsg;
 
     private final UserAccountService userAccountService;
 
     private final DefaultPasswordService passwordService;
 
     @Autowired(required = true)
-    public UserAccountController(UserAccountService userAccountService, DefaultPasswordService passwordService) {
+    public UserAccountController(
+            @Value("${app.default.pwd:password123}") String defaultPassword,
+            @Value("${app.setup.error:Unable to setup initial settings.}") String setupErrMsg,
+            @Value("${app.login.error:Unable to setup initial settings.}") String signInErrMsg,
+            UserAccountService userAccountService,
+            DefaultPasswordService passwordService) {
+        this.defaultPassword = defaultPassword;
+        this.setupErrMsg = setupErrMsg;
+        this.signInErrMsg = signInErrMsg;
         this.userAccountService = userAccountService;
         this.passwordService = passwordService;
     }
 
     @RequestMapping(value = SETUP, method = RequestMethod.POST)
     public String setupNewUserAccount(Person person, Model model) {
-        String pwd = "default";
         UserAccount userAccount = new UserAccount();
         userAccount.setActive(true);
-        userAccount.setPassword(passwordService.encryptPassword(pwd));
+        userAccount.setPassword(passwordService.encryptPassword(defaultPassword));
         userAccount.setCreatedDate(new Date(System.currentTimeMillis()));
         userAccount.setUsername(System.getProperty("user.name"));
         userAccount.setPerson(person);
@@ -76,7 +83,7 @@ public class UserAccountController implements ViewController {
             return SETUP;
         }
 
-        UsernamePasswordToken token = new UsernamePasswordToken(userAccount.getUsername(), pwd);
+        UsernamePasswordToken token = new UsernamePasswordToken(userAccount.getUsername(), defaultPassword);
         token.setRememberMe(true);
         Subject currentUser = SecurityUtils.getSubject();
         try {

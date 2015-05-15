@@ -18,10 +18,13 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl;
 
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.web.service.UserAccountService;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -37,10 +40,24 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Controller
 public class ApplicationController implements ViewController {
 
-    @Value("${app.webapp:true}")
-    private boolean isWebApplication;
+    private final boolean isWebApplication;
 
-    public ApplicationController() {
+    private final String defaultPassword;
+
+    private final String signInErrMsg;
+
+    private final UserAccountService userAccountService;
+
+    @Autowired(required = true)
+    public ApplicationController(
+            @Value("${app.webapp:true}") boolean isWebApplication,
+            @Value("${app.default.pwd:password123}") String defaultPassword,
+            @Value("${app.login.error:Unable to setup initial settings.}") String signInErrMsg,
+            UserAccountService userAccountService) {
+        this.isWebApplication = isWebApplication;
+        this.defaultPassword = defaultPassword;
+        this.signInErrMsg = signInErrMsg;
+        this.userAccountService = userAccountService;
     }
 
     @RequestMapping(value = SETUP, method = RequestMethod.GET)
@@ -90,21 +107,37 @@ public class ApplicationController implements ViewController {
     }
 
     @RequestMapping(value = LOGIN, method = RequestMethod.GET)
-    public String showLoginPage() {
+    public String showLoginPage(final Model model) {
         if (SecurityUtils.getSubject().isAuthenticated()) {
             return REDIRECT_HOME;
         } else {
             if (isWebApplication) {
                 return LOGIN;
             } else {
-                return SETUP;
+                String username = System.getProperty("user.name");
+                UserAccount userAccount = userAccountService.findByUsername(username);
+                if (userAccount == null) {
+                    return REDIRECT_SETUP;
+                }
+
+                UsernamePasswordToken token = new UsernamePasswordToken(userAccount.getUsername(), defaultPassword);
+                token.setRememberMe(true);
+                Subject currentUser = SecurityUtils.getSubject();
+                try {
+                    currentUser.login(token);
+                } catch (AuthenticationException exception) {
+                    model.addAttribute("errorMsg", signInErrMsg);
+                    return REDIRECT_SETUP;
+                }
+
+                return REDIRECT_HOME;
             }
         }
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public String showIndexPage() {
-        return showLoginPage();
+    public String showIndexPage(final Model model) {
+        return showLoginPage(model);
     }
 
     @RequestMapping(value = "/404", method = RequestMethod.GET)

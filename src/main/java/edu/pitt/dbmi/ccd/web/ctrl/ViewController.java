@@ -36,4 +36,6 @@ public interface ViewController {
 
     public static final String SETUP = "setup";
 
+    public static final String REDIRECT_SETUP = "redirect:/setup";
+
 }
