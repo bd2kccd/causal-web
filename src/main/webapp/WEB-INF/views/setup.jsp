@@ -1,4 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <c:set var="path" value="${pageContext.request.contextPath}" />
@@ -41,23 +42,27 @@
                             </div>
                             <div class="row">
                                 <div class="col-lg-12">
-                                    <form id="login" role="form" method="POST" action="${path}/setup">
+                                    <form:form id="userSetup" method="POST" action="${path}/setup" modelAttribute="person" role="form" >
                                         <div class="form-group">
                                             <label for="firstName">First Name:</label>
-                                            <input id="firstName" class="form-control" name="firstName" type="text" required autofocus />
+                                            <form:input path="firstName" id="firstName" class="form-control" type="text" value="${person.firstName}" required="required" autofocus="autofocus" />
                                         </div>
                                         <div class="form-group">
                                             <label for="lastName">Last Name:</label>
-                                            <input id="lastName" class="form-control" name="lastName" type="text" required />
+                                            <form:input path="lastName" id="lastName" class="form-control" type="text" value="${person.lastName}" required="required" />
                                         </div>
                                         <div class="form-group">
                                             <label for="email">Email:</label>
-                                            <input id="email" class="form-control" name="email" type="text" required />
+                                            <form:input path="email" id="email" class="form-control" type="text" value="${person.email}" required="required" />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="workspaceDirectory">Workspace Directory:</label>
+                                            <form:input path="workspaceDirectory" id="workspaceDirectory" class="form-control" type="text" value="${person.workspaceDirectory}" required="required" />
                                         </div>
                                         <div class="form-group">
                                             <input type="submit" class="btn btn-lg btn-block btn-pitt" value="Submit">
                                         </div>
-                                    </form>
+                                    </form:form>
                                 </div>
                             </div>
                         </div>

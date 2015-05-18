@@ -21,6 +21,9 @@ package edu.pitt.dbmi.ccd.web.ctrl;
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.service.UserAccountService;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -31,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -68,13 +72,24 @@ public class UserAccountController implements ViewController {
     }
 
     @RequestMapping(value = SETUP, method = RequestMethod.POST)
-    public String setupNewUserAccount(Person person, Model model) {
+    public String setupNewUserAccount(@ModelAttribute("person") Person person, Model model) {
         UserAccount userAccount = new UserAccount();
         userAccount.setActive(true);
         userAccount.setPassword(passwordService.encryptPassword(defaultPassword));
         userAccount.setCreatedDate(new Date(System.currentTimeMillis()));
         userAccount.setUsername(System.getProperty("user.name"));
         userAccount.setPerson(person);
+
+        Path workspace = Paths.get(person.getWorkspaceDirectory());
+        if (Files.exists(workspace)) {
+            if (!Files.isDirectory(workspace)) {
+                model.addAttribute("errorMsg", "Workspace provided is not a directory.");
+                return SETUP;
+            }
+        } else {
+            model.addAttribute("errorMsg", "Workspace directory does not exist.");
+            return SETUP;
+        }
 
         try {
             userAccount = userAccountService.createNewUserAccount(userAccount);
@@ -108,7 +123,7 @@ public class UserAccountController implements ViewController {
         userAccount.setPassword(passwordService.encryptPassword(pwd));
         userAccount.setActive(true);
         userAccount.setCreatedDate(new Date(System.currentTimeMillis()));
-        userAccount.setPerson(new Person("Default", "User", "user@localhost"));
+        userAccount.setPerson(new Person("Default", "User", "user@localhost", ""));
         try {
             userAccountService.createNewUserAccount(userAccount);
         } catch (Exception exception) {

@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl;
 
+import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.service.UserAccountService;
 import org.apache.shiro.SecurityUtils;
@@ -65,6 +66,8 @@ public class ApplicationController implements ViewController {
         if (SecurityUtils.getSubject().isAuthenticated()) {
             return REDIRECT_HOME;
         }
+
+        model.addAttribute("person", new Person());
 
         return SETUP;
     }

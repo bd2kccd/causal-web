@@ -18,7 +18,7 @@
  */
 
 $(document).ready(function () {
-    $('#login').validate({
+    $('#userSetup').validate({
         rules: {
             firstName: {
                 minlength: 2,
@@ -31,12 +31,17 @@ $(document).ready(function () {
             email: {
                 email: true,
                 required: true
+            },
+            workspaceDirectory: {
+                minlength: 1,
+                required: true
             }
         },
         messages: {
             firstName: "Please enter your first name.",
             lastName: "Please enter your last name.",
-            email: "Please enter a valid email."
+            email: "Please enter a valid email.",
+            workspaceDirectory: "Please enter an existing directory for the workspace."
         },
         highlight: function (element) {
             $(element).closest('.form-group').addClass('has-error');
