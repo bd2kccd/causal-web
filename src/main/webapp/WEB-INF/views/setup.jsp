@@ -45,19 +45,24 @@
                                     <form:form id="userSetup" method="POST" action="${path}/setup" modelAttribute="person" role="form" >
                                         <div class="form-group">
                                             <label for="firstName">First Name:</label>
-                                            <form:input path="firstName" id="firstName" class="form-control" type="text" value="${person.firstName}" required="required" autofocus="autofocus" />
+                                            <form:input path="firstName" id="firstName" class="form-control auto-hint" type="text" value="${person.firstName}" required="required" autofocus="autofocus" 
+                                            	title="" ></form:input>
                                         </div>
                                         <div class="form-group">
                                             <label for="lastName">Last Name:</label>
-                                            <form:input path="lastName" id="lastName" class="form-control" type="text" value="${person.lastName}" required="required" />
+                                            <form:input path="lastName" id="lastName" class="form-control auto-hint" type="text" value="${person.lastName}" required="required" 
+                                            	title="Last name is a name that your teacher calls you i.e. (Mr.) Doe." ></form:input>
                                         </div>
                                         <div class="form-group">
                                             <label for="email">Email:</label>
-                                            <form:input path="email" id="email" class="form-control" type="text" value="${person.email}" required="required" />
+                                            <form:input path="email" id="email" class="form-control auto-hint" type="text" value="${person.email}" 
+                                            	required="required"
+                                            	title="Email (address) is your electronic post office box i.e. john@doe.net." ></form:input>
                                         </div>
                                         <div class="form-group">
                                             <label for="workspaceDirectory">Workspace Directory:</label>
-                                            <form:input path="workspaceDirectory" id="workspaceDirectory" class="form-control" type="text" value="${person.workspaceDirectory}" required="required" />
+                                            <form:input path="workspaceDirectory" id="workspaceDirectory" class="form-control auto-hint" type="text" value="${person.workspaceDirectory}" required="required" 
+                                            	title="Workspace directory is a folder that you want to instill this application on." ></form:input>
                                         </div>
                                         <div class="form-group">
                                             <input type="submit" class="btn btn-lg btn-block btn-pitt" value="Submit">

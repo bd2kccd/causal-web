@@ -50,3 +50,7 @@ body {
     background-color: #111150;
     border-color: #111150;
 }
+
+
+/* Auto hint */
+.auto-hint { color: #AAAAAA; }
