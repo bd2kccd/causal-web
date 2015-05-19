@@ -20,6 +20,7 @@ package edu.pitt.dbmi.ccd.web.ctrl;
 
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.UserAccountService;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.SessionAttributes;
 
 /**
  *
@@ -39,6 +41,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @Controller
+@SessionAttributes("appUser")
 public class ApplicationController implements ViewController {
 
     private final boolean isWebApplication;
@@ -106,6 +109,17 @@ public class ApplicationController implements ViewController {
             url = LOGIN;
         }
 
+        String username = (String) currentUser.getPrincipal();
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        if (userAccount != null) {
+            Person person = userAccount.getPerson();
+
+            AppUser appUser = new AppUser();
+            appUser.setWebUser(true);
+            appUser.setName(person.getFirstName() + " " + person.getLastName());
+            model.addAttribute("appUser", appUser);
+        }
+
         return url;
     }
 
@@ -132,6 +146,13 @@ public class ApplicationController implements ViewController {
                     model.addAttribute("errorMsg", signInErrMsg);
                     return REDIRECT_SETUP;
                 }
+
+                Person person = userAccount.getPerson();
+
+                AppUser appUser = new AppUser();
+                appUser.setWebUser(false);
+                appUser.setName(person.getFirstName() + " " + person.getLastName());
+                model.addAttribute("appUser", appUser);
 
                 return REDIRECT_HOME;
             }
