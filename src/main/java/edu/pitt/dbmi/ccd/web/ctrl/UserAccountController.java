@@ -20,11 +20,14 @@ package edu.pitt.dbmi.ccd.web.ctrl;
 
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.UserAccountService;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
+
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -110,6 +113,11 @@ public class UserAccountController implements ViewController {
             return SETUP;
         }
 
+        AppUser appUser = new AppUser();
+        appUser.setWebUser(false);
+        appUser.setName(person.getFirstName() + " " + person.getLastName());
+        model.addAttribute("appUser", appUser);
+
         return REDIRECT_HOME;
     }
 
@@ -142,6 +150,13 @@ public class UserAccountController implements ViewController {
             model.addAttribute("errorMsg", "Unable to sign in.");
             return LOGIN;
         }
+
+        Person person = userAccount.getPerson();
+
+        AppUser appUser = new AppUser();
+        appUser.setWebUser(false);
+        appUser.setName(person.getFirstName() + " " + person.getLastName());
+        model.addAttribute("appUser", appUser);
 
         return REDIRECT_HOME;
     }

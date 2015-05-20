@@ -18,21 +18,22 @@
         <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css" />
         <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap-theme.min.css" />
         <link rel="stylesheet" href="css/styles.css" />
-        <style>
-            body {
-                padding-top: 90px;
-            }
-            .nextBtn{}
-            .setup-content{}
-        </style>
+        <link rel="stylesheet" href="css/setup.css" />
     </head>
     <body>
         <div class="container">
             <div class="row">
                 <div class="col-md-6 col-md-offset-3">
+					<table>
+						<tr>
+							<td align="center"  valign="middle"><img alt="CCD Logo" src="img/ccd_logo.png" width="100" height="100" /></td>
+							<td align="center" valign="middle"><h3>Center for Casual Discovery</h3></td>
+						</tr>
+					</table>
+					<div class="row">&nbsp;</div>
                     <div class="panel panel-pitt">
                         <div class="panel-heading">
-                            <h3 class="panel-title">User Information</h3>
+                            <h3 class="panel-title">Please Provide Your Information</h3>
                         </div>
                         <div class="panel-body">
                             <div class="row">
@@ -74,11 +75,14 @@
                     </div>
                 </div>
             </div>
+			<%@include file="includes/footer.jspf" %>
+<!-- 
             <div class="row">
                 <div class="text-center">
                     <p class="text-muted">Copyright &copy; <fmt:formatDate value="${date}" pattern="yyyy" /> ${ccd.copyright}</p>
                 </div>
             </div>
+ -->
         </div>
         <script src="vendor/jquery/jquery-2.1.3.min.js"></script>
         <script src="vendor/bootstrap/js/bootstrap.min.js"></script>

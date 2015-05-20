@@ -31,7 +31,9 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="${path}/home">${ccd.title}</a>
+                    <a class="navbar-brand" href="${path}/home">
+                    	${ccd.title}
+                    </a>
                 </div>
                 <%@include file="includes/navbar.jspf"%>
                 <%@include file="includes/sidebar.jspf"%>
@@ -42,13 +44,60 @@
                         <h1 class="page-header">Welcome ${appUser.name}</h1>
                     </div>
                 </div>
-                <footer>
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <p class="text-muted">Copyright &copy; <fmt:formatDate value="${date}" pattern="yyyy" /> ${ccd.copyright}</p>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h4>CCD Application</h4>
+                            </div>
+                            <div class="panel-body">
+                                <p>The application provides the following functions:</p>
+                                <ol>
+                                    <li>Upload of one or more data files.</li>
+                                    <li>Running of a causal discovery algorithm.</li>
+                                    <li>Display of causal discovery algorithm results as a graph or downloadable file.</li>
+                                </ol>
+                                <div class="col-sm-11">
+                                    <h4 class="page-header">Upload of Data</h4>
+                                    <p>
+                                        Users can upload multiple files to the server using a file browser or by drag-and-drop.
+                                        The status bar indicates the progress of file transfer.
+                                        The system supports resumable file uploads and detects file corruption using MD5 hashes.
+                                        Users can view a list of uploaded data and optionally delete files on the server.
+                                    </p>
+                                </div>
+                                <div class="col-sm-11">
+                                    <h4 class="page-header">Run Algorithm</h4>
+                                    <p>A run algorithm wizard guides the user through the following process:</p>
+                                    <ol>
+                                        <li>Selecting a data file for analysis.</li>
+                                        <li>Setting the parameters for the selected algorithm.</li>
+                                        <li>Reviewing the parameters prior to running the algorithm.</li>
+                                    </ol>
+                                    <p>
+                                        The users may go back to any step to change the selected data file or parameters, however, users may not skip any steps.
+                                    </p>
+                                </div>
+                                <div class="col-sm-11">
+                                    <h4 class="page-header">Show Results</h4>
+                                    <p>
+                                        Users can view the results of an analysis as a graph or downloaded file.
+                                        The application has a built in graphing tool to help visualize the output results.
+                                        Users can view the graph by clicking on the result's filename.
+                                    </p>
+                                    <p>
+                                        The results can be downloaded to the users' local computer for further analysis.
+                                        The users can delete any results off the server that are no longer needed.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </footer>
+                </div>
+                
+                <%@include file="includes/footer.jspf" %>
+
             </div>
         </div>
         <script src="vendor/jquery/jquery-2.1.3.min.js"></script>
