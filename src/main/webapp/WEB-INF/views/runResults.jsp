@@ -11,7 +11,7 @@
     <head>
         <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-        <title>CCD: Dataset</title>
+        <title>CCD: Results</title>
         <meta name="description" content="" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css" />
@@ -39,16 +39,16 @@
                 <%@include file="includes/sidebar.jspf"%>
             </nav>
             <div id="page-wrapper">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <h1 class="page-header">Dataset</h1>
-                    </div>
-                </div>
             
                 <div class="row">
                     <div class="col-lg-12">
+                        <h1 class="page-header">Results</h1>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
                         <div class="panel panel-default">
-                            <div class="panel-heading">Uploaded Dataset</div>
+                            <div class="panel-heading">Results</div>
                             <div class="panel-body">
                                 <div class="table-responsive">
                                     <table class="table table-striped table-hover">
@@ -57,16 +57,18 @@
                                                 <th>Filename</th>
                                                 <th>Created On</th>
                                                 <th>Size</th>
+                                                <th>Save</th>
                                                 <th>Delete</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <c:forEach items="${itemList}" var="item">
                                                 <tr>
-                                                    <td>${item.fileName}</td>
+                                                    <td><a href="results/plot?file=${item.fileName}">${item.fileName}</a></td>
                                                     <td>${item.creationDate}</td>
                                                     <td>${item.size}</td>
-                                                    <td><p data-placement="top" data-toggle="tooltip" title="Delete"><button class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#confirm-delete" data-href="data/delete?file=${map.key}"><span class="glyphicon glyphicon-trash"></span></button></p></td>
+                                                    <td><p data-placement="top" data-toggle="tooltip" title="Save"><a href="results/download?file=${item.fileName}"><button class="btn btn-success btn-xs" data-title="Save" data-toggle="modal" data-target="#Save" ><span class="glyphicon glyphicon-save"></span></button></a></p></td>
+                                                    <td><p data-placement="top" data-toggle="tooltip" title="Delete"><button class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#confirm-delete" data-href="results/delete?file=${item.fileName}"><span class="glyphicon glyphicon-trash"></span></button></p></td>
                                                 </tr>
                                             </c:forEach>
                                         </tbody>
@@ -87,10 +89,10 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
-                        <h4 class="modal-title custom_align" id="Heading">Delete Dataset</h4>
+                        <h4 class="modal-title custom_align" id="Heading">Delete Result</h4>
                     </div>
                     <div class="modal-body">
-                        <div class="alert alert-danger"><span class="glyphicon glyphicon-warning-sign"></span> Are you sure you want to delete this dataset?</div>
+                        <div class="alert alert-danger"><span class="glyphicon glyphicon-warning-sign"></span> Are you sure you want to delete this result?</div>
                     </div>
                     <div class="modal-footer ">
                         <a class="btn-ok"><button type="button" class="btn btn-danger" ><span class="glyphicon glyphicon-ok-sign"></span> Yes</button></a>
@@ -101,10 +103,11 @@
             </div>
             <!-- /.modal-dialog --> 
         </div>
-        
+
         <script src="vendor/jquery/jquery-2.1.3.min.js"></script>
         <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
         <script src="vendor/metismenu/metisMenu.min.js"></script>
         <script src="vendor/admin/js/sb-admin-2.js"></script>
+        <script src="js/runResults.js"></script>
     </body>
 </html>

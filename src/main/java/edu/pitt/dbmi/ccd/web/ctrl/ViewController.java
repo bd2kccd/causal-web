@@ -37,7 +37,8 @@ public interface ViewController {
     public static final String SETUP = "setup";
 
     public static final String REDIRECT_SETUP = "redirect:/setup";
-    
+
+    //Data Management
     public static final String DATASET = "dataset";
 
     public static final String REDIRECT_DATASET = "redirect:/data";
@@ -46,4 +47,11 @@ public interface ViewController {
 
     public static final String DATAUPLOAD = "dataUpload";
 
+    //Algorithm
+    public static final String PCSTABLE = "pcStable";
+    
+    public static final String GES = "ges";
+
+    //Results
+    public static final String RUNRESULT = "runResults";
 }
