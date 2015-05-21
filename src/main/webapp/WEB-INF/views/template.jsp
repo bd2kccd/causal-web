@@ -19,7 +19,33 @@
         <link rel="stylesheet" href="css/styles.css" />
     </head>
     <body>
+        <div id="wrapper">
+            <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="${path}/home">
+                    	${ccd.title}
+                    </a>
+                </div>
+                <%@include file="includes/navbar.jspf"%>
+                <%@include file="includes/sidebar.jspf"%>
+            </nav>
+            <div id="page-wrapper">
+            
+                
+                <%@include file="includes/footer.jspf" %>
+
+            </div>
+        </div> 
+        
         <script src="vendor/jquery/jquery-2.1.3.min.js"></script>
         <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+        <script src="vendor/metismenu/metisMenu.min.js"></script>
+        <script src="vendor/admin/js/sb-admin-2.js"></script>
     </body>
 </html>

@@ -37,5 +37,13 @@ public interface ViewController {
     public static final String SETUP = "setup";
 
     public static final String REDIRECT_SETUP = "redirect:/setup";
+    
+    public static final String DATASET = "dataset";
+
+    public static final String REDIRECT_DATASET = "redirect:/data";
+    
+    public static final String UPLOAD = "upload";
+
+    public static final String DATAUPLOAD = "dataUpload";
 
 }
