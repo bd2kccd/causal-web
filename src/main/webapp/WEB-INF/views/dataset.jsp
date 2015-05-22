@@ -55,7 +55,7 @@
                                         <thead>
                                             <tr>
                                                 <th>Filename</th>
-                                                <th>Created On</th>
+                                                <th>Last Modified</th>
                                                 <th>Size</th>
                                                 <th>Delete</th>
                                             </tr>
@@ -64,7 +64,7 @@
                                             <c:forEach items="${itemList}" var="item">
                                                 <tr>
                                                     <td>${item.fileName}</td>
-                                                    <td>${item.creationDate}</td>
+                                                    <td>${item.lastModifiedDate}</td>
                                                     <td>${item.size}</td>
                                                     <td><p data-placement="top" data-toggle="tooltip" title="Delete"><button class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#confirm-delete" data-href="data/delete?file=${map.key}"><span class="glyphicon glyphicon-trash"></span></button></p></td>
                                                 </tr>

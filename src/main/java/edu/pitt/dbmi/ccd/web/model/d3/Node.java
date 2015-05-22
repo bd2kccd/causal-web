@@ -16,38 +16,53 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+package edu.pitt.dbmi.ccd.web.model.d3;
 
 /**
  *
- * May 18, 2015 1:05:35 PM
+ * Apr 7, 2015 1:06:29 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class FileUtility {
+public class Node {
 
-    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss");
+    private String source;
 
-    private FileUtility() {
+    private String target;
+
+    private String type;
+
+    public Node() {
     }
 
-    public static String formatDate(Date date) {
-        return DATE_FORMAT.format(date);
+    public Node(String source, String target, String type) {
+        this.source = source;
+        this.target = target;
+        this.type = type;
     }
 
-    public static String humanReadableSize(long fileSize, boolean si) {
-        int unit = si ? 1000 : 1024;
-        if (fileSize < unit) {
-            return fileSize + " B";
-        }
-        int exp = (int) (Math.log(fileSize) / Math.log(unit));
-        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
+    public String getTarget() {
+        return target;
+    }
 
-        return String.format("%.2f %sB", fileSize / Math.pow(unit, exp), pre);
+    public void setTarget(String target) {
+        this.target = target;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
 }

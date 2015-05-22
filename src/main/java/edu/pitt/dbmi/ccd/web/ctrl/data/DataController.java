@@ -19,13 +19,25 @@
 
 package edu.pitt.dbmi.ccd.web.ctrl.data;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
 import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
+import edu.pitt.dbmi.ccd.web.model.ResumableChunk;
+import edu.pitt.dbmi.ccd.web.service.BigDataFileManager;
+import edu.pitt.dbmi.ccd.web.util.FileUtility;
 
 /**
  *
@@ -39,15 +51,58 @@ import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
 @RequestMapping(value = "/data")
 public class DataController implements ViewController {
 	
+    private final BigDataFileManager fileManager;
+
+    @Autowired(required = true)
+    public DataController(BigDataFileManager fileManager) {
+        this.fileManager = fileManager;
+    }
+
     @RequestMapping(method = RequestMethod.GET)
     public String showDatasetView(Model model) {
-
+    	model.addAttribute("itemList", FileUtility.getFileListing(fileManager.getUploadDirectory()));
+    	
         return DATASET;
     }
 
-    @RequestMapping(value = UPLOAD, method = RequestMethod.GET)
+    @RequestMapping(value = UPLOAD_DATASET, method = RequestMethod.GET)
     public String showDataUploadView() {
         return DATAUPLOAD;
+    }
+
+    @RequestMapping(value = DELETE, method = RequestMethod.GET)
+    public String deleteResultFile(@RequestParam(value = "file") String filename, Model model) {
+        Path file = Paths.get(fileManager.getUploadDirectory(), filename);
+        try {
+            Files.deleteIfExists(file);
+        } catch (IOException exception) {
+            exception.printStackTrace(System.err);
+        }
+
+        return REDIRECT_DATASET;
+    }
+
+    @RequestMapping(value = UPLOAD_CHUNK, method = RequestMethod.GET)
+    public void checkChunkExistence(HttpServletResponse response, ResumableChunk chunk) throws IOException {
+        if (fileManager.chunkExists(chunk.getResumableIdentifier(), chunk.getResumableChunkNumber(), chunk.getResumableChunkSize())) {
+            response.setStatus(200); // do not upload chunk again
+        } else {
+            response.setStatus(404); // chunk not on the server, upload it
+        }
+    }
+
+    @RequestMapping(value = UPLOAD_CHUNK, method = RequestMethod.POST)
+    public void processChunkUpload(HttpServletResponse response, ResumableChunk chunk) throws IOException {
+        if (!fileManager.isSupported(chunk.getResumableFilename())) {
+            response.setStatus(501); // cancel the whole upload
+            return;
+        }
+        fileManager.storeChunk(chunk.getResumableIdentifier(), chunk.getResumableChunkNumber(), chunk.getFile().getInputStream());
+        if (fileManager.allChunksUploaded(chunk.getResumableIdentifier(), chunk.getResumableChunkSize(), chunk.getResumableTotalSize(), chunk.getResumableTotalChunks())) {
+            String md5 = fileManager.mergeAndDeleteWithMd5(chunk.getResumableFilename(), chunk.getResumableIdentifier(), chunk.getResumableChunkSize(), chunk.getResumableTotalSize(), chunk.getResumableTotalChunks());
+            response.getWriter().println(md5);
+        }
+        response.setStatus(200);
     }
 
 

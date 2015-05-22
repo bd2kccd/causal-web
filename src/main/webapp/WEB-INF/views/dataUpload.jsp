@@ -54,6 +54,47 @@
                     </div>
                 </div>
             
+                 <div class="row">
+                    <div class="col-lg-12">
+                        <div class="resumable-list">
+                            <div class="panel panel-primary">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">Upload Big Data</h3>
+                                </div>
+                                <div class="panel-body">
+                                    <table class="table table-striped table-bordered file-info">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Size</th>
+                                                <th>Last Modified</th>
+                                                <th>MD5 Checksum</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="4">
+                                                    <div class="resumable-progress">
+                                                        <div class="progress progress-striped progress-container"><div class="bar progress-bar"></div></div>
+                                                        <span class="progress-text" style="white-space: nowrap"></span>
+                                                        <div class="progress-pause" style="white-space: nowrap">
+                                                            <a href="#" onclick="r.upload();
+                                                                    return(false);" class="progress-resume-link"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></a>
+                                                            <a href="#" onclick="r.pause();
+                                                                    return(false);" class="progress-pause-link"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></a>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
                 <%@include file="includes/footer.jspf" %>
 

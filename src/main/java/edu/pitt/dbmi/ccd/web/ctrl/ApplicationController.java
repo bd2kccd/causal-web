@@ -80,7 +80,7 @@ public class ApplicationController implements ViewController {
         return HOME;
     }
 
-    @RequestMapping(value = "/logout", method = RequestMethod.GET)
+    @RequestMapping(value = LOGOUT, method = RequestMethod.GET)
     public String logOut(Model model) {
         String url;
 
@@ -164,9 +164,9 @@ public class ApplicationController implements ViewController {
         return showLoginPage(model);
     }
 
-    @RequestMapping(value = "/404", method = RequestMethod.GET)
+    @RequestMapping(value = NOT_FOUND, method = RequestMethod.GET)
     public String showPageNotFound() {
-        return "404";
+        return NOT_FOUND;
     }
 
 }

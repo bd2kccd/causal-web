@@ -70,7 +70,6 @@ public class GesController extends AlgorithmController implements
             @Value("${app.tempDir}") String tempDirectory,
             @Value("${app.algoJar}") String algorithmJar) {
         super(uploadDirectory, libDirectory, outputDirectory, tempDirectory, algorithmJar);
-		// TODO Auto-generated constructor stub
         this.ges = ges;
 
         String classPath = libDirectory + File.separator + algorithmJar;

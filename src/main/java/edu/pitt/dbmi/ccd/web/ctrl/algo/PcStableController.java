@@ -70,7 +70,6 @@ public class PcStableController extends AlgorithmController implements
             @Value("${app.tempDir}") String tempDirectory,
             @Value("${app.algoJar:ccd-algorithm-1.0-SNAPSHOT.jar}") String algorithmJar) {
         super(uploadDirectory, libDirectory, outputDirectory, tempDirectory, algorithmJar);
-		// TODO Auto-generated constructor stub
         
         this.pcStable = pcStable;
 

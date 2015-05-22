@@ -26,7 +26,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.TreeMap;
 
-import edu.pitt.dbmi.ccd.web.FileUtility;
+import edu.pitt.dbmi.ccd.web.util.FileUtility;
 
 /**
  *

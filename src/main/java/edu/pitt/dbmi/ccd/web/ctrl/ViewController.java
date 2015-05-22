@@ -28,6 +28,10 @@ public interface ViewController {
 
     public static final String LOGIN = "login";
 
+    public static final String LOGOUT = "logout";
+    
+    public static final String NOT_FOUND = "404";
+    
     public static final String HOME = "home";
 
     public static final String REDIRECT_HOME = "redirect:/home";
@@ -38,15 +42,29 @@ public interface ViewController {
 
     public static final String REDIRECT_SETUP = "redirect:/setup";
 
-    //Data Management
+    //Data & Result Management
     public static final String DATASET = "dataset";
 
     public static final String REDIRECT_DATASET = "redirect:/data";
     
-    public static final String UPLOAD = "upload";
+    public static final String UPLOAD_DATASET = "upload";
 
     public static final String DATAUPLOAD = "dataUpload";
+    
+    public static final String DELETE = "delete";
+    
+    public static final String UPLOAD_CHUNK = "upload/chunk";
 
+    public static final String RUNRESULTS = "runResults";
+    
+    public static final String REDIRECT_RESULTS = "redirect:/results";
+    
+    public static final String D3GRAPH = "d3graph";
+    
+    public static final String PLOT = "plot";
+    
+    public static final String DOWNLOAD = "download";
+    
     //Algorithm
     public static final String PCSTABLE = "pcStable";
     
@@ -54,6 +72,4 @@ public interface ViewController {
 
     public static final String ALGORITHMRUNNING = "algorithmRunning";
 
-    //Results
-    public static final String RUNRESULT = "runResults";
 }
