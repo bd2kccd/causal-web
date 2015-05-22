@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <c:set var="path" value="${pageContext.request.contextPath}" />
 <jsp:useBean id="date" class="java.util.Date" />
 <!doctype html>
@@ -24,7 +25,7 @@
         <script src="${path}/vendor/modernizr/modernizr-2.8.3.min.js"></script>
         <script src="${path}/vendor/angularjs/angular.min.js"></script>
     </head>
-    <body>
+    <body ng-app>
         <div id="wrapper">
             <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
                 <div class="navbar-header">

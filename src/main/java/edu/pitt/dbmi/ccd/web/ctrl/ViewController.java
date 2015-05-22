@@ -52,6 +52,8 @@ public interface ViewController {
     
     public static final String GES = "ges";
 
+    public static final String ALGORITHMRUNNING = "algorithmRunning";
+
     //Results
     public static final String RUNRESULT = "runResults";
 }
