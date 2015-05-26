@@ -32,7 +32,7 @@ public class FileInfo {
 
 	private String fileName;
 	
-	private String filePath;
+	private String fileAbsolutePath;
 
 	private Date creationTime; 
 
@@ -52,12 +52,12 @@ public class FileInfo {
 		this.fileName = fileName;
 	}
 
-	public String getFilePath() {
-		return filePath;
+	public String getFileAbsolutePath() {
+		return fileAbsolutePath;
 	}
 
-	public void setFilePath(String filePath) {
-		this.filePath = filePath;
+	public void setFileAbsolutePath(String fileAbsolutePath) {
+		this.fileAbsolutePath = fileAbsolutePath;
 	}
 
 	public Date getCreationTime() {

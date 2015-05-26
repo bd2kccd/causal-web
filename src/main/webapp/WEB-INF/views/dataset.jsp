@@ -66,7 +66,7 @@
                                                     <td>${item.fileName}</td>
                                                     <td>${item.lastModifiedDate}</td>
                                                     <td>${item.size}</td>
-                                                    <td><p data-placement="top" data-toggle="tooltip" title="Delete"><button class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#confirm-delete" data-href="data/delete?file=${map.key}"><span class="glyphicon glyphicon-trash"></span></button></p></td>
+                                                    <td><p data-placement="top" data-toggle="tooltip" title="Delete"><button class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#confirm-delete" data-href="data/delete?file=${item.fileName}"><span class="glyphicon glyphicon-trash"></span></button></p></td>
                                                 </tr>
                                             </c:forEach>
                                         </tbody>
@@ -106,5 +106,6 @@
         <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
         <script src="vendor/metismenu/metisMenu.min.js"></script>
         <script src="vendor/admin/js/sb-admin-2.js"></script>
+        <script src="js/dataset.js"></script>
     </body>
 </html>

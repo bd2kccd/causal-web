@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Date;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -34,9 +36,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
+import edu.pitt.dbmi.ccd.db.entity.FileInfoDB;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
 import edu.pitt.dbmi.ccd.web.model.ResumableChunk;
 import edu.pitt.dbmi.ccd.web.service.BigDataFileManager;
+import edu.pitt.dbmi.ccd.web.service.FileInfoService;
 import edu.pitt.dbmi.ccd.web.util.FileUtility;
 
 /**
@@ -50,12 +54,17 @@ import edu.pitt.dbmi.ccd.web.util.FileUtility;
 @SessionAttributes("appUser")
 @RequestMapping(value = "/data")
 public class DataController implements ViewController {
-	
+
+	@Autowired(required = true)
     private final BigDataFileManager fileManager;
 
+	@Autowired(required = true)
+    private final FileInfoService fileInfoService;
+    
     @Autowired(required = true)
-    public DataController(BigDataFileManager fileManager) {
+    public DataController(BigDataFileManager fileManager, FileInfoService fileInfoService) {
         this.fileManager = fileManager;
+        this.fileInfoService = fileInfoService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -73,6 +82,7 @@ public class DataController implements ViewController {
     @RequestMapping(value = DELETE, method = RequestMethod.GET)
     public String deleteResultFile(@RequestParam(value = "file") String filename, Model model) {
         Path file = Paths.get(fileManager.getUploadDirectory(), filename);
+        fileInfoService.deleteFile(file.toAbsolutePath().toString());
         try {
             Files.deleteIfExists(file);
         } catch (IOException exception) {
@@ -83,8 +93,10 @@ public class DataController implements ViewController {
     }
 
     @RequestMapping(value = UPLOAD_CHUNK, method = RequestMethod.GET)
-    public void checkChunkExistence(HttpServletResponse response, ResumableChunk chunk) throws IOException {
-        if (fileManager.chunkExists(chunk.getResumableIdentifier(), chunk.getResumableChunkNumber(), chunk.getResumableChunkSize())) {
+    public void checkChunkExistence(HttpServletResponse response, ResumableChunk chunk) 
+    		throws IOException {
+        if (fileManager.chunkExists(chunk.getResumableIdentifier(), chunk.getResumableChunkNumber(), 
+        		chunk.getResumableChunkSize())) {
             response.setStatus(200); // do not upload chunk again
         } else {
             response.setStatus(404); // chunk not on the server, upload it
@@ -92,15 +104,35 @@ public class DataController implements ViewController {
     }
 
     @RequestMapping(value = UPLOAD_CHUNK, method = RequestMethod.POST)
-    public void processChunkUpload(HttpServletResponse response, ResumableChunk chunk) throws IOException {
+    public void processChunkUpload(HttpServletResponse response, ResumableChunk chunk) 
+    		throws IOException {
         if (!fileManager.isSupported(chunk.getResumableFilename())) {
             response.setStatus(501); // cancel the whole upload
             return;
         }
-        fileManager.storeChunk(chunk.getResumableIdentifier(), chunk.getResumableChunkNumber(), chunk.getFile().getInputStream());
-        if (fileManager.allChunksUploaded(chunk.getResumableIdentifier(), chunk.getResumableChunkSize(), chunk.getResumableTotalSize(), chunk.getResumableTotalChunks())) {
-            String md5 = fileManager.mergeAndDeleteWithMd5(chunk.getResumableFilename(), chunk.getResumableIdentifier(), chunk.getResumableChunkSize(), chunk.getResumableTotalSize(), chunk.getResumableTotalChunks());
+        fileManager.storeChunk(chunk.getResumableIdentifier(), chunk.getResumableChunkNumber(), 
+        		chunk.getFile().getInputStream());
+        if (fileManager.allChunksUploaded(chunk.getResumableIdentifier(), chunk.getResumableChunkSize(), 
+        		chunk.getResumableTotalSize(), chunk.getResumableTotalChunks())) {
+            String md5 = fileManager.mergeAndDeleteWithMd5(chunk.getResumableFilename(), 
+            		chunk.getResumableIdentifier(), chunk.getResumableChunkSize(), 
+            		chunk.getResumableTotalSize(), chunk.getResumableTotalChunks());
+
+            //Store file info into DB
+            Path path = Paths.get(fileManager.getUploadDirectory(), chunk.getResumableFilename());
+			BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
+			FileInfoDB fileInfoDB = new FileInfoDB();
+			fileInfoDB.setFileName(path.getFileName().toString());
+			fileInfoDB.setFileAbsolutePath(path.toAbsolutePath().toString());
+			fileInfoDB.setCreationTime(new Date(attrs.creationTime().toMillis()));
+			fileInfoDB.setLastAccessTime(new Date(attrs.lastAccessTime().toMillis()));
+			fileInfoDB.setLastModifiedTime(new Date(attrs.lastModifiedTime().toMillis()));
+            fileInfoDB.setFileSize(attrs.size());
+            fileInfoDB.setMd5CheckSum(md5);
+            fileInfoDB = fileInfoService.saveFile(fileInfoDB);
+
             response.getWriter().println(md5);
+                        
         }
         response.setStatus(200);
     }

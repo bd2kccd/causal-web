@@ -20,6 +20,11 @@
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,8 +35,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
+import edu.pitt.dbmi.ccd.db.entity.FileInfoDB;
 import edu.pitt.dbmi.ccd.web.model.GesRunInfo;
 import edu.pitt.dbmi.ccd.web.service.AlgorithmService;
+import edu.pitt.dbmi.ccd.web.service.FileInfoService;
+import edu.pitt.dbmi.ccd.web.util.MessageDigestHash;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
 
 /**
@@ -54,6 +62,9 @@ public class GesController extends AlgorithmController implements
     @Autowired
     private AlgorithmService algorithmService;
 
+	@Autowired(required = true)
+    private final FileInfoService fileInfoService;
+
     /**
 	 * @param uploadDirectory
 	 * @param libDirectory
@@ -68,9 +79,12 @@ public class GesController extends AlgorithmController implements
             @Value("${app.libDir}") String libDirectory,
             @Value("${app.outputDir}") String outputDirectory,
             @Value("${app.tempDir}") String tempDirectory,
-            @Value("${app.algoJar}") String algorithmJar) {
+            @Value("${app.algoJar}") String algorithmJar,
+            FileInfoService fileInfoService) {
         super(uploadDirectory, libDirectory, outputDirectory, tempDirectory, algorithmJar);
         this.ges = ges;
+        
+        this.fileInfoService = fileInfoService;
 
         String classPath = libDirectory + File.separator + algorithmJar;
         this.cmd = String.format("java -cp %s %s", classPath, ges);
@@ -116,6 +130,19 @@ public class GesController extends AlgorithmController implements
             cmdBuilder.append(" --verbose");
         }
 
+        //Save dataset metadata info into DB
+        Path file = Paths.get(uploadDirectory, info.getDataset());
+		BasicFileAttributes attrs = Files.readAttributes(file, BasicFileAttributes.class);
+		FileInfoDB fileInfoDB = new FileInfoDB();
+		fileInfoDB.setFileName(file.getFileName().toString());
+		fileInfoDB.setFileAbsolutePath(file.toAbsolutePath().toString());
+		fileInfoDB.setCreationTime(new Date(attrs.creationTime().toMillis()));
+		fileInfoDB.setLastAccessTime(new Date(attrs.lastAccessTime().toMillis()));
+		fileInfoDB.setLastModifiedTime(new Date(attrs.lastModifiedTime().toMillis()));
+        fileInfoDB.setFileSize(attrs.size());
+        fileInfoDB.setMd5CheckSum(MessageDigestHash.computeMD5Hash(file));
+        fileInfoDB = fileInfoService.saveFile(fileInfoDB);
+                
         String fileName = String.format("ges_%s_%d.txt", info.getDataset(), System.currentTimeMillis());
         cmdBuilder.append(" --fileName ");
         cmdBuilder.append(fileName);

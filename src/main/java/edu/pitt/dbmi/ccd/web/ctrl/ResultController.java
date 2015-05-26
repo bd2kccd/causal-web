@@ -25,6 +25,8 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -43,9 +45,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.SessionAttributes;
 
+import edu.pitt.dbmi.ccd.db.entity.FileInfoDB;
+import edu.pitt.dbmi.ccd.web.model.FileMetadata;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
+import edu.pitt.dbmi.ccd.web.service.FileInfoService;
 import edu.pitt.dbmi.ccd.web.util.FileUtility;
+import edu.pitt.dbmi.ccd.web.util.MessageDigestHash;
 
 /**
  *
@@ -55,19 +62,51 @@ import edu.pitt.dbmi.ccd.web.util.FileUtility;
  * 
  */
 @Controller
+@SessionAttributes("appUser")
 @RequestMapping(value = "/results")
 public class ResultController implements ViewController {
 
+	@Autowired(required = true)
+    private final FileInfoService fileInfoService;
+    
     private final String outputDirectory;
 
     @Autowired(required = true)
-    public ResultController(@Value("${app.outputDir}") String outputDirectory) {
+    public ResultController(
+    		@Value("${app.outputDir}") String outputDirectory, 
+    		FileInfoService fileInfoService) {
         this.outputDirectory = outputDirectory;
+        this.fileInfoService = fileInfoService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
     public String showRunResultsView(Model model) {
-    	model.addAttribute("itemList", FileUtility.getFileListing(outputDirectory));
+    	
+    	List<FileMetadata> itemList = FileUtility.getFileListing(outputDirectory);
+    	for(FileMetadata fileMetadata : itemList){
+    		Path file = Paths.get(outputDirectory, fileMetadata.getFileName());
+    		FileInfoDB fileInfoDB = 
+    				fileInfoService.findByFileAbsolutePath(file.toAbsolutePath().toString());
+    		if(fileInfoDB == null){
+                try {
+					//Store file info into DB
+					BasicFileAttributes attrs = Files.readAttributes(file, BasicFileAttributes.class);
+					fileInfoDB = new FileInfoDB();
+					fileInfoDB.setFileName(file.getFileName().toString());
+					fileInfoDB.setFileAbsolutePath(file.toAbsolutePath().toString());
+					fileInfoDB.setCreationTime(new Date(attrs.creationTime().toMillis()));
+					fileInfoDB.setLastAccessTime(new Date(attrs.lastAccessTime().toMillis()));
+					fileInfoDB.setLastModifiedTime(new Date(attrs.lastModifiedTime().toMillis()));
+					fileInfoDB.setFileSize(attrs.size());
+					fileInfoDB.setMd5CheckSum(MessageDigestHash.computeMD5Hash(file));
+					fileInfoDB = fileInfoService.saveFile(fileInfoDB);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}                
+    		}
+    	}
+    	model.addAttribute("itemList", itemList);
     	
         return RUNRESULTS;
     }
@@ -75,6 +114,7 @@ public class ResultController implements ViewController {
     @RequestMapping(value = DELETE, method = RequestMethod.GET)
     public String deleteResultFile(@RequestParam(value = "file") String filename, Model model) {
         Path file = Paths.get(outputDirectory, filename);
+        fileInfoService.deleteFile(file.toAbsolutePath().toString());
         try {
             Files.deleteIfExists(file);
         } catch (IOException exception) {
@@ -103,6 +143,7 @@ public class ResultController implements ViewController {
                     isData = true;
                 }
             }
+            
         } catch (IOException exception) {
             exception.printStackTrace(System.err);
         }
@@ -140,6 +181,7 @@ public class ResultController implements ViewController {
                     isParamters = true;
                 }
             }
+
         } catch (IOException exception) {
             exception.printStackTrace(System.err);
         }

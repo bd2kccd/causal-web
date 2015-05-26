@@ -73,7 +73,7 @@ public class FileUtility {
     			BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
     			FileInfo info = new FileInfo();
     			info.setFileName(path.getFileName().toString());
-    			info.setFilePath(path.toAbsolutePath().toString());
+    			info.setFileAbsolutePath(path.toAbsolutePath().toString());
     			info.setCreationTime(new Date(attrs.creationTime().toMillis()));
     			info.setLastAccessTime(new Date(attrs.lastAccessTime().toMillis()));
     			info.setLastModifiedTime(new Date(attrs.lastModifiedTime().toMillis()));
@@ -93,7 +93,7 @@ public class FileUtility {
     		list.add(resultFile);
     	}
     	
-    	return null;
+    	return list;
     }
     
     private static class FileDateSort implements Comparator<FileInfo>{

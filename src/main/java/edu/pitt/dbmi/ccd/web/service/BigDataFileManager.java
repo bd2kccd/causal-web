@@ -143,7 +143,8 @@ public class BigDataFileManager {
     public String mergeAndDeleteWithMd5(String fileName, String identifier, long chunkSize, final long totalSize, final int numOfChunks) throws IOException {
         Path newFilePath = Paths.get(uploadDirectory, fileName);
         Files.deleteIfExists(newFilePath); // delete the existing file
-        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(newFilePath.toFile(), false))) {
+        try (BufferedOutputStream bos = new BufferedOutputStream(
+        		new FileOutputStream(newFilePath.toFile(), false))) {
             for (int chunkNo = 1; chunkNo <= numOfChunks; chunkNo++) {
                 Path chunkPath = Paths.get(uploadDirectory, identifier, String.valueOf(chunkNo));
                 Files.copy(chunkPath, bos);
