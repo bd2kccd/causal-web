@@ -32,9 +32,9 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import edu.pitt.dbmi.ccd.db.entity.FileInfo;
-import edu.pitt.dbmi.ccd.web.util.FileUtility;
+import edu.pitt.dbmi.ccd.web.model.FileInfo;
 import edu.pitt.dbmi.ccd.web.model.FileMetadata;
+import edu.pitt.dbmi.ccd.web.util.FileUtility;
 
 /**
  *
