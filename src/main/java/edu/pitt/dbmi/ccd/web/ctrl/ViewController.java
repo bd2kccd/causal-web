@@ -41,7 +41,19 @@ public interface ViewController {
     public static final String SETUP = "setup";
 
     public static final String REDIRECT_SETUP = "redirect:/setup";
+    
+    public static final String REGISTRATION = "registration";
 
+    public static final String REDIRECT_REGISTRATION = "redirect:/registration";
+
+    public static final String ERR0R = "err0r";
+    
+    public static final String REDIRECT_ERR0R = "redirect:/err0r";
+    
+    public static final String USERPROFILE = "userprofile";
+    
+    public static final String SETTING = "setting";
+    
     //Data & Result Management
     public static final String DATASET = "dataset";
 

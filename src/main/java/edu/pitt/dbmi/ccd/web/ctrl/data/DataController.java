@@ -24,7 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Date;
+import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -36,8 +36,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
-import edu.pitt.dbmi.ccd.db.entity.FileInfoDB;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
+import edu.pitt.dbmi.ccd.web.model.FileMetadata;
 import edu.pitt.dbmi.ccd.web.model.ResumableChunk;
 import edu.pitt.dbmi.ccd.web.service.BigDataFileManager;
 import edu.pitt.dbmi.ccd.web.service.FileInfoService;
@@ -69,7 +69,8 @@ public class DataController implements ViewController {
 
     @RequestMapping(method = RequestMethod.GET)
     public String showDatasetView(Model model) {
-    	model.addAttribute("itemList", FileUtility.getFileListing(fileManager.getUploadDirectory()));
+    	List<FileMetadata> itemList = FileUtility.getFileListing(fileManager.getUploadDirectory());
+    	model.addAttribute("itemList", itemList);
     	
         return DATASET;
     }
@@ -121,15 +122,7 @@ public class DataController implements ViewController {
             //Store file info into DB
             Path path = Paths.get(fileManager.getUploadDirectory(), chunk.getResumableFilename());
 			BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
-			FileInfoDB fileInfoDB = new FileInfoDB();
-			fileInfoDB.setFileName(path.getFileName().toString());
-			fileInfoDB.setFileAbsolutePath(path.toAbsolutePath().toString());
-			fileInfoDB.setCreationTime(new Date(attrs.creationTime().toMillis()));
-			fileInfoDB.setLastAccessTime(new Date(attrs.lastAccessTime().toMillis()));
-			fileInfoDB.setLastModifiedTime(new Date(attrs.lastModifiedTime().toMillis()));
-            fileInfoDB.setFileSize(attrs.size());
-            fileInfoDB.setMd5CheckSum(md5);
-            fileInfoDB = fileInfoService.saveFile(fileInfoDB);
+			FileUtility.saveFileInfo2DB(path, attrs, md5, fileInfoService);
 
             response.getWriter().println(md5);
                         

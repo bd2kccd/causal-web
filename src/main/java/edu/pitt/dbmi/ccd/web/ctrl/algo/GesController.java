@@ -20,11 +20,11 @@
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,11 +35,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
-import edu.pitt.dbmi.ccd.db.entity.FileInfoDB;
 import edu.pitt.dbmi.ccd.web.model.GesRunInfo;
 import edu.pitt.dbmi.ccd.web.service.AlgorithmService;
 import edu.pitt.dbmi.ccd.web.service.FileInfoService;
-import edu.pitt.dbmi.ccd.web.util.MessageDigestHash;
+import edu.pitt.dbmi.ccd.web.util.FileUtility;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
 
 /**
@@ -105,7 +104,9 @@ public class GesController extends AlgorithmController implements
     }
 
     @RequestMapping(value = GES, method = RequestMethod.POST)
-    public String runGes(Model model, @ModelAttribute("gesRunInfo") GesRunInfo info) throws Exception {
+    public String runGes(
+    		Model model, 
+    		@ModelAttribute("gesRunInfo") GesRunInfo info) {
         StringBuilder cmdBuilder = new StringBuilder(cmd);
 
         cmdBuilder.append(" --data ");
@@ -130,25 +131,29 @@ public class GesController extends AlgorithmController implements
             cmdBuilder.append(" --verbose");
         }
 
-        //Save dataset metadata info into DB
-        Path file = Paths.get(uploadDirectory, info.getDataset());
-		BasicFileAttributes attrs = Files.readAttributes(file, BasicFileAttributes.class);
-		FileInfoDB fileInfoDB = new FileInfoDB();
-		fileInfoDB.setFileName(file.getFileName().toString());
-		fileInfoDB.setFileAbsolutePath(file.toAbsolutePath().toString());
-		fileInfoDB.setCreationTime(new Date(attrs.creationTime().toMillis()));
-		fileInfoDB.setLastAccessTime(new Date(attrs.lastAccessTime().toMillis()));
-		fileInfoDB.setLastModifiedTime(new Date(attrs.lastModifiedTime().toMillis()));
-        fileInfoDB.setFileSize(attrs.size());
-        fileInfoDB.setMd5CheckSum(MessageDigestHash.computeMD5Hash(file));
-        fileInfoDB = fileInfoService.saveFile(fileInfoDB);
-                
-        String fileName = String.format("ges_%s_%d.txt", info.getDataset(), System.currentTimeMillis());
-        cmdBuilder.append(" --fileName ");
-        cmdBuilder.append(fileName);
+        try {
+			//Save dataset metadata info into DB
+			Path path = Paths.get(uploadDirectory, info.getDataset());
+			BasicFileAttributes attrs = 
+					Files.readAttributes(path, BasicFileAttributes.class);
+			FileUtility.saveFileInfo2DB(path, attrs, null, fileInfoService);
+			        
+			String fileName = String.format("ges_%s_%d.txt", 
+					info.getDataset(), System.currentTimeMillis());
+			cmdBuilder.append(" --fileName ");
+			cmdBuilder.append(fileName);
 
-        // run the algorithm
-        algorithmService.runAlgorithm(cmdBuilder.toString(), fileName);
+			// run the algorithm
+			algorithmService.runAlgorithm(cmdBuilder.toString(), fileName);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+            return REDIRECT_ERR0R;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+            return REDIRECT_ERR0R;
+		}
 
         model.addAttribute("title", "GES is Running");
 

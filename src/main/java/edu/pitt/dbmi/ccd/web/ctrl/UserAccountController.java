@@ -121,7 +121,7 @@ public class UserAccountController implements ViewController {
         return REDIRECT_HOME;
     }
 
-    @RequestMapping(value = "/registration", method = RequestMethod.POST)
+    @RequestMapping(value = REGISTRATION, method = RequestMethod.POST)
     public String registerNewUserAccount(final UserAccount userAccount, Model model) {
         String username = userAccount.getUsername();
         if (userAccountService.findByUsername(username) != null) {
@@ -161,4 +161,9 @@ public class UserAccountController implements ViewController {
         return REDIRECT_HOME;
     }
 
+    @RequestMapping(value = USERPROFILE, method = RequestMethod.GET)
+    public String showPageUserProfile() {
+        return USERPROFILE;
+    }
+    
 }

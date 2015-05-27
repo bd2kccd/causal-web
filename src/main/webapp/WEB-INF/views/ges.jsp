@@ -163,6 +163,10 @@
                     </div>
                 </div>
 
+                <div class="row">
+                	&nbsp;
+                </div>
+                
                 <%@include file="includes/footer.jspf" %>
 
             </div>

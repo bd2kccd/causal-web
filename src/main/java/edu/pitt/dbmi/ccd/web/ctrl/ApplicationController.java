@@ -169,4 +169,14 @@ public class ApplicationController implements ViewController {
         return NOT_FOUND;
     }
 
+    @RequestMapping(value = ERR0R, method = RequestMethod.GET)
+    public String showPageError() {
+        return ERR0R;
+    }
+    
+    @RequestMapping(value = SETTING, method = RequestMethod.GET)
+    public String showPageSetting() {
+        return SETTING;
+    }
+    
 }

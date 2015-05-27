@@ -11,7 +11,7 @@
     <head>
         <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-        <title>CCD: Login</title>
+        <title>CCD: Application Setting</title>
         <meta name="description" content="" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css" />
@@ -39,10 +39,21 @@
                 <%@include file="includes/sidebar.jspf"%>
             </nav>
             <div id="page-wrapper">
-            
-                
+                <div class="row">
+	               	&nbsp;
+				</div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h4>Setting</h4>
+                            </div>
+                            <div class="panel-body">
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <%@include file="includes/footer.jspf" %>
-
             </div>
         </div> 
         

@@ -32,8 +32,12 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import edu.pitt.dbmi.ccd.db.entity.FileInfoDB;
 import edu.pitt.dbmi.ccd.web.model.FileInfo;
 import edu.pitt.dbmi.ccd.web.model.FileMetadata;
+import edu.pitt.dbmi.ccd.web.service.FileInfoService;
 import edu.pitt.dbmi.ccd.web.util.FileUtility;
 
 /**
@@ -46,7 +50,12 @@ public class FileUtility {
 
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss");
 
-    private FileUtility() {
+	@Autowired(required = true)
+    private final FileInfoService fileInfoService;
+
+	@Autowired(required = true)
+	private FileUtility(FileInfoService fileInfoService) {
+        this.fileInfoService = fileInfoService;
     }
 
     public static String formatDate(Date date) {
@@ -106,5 +115,46 @@ public class FileUtility {
 			return o1.getLastModifiedTime().compareTo(o2.getLastModifiedTime());
 		}
     	
+    }
+    
+    public List<FileMetadata> getFileList(String directory){
+    	List<FileMetadata> itemList = FileUtility.getFileListing(directory);
+    	for(FileMetadata fileMetadata : itemList){
+    		Path path = Paths.get(directory, fileMetadata.getFileName());
+    		FileInfoDB fileInfoDB = 
+    				fileInfoService.findByFileAbsolutePath(path.toAbsolutePath().toString());
+            try {
+    			if(fileInfoDB == null){
+					//Store file info into DB
+					BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
+	    			if(!attrs.isDirectory()){
+						saveFileInfo2DB(path, attrs, null, fileInfoService);
+	    			}
+        		}else{
+					BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
+					if(fileInfoDB.getLastModifiedTime().compareTo(
+							new Date(attrs.lastModifiedTime().toMillis())) != 0){
+						saveFileInfo2DB(path, attrs, null, fileInfoService);
+					}
+        		}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}                
+    	}
+    	return itemList;
+    }
+    
+    public static void saveFileInfo2DB(Path path, BasicFileAttributes attrs, String md5, FileInfoService fileInfoService) 
+    		throws IOException{
+    	FileInfoDB fileInfoDB = new FileInfoDB();
+		fileInfoDB.setFileName(path.getFileName().toString());
+		fileInfoDB.setFileAbsolutePath(path.toAbsolutePath().toString());
+		fileInfoDB.setCreationTime(new Date(attrs.creationTime().toMillis()));
+		fileInfoDB.setLastAccessTime(new Date(attrs.lastAccessTime().toMillis()));
+		fileInfoDB.setLastModifiedTime(new Date(attrs.lastModifiedTime().toMillis()));
+		fileInfoDB.setFileSize(attrs.size());
+		fileInfoDB.setMd5CheckSum(md5!=null?md5:MessageDigestHash.computeMD5Hash(path));
+		fileInfoDB = fileInfoService.saveFile(fileInfoDB);
     }
 }

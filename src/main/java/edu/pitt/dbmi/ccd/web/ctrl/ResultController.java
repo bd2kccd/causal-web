@@ -25,8 +25,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -47,12 +45,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
-import edu.pitt.dbmi.ccd.db.entity.FileInfoDB;
 import edu.pitt.dbmi.ccd.web.model.FileMetadata;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
 import edu.pitt.dbmi.ccd.web.service.FileInfoService;
 import edu.pitt.dbmi.ccd.web.util.FileUtility;
-import edu.pitt.dbmi.ccd.web.util.MessageDigestHash;
 
 /**
  *
@@ -80,32 +76,8 @@ public class ResultController implements ViewController {
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public String showRunResultsView(Model model) {
-    	
+    public String showRunResultsView(Model model) { 	
     	List<FileMetadata> itemList = FileUtility.getFileListing(outputDirectory);
-    	for(FileMetadata fileMetadata : itemList){
-    		Path file = Paths.get(outputDirectory, fileMetadata.getFileName());
-    		FileInfoDB fileInfoDB = 
-    				fileInfoService.findByFileAbsolutePath(file.toAbsolutePath().toString());
-    		if(fileInfoDB == null){
-                try {
-					//Store file info into DB
-					BasicFileAttributes attrs = Files.readAttributes(file, BasicFileAttributes.class);
-					fileInfoDB = new FileInfoDB();
-					fileInfoDB.setFileName(file.getFileName().toString());
-					fileInfoDB.setFileAbsolutePath(file.toAbsolutePath().toString());
-					fileInfoDB.setCreationTime(new Date(attrs.creationTime().toMillis()));
-					fileInfoDB.setLastAccessTime(new Date(attrs.lastAccessTime().toMillis()));
-					fileInfoDB.setLastModifiedTime(new Date(attrs.lastModifiedTime().toMillis()));
-					fileInfoDB.setFileSize(attrs.size());
-					fileInfoDB.setMd5CheckSum(MessageDigestHash.computeMD5Hash(file));
-					fileInfoDB = fileInfoService.saveFile(fileInfoDB);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}                
-    		}
-    	}
     	model.addAttribute("itemList", itemList);
     	
         return RUNRESULTS;
@@ -119,6 +91,7 @@ public class ResultController implements ViewController {
             Files.deleteIfExists(file);
         } catch (IOException exception) {
             exception.printStackTrace(System.err);
+            return ERR0R;
         }
 
         return REDIRECT_RESULTS;
@@ -146,6 +119,7 @@ public class ResultController implements ViewController {
             
         } catch (IOException exception) {
             exception.printStackTrace(System.err);
+            return ERR0R;
         }
 
         ObjectMapper mapper = new ObjectMapper();
@@ -154,6 +128,7 @@ public class ResultController implements ViewController {
             model.addAttribute("data", json);
         } catch (Exception exception) {
             exception.printStackTrace(System.err);
+            return ERR0R;
         }
 
         return D3GRAPH;
@@ -184,6 +159,7 @@ public class ResultController implements ViewController {
 
         } catch (IOException exception) {
             exception.printStackTrace(System.err);
+            return ERR0R;
         }
 
         model.addAttribute("plot", filename);
