@@ -142,7 +142,7 @@ public class PcStableController extends AlgorithmController implements
 					info.getDataset(), System.currentTimeMillis());
 			cmdBuilder.append(" --fileName ");
 			cmdBuilder.append(fileName);
-
+			
 			// run the algorithm
 			algorithmService.runAlgorithm(cmdBuilder.toString(), fileName);
 		} catch (IOException e) {

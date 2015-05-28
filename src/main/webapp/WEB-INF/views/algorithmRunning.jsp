@@ -50,6 +50,10 @@
                         Please check the <a href="${path}/results">Run Result</a> page for results.
                     </div>
                 </div>
+
+                <div class="row">
+                	&nbsp;
+                </div>
                 
                 <%@include file="includes/footer.jspf" %>
 

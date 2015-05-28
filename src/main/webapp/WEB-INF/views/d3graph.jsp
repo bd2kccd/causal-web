@@ -25,7 +25,7 @@
         </style>
     </head>
     <body>
-        <script src="${path}/vendor/d3.v3.min.js"></script>
+        <script src="${path}/vendor/d3/d3.v3.min.js"></script>
         <script>
             var links = ${data};
             var nodes = {};
