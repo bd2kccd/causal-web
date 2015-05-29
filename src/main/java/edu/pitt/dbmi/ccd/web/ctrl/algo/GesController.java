@@ -70,6 +70,7 @@ public class GesController extends AlgorithmController implements
 	 * @param outputDirectory
 	 * @param tempDirectory
 	 * @param algorithmJar
+	 * @param fileInfoService
 	 */
     @Autowired(required = true)
     public GesController(

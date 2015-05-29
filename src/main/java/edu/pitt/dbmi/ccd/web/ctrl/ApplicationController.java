@@ -20,8 +20,9 @@ package edu.pitt.dbmi.ccd.web.ctrl;
 
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.UserAccountService;
+import edu.pitt.dbmi.ccd.web.util.ApplicationUtility;
+
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -54,20 +55,22 @@ public class ApplicationController implements ViewController {
 
     @Autowired(required = true)
     public ApplicationController(
-            @Value("${app.webapp:true}") boolean isWebApplication,
-            @Value("${app.default.pwd:password123}") String defaultPassword,
-            @Value("${app.login.error:Unable to setup initial settings.}") String signInErrMsg,
-            UserAccountService userAccountService) {
-        this.isWebApplication = isWebApplication;
-        this.defaultPassword = defaultPassword;
-        this.signInErrMsg = signInErrMsg;
+    		@Value("${app.webapp:true}") boolean isWebApplication,
+    		@Value("${app.default.pwd:password123}") String defaultPassword,
+    		@Value("${app.login.error:Unable to setup initial settings.}") String signInErrMsg,
+    		UserAccountService userAccountService){
+    	this.isWebApplication = isWebApplication;
+    	this.defaultPassword = defaultPassword;
+    	this.signInErrMsg = signInErrMsg;
         this.userAccountService = userAccountService;
     }
 
     @RequestMapping(value = SETUP, method = RequestMethod.GET)
     public String setupNewUser(Model model) {
-        if (SecurityUtils.getSubject().isAuthenticated()) {
-            return REDIRECT_HOME;
+    	String fwdPage = ApplicationUtility.forwardBasedOnSessionExisting(
+    			isWebApplication, defaultPassword, signInErrMsg, userAccountService, model);
+        if(fwdPage==null){
+        	return REDIRECT_HOME;
         }
 
         model.addAttribute("person", new Person());
@@ -112,12 +115,8 @@ public class ApplicationController implements ViewController {
         String username = (String) currentUser.getPrincipal();
         UserAccount userAccount = userAccountService.findByUsername(username);
         if (userAccount != null) {
-            Person person = userAccount.getPerson();
-
-            AppUser appUser = new AppUser();
-            appUser.setWebUser(true);
-            appUser.setName(person.getFirstName() + " " + person.getLastName());
-            model.addAttribute("appUser", appUser);
+            ApplicationUtility
+            .addAppUser2Model(isWebApplication, userAccount, model);
         }
 
         return url;
@@ -125,38 +124,9 @@ public class ApplicationController implements ViewController {
 
     @RequestMapping(value = LOGIN, method = RequestMethod.GET)
     public String showLoginPage(final Model model) {
-        if (SecurityUtils.getSubject().isAuthenticated()) {
-            return REDIRECT_HOME;
-        } else {
-            if (isWebApplication) {
-                return LOGIN;
-            } else {
-                String username = System.getProperty("user.name");
-                UserAccount userAccount = userAccountService.findByUsername(username);
-                if (userAccount == null) {
-                    return REDIRECT_SETUP;
-                }
-
-                UsernamePasswordToken token = new UsernamePasswordToken(userAccount.getUsername(), defaultPassword);
-                token.setRememberMe(true);
-                Subject currentUser = SecurityUtils.getSubject();
-                try {
-                    currentUser.login(token);
-                } catch (AuthenticationException exception) {
-                    model.addAttribute("errorMsg", signInErrMsg);
-                    return REDIRECT_SETUP;
-                }
-
-                Person person = userAccount.getPerson();
-
-                AppUser appUser = new AppUser();
-                appUser.setWebUser(false);
-                appUser.setName(person.getFirstName() + " " + person.getLastName());
-                model.addAttribute("appUser", appUser);
-
-                return REDIRECT_HOME;
-            }
-        }
+    	String fwdPage = ApplicationUtility.forwardBasedOnSessionExisting(
+    			isWebApplication, defaultPassword, signInErrMsg, userAccountService, model);
+        return fwdPage==null?REDIRECT_HOME:fwdPage;
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
@@ -175,8 +145,10 @@ public class ApplicationController implements ViewController {
     }
     
     @RequestMapping(value = SETTING, method = RequestMethod.GET)
-    public String showPageSetting() {
-        return SETTING;
+    public String showPageSetting(Model model) {
+    	String fwdPage = ApplicationUtility.forwardBasedOnSessionExisting(
+    			isWebApplication, defaultPassword, signInErrMsg, userAccountService, model);
+        return fwdPage==null?SETTING:fwdPage;
     }
     
 }

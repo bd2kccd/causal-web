@@ -41,7 +41,7 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h1 class="page-header">Welcome ${appUser.name}</h1>
+                        <h2 class="page-header">Welcome ${appUser.person.firstName} ${appUser.person.lastName}</h2>
                     </div>
                 </div>
 

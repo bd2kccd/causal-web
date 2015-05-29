@@ -49,11 +49,9 @@ public class UserAccountService {
         return userAccountRepository.findByUsername(username);
     }
 
-    public UserAccount createNewUserAccount(UserAccount userAccount) {
+    public UserAccount saveUserAccount(UserAccount userAccount) {
         personRepository.save(userAccount.getPerson());
-        userAccountRepository.save(userAccount);
-
-        return userAccount;
+        return userAccountRepository.save(userAccount);
     }
 
 }

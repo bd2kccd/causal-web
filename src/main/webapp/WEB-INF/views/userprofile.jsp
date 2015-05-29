@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <c:set var="path" value="${pageContext.request.contextPath}" />
 <jsp:useBean id="date" class="java.util.Date" />
 <!doctype html>
@@ -49,6 +50,56 @@
                                 <h4>User Profile</h4>
                             </div>
                             <div class="panel-body">
+                                <div class="col-sm-11">
+                                	<div class="row">
+                                		<div class="col-md-3">
+                                			<b>First Name:</b>
+                                		</div>
+                                		<div class="col-md-8">
+                                			${appUser.person.firstName}
+                                		</div>
+                                	</div>
+                                	<div class="row">
+                                		<div class="col-md-3">
+                                			<b>Last Name:</b>
+                                		</div>
+                                		<div class="col-md-8">
+                                			${appUser.person.lastName}
+                                		</div>
+                                	</div>
+                                	<div class="row">
+                                		<div class="col-md-3">
+                                			<b>E-mail:</b>
+                                		</div>
+                                		<div class="col-md-8">
+                                			${appUser.person.email}
+                                		</div>
+                                	</div>
+                                	<div class="row">
+                                		<div class="col-md-3">
+                                			<b>Workspace:</b>
+                                		</div>
+                                		<div class="col-md-8">
+                                			${appUser.person.workspaceDirectory}
+                                		</div>
+                                	</div>
+                                	<div class="row">
+                                		<div class="col-md-3">
+                                			<b>Account Created:</b>
+                                		</div>
+                                		<div class="col-md-8">
+                                			${appUser.createdDate}
+                                		</div>
+                                	</div>
+                                	<div class="row">
+                                		<div class="col-md-3">
+                                			<b>Last Login:</b>
+                                		</div>
+                                		<div class="col-md-8">
+                                			${appUser.lastLoginDate}
+                                		</div>
+                                	</div>
+                                </div>
                             </div>
                         </div>
                     </div>
