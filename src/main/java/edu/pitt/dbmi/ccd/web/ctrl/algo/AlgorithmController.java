@@ -56,7 +56,7 @@ public abstract class AlgorithmController {
     }
 
     protected Map<String, String> directoryFileListing(String directory) {
-        Map<String, String> map = new TreeMap<>();
+    	Map<String, String> map = new TreeMap<>();
 
         try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(directory))) {
             for (Path path : directoryStream) {

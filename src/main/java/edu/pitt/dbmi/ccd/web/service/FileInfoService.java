@@ -25,7 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import edu.pitt.dbmi.ccd.db.entity.FileInfoDB;
+import edu.pitt.dbmi.ccd.db.entity.DataFile;
 import edu.pitt.dbmi.ccd.db.repository.FileInfoRepository;
 
 /**
@@ -50,18 +50,18 @@ public class FileInfoService {
 		this.fileInfoRepository = fileInfoRepository;
 	}
 	
-	public List<FileInfoDB> findByFileName(String fileName){
+	public List<DataFile> findByFileName(String fileName){
 		return fileInfoRepository.findByFileName(fileName);
 	}
 	
-	public FileInfoDB findByFileAbsolutePath(String fileAbsolutePath){
+	public DataFile findByFileAbsolutePath(String fileAbsolutePath){
 		return fileInfoRepository
 				.findByFileAbsolutePath(fileAbsolutePath);
 	}
 	
-	public FileInfoDB saveFile(FileInfoDB fileInfoDB){
+	public DataFile saveFile(DataFile fileInfoDB){
 		String fileAbsolutePath = fileInfoDB.getFileAbsolutePath();
-		FileInfoDB fInfo = findByFileAbsolutePath(fileAbsolutePath);
+		DataFile fInfo = findByFileAbsolutePath(fileAbsolutePath);
 		if(fInfo != null){//if a file already exists in DB, update it
 			fileInfoDB.setId(fInfo.getId());
 		}
@@ -70,7 +70,7 @@ public class FileInfoService {
 	}
 	
 	public void deleteFile(String fileAbsolutePath){
-		FileInfoDB fInfo = findByFileAbsolutePath(fileAbsolutePath);
+		DataFile fInfo = findByFileAbsolutePath(fileAbsolutePath);
 		if(fInfo != null){//File already exists in DB
 			fileInfoRepository.delete(fInfo);
 		}

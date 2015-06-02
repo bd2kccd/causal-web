@@ -68,7 +68,7 @@ public class ApplicationController implements ViewController {
     @RequestMapping(value = SETUP, method = RequestMethod.GET)
     public String setupNewUser(Model model) {
     	String fwdPage = ApplicationUtility.forwardBasedOnSessionExisting(
-    			isWebApplication, defaultPassword, signInErrMsg, userAccountService, model);
+    			isWebApplication, defaultPassword, signInErrMsg, userAccountService, model, REDIRECT_HOME);
         if(fwdPage==null){
         	return REDIRECT_HOME;
         }
@@ -124,9 +124,9 @@ public class ApplicationController implements ViewController {
 
     @RequestMapping(value = LOGIN, method = RequestMethod.GET)
     public String showLoginPage(final Model model) {
-    	String fwdPage = ApplicationUtility.forwardBasedOnSessionExisting(
-    			isWebApplication, defaultPassword, signInErrMsg, userAccountService, model);
-        return fwdPage==null?REDIRECT_HOME:fwdPage;
+    	return ApplicationUtility.forwardBasedOnSessionExisting(
+    			isWebApplication, defaultPassword, signInErrMsg, userAccountService, 
+    			model, REDIRECT_HOME);
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
@@ -146,9 +146,9 @@ public class ApplicationController implements ViewController {
     
     @RequestMapping(value = SETTING, method = RequestMethod.GET)
     public String showPageSetting(Model model) {
-    	String fwdPage = ApplicationUtility.forwardBasedOnSessionExisting(
-    			isWebApplication, defaultPassword, signInErrMsg, userAccountService, model);
-        return fwdPage==null?SETTING:fwdPage;
+    	return ApplicationUtility.forwardBasedOnSessionExisting(
+    			isWebApplication, defaultPassword, signInErrMsg, userAccountService, 
+    			model, SETTING);
     }
     
 }

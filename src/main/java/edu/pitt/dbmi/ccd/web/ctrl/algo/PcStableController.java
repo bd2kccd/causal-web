@@ -40,6 +40,7 @@ import edu.pitt.dbmi.ccd.web.service.AlgorithmService;
 import edu.pitt.dbmi.ccd.web.service.FileInfoService;
 import edu.pitt.dbmi.ccd.web.util.FileUtility;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
+import edu.pitt.dbmi.ccd.web.domain.AppUser;
 
 /**
  *
@@ -56,13 +57,11 @@ public class PcStableController extends AlgorithmController implements
 
     private final String pcStable;
 
-    private final String cmd;
-
     @Autowired
     private AlgorithmService algorithmService;
 
 	@Autowired(required = true)
-    private final FileInfoService fileInfoService;
+    private FileInfoService fileInfoService;
 
     /**
 	 * @param uploadDirectory
@@ -78,20 +77,15 @@ public class PcStableController extends AlgorithmController implements
             @Value("${app.libDir}") String libDirectory,
             @Value("${app.outputDir}") String outputDirectory,
             @Value("${app.tempDir}") String tempDirectory,
-            @Value("${app.algoJar:ccd-algorithm-1.0-SNAPSHOT.jar}") String algorithmJar,
-            FileInfoService fileInfoService) {
-        super(uploadDirectory, libDirectory, outputDirectory, tempDirectory, algorithmJar);
-        
+            @Value("${app.algoJar:ccd-algorithm-1.0-SNAPSHOT.jar}") String algorithmJar) {
+        super(uploadDirectory, libDirectory, outputDirectory, tempDirectory, algorithmJar);    
         this.pcStable = pcStable;
-        
-        this.fileInfoService = fileInfoService;
-
-        String classPath = libDirectory + File.separator + algorithmJar;
-        this.cmd = String.format("java -cp %s %s", classPath, pcStable);
 	}
 
 	@RequestMapping(value = PCSTABLE, method = RequestMethod.GET)
-    public String showPcStableView(Model model) {
+    public String showPcStableView(
+    		Model model, 
+    		@ModelAttribute("appUser") AppUser appUser) {
         PcStableRunInfo info = new PcStableRunInfo();
         info.setAlpha(0.0001D);
         info.setDepth(3);
@@ -99,7 +93,10 @@ public class PcStableController extends AlgorithmController implements
         info.setVerbose(Boolean.TRUE);
         model.addAttribute("pcStableRunInfo", info);
 
-        model.addAttribute("dataset", directoryFileListing(uploadDirectory));
+    	String workspaceDirectory = appUser.getPerson().getWorkspaceDirectory();
+
+        model.addAttribute("dataset", directoryFileListing(
+        		workspaceDirectory + File.separator + uploadDirectory));
 
         return PCSTABLE;
     }
@@ -107,10 +104,17 @@ public class PcStableController extends AlgorithmController implements
     @RequestMapping(value = PCSTABLE, method = RequestMethod.POST)
     public String runPcStable(
             Model model,
-            @ModelAttribute("pcStableRunInfo") PcStableRunInfo info) {
+            @ModelAttribute("pcStableRunInfo") PcStableRunInfo info,
+            @ModelAttribute("appUser") AppUser appUser) {
+    	String workspaceDirectory = appUser.getPerson().getWorkspaceDirectory();
+        String classPath = workspaceDirectory + File.separator + 
+        		libDirectory + File.separator + algorithmJar;
+        String cmd = String.format("java -cp %s %s", classPath, pcStable);
         StringBuilder cmdBuilder = new StringBuilder(cmd);
 
         cmdBuilder.append(" --data ");
+        cmdBuilder.append(workspaceDirectory);
+        cmdBuilder.append(File.separator);
         cmdBuilder.append(uploadDirectory);
         cmdBuilder.append(File.separator);
         cmdBuilder.append(info.getDataset());
@@ -133,10 +137,12 @@ public class PcStableController extends AlgorithmController implements
 
 		try {
 			//Save dataset metadata info into DB
-			Path path = Paths.get(uploadDirectory, info.getDataset());
+			Path path = Paths.get(
+					workspaceDirectory + File.separator + uploadDirectory, 
+					info.getDataset());
 			BasicFileAttributes attrs = 
 					Files.readAttributes(path, BasicFileAttributes.class);
-			FileUtility.saveFileInfo2DB(path, attrs, null, fileInfoService);
+			FileUtility.saveFileInfo2DB(path, attrs, fileInfoService);
 			        
 			String fileName = String.format("pc-stable_%s_%d.txt", 
 					info.getDataset(), System.currentTimeMillis());
@@ -144,7 +150,7 @@ public class PcStableController extends AlgorithmController implements
 			cmdBuilder.append(fileName);
 			
 			// run the algorithm
-			algorithmService.runAlgorithm(cmdBuilder.toString(), fileName);
+			algorithmService.runAlgorithm(cmdBuilder.toString(), workspaceDirectory, fileName);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -20,6 +20,7 @@
 package edu.pitt.dbmi.ccd.web.ctrl;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -40,11 +41,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
+import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.FileMetadata;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
 import edu.pitt.dbmi.ccd.web.service.FileInfoService;
@@ -76,16 +79,25 @@ public class ResultController implements ViewController {
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public String showRunResultsView(Model model) { 	
-    	List<FileMetadata> itemList = FileUtility.getFileListing(outputDirectory);
+    public String showRunResultsView(
+    		Model model, 
+    		@ModelAttribute("appUser") AppUser appUser) { 	
+    	List<FileMetadata> itemList = 
+    			FileUtility.getFileListing(
+    					getOutputDirectory(
+    							appUser.getPerson().getWorkspaceDirectory()));
     	model.addAttribute("itemList", itemList);
     	
         return RUNRESULTS;
     }
 
     @RequestMapping(value = DELETE, method = RequestMethod.GET)
-    public String deleteResultFile(@RequestParam(value = "file") String filename, Model model) {
-        Path file = Paths.get(outputDirectory, filename);
+    public String deleteResultFile(
+    		@RequestParam(value = "file") String filename, 
+    		@ModelAttribute("appUser") AppUser appUser,
+    		Model model) {
+        Path file = Paths.get(getOutputDirectory(
+        		appUser.getPerson().getWorkspaceDirectory()), filename);
         fileInfoService.deleteFile(file.toAbsolutePath().toString());
         try {
             Files.deleteIfExists(file);
@@ -98,12 +110,17 @@ public class ResultController implements ViewController {
     }
 
     @RequestMapping(value = D3GRAPH, method = RequestMethod.GET)
-    public String showD3Graph(@RequestParam(value = "file") String filename, Model model) {
-        Path file = Paths.get(outputDirectory, filename);
+    public String showD3Graph(
+    		@RequestParam(value = "file") String filename, 
+    		@ModelAttribute("appUser") AppUser appUser,
+    		Model model) {
+        Path file = Paths.get(getOutputDirectory(
+        		appUser.getPerson().getWorkspaceDirectory()), filename);
 
         List<Node> links = new LinkedList<>();
         Pattern space = Pattern.compile("\\s+");
-        try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
+        try (BufferedReader reader = 
+        		Files.newBufferedReader(file, Charset.defaultCharset())) {
             boolean isData = false;
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 line = line.trim();
@@ -135,12 +152,17 @@ public class ResultController implements ViewController {
     }
 
     @RequestMapping(value = PLOT, method = RequestMethod.GET)
-    public String showPlot(@RequestParam(value = "file") String filename, Model model) {
-        Path file = Paths.get(outputDirectory, filename);
+    public String showPlot(
+    		@RequestParam(value = "file") String filename, 
+    		@ModelAttribute("appUser") AppUser appUser,
+    		Model model) {
+        Path file = Paths.get(getOutputDirectory(
+        		appUser.getPerson().getWorkspaceDirectory()), filename);
 
         Map<String, String> parameters = new TreeMap<>();
         Pattern equalDelim = Pattern.compile("=");
-        try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
+        try (BufferedReader reader = 
+        		Files.newBufferedReader(file, Charset.defaultCharset())) {
             boolean isParamters = false;
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 line = line.trim();
@@ -172,13 +194,16 @@ public class ResultController implements ViewController {
     @RequestMapping(value = DOWNLOAD, method = RequestMethod.GET)
     public void downloadResultFile(
             @RequestParam(value = "file") String filename,
+            @ModelAttribute("appUser") AppUser appUser,
             HttpServletRequest request,
             HttpServletResponse response) throws IOException {
         ServletContext context = request.getServletContext();
 
-        Path file = Paths.get(outputDirectory, filename);
+        Path file = Paths.get(getOutputDirectory(
+        		appUser.getPerson().getWorkspaceDirectory()), filename);
 
-        String mimeType = context.getMimeType(file.toAbsolutePath().toString());
+        String mimeType = 
+        		context.getMimeType(file.toAbsolutePath().toString());
         if (mimeType == null) {
             mimeType = "application/octet-stream";
         }
@@ -192,4 +217,19 @@ public class ResultController implements ViewController {
         Files.copy(file, response.getOutputStream());
     }
 
+    public String getOutputDirectory(String workspaceDirectory){
+        String outputAbsPathDirectory = workspaceDirectory + 
+        		File.separator + outputDirectory;
+    	// create directory, if not exist, for output data
+        Path outputDir = Paths.get(outputAbsPathDirectory);
+        if (Files.notExists(outputDir)) {
+            try {
+                Files.createDirectories(outputDir);
+            } catch (IOException exception) {
+                exception.printStackTrace(System.err);
+            }
+        }
+        return outputAbsPathDirectory;
+    }
+    
 }

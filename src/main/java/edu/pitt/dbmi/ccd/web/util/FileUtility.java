@@ -34,7 +34,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.pitt.dbmi.ccd.db.entity.FileInfoDB;
+import edu.pitt.dbmi.ccd.db.entity.DataFile;
 import edu.pitt.dbmi.ccd.web.model.FileInfo;
 import edu.pitt.dbmi.ccd.web.model.FileMetadata;
 import edu.pitt.dbmi.ccd.web.service.FileInfoService;
@@ -121,20 +121,20 @@ public class FileUtility {
     	List<FileMetadata> itemList = FileUtility.getFileListing(directory);
     	for(FileMetadata fileMetadata : itemList){
     		Path path = Paths.get(directory, fileMetadata.getFileName());
-    		FileInfoDB fileInfoDB = 
+    		DataFile fileInfoDB = 
     				fileInfoService.findByFileAbsolutePath(path.toAbsolutePath().toString());
             try {
     			if(fileInfoDB == null){
 					//Store file info into DB
 					BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
 	    			if(!attrs.isDirectory()){
-						saveFileInfo2DB(path, attrs, null, fileInfoService);
+						saveFileInfo2DB(path, attrs, fileInfoService);
 	    			}
         		}else{
 					BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
 					if(fileInfoDB.getLastModifiedTime().compareTo(
 							new Date(attrs.lastModifiedTime().toMillis())) != 0){
-						saveFileInfo2DB(path, attrs, null, fileInfoService);
+						saveFileInfo2DB(path, attrs, fileInfoService);
 					}
         		}
 			} catch (IOException e) {
@@ -144,17 +144,34 @@ public class FileUtility {
     	}
     	return itemList;
     }
-    
-    public static void saveFileInfo2DB(Path path, BasicFileAttributes attrs, String md5, FileInfoService fileInfoService) 
+
+    public static void saveFileInfo2DB(
+    		Path path, BasicFileAttributes attrs, 
+    		FileInfoService fileInfoService) 
     		throws IOException{
-    	FileInfoDB fileInfoDB = new FileInfoDB();
-		fileInfoDB.setFileName(path.getFileName().toString());
-		fileInfoDB.setFileAbsolutePath(path.toAbsolutePath().toString());
-		fileInfoDB.setCreationTime(new Date(attrs.creationTime().toMillis()));
-		fileInfoDB.setLastAccessTime(new Date(attrs.lastAccessTime().toMillis()));
-		fileInfoDB.setLastModifiedTime(new Date(attrs.lastModifiedTime().toMillis()));
-		fileInfoDB.setFileSize(attrs.size());
-		fileInfoDB.setMd5CheckSum(md5!=null?md5:MessageDigestHash.computeMD5Hash(path));
-		fileInfoDB = fileInfoService.saveFile(fileInfoDB);
+    	DataFile dataFile = new DataFile();
+		dataFile.setFileName(path.getFileName().toString());
+		dataFile.setFileAbsolutePath(path.toAbsolutePath().toString());
+		dataFile.setCreationTime(new Date(attrs.creationTime().toMillis()));
+		dataFile.setLastAccessTime(new Date(attrs.lastAccessTime().toMillis()));
+		dataFile.setLastModifiedTime(new Date(attrs.lastModifiedTime().toMillis()));
+		dataFile.setFileSize(attrs.size());
+		dataFile.setMd5CheckSum(MessageDigestHash.computeMD5Hash(path));
+		dataFile = fileInfoService.saveFile(dataFile);
+    }
+
+    public static void saveFileInfo2DB(
+    		Path path, BasicFileAttributes attrs, String md5, 
+    		FileInfoService fileInfoService) 
+    		throws IOException{
+    	DataFile dataFile = new DataFile();
+		dataFile.setFileName(path.getFileName().toString());
+		dataFile.setFileAbsolutePath(path.toAbsolutePath().toString());
+		dataFile.setCreationTime(new Date(attrs.creationTime().toMillis()));
+		dataFile.setLastAccessTime(new Date(attrs.lastAccessTime().toMillis()));
+		dataFile.setLastModifiedTime(new Date(attrs.lastModifiedTime().toMillis()));
+		dataFile.setFileSize(attrs.size());
+		dataFile.setMd5CheckSum(md5);
+		dataFile = fileInfoService.saveFile(dataFile);
     }
 }

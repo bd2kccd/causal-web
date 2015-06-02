@@ -166,9 +166,9 @@ public class UserAccountController implements ViewController {
 
     @RequestMapping(value = USERPROFILE, method = RequestMethod.GET)
     public String showPageUserProfile(Model model) {
-    	String fwdPage = ApplicationUtility.forwardBasedOnSessionExisting(
-    			isWebApplication, defaultPassword, signInErrMsg, userAccountService, model);
-        return fwdPage==null?USERPROFILE:fwdPage;
+    	return ApplicationUtility.forwardBasedOnSessionExisting(
+    			isWebApplication, defaultPassword, signInErrMsg, userAccountService, 
+    			model, USERPROFILE);
     }
     
 }

@@ -25,6 +25,7 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 
 import edu.pitt.dbmi.ccd.db.entity.Person;
@@ -42,6 +43,9 @@ import edu.pitt.dbmi.ccd.web.service.UserAccountService;
  */
 public class ApplicationUtility implements ViewController {
     
+	@Autowired(required = true)
+	private static UserAccountService userAccountService;
+	
     public static void addAppUser2Model(
     		boolean isWebApplication,
     		UserAccount userAccount, 
@@ -63,7 +67,8 @@ public class ApplicationUtility implements ViewController {
     		String defaultPassword,
     		String signInErrMsg,
     		UserAccountService userAccountService, 
-    		Model model){
+    		Model model,
+    		String ExpectingForwardPage){
 	   	 if (!SecurityUtils.getSubject().isAuthenticated()) {
 			 if(isWebApplication){
 	             return LOGIN;
@@ -92,7 +97,7 @@ public class ApplicationUtility implements ViewController {
 			 }
 			 
 		 }
-	   	 return null;
+	   	 return ExpectingForwardPage;
     }
 
 }

@@ -31,12 +31,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
 import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
+import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.FileMetadata;
 import edu.pitt.dbmi.ccd.web.model.ResumableChunk;
 import edu.pitt.dbmi.ccd.web.service.BigDataFileManager;
@@ -55,10 +57,8 @@ import edu.pitt.dbmi.ccd.web.util.FileUtility;
 @RequestMapping(value = "/data")
 public class DataController implements ViewController {
 
-	@Autowired(required = true)
     private final BigDataFileManager fileManager;
 
-	@Autowired(required = true)
     private final FileInfoService fileInfoService;
     
     @Autowired(required = true)
@@ -68,8 +68,13 @@ public class DataController implements ViewController {
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public String showDatasetView(Model model) {
-    	List<FileMetadata> itemList = FileUtility.getFileListing(fileManager.getUploadDirectory());
+    public String showDatasetView(
+    		Model model, 
+    		@ModelAttribute("appUser") AppUser appUser) {
+    	String workspaceDirectory = appUser.getPerson().getWorkspaceDirectory();
+
+    	List<FileMetadata> itemList = FileUtility.getFileListing(
+    			fileManager.getUploadDirectory(workspaceDirectory));
     	model.addAttribute("itemList", itemList);
     	
         return DATASET;
@@ -81,8 +86,12 @@ public class DataController implements ViewController {
     }
 
     @RequestMapping(value = DELETE, method = RequestMethod.GET)
-    public String deleteResultFile(@RequestParam(value = "file") String filename, Model model) {
-        Path file = Paths.get(fileManager.getUploadDirectory(), filename);
+    public String deleteResultFile(
+    		@RequestParam(value = "file") String filename, 
+    		Model model,
+    		@ModelAttribute("appUser") AppUser appUser) {
+    	String workspaceDirectory = appUser.getPerson().getWorkspaceDirectory();
+        Path file = Paths.get(fileManager.getUploadDirectory(workspaceDirectory), filename);
         fileInfoService.deleteFile(file.toAbsolutePath().toString());
         try {
             Files.deleteIfExists(file);
@@ -94,10 +103,17 @@ public class DataController implements ViewController {
     }
 
     @RequestMapping(value = UPLOAD_CHUNK, method = RequestMethod.GET)
-    public void checkChunkExistence(HttpServletResponse response, ResumableChunk chunk) 
+    public void checkChunkExistence(
+    		HttpServletResponse response, 
+    		ResumableChunk chunk,
+    		@ModelAttribute("appUser") AppUser appUser) 
     		throws IOException {
-        if (fileManager.chunkExists(chunk.getResumableIdentifier(), chunk.getResumableChunkNumber(), 
-        		chunk.getResumableChunkSize())) {
+    	String workspaceDirectory = appUser.getPerson().getWorkspaceDirectory();
+        if (fileManager.chunkExists(
+        		chunk.getResumableIdentifier(), 
+        		chunk.getResumableChunkNumber(), 
+        		chunk.getResumableChunkSize(), 
+        		workspaceDirectory)) {
             response.setStatus(200); // do not upload chunk again
         } else {
             response.setStatus(404); // chunk not on the server, upload it
@@ -105,27 +121,36 @@ public class DataController implements ViewController {
     }
 
     @RequestMapping(value = UPLOAD_CHUNK, method = RequestMethod.POST)
-    public void processChunkUpload(HttpServletResponse response, ResumableChunk chunk) 
+    public void processChunkUpload(
+    		HttpServletResponse response, 
+    		ResumableChunk chunk, 
+    		@ModelAttribute("appUser") AppUser appUser) 
     		throws IOException {
         if (!fileManager.isSupported(chunk.getResumableFilename())) {
             response.setStatus(501); // cancel the whole upload
             return;
         }
-        fileManager.storeChunk(chunk.getResumableIdentifier(), chunk.getResumableChunkNumber(), 
-        		chunk.getFile().getInputStream());
+    	String workspaceDirectory = appUser.getPerson().getWorkspaceDirectory();
+        fileManager.storeChunk(
+        		chunk.getResumableIdentifier(), 
+        		chunk.getResumableChunkNumber(), 
+        		chunk.getFile().getInputStream(),
+        		workspaceDirectory);
         if (fileManager.allChunksUploaded(chunk.getResumableIdentifier(), chunk.getResumableChunkSize(), 
-        		chunk.getResumableTotalSize(), chunk.getResumableTotalChunks())) {
+        		chunk.getResumableTotalSize(), chunk.getResumableTotalChunks(), workspaceDirectory)) {
             String md5 = fileManager.mergeAndDeleteWithMd5(chunk.getResumableFilename(), 
             		chunk.getResumableIdentifier(), chunk.getResumableChunkSize(), 
-            		chunk.getResumableTotalSize(), chunk.getResumableTotalChunks());
+            		chunk.getResumableTotalSize(), chunk.getResumableTotalChunks(), 
+            		workspaceDirectory);
 
             //Store file info into DB
-            Path path = Paths.get(fileManager.getUploadDirectory(), chunk.getResumableFilename());
+            Path path = Paths.get(
+            		fileManager.getUploadDirectory(workspaceDirectory), 
+            		chunk.getResumableFilename());
 			BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
 			FileUtility.saveFileInfo2DB(path, attrs, md5, fileInfoService);
 
-            response.getWriter().println(md5);
-                        
+            response.getWriter().println(md5);                      
         }
         response.setStatus(200);
     }
