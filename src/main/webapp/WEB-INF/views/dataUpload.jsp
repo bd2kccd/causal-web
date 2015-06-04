@@ -42,13 +42,13 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h1 class="page-header">Data Upload</h1>
+                        <h2 class="page-header">Data Upload</h2>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="resumable-error">Your browser, unfortunately, is not supported by Resumable.js. The library requires support for <a href="http://www.w3.org/TR/FileAPI/">the HTML5 File API</a> along with <a href="http://www.w3.org/TR/FileAPI/#normalization-of-params">file slicing</a>.</div>
-                        <div class="resumable-drop" ondragenter="jQuery(this).addClass('resumable-dragover');" ondragleave="jQuery(this).removeClass('resumable-dragover');" ondrop="jQuery(this).removeClass('resumable-dragover');">
+                        <div class="resumable-drop" style="margin-top: 10px;" ondragenter="jQuery(this).addClass('resumable-dragover');" ondragleave="jQuery(this).removeClass('resumable-dragover');" ondrop="jQuery(this).removeClass('resumable-dragover');">
                             Drop file here or <div class="btn btn-primary btn-file resumable-browse"><span class="glyphicon glyphicon-folder-open"></span>&nbsp;&nbsp;&nbsp;Browse</div>
                         </div>
                     </div>
@@ -85,6 +85,8 @@
                                                             <a href="#" onclick="r.pause();
                                                                     return(false);" class="progress-pause-link"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></a>
                                                         </div>
+                                                        <span class="links-after-complete">See <a href="${path}/data">a list of your datasets</a> 
+                                                        or run Casual Discovery with <a href="${path}/algorithm/pcStable">PC-Stable</a> or <a href="${path}/algorithm/ges">GES</a> algorithm.</span>
                                                     </div>
                                                 </td>
                                             </tr>

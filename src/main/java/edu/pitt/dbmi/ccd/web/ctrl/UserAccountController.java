@@ -41,6 +41,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.context.request.WebRequest;
 
 /**
  *
@@ -169,6 +170,65 @@ public class UserAccountController implements ViewController {
     	return ApplicationUtility.forwardBasedOnSessionExisting(
     			isWebApplication, defaultPassword, signInErrMsg, userAccountService, 
     			model, USERPROFILE);
+    }
+    
+    @RequestMapping(value = USERPROFILE, method = RequestMethod.POST)
+    public String saveUserProfile(
+    		@ModelAttribute("person") Person person, 
+    		Model model) {
+    	String fwdPage = ApplicationUtility.forwardBasedOnSessionExisting(
+    			isWebApplication, defaultPassword, signInErrMsg, userAccountService, 
+    			model, USERPROFILE);
+    	if(fwdPage != USERPROFILE){
+    		return fwdPage;
+    	}
+    	
+		final String username = System.getProperty("user.name");
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        if (userAccount == null) {
+            return REDIRECT_SETUP;
+        }
+
+        if(person.getFirstName() == null){
+            person = userAccount.getPerson();
+            model.addAttribute("person", person);
+            return USERPROFILE;
+    	}
+    	
+        userAccount.setPerson(person);
+
+        Path workspace = Paths.get(person.getWorkspaceDirectory());
+        if (Files.exists(workspace)) {
+            if (!Files.isDirectory(workspace)) {
+                model.addAttribute("errorMsg", "Workspace provided is not a directory.");
+                return USERPROFILE;
+            }
+        } else {
+            model.addAttribute("errorMsg", "Workspace directory does not exist.");
+            return USERPROFILE;
+        }
+
+        try {
+            userAccount = userAccountService.saveUserAccount(userAccount);
+        } catch (Exception exception) {
+            model.addAttribute("errorMsg", setupErrMsg);
+            return USERPROFILE;
+        }
+
+        UsernamePasswordToken token = new UsernamePasswordToken(
+        		userAccount.getUsername(), defaultPassword);
+        token.setRememberMe(true);
+        Subject currentUser = SecurityUtils.getSubject();
+        try {
+            currentUser.login(token);
+        } catch (AuthenticationException exception) {
+            model.addAttribute("errorMsg", signInErrMsg);
+            return USERPROFILE;
+        }
+
+        ApplicationUtility.addAppUser2Model(isWebApplication, userAccount, model);
+
+    	return REDIRECT_USERPROFILE;
     }
     
 }

@@ -90,3 +90,6 @@
 .is-complete .progress-pause {
     display: none;
 }
+.links-after-complete {
+	display: none;
+}

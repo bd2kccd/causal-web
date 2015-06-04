@@ -88,6 +88,7 @@ $(document).ready(function () {
             // Hide pause/resume and cancel when the upload has completed
             $('.progress-bar').html('(completed)');
             $('.resumable-progress .progress-resume-link, .resumable-progress .progress-pause-link, .resumable-progress .progress-cancel-link').hide();
+            $('.links-after-complete').show();
         });
         r.on('fileSuccess', function (file, message) {
             $('.md5-' + file.uniqueIdentifier).html(message);

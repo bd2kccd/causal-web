@@ -45,8 +45,11 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h4>Setting</h4>
+                            <div class="panel-heading clearfix">
+                                <h4 class="pull-left"><i class="fa fa-gear fa-fw"></i> Setting</h4>
+                                <button type="button" class="btn btn-default pull-right">
+                                	<span class="glyphicon glyphicon-edit"></span> Edit
+                                </button>
                             </div>
                             <div class="panel-body">
                             </div>

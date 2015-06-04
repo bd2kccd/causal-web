@@ -46,13 +46,13 @@
             
                 <div class="row">
                     <div class="col-lg-12">
-                        <h1 class="page-header">GES</h1>
+                        <h2 class="page-header">GES</h2>
                     </div>
                 </div>
                 
                 <div class="row">
                     <div class="col-lg-12">
-                        <div class="stepwizard">
+                        <div class="stepwizard" style="margin-top: 10px;">
                             <div class="stepwizard-row setup-panel">
                                 <div class="stepwizard-step">
                                     <a href="#step-1" type="button" class="btn btn-primary btn-circle">1</a>
@@ -76,7 +76,7 @@
                             <div class="row setup-content" id="step-1">
                                 <div class="col-xs-12">
                                     <div class="col-md-12">
-                                        <h3> Step 1: Chose Your Dataset</h3>
+                                        <h4> Step 1: Choose Your Dataset</h4>
                                         <div class="form-group">
                                             <form:select path="dataset" id="dataset" items="${dataset}" class="form-control" required="required" ng-model="dataset" />
                                         </div>
@@ -95,7 +95,7 @@
                             <div class="row setup-content" id="step-2">
                                 <div class="col-xs-12">
                                     <div class="col-md-12">
-                                        <h3> Step 2: Algorithm Parameters</h3>
+                                        <h4> Step 2: Algorithm Parameters</h4>
                                         <div class="form-group">
                                             <label for="penaltyDiscount" class="control-label">Penalty Discount</label>
                                             <form:input path="penaltyDiscount" id="penaltyDiscount" maxlength="10" type="text" required="required" class="form-control" placeholder="Penalty Discount" ng-model="penaltyDiscount" ng-init="penaltyDiscount=${gesRunInfo.penaltyDiscount}" />
@@ -123,7 +123,7 @@
                             <div class="row setup-content" id="step-3">
                                 <div class="col-xs-12">
                                     <div class="col-md-12">
-                                        <h3> Step 3: Run the Algorithm</h3>
+                                        <h4> Step 3: Run the Algorithm</h4>
                                         <div class="panel panel-default">
                                             <div class="panel-heading">Summary</div>
                                             <div class="panel-body">
@@ -131,23 +131,23 @@
                                                     <table class="table table-striped">
                                                         <tbody>
                                                             <tr>
-                                                                <td class="col-md-3">Dataset:</td>
+                                                                <td class="col-md-4">Dataset:</td>
                                                                 <td ng-bind="dataset"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-3">Continuous Variables</td>
+                                                                <td class="col-md-4">Continuous Variables</td>
                                                                 <td ng-bind="continuous"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-3">Penalty Discount:</td>
+                                                                <td class="col-md-4">Penalty Discount:</td>
                                                                 <td ng-bind="penaltyDiscount"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-3">Exclude Zero Correlation Edges</td>
+                                                                <td class="col-md-4">Exclude Zero Correlation Edges</td>
                                                                 <td ng-bind="excludeZeroCorrelationEdges"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-3">Verbose:</td>
+                                                                <td class="col-md-4">Verbose:</td>
                                                                 <td ng-bind="verbose"></td>
                                                             </tr>
                                                         </tbody>

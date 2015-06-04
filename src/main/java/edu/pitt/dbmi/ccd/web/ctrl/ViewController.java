@@ -52,6 +52,8 @@ public interface ViewController {
     
     public static final String USERPROFILE = "userprofile";
     
+    public static final String REDIRECT_USERPROFILE = "redirect:/userprofile";
+    
     public static final String SETTING = "setting";
     
     //Data & Result Management

@@ -18,6 +18,8 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl;
 
+import javax.servlet.http.HttpSession;
+
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.service.UserAccountService;
@@ -66,10 +68,11 @@ public class ApplicationController implements ViewController {
     }
 
     @RequestMapping(value = SETUP, method = RequestMethod.GET)
-    public String setupNewUser(Model model) {
+    public String setupNewUser(Model model, HttpSession session) {
     	String fwdPage = ApplicationUtility.forwardBasedOnSessionExisting(
-    			isWebApplication, defaultPassword, signInErrMsg, userAccountService, model, REDIRECT_HOME);
-        if(fwdPage==null){
+    			isWebApplication, defaultPassword, signInErrMsg, 
+    			userAccountService, model, REDIRECT_HOME);
+        if(fwdPage==REDIRECT_HOME){
         	return REDIRECT_HOME;
         }
 
@@ -90,7 +93,8 @@ public class ApplicationController implements ViewController {
         Subject currentUser = SecurityUtils.getSubject();
         if (currentUser.isAuthenticated()) {
             currentUser.logout();
-            model.addAttribute("successMsg", "You Have Successfully Logged Out.");
+            model.addAttribute(
+            		"successMsg", "You Have Successfully Logged Out.");
             url = LOGIN;
         } else {
             url = REDIRECT_LOGIN;
@@ -125,8 +129,8 @@ public class ApplicationController implements ViewController {
     @RequestMapping(value = LOGIN, method = RequestMethod.GET)
     public String showLoginPage(final Model model) {
     	return ApplicationUtility.forwardBasedOnSessionExisting(
-    			isWebApplication, defaultPassword, signInErrMsg, userAccountService, 
-    			model, REDIRECT_HOME);
+    			isWebApplication, defaultPassword, signInErrMsg, 
+    			userAccountService, model, REDIRECT_HOME);
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
@@ -147,8 +151,8 @@ public class ApplicationController implements ViewController {
     @RequestMapping(value = SETTING, method = RequestMethod.GET)
     public String showPageSetting(Model model) {
     	return ApplicationUtility.forwardBasedOnSessionExisting(
-    			isWebApplication, defaultPassword, signInErrMsg, userAccountService, 
-    			model, SETTING);
+    			isWebApplication, defaultPassword, signInErrMsg, 
+    			userAccountService, model, SETTING);
     }
     
 }

@@ -54,35 +54,36 @@
                             <div class="panel-body">
                                 <p>The application provides the following functions:</p>
                                 <ol>
-                                    <li>Upload of one or more data files.</li>
-                                    <li>Running of a causal discovery algorithm.</li>
-                                    <li>Display of causal discovery algorithm results as a graph or downloadable file.</li>
+                                    <li><a href="${path}/data/upload">Upload of one or more data files </a> and 
+                                    	<a href="${path}/data">view a list of them</a>.</li>
+                                    <li>Running of a <a href="${path}/algorithm/pcStable">PC-Stable</a> and <a href="${path}/algorithm/ges">GES</a> causal discovery algorithm.</li>
+                                    <li><a href="${path}/results">Display of causal discovery algorithm results as a graph or downloadable file</a>.</li>
                                 </ol>
                                 <div class="col-sm-11">
-                                    <h4 class="page-header">Upload of Data</h4>
+                                    <h4 class="page-header"><a href="${path}/data/upload">Upload</a> and <a href="${path}/data">View of Data</a></h4>
                                     <p>
-                                        Users can upload multiple files to the server using a file browser or by drag-and-drop.
+                                        Users can <a href="${path}/data/upload">upload multiple files</a> to the server using a file browser or by drag-and-drop.
                                         The status bar indicates the progress of file transfer.
                                         The system supports resumable file uploads and detects file corruption using MD5 hashes.
-                                        Users can view a list of uploaded data and optionally delete files on the server.
+                                        Users can <a href="${path}/data">view a list of uploaded data and optionally delete files on the server</a>.
                                     </p>
                                 </div>
                                 <div class="col-sm-11">
-                                    <h4 class="page-header">Run Algorithm</h4>
-                                    <p>A run algorithm wizard guides the user through the following process:</p>
+                                    <h4 class="page-header">Run <a href="${path}/algorithm/pcStable">PC-Stable</a> and <a href="${path}/algorithm/ges">GES</a> Algorithms</h4>
+                                    <p>A run <a href="${path}/algorithm/pcStable">PC-Stable</a> or <a href="${path}/algorithm/ges">GES</a> algorithm wizard guides the user through the following process:</p>
                                     <ol>
                                         <li>Selecting a data file for analysis.</li>
                                         <li>Setting the parameters for the selected algorithm.</li>
                                         <li>Reviewing the parameters prior to running the algorithm.</li>
                                     </ol>
                                     <p>
-                                        The users may go back to any step to change the selected data file or parameters, however, users may not skip any steps.
+                                        The users may go back to any step to change the selected data file or parameters, however, users can not skip any steps.
                                     </p>
                                 </div>
                                 <div class="col-sm-11">
-                                    <h4 class="page-header">Show Results</h4>
+                                    <h4 class="page-header"><a href="${path}/results">Show Results</a></h4>
                                     <p>
-                                        Users can view the results of an analysis as a graph or downloaded file.
+                                        Users can <a href="${path}/results">view the results of an analysis as a graph or downloaded file</a>.
                                         The application has a built in graphing tool to help visualize the output results.
                                         Users can view the graph by clicking on the result's filename.
                                     </p>
