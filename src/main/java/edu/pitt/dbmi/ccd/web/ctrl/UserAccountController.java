@@ -166,7 +166,7 @@ public class UserAccountController implements ViewController {
     }
 
     @RequestMapping(value = USERPROFILE, method = RequestMethod.GET)
-    public String showPageUserProfile(Model model) {
+    public String showPageUserProfile(Model model, WebRequest request) {
     	return ApplicationUtility.forwardBasedOnSessionExisting(
     			isWebApplication, defaultPassword, signInErrMsg, userAccountService, 
     			model, USERPROFILE);
@@ -175,7 +175,8 @@ public class UserAccountController implements ViewController {
     @RequestMapping(value = USERPROFILE, method = RequestMethod.POST)
     public String saveUserProfile(
     		@ModelAttribute("person") Person person, 
-    		Model model) {
+    		Model model, 
+    		WebRequest request) {
     	String fwdPage = ApplicationUtility.forwardBasedOnSessionExisting(
     			isWebApplication, defaultPassword, signInErrMsg, userAccountService, 
     			model, USERPROFILE);
@@ -227,8 +228,9 @@ public class UserAccountController implements ViewController {
         }
 
         ApplicationUtility.addAppUser2Model(isWebApplication, userAccount, model);
-
-    	return REDIRECT_USERPROFILE;
+        request.setAttribute("successMsg", "Save your user profile successfully!", WebRequest.SCOPE_SESSION);
+        
+        return REDIRECT_USERPROFILE;
     }
     
 }

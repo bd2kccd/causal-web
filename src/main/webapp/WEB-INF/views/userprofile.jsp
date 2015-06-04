@@ -60,17 +60,18 @@
 	                                </form:form>
 	                            </div>
 	                            <div class="panel-body">
-	                                <div class="col-sm-11">
+	                                <div class="col-sm-12">
                  						<div class="row">
 			                                <c:if test="${not empty successMsg}">
 			                                    <div class="alert alert-success text-center" role="alert">${successMsg}</div>
+			                                	<c:remove var="successMsg" scope="session" />
 			                                </c:if>
 			                            </div>
 	                                	<div class="row">
 	                                		<div class="col-md-3">
 	                                			<b>First Name:</b>
 	                                		</div>
-	                                		<div class="col-md-8">
+	                                		<div class="col-md-9">
 	                                			${appUser.person.firstName}
 	                                		</div>
 	                                	</div>
@@ -78,7 +79,7 @@
 	                                		<div class="col-md-3">
 	                                			<b>Last Name:</b>
 	                                		</div>
-	                                		<div class="col-md-8">
+	                                		<div class="col-md-9">
 	                                			${appUser.person.lastName}
 	                                		</div>
 	                                	</div>
@@ -86,7 +87,7 @@
 	                                		<div class="col-md-3">
 	                                			<b>E-mail:</b>
 	                                		</div>
-	                                		<div class="col-md-8">
+	                                		<div class="col-md-9">
 	                                			${appUser.person.email}
 	                                		</div>
 	                                	</div>
@@ -94,7 +95,7 @@
 	                                		<div class="col-md-3">
 	                                			<b>Workspace:</b>
 	                                		</div>
-	                                		<div class="col-md-8">
+	                                		<div class="col-md-9">
 	                                			${appUser.person.workspaceDirectory}
 	                                		</div>
 	                                	</div>
@@ -102,7 +103,7 @@
 	                                		<div class="col-md-3">
 	                                			<b>Account Created:</b>
 	                                		</div>
-	                                		<div class="col-md-8">
+	                                		<div class="col-md-9">
 	                                			${appUser.createdDate}
 	                                		</div>
 	                                	</div>
@@ -110,7 +111,7 @@
 	                                		<div class="col-md-3">
 	                                			<b>Last Login:</b>
 	                                		</div>
-	                                		<div class="col-md-8">
+	                                		<div class="col-md-9">
 	                                			${appUser.lastLoginDate}
 	                                		</div>
 	                                	</div>
