@@ -16,37 +16,38 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.model;
+package edu.pitt.dbmi.ccd.web;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  *
- * Apr 4, 2015 8:04:05 AM
+ * May 18, 2015 1:05:35 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class PcStableRunInfo extends AlgorithmRunInfo {
+public class FileUtility {
 
-    protected Double alpha;
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss");
 
-    protected Integer depth;
-
-    public PcStableRunInfo() {
+    private FileUtility() {
     }
 
-    public Double getAlpha() {
-        return alpha;
+    public static String formatDate(Date date) {
+        return DATE_FORMAT.format(date);
     }
 
-    public void setAlpha(Double alpha) {
-        this.alpha = alpha;
-    }
+    public static String humanReadableSize(long fileSize, boolean si) {
+        int unit = si ? 1000 : 1024;
+        if (fileSize < unit) {
+            return fileSize + " B";
+        }
+        int exp = (int) (Math.log(fileSize) / Math.log(unit));
+        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
 
-    public Integer getDepth() {
-        return depth;
-    }
-
-    public void setDepth(Integer depth) {
-        this.depth = depth;
+        return String.format("%.2f %sB", fileSize / Math.pow(unit, exp), pre);
     }
 
 }

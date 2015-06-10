@@ -18,22 +18,21 @@
         <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css" />
         <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap-theme.min.css" />
         <link rel="stylesheet" href="css/styles.css" />
-        <link rel="stylesheet" href="css/setup.css" />
+        <style>
+            body {
+                padding-top: 90px;
+            }
+            .nextBtn{}
+            .setup-content{}
+        </style>
     </head>
     <body>
         <div class="container">
             <div class="row">
                 <div class="col-md-6 col-md-offset-3">
-					<table>
-						<tr>
-							<td align="center"  valign="middle"><img alt="CCD Logo" src="img/ccd_logo.png" width="100" height="100" /></td>
-							<td align="center" valign="middle"><h3>Center for Casual Discovery</h3></td>
-						</tr>
-					</table>
-					<div class="row">&nbsp;</div>
                     <div class="panel panel-pitt">
                         <div class="panel-heading">
-                            <h3 class="panel-title">Please Provide Your Information</h3>
+                            <h3 class="panel-title">User Information</h3>
                         </div>
                         <div class="panel-body">
                             <div class="row">
@@ -46,24 +45,19 @@
                                     <form:form id="userSetup" method="POST" action="${path}/setup" modelAttribute="person" role="form" >
                                         <div class="form-group">
                                             <label for="firstName">First Name:</label>
-                                            <form:input path="firstName" id="firstName" class="form-control auto-hint" type="text" value="${person.firstName}" required="required" autofocus="autofocus" 
-                                            	title="" ></form:input>
+                                            <form:input path="firstName" id="firstName" class="form-control" type="text" value="${person.firstName}" required="required" autofocus="autofocus" />
                                         </div>
                                         <div class="form-group">
                                             <label for="lastName">Last Name:</label>
-                                            <form:input path="lastName" id="lastName" class="form-control auto-hint" type="text" value="${person.lastName}" required="required" 
-                                            	title="Last name is a name that your teacher calls you i.e. (Mr.) Doe." ></form:input>
+                                            <form:input path="lastName" id="lastName" class="form-control" type="text" value="${person.lastName}" required="required" />
                                         </div>
                                         <div class="form-group">
                                             <label for="email">Email:</label>
-                                            <form:input path="email" id="email" class="form-control auto-hint" type="text" value="${person.email}" 
-                                            	required="required"
-                                            	title="Email (address) is your electronic post office box i.e. john@doe.net." ></form:input>
+                                            <form:input path="email" id="email" class="form-control" type="text" value="${person.email}" required="required" />
                                         </div>
                                         <div class="form-group">
                                             <label for="workspaceDirectory">Workspace Directory:</label>
-                                            <form:input path="workspaceDirectory" id="workspaceDirectory" class="form-control auto-hint" type="text" value="${person.workspaceDirectory}" required="required" 
-                                            	title="Workspace directory is a folder that you want to instill this application on." ></form:input>
+                                            <form:input path="workspaceDirectory" id="workspaceDirectory" class="form-control" type="text" value="${person.workspaceDirectory}" required="required" />
                                         </div>
                                         <div class="form-group">
                                             <input type="submit" class="btn btn-lg btn-block btn-pitt" value="Submit">
@@ -75,14 +69,11 @@
                     </div>
                 </div>
             </div>
-			<%@include file="includes/footer.jspf" %>
-<!-- 
             <div class="row">
                 <div class="text-center">
                     <p class="text-muted">Copyright &copy; <fmt:formatDate value="${date}" pattern="yyyy" /> ${ccd.copyright}</p>
                 </div>
             </div>
- -->
         </div>
         <script src="vendor/jquery/jquery-2.1.3.min.js"></script>
         <script src="vendor/bootstrap/js/bootstrap.min.js"></script>

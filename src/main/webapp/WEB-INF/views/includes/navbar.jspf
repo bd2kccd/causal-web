@@ -5,13 +5,11 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu">
                             <li>
-                                <a href="${path}/userprofile"><i class="fa fa-user fa-fw"></i> User Profile</a>
+                                <a href="#"><i class="fa fa-user fa-fw"></i> User Profile</a>
                             </li>
-<!-- 
                             <li>
-                                <a href="${path}/setting"><i class="fa fa-gear fa-fw"></i> Settings</a>
+                                <a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>
                             </li>
- -->
                             <c:if test="${appUser.webUser}">
                                 <li class="divider"></li>
                                 <li>

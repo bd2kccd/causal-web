@@ -19,7 +19,6 @@
 package edu.pitt.dbmi.ccd.web.conf;
 
 import edu.pitt.dbmi.ccd.db.CCDDatabaseApplication;
-
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;

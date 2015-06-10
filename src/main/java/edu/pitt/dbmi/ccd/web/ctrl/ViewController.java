@@ -28,10 +28,6 @@ public interface ViewController {
 
     public static final String LOGIN = "login";
 
-    public static final String LOGOUT = "logout";
-    
-    public static final String NOT_FOUND = "404";
-    
     public static final String HOME = "home";
 
     public static final String REDIRECT_HOME = "redirect:/home";
@@ -41,49 +37,5 @@ public interface ViewController {
     public static final String SETUP = "setup";
 
     public static final String REDIRECT_SETUP = "redirect:/setup";
-    
-    public static final String REGISTRATION = "registration";
-
-    public static final String REDIRECT_REGISTRATION = "redirect:/registration";
-
-    public static final String ERR0R = "err0r";
-    
-    public static final String REDIRECT_ERR0R = "redirect:/err0r";
-    
-    public static final String USERPROFILE = "userprofile";
-    
-    public static final String REDIRECT_USERPROFILE = "redirect:/userprofile";
-    
-    public static final String SETTING = "setting";
-    
-    //Data & Result Management
-    public static final String DATASET = "dataset";
-
-    public static final String REDIRECT_DATASET = "redirect:/data";
-    
-    public static final String UPLOAD_DATASET = "upload";
-
-    public static final String DATAUPLOAD = "dataUpload";
-    
-    public static final String DELETE = "delete";
-    
-    public static final String UPLOAD_CHUNK = "upload/chunk";
-
-    public static final String RUNRESULTS = "runResults";
-    
-    public static final String REDIRECT_RESULTS = "redirect:/results";
-    
-    public static final String D3GRAPH = "d3graph";
-    
-    public static final String PLOT = "plot";
-    
-    public static final String DOWNLOAD = "download";
-    
-    //Algorithm
-    public static final String PCSTABLE = "pcStable";
-    
-    public static final String GES = "ges";
-
-    public static final String ALGORITHMRUNNING = "algorithmRunning";
 
 }

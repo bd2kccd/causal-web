@@ -20,8 +20,6 @@ package edu.pitt.dbmi.ccd.web.domain;
 
 import org.springframework.context.annotation.Scope;
 
-import edu.pitt.dbmi.ccd.db.entity.Person;
-
 /**
  *
  * May 18, 2015 9:32:20 PM
@@ -31,26 +29,20 @@ import edu.pitt.dbmi.ccd.db.entity.Person;
 @Scope("session")
 public class AppUser {
 
-    private String username;
+    private String name;
 
     private boolean webUser;
-
-	private String createdDate;
-
-    private String lastLoginDate;
-
-    private Person person;
 
     public AppUser() {
     }
 
-    public String getUsername() {
-		return username;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setUsername(String username) {
-		this.username = username;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public boolean isWebUser() {
         return webUser;
@@ -59,29 +51,5 @@ public class AppUser {
     public void setWebUser(boolean webUser) {
         this.webUser = webUser;
     }
-
-	public String getCreatedDate() {
-		return createdDate;
-	}
-
-	public void setCreatedDate(String createdDate) {
-		this.createdDate = createdDate;
-	}
-
-	public String getLastLoginDate() {
-		return lastLoginDate;
-	}
-
-	public void setLastLoginDate(String lastLoginDate) {
-		this.lastLoginDate = lastLoginDate;
-	}
-
-	public Person getPerson() {
-		return person;
-	}
-
-	public void setPerson(Person person) {
-		this.person = person;
-	}
 
 }

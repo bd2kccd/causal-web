@@ -21,11 +21,11 @@ $(document).ready(function () {
     $('#userSetup').validate({
         rules: {
             firstName: {
-            	rangelength: [2,24],
+                minlength: 2,
                 required: true
             },
             lastName: {
-            	rangelength: [2,24],
+                minlength: 2,
                 required: true
             },
             email: {
@@ -59,27 +59,4 @@ $(document).ready(function () {
             }
         }
     });
-    
-    //Auto hint functions
-    $('INPUT.auto-hint, TEXTAREA.auto-hint').focus(function(){
-        if($(this).val() == $(this).attr('title')){
-            $(this).val('');
-            $(this).removeClass('auto-hint');
-        }
-    });
-    
-    $('INPUT.auto-hint, TEXTAREA.auto-hint').blur(function(){
-        if($(this).val() == '' && $(this).attr('title') != ''){
-           $(this).val($(this).attr('title'));
-           $(this).addClass('auto-hint');
-        }
-    });
-
-    $('INPUT.auto-hint, TEXTAREA.auto-hint').each(function(){
-        if($(this).attr('title') == ''){ return; }
-        if($(this).val() == ''){ $(this).val($(this).attr('title')); }
-        else { $(this).removeClass('auto-hint'); }
-    });
-    
-    $('#firstName').attr('title','First name is a name that your mother calls you i.e. John.');
 });
