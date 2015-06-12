@@ -2,7 +2,32 @@
                     <div class="sidebar-nav navbar-collapse">
                         <ul class="nav" id="side-menu">
                             <li class="side-logo">
-                                <a href="${path}/home"><img alt="CCD Logo" src="img/ccd_logo.png" width="100" height="100" /></a>
+                                <a href="${path}/home"><img alt="CCD Logo" src="${path}/img/ccd_logo.png" width="100" height="100" /></a>
+                            </li>
+                            <li>
+                                <a href="#"><i class="fa fa-database fa-fw"></i> Data Management<span class="fa arrow"></span></a>
+                                <ul class="nav nav-second-level">
+                                    <li>
+                                        <a href="${path}/data/upload"><i class="fa fa-upload fa-fw"></i>Upload Data</a>
+                                    </li>
+                                    <li>
+                                        <a href="${path}/data"><i class="fa fa-bars fa-fw"></i>Dataset</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#"><i class="fa fa-tasks fa-fw"></i>Causal Discovery<span class="fa arrow"></span></a>
+                                <ul class="nav nav-second-level">
+                                    <li>
+                                        <a href="${path}/algorithm/pcstable"><i class="fa fa-random fa-fw"></i>PC-Stable</a>
+                                    </li>
+                                    <li>
+                                        <a href="${path}/algorithm/ges"><i class="fa fa-random fa-fw"></i>GES</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="${path}/results"><i class="fa fa-edit fa-fw"></i> Run Results</a>
                             </li>
                         </ul>
                     </div>

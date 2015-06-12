@@ -152,6 +152,9 @@ public class ApplicationController implements ViewController {
                 AppUser appUser = new AppUser();
                 appUser.setWebUser(false);
                 appUser.setName(person.getFirstName() + " " + person.getLastName());
+                appUser.setCreatedDate(userAccount.getCreatedDate());
+                appUser.setLastLoginDate(userAccount.getLastLoginDate());
+                appUser.setPerson(person);
                 model.addAttribute("appUser", appUser);
 
                 return REDIRECT_HOME;

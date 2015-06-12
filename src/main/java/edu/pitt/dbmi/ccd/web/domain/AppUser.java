@@ -18,6 +18,8 @@
  */
 package edu.pitt.dbmi.ccd.web.domain;
 
+import edu.pitt.dbmi.ccd.db.entity.Person;
+import java.util.Date;
 import org.springframework.context.annotation.Scope;
 
 /**
@@ -32,6 +34,12 @@ public class AppUser {
     private String name;
 
     private boolean webUser;
+
+    private Date createdDate;
+
+    private Date lastLoginDate;
+
+    private Person person;
 
     public AppUser() {
     }
@@ -50,6 +58,30 @@ public class AppUser {
 
     public void setWebUser(boolean webUser) {
         this.webUser = webUser;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public Date getLastLoginDate() {
+        return lastLoginDate;
+    }
+
+    public void setLastLoginDate(Date lastLoginDate) {
+        this.lastLoginDate = lastLoginDate;
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
     }
 
 }

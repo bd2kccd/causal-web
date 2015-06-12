@@ -20,6 +20,7 @@ package edu.pitt.dbmi.ccd.web.ctrl;
 
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.UserAccountService;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -110,6 +111,14 @@ public class UserAccountController implements ViewController {
             return SETUP;
         }
 
+        AppUser appUser = new AppUser();
+        appUser.setWebUser(false);
+        appUser.setName(person.getFirstName() + " " + person.getLastName());
+        appUser.setCreatedDate(userAccount.getCreatedDate());
+        appUser.setLastLoginDate(userAccount.getLastLoginDate());
+        appUser.setPerson(person);
+        model.addAttribute("appUser", appUser);
+
         return REDIRECT_HOME;
     }
 
@@ -146,4 +155,15 @@ public class UserAccountController implements ViewController {
         return REDIRECT_HOME;
     }
 
+    @RequestMapping(value = USER_PROFILE, method = RequestMethod.GET)
+    public String showUserProfilePage(@ModelAttribute("appUser") AppUser appUser, Model model) {
+        model.addAttribute("person", appUser.getPerson());
+
+        return USER_PROFILE;
+    }
+
+    @RequestMapping(value = USER_PROFILE, method = RequestMethod.POST)
+    public String saveUserProfilePage(@ModelAttribute("person") Person person) {
+        return USER_PROFILE;
+    }
 }

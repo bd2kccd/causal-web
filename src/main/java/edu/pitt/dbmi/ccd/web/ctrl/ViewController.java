@@ -38,4 +38,6 @@ public interface ViewController {
 
     public static final String REDIRECT_SETUP = "redirect:/setup";
 
+    public static final String USER_PROFILE = "userProfile";
+
 }
