@@ -30,7 +30,6 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-6 col-md-offset-3">
-                    <h3>Center for Casual Discovery</h3>
                     <div class="panel panel-pitt">
                         <div class="panel-heading">
                             <h3 class="panel-title">User Information</h3>
@@ -58,13 +57,7 @@
                                         </div>
                                         <div class="form-group">
                                             <label for="workspaceDirectory">Workspace Directory:</label>
-                                            <form:input path="workspaceDirectory"
-                                                        id="workspaceDirectory"
-                                                        class="form-control"
-                                                        type="text"
-                                                        value="${person.workspaceDirectory}"
-                                                        placeholder="Local working directory to host your data and results."
-                                                        required="required" />
+                                            <form:input path="workspaceDirectory" id="workspaceDirectory" class="form-control" type="text" value="${person.workspaceDirectory}" required="required" />
                                         </div>
                                         <div class="form-group">
                                             <input type="submit" class="btn btn-lg btn-block btn-pitt" value="Submit">
@@ -76,7 +69,11 @@
                     </div>
                 </div>
             </div>
-            <%@include file="includes/footer.jspf" %>
+            <div class="row">
+                <div class="text-center">
+                    <p class="text-muted">Copyright &copy; <fmt:formatDate value="${date}" pattern="yyyy" /> ${ccd.copyright}</p>
+                </div>
+            </div>
         </div>
         <script src="vendor/jquery/jquery-2.1.3.min.js"></script>
         <script src="vendor/bootstrap/js/bootstrap.min.js"></script>

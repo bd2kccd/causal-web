@@ -16,11 +16,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.demo.ctrl.algo;
+package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
-import edu.pitt.dbmi.ccd.demo.model.PcStableRunInfo;
-import edu.pitt.dbmi.ccd.demo.service.AlgorithmService;
-import java.io.File;
+import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
+import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.model.PcStableRunInfo;
+import edu.pitt.dbmi.ccd.web.service.AlgorithmService;
+import edu.pitt.dbmi.ccd.web.service.FileInfoService;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -28,41 +32,43 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.SessionAttributes;
 
 /**
  *
  * Apr 4, 2015 8:09:20 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @author Chirayu (Kong) Wongchokprasitti (chw20@pitt.edu)
  */
 @Controller
-@RequestMapping(value = "/algorithm/pcstable")
-public class PcStableController extends AlgorithmController {
+@SessionAttributes("appUser")
+@RequestMapping(value = "/algorithm")
+public class PcStableController extends AlgorithmController implements ViewController {
 
     private final String pcStable;
-
-    private final String cmd;
 
     @Autowired
     private AlgorithmService algorithmService;
 
     @Autowired(required = true)
-    public PcStableController(
-            @Value(value = "#{app.pcStableApp}") String pcStable,
-            @Value(value = "#{app.uploadDir}") String uploadDirectory,
-            @Value(value = "#{app.libDir}") String libDirectory,
-            @Value(value = "#{app.outputDir}") String outputDirectory,
-            @Value(value = "#{app.tempDir}") String tempDirectory,
-            @Value(value = "#{app.algoJar}") String algorithmJar) {
-        super(uploadDirectory, libDirectory, outputDirectory, tempDirectory, algorithmJar);
-        this.pcStable = pcStable;
+    private FileInfoService fileInfoService;
 
-        String classPath = libDirectory + File.separator + algorithmJar;
-        this.cmd = String.format("java -cp %s %s", classPath, pcStable);
+    @Autowired(required = true)
+    public PcStableController(
+            @Value("${app.pcStableApp:edu.pitt.dbmi.ccd.algorithm.tetrad.PcStableApp}") String pcStable,
+            @Value("${app.uploadDir}") String uploadDirectory,
+            @Value("${app.libDir}") String libDirectory,
+            @Value("${app.outputDir}") String outputDirectory,
+            @Value("${app.tempDir}") String tempDirectory,
+            @Value("${app.algoJar:ccd-algorithm-1.0-SNAPSHOT.jar}") String algorithmJar) {
+        super(uploadDirectory, libDirectory, outputDirectory, tempDirectory,
+                algorithmJar);
+        this.pcStable = pcStable;
     }
 
-    @RequestMapping(method = RequestMethod.GET)
-    public String showPcStableView(Model model) {
+    @RequestMapping(value = PCSTABLE, method = RequestMethod.GET)
+    public String showPcStableView(Model model, @ModelAttribute("appUser") AppUser appUser) {
         PcStableRunInfo info = new PcStableRunInfo();
         info.setAlpha(0.0001D);
         info.setDepth(3);
@@ -70,27 +76,28 @@ public class PcStableController extends AlgorithmController {
         info.setVerbose(Boolean.TRUE);
         model.addAttribute("pcStableRunInfo", info);
 
-        model.addAttribute("dataset", directoryFileListing(uploadDirectory));
+        String baseDir = appUser.getPerson().getWorkspaceDirectory();
+        model.addAttribute("dataset", directoryFileListing(Paths.get(baseDir, uploadDirectory)));
 
-        return "pcStable";
+        return PCSTABLE;
     }
 
-    @RequestMapping(method = RequestMethod.POST)
-    public String runPcStable(
-            Model model,
-            @ModelAttribute("pcStableRunInfo") PcStableRunInfo info) throws Exception {
+    @RequestMapping(value = PCSTABLE, method = RequestMethod.POST)
+    public String runPcStable(Model model,
+            @ModelAttribute("pcStableRunInfo") PcStableRunInfo info,
+            @ModelAttribute("appUser") AppUser appUser) {
+
+        String baseDir = appUser.getPerson().getWorkspaceDirectory();
+        Path classPath = Paths.get(baseDir, libDirectory, algorithmJar);
+        String cmd = String.format("java -cp %s %s", classPath.toString(), pcStable);
         StringBuilder cmdBuilder = new StringBuilder(cmd);
 
+        Path dataset = Paths.get(baseDir, uploadDirectory, info.getDataset());
         cmdBuilder.append(" --data ");
-        cmdBuilder.append(uploadDirectory);
-        cmdBuilder.append(File.separator);
-        cmdBuilder.append(info.getDataset());
+        cmdBuilder.append(dataset.toString());
 
         // continuous variables
         cmdBuilder.append(" --continuous");
-//        if (info.getContinuous()) {
-//            cmdBuilder.append(" --continuous");
-//        }
 
         cmdBuilder.append(" --alpha ");
         cmdBuilder.append(info.getAlpha());
@@ -107,11 +114,15 @@ public class PcStableController extends AlgorithmController {
         cmdBuilder.append(fileName);
 
         // run the algorithm
-        algorithmService.runAlgorithm(cmdBuilder.toString(), fileName);
+        try {
+            algorithmService.runAlgorithm(cmdBuilder.toString(), fileName, baseDir);
+        } catch (Exception exception) {
+            exception.printStackTrace(System.err);
+        }
 
         model.addAttribute("title", "PC-Stable is Running");
 
-        return "algorithmRunning";
+        return ALGORITHM_RUNNING;
     }
 
 }

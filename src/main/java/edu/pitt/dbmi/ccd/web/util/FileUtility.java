@@ -16,14 +16,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.demo.util;
+package edu.pitt.dbmi.ccd.web.util;
 
-import edu.pitt.dbmi.ccd.demo.model.FileInfo;
+import edu.pitt.dbmi.ccd.web.model.FileInfo;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -61,11 +60,11 @@ public class FileUtility {
         return String.format("%.2f %sB", fileSize / Math.pow(unit, exp), pre);
     }
 
-    public static List<FileInfo> getFileListing(String directory) {
+    public static List<FileInfo> getFileListing(Path directory) {
         List<FileInfo> list = new LinkedList<>();
 
         List<FileInfoMeta> fileMeta = new LinkedList<>();
-        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(directory))) {
+        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(directory)) {
             for (Path path : directoryStream) {
                 BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
                 FileInfoMeta info = new FileInfoMeta();

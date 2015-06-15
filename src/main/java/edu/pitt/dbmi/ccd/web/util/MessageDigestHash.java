@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.demo.util;
+package edu.pitt.dbmi.ccd.web.util;
 
 import java.io.IOException;
 import java.io.InputStream;

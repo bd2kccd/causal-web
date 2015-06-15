@@ -16,8 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-
-package edu.pitt.dbmi.ccd.demo.model;
+package edu.pitt.dbmi.ccd.web.model;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,25 +27,25 @@ import org.springframework.web.multipart.MultipartFile;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class ResumableChunk {
-    
+
     private long resumableChunkSize;
-    
+
     private long resumableTotalSize;
-    
+
     private long resumableCurrentChunkSize;
-    
+
     private int resumableChunkNumber;
-    
+
     private int resumableTotalChunks;
-    
+
     private String resumableIdentifier;
-    
+
     private String resumableFilename;
-    
+
     private String resumableRelativePath;
-    
+
     private String resumableType;
-    
+
     private MultipartFile file;
 
     public ResumableChunk() {

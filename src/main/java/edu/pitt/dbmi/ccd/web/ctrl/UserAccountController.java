@@ -22,6 +22,7 @@ import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.UserAccountService;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -56,6 +57,12 @@ public class UserAccountController implements ViewController {
 
     private final String signInErrMsg;
 
+    protected final String uploadDir;
+
+    protected final String outputDir;
+
+    protected final String tmpDir;
+
     private final UserAccountService userAccountService;
 
     private final DefaultPasswordService passwordService;
@@ -65,11 +72,17 @@ public class UserAccountController implements ViewController {
             @Value("${app.default.pwd:password123}") String defaultPassword,
             @Value("${app.setup.error:Unable to setup initial settings.}") String setupErrMsg,
             @Value("${app.login.error:Unable to setup initial settings.}") String signInErrMsg,
+            @Value("${app.uploadDir:upload}") String uploadDir,
+            @Value("${app.outputDir:output}") String outputDir,
+            @Value("${app.tempDir:tmp}") String tmpDir,
             UserAccountService userAccountService,
             DefaultPasswordService passwordService) {
         this.defaultPassword = defaultPassword;
         this.setupErrMsg = setupErrMsg;
         this.signInErrMsg = signInErrMsg;
+        this.uploadDir = uploadDir;
+        this.outputDir = outputDir;
+        this.tmpDir = tmpDir;
         this.userAccountService = userAccountService;
         this.passwordService = passwordService;
     }
@@ -119,6 +132,23 @@ public class UserAccountController implements ViewController {
         appUser.setPerson(person);
         model.addAttribute("appUser", appUser);
 
+        // creating user local directory.  Still need to handle errors properly.
+        String baseDir = person.getWorkspaceDirectory();
+        Path[] directories = {
+            Paths.get(baseDir, uploadDir),
+            Paths.get(baseDir, outputDir),
+            Paths.get(baseDir, tmpDir)
+        };
+        for (Path directory : directories) {
+            if (Files.notExists(directory)) {
+                try {
+                    Files.createDirectories(directory);
+                } catch (IOException exception) {
+                    exception.printStackTrace(System.err);
+                }
+            }
+        }
+
         return REDIRECT_HOME;
     }
 
@@ -152,18 +182,17 @@ public class UserAccountController implements ViewController {
             return LOGIN;
         }
 
+        Person person = userAccount.getPerson();
+
+        AppUser appUser = new AppUser();
+        appUser.setWebUser(false);
+        appUser.setName(person.getFirstName() + " " + person.getLastName());
+        appUser.setCreatedDate(userAccount.getCreatedDate());
+        appUser.setLastLoginDate(userAccount.getLastLoginDate());
+        appUser.setPerson(person);
+        model.addAttribute("appUser", appUser);
+
         return REDIRECT_HOME;
     }
 
-    @RequestMapping(value = USER_PROFILE, method = RequestMethod.GET)
-    public String showUserProfilePage(@ModelAttribute("appUser") AppUser appUser, Model model) {
-        model.addAttribute("person", appUser.getPerson());
-
-        return USER_PROFILE;
-    }
-
-    @RequestMapping(value = USER_PROFILE, method = RequestMethod.POST)
-    public String saveUserProfilePage(@ModelAttribute("person") Person person) {
-        return USER_PROFILE;
-    }
 }

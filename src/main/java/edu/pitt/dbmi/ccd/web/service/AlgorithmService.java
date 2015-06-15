@@ -16,9 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.demo.service;
+package edu.pitt.dbmi.ccd.web.service;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,28 +44,20 @@ public class AlgorithmService {
 
     @Autowired(required = true)
     public AlgorithmService(
-            @Value(value = "#{app.tempDir}") String tempDirectory,
-            @Value(value = "#{app.outputDir}") String outputDirectory) {
+            @Value("${app.tempDir}") String tempDirectory,
+            @Value("${app.outputDir}") String outputDirectory) {
         this.tempDirectory = tempDirectory;
         this.outputDirectory = outputDirectory;
-
-        Path outDir = Paths.get(outputDirectory);
-        if (Files.notExists(outDir)) {
-            try {
-                Files.createDirectories(outDir);
-            } catch (IOException exception) {
-                exception.printStackTrace(System.err);
-            }
-        }
     }
 
     @Async
-    public Future<Void> runAlgorithm(String cmd, String fileName) throws Exception {
-        Process process = Runtime.getRuntime().exec(cmd + " --out " + tempDirectory);
+    public Future<Void> runAlgorithm(String cmd, String fileName, String baseDirectory) throws Exception {
+        Path workDir = Paths.get(baseDirectory, tempDirectory);
+        Process process = Runtime.getRuntime().exec(cmd + " --out " + workDir.toString());
         process.waitFor();
 
-        Path source = Paths.get(tempDirectory, fileName);
-        Path target = Paths.get(outputDirectory, fileName);
+        Path source = Paths.get(baseDirectory, tempDirectory, fileName);
+        Path target = Paths.get(baseDirectory, outputDirectory, fileName);
         Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
 
         return new AsyncResult<>(null);

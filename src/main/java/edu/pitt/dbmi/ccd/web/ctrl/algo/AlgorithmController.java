@@ -16,14 +16,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.demo.ctrl.algo;
+package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
-import edu.pitt.dbmi.ccd.demo.util.FileUtility;
+import edu.pitt.dbmi.ccd.web.util.FileUtility;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -54,10 +53,10 @@ public abstract class AlgorithmController {
         this.algorithmJar = algorithmJar;
     }
 
-    protected Map<String, String> directoryFileListing(String directory) {
+    protected Map<String, String> directoryFileListing(Path directory) {
         Map<String, String> map = new TreeMap<>();
 
-        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(directory))) {
+        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(directory)) {
             for (Path path : directoryStream) {
                 String key = path.getFileName().toString();
                 String value = String.format(("%s (%s)"),

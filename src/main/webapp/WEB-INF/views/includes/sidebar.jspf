@@ -19,7 +19,7 @@
                                 <a href="#"><i class="fa fa-tasks fa-fw"></i>Causal Discovery<span class="fa arrow"></span></a>
                                 <ul class="nav nav-second-level">
                                     <li>
-                                        <a href="${path}/algorithm/pcstable"><i class="fa fa-random fa-fw"></i>PC-Stable</a>
+                                        <a href="${path}/algorithm/pcStable"><i class="fa fa-random fa-fw"></i>PC-Stable</a>
                                     </li>
                                     <li>
                                         <a href="${path}/algorithm/ges"><i class="fa fa-random fa-fw"></i>GES</a>

@@ -14,12 +14,12 @@
         <title>CCD: Home</title>
         <meta name="description" content="" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css" />
-        <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap-theme.min.css" />
-        <link rel="stylesheet" href="vendor/metismenu/metisMenu.min.css" />
-        <link rel="stylesheet" href="vendor/font_awesome/css/font-awesome.min.css" />
-        <link rel="stylesheet" href="css/styles.css" />
-        <link rel="stylesheet" href="vendor/admin/css/sb-admin-2.css" />
+        <link rel="stylesheet" href="${path}/vendor/bootstrap/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="${path}/vendor/bootstrap/css/bootstrap-theme.min.css" />
+        <link rel="stylesheet" href="${path}/vendor/metismenu/metisMenu.min.css" />
+        <link rel="stylesheet" href="${path}/vendor/font_awesome/css/font-awesome.min.css" />
+        <link rel="stylesheet" href="${path}/vendor/admin/css/sb-admin-2.css" />
+        <link rel="stylesheet" href="${path}/css/styles.css" />
     </head>
     <body>
         <div id="wrapper">
@@ -42,12 +42,12 @@
                         <h1 class="page-header">Welcome ${appUser.name}</h1>
                     </div>
                 </div>
-                <%@include file="includes/footer.jspf" %>
+                <%@include file="includes/footer.jspf"%>
             </div>
         </div>
-        <script src="vendor/jquery/jquery-2.1.3.min.js"></script>
-        <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
-        <script src="vendor/metismenu/metisMenu.min.js"></script>
-        <script src="vendor/admin/js/sb-admin-2.js"></script>
+        <script src="${path}/vendor/jquery/jquery-2.1.3.min.js"></script>
+        <script src="${path}/vendor/bootstrap/js/bootstrap.min.js"></script>
+        <script src="${path}/vendor/metismenu/metisMenu.min.js"></script>
+        <script src="${path}/vendor/admin/js/sb-admin-2.js"></script>
     </body>
 </html>
