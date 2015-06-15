@@ -19,8 +19,9 @@
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
 import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
+import static edu.pitt.dbmi.ccd.web.ctrl.ViewController.ALGORITHM_RUNNING;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.model.PcStableRunInfo;
+import edu.pitt.dbmi.ccd.web.model.GesRunInfo;
 import edu.pitt.dbmi.ccd.web.service.AlgorithmService;
 import edu.pitt.dbmi.ccd.web.service.FileInfoService;
 import java.nio.file.Path;
@@ -36,17 +37,16 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 
 /**
  *
- * Apr 4, 2015 8:09:20 AM
+ * Jun 15, 2015 9:01:24 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
- * @author Chirayu (Kong) Wongchokprasitti (chw20@pitt.edu)
  */
 @Controller
 @SessionAttributes("appUser")
-@RequestMapping(value = "/algorithm/pcStable")
-public class PcStableController extends AlgorithmController implements ViewController {
+@RequestMapping(value = "/algorithm/ges")
+public class GesController extends AlgorithmController implements ViewController {
 
-    private final String pcStable;
+    private final String ges;
 
     @Autowired
     private AlgorithmService algorithmService;
@@ -55,41 +55,40 @@ public class PcStableController extends AlgorithmController implements ViewContr
     private FileInfoService fileInfoService;
 
     @Autowired(required = true)
-    public PcStableController(
-            @Value("${app.pcStableApp:edu.pitt.dbmi.ccd.algorithm.tetrad.PcStableApp}") String pcStable,
+    public GesController(
+            @Value("${app.gesApp:edu.pitt.dbmi.ccd.algorithm.tetrad.GesApp}") String ges,
             @Value("${app.uploadDir}") String uploadDirectory,
             @Value("${app.libDir}") String libDirectory,
             @Value("${app.outputDir}") String outputDirectory,
             @Value("${app.tempDir}") String tempDirectory,
             @Value("${app.algoJar:ccd-algorithm-1.0-SNAPSHOT.jar}") String algorithmJar) {
-        super(uploadDirectory, libDirectory, outputDirectory, tempDirectory,
-                algorithmJar);
-        this.pcStable = pcStable;
+        super(uploadDirectory, libDirectory, outputDirectory, tempDirectory, algorithmJar);
+        this.ges = ges;
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public String showPcStableView(Model model, @ModelAttribute("appUser") AppUser appUser) {
-        PcStableRunInfo info = new PcStableRunInfo();
-        info.setAlpha(0.0001D);
-        info.setDepth(3);
-        info.setContinuous(Boolean.TRUE);
-        info.setVerbose(Boolean.TRUE);
-        model.addAttribute("pcStableRunInfo", info);
+    public String showGesView(Model model, @ModelAttribute("appUser") AppUser appUser) {
+        GesRunInfo gesRunInfo = new GesRunInfo();
+        gesRunInfo.setExcludeZeroCorrelationEdges(Boolean.TRUE);
+        gesRunInfo.setPenaltyDiscount(2.0);
+        gesRunInfo.setContinuous(Boolean.TRUE);
+        gesRunInfo.setVerbose(Boolean.TRUE);
+        model.addAttribute("gesRunInfo", gesRunInfo);
 
         String baseDir = appUser.getPerson().getWorkspaceDirectory();
         model.addAttribute("dataset", directoryFileListing(Paths.get(baseDir, uploadDirectory)));
 
-        return PCSTABLE;
+        return GES;
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public String runPcStable(Model model,
-            @ModelAttribute("pcStableRunInfo") PcStableRunInfo info,
+    public String runGes(Model model,
+            @ModelAttribute("gesRunInfo") GesRunInfo info,
             @ModelAttribute("appUser") AppUser appUser) {
 
         String baseDir = appUser.getPerson().getWorkspaceDirectory();
         Path classPath = Paths.get(baseDir, libDirectory, algorithmJar);
-        String cmd = String.format("java -cp %s %s", classPath.toString(), pcStable);
+        String cmd = String.format("java -cp %s %s", classPath.toString(), ges);
         StringBuilder cmdBuilder = new StringBuilder(cmd);
 
         Path dataset = Paths.get(baseDir, uploadDirectory, info.getDataset());
@@ -99,17 +98,18 @@ public class PcStableController extends AlgorithmController implements ViewContr
         // continuous variables
         cmdBuilder.append(" --continuous");
 
-        cmdBuilder.append(" --alpha ");
-        cmdBuilder.append(info.getAlpha());
+        cmdBuilder.append(" --penalty-discount ");
+        cmdBuilder.append(info.getPenaltyDiscount());
 
-        cmdBuilder.append(" --depth ");
-        cmdBuilder.append(info.getDepth());
+        if (info.getExcludeZeroCorrelationEdges()) {
+            cmdBuilder.append(" --exclude-zero-corr-edge");
+        }
 
         if (info.getVerbose()) {
             cmdBuilder.append(" --verbose");
         }
 
-        String fileName = String.format("pc-stable_%s_%d.txt", info.getDataset(), System.currentTimeMillis());
+        String fileName = String.format("ges_%s_%d.txt", info.getDataset(), System.currentTimeMillis());
         cmdBuilder.append(" --fileName ");
         cmdBuilder.append(fileName);
 
@@ -120,7 +120,7 @@ public class PcStableController extends AlgorithmController implements ViewContr
             exception.printStackTrace(System.err);
         }
 
-        model.addAttribute("title", "PC-Stable is Running");
+        model.addAttribute("title", "GES is Running");
 
         return ALGORITHM_RUNNING;
     }

@@ -3,10 +3,9 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>Page Not Found</title>
+        <title>CCD: Page Not Found</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
-
             * {
                 line-height: 1.2;
                 margin: 0;
@@ -50,7 +49,6 @@
                 }
 
             }
-
         </style>
     </head>
     <body>

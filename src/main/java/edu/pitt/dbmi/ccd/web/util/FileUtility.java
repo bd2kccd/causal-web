@@ -40,7 +40,7 @@ import java.util.List;
  */
 public class FileUtility {
 
-    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss");
+    public static final DateFormat DATE_FORMAT = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss");
 
     private FileUtility() {
     }

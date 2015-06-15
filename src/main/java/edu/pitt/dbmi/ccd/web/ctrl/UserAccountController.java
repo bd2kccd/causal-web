@@ -21,7 +21,9 @@ package edu.pitt.dbmi.ccd.web.ctrl;
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.service.PersonService;
 import edu.pitt.dbmi.ccd.web.service.UserAccountService;
+import edu.pitt.dbmi.ccd.web.util.AppUserFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -65,6 +67,8 @@ public class UserAccountController implements ViewController {
 
     private final UserAccountService userAccountService;
 
+    private final PersonService personService;
+
     private final DefaultPasswordService passwordService;
 
     @Autowired(required = true)
@@ -76,6 +80,7 @@ public class UserAccountController implements ViewController {
             @Value("${app.outputDir:output}") String outputDir,
             @Value("${app.tempDir:tmp}") String tmpDir,
             UserAccountService userAccountService,
+            PersonService personService,
             DefaultPasswordService passwordService) {
         this.defaultPassword = defaultPassword;
         this.setupErrMsg = setupErrMsg;
@@ -84,6 +89,7 @@ public class UserAccountController implements ViewController {
         this.outputDir = outputDir;
         this.tmpDir = tmpDir;
         this.userAccountService = userAccountService;
+        this.personService = personService;
         this.passwordService = passwordService;
     }
 
@@ -124,14 +130,7 @@ public class UserAccountController implements ViewController {
             return SETUP;
         }
 
-        AppUser appUser = new AppUser();
-        appUser.setWebUser(false);
-        appUser.setName(person.getFirstName() + " " + person.getLastName());
-        appUser.setCreatedDate(userAccount.getCreatedDate());
-        appUser.setLastLoginDate(userAccount.getLastLoginDate());
-        appUser.setPerson(person);
-        model.addAttribute("appUser", appUser);
-
+//        model.addAttribute("appUser", AppUserFactory.createAppUser(userAccount, false));
         // creating user local directory.  Still need to handle errors properly.
         String baseDir = person.getWorkspaceDirectory();
         Path[] directories = {
@@ -149,7 +148,7 @@ public class UserAccountController implements ViewController {
             }
         }
 
-        return REDIRECT_HOME;
+        return REDIRECT_LOGIN;
     }
 
     @RequestMapping(value = "/registration", method = RequestMethod.POST)
@@ -182,17 +181,31 @@ public class UserAccountController implements ViewController {
             return LOGIN;
         }
 
-        Person person = userAccount.getPerson();
-
-        AppUser appUser = new AppUser();
-        appUser.setWebUser(false);
-        appUser.setName(person.getFirstName() + " " + person.getLastName());
-        appUser.setCreatedDate(userAccount.getCreatedDate());
-        appUser.setLastLoginDate(userAccount.getLastLoginDate());
-        appUser.setPerson(person);
-        model.addAttribute("appUser", appUser);
+        model.addAttribute("appUser", AppUserFactory.createAppUser(userAccount, false));
 
         return REDIRECT_HOME;
+    }
+
+    @RequestMapping(value = USER_PROFILE, method = RequestMethod.GET)
+    public String showPageUserProfile(@ModelAttribute("appUser") AppUser appUser, Model model) {
+        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+        model.addAttribute("person", userAccount.getPerson());
+
+        return USER_PROFILE;
+    }
+
+    @RequestMapping(value = USER_PROFILE, method = RequestMethod.POST)
+    public String saveUserProfile(
+            @ModelAttribute("person") Person person,
+            @ModelAttribute("appUser") AppUser appUser,
+            Model model) {
+        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+        userAccount.setPerson(person);
+        userAccountService.save(userAccount);
+
+        model.addAttribute("appUser", AppUserFactory.createAppUser(userAccount, false));
+
+        return REDIRECT_USER_PROFILE;
     }
 
 }

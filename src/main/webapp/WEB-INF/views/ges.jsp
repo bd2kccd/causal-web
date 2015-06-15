@@ -12,7 +12,7 @@
     <head>
         <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-        <title>CCD: PC-Stable</title>
+        <title>CCD: GES</title>
         <meta name="description" content="" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="stylesheet" href="${path}/vendor/bootstrap/css/bootstrap.min.css" />
@@ -42,7 +42,7 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h1 class="page-header">PC-Stable</h1>
+                        <h1 class="page-header">GES</h1>
                     </div>
                 </div>
                 <div class="row">
@@ -67,7 +67,7 @@
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
-                        <form:form method="POST" action="" modelAttribute="pcStableRunInfo" role="form" >
+                        <form:form method="POST" action="" modelAttribute="gesRunInfo" role="form" >
                             <div class="row setup-content" id="step-1">
                                 <div class="col-xs-12">
                                     <div class="col-md-12">
@@ -78,7 +78,7 @@
                                         <div class="form-group">
                                             <div class="checkbox">
                                                 <label for="continuous" class="control-label">
-                                                    <form:checkbox path="continuous" id="continuous" ng-model="continuous" ng-init="continuous=${pcStableRunInfo.continuous}" />
+                                                    <form:checkbox path="continuous" id="continuous" ng-model="continuous" ng-init="continuous=${gesRunInfo.continuous}" />
                                                     Continuous Variables
                                                 </label>
                                             </div>
@@ -92,17 +92,21 @@
                                     <div class="col-md-12">
                                         <h3> Step 2: Algorithm Parameters</h3>
                                         <div class="form-group">
-                                            <label for="alpha" class="control-label">Alpha</label>
-                                            <form:input path="alpha" id="alpha" maxlength="10" type="text" required="required" class="form-control" placeholder="Alpha" ng-model="alpha" ng-init="alpha=${pcStableRunInfo.alpha}" />
+                                            <label for="penaltyDiscount" class="control-label">Penalty Discount</label>
+                                            <form:input path="penaltyDiscount" id="penaltyDiscount" maxlength="10" type="text" required="required" class="form-control" placeholder="Penalty Discount" ng-model="penaltyDiscount" ng-init="penaltyDiscount=${gesRunInfo.penaltyDiscount}" />
                                         </div>
                                         <div class="form-group">
-                                            <label for="depth" class="control-label">Search Depth</label>
-                                            <form:input path="depth" id="depth" maxlength="10" type="text" required="required" class="form-control" placeholder="Depth" ng-model="depth" ng-init="depth=${pcStableRunInfo.depth}" />
+                                            <div class="checkbox">
+                                                <label for="excludeZeroCorrelationEdges" class="control-label">
+                                                    <form:checkbox path="excludeZeroCorrelationEdges" id="excludeZeroCorrelationEdges" ng-model="excludeZeroCorrelationEdges" ng-init="excludeZeroCorrelationEdges=${gesRunInfo.excludeZeroCorrelationEdges}" />
+                                                    Exclude Zero Correlation Edges
+                                                </label>
+                                            </div>
                                         </div>
                                         <div class="form-group">
                                             <div class="checkbox">
                                                 <label for="verbose" class="control-label">
-                                                    <form:checkbox path="verbose" id="verbose" ng-model="verbose" ng-init="verbose=${pcStableRunInfo.verbose}" />
+                                                    <form:checkbox path="verbose" id="verbose" ng-model="verbose" ng-init="verbose=${gesRunInfo.verbose}" />
                                                     Verbose
                                                 </label>
                                             </div>
@@ -122,7 +126,7 @@
                                                     <table class="table table-striped">
                                                         <tbody>
                                                             <tr>
-                                                                <td class="col-md-2">Dataset:</td>
+                                                                <td class="col-md-3">Dataset:</td>
                                                                 <td ng-bind="dataset"></td>
                                                             </tr>
                                                             <tr>
@@ -130,15 +134,15 @@
                                                                 <td ng-bind="continuous"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-2">Alpha:</td>
-                                                                <td ng-bind="alpha"></td>
+                                                                <td class="col-md-3">Penalty Discount:</td>
+                                                                <td ng-bind="penaltyDiscount"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-2">Search Depth:</td>
-                                                                <td ng-bind="depth"></td>
+                                                                <td class="col-md-3">Exclude Zero Correlation Edges</td>
+                                                                <td ng-bind="excludeZeroCorrelationEdges"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-2">Verbose:</td>
+                                                                <td class="col-md-3">Verbose:</td>
                                                                 <td ng-bind="verbose"></td>
                                                             </tr>
                                                         </tbody>

@@ -31,9 +31,7 @@ import org.springframework.context.annotation.Scope;
 @Scope("session")
 public class AppUser {
 
-    private String name;
-
-    private boolean webUser;
+    private String username;
 
     private Date createdDate;
 
@@ -41,23 +39,17 @@ public class AppUser {
 
     private Person person;
 
+    private boolean webUser;
+
     public AppUser() {
     }
 
-    public String getName() {
-        return name;
+    public String getUsername() {
+        return username;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public boolean isWebUser() {
-        return webUser;
-    }
-
-    public void setWebUser(boolean webUser) {
-        this.webUser = webUser;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public Date getCreatedDate() {
@@ -82,6 +74,14 @@ public class AppUser {
 
     public void setPerson(Person person) {
         this.person = person;
+    }
+
+    public boolean isWebUser() {
+        return webUser;
+    }
+
+    public void setWebUser(boolean webUser) {
+        this.webUser = webUser;
     }
 
 }

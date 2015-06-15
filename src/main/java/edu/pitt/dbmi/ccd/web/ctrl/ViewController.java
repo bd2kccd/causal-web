@@ -38,12 +38,24 @@ public interface ViewController {
 
     public static final String REDIRECT_SETUP = "redirect:/setup";
 
+    public static final String USER_PROFILE = "userProfile";
+
+    public static final String REDIRECT_USER_PROFILE = "redirect:/userProfile";
+
     public static final String DATA_UPLOAD = "dataUpload";
 
     public static final String DATASET = "dataset";
 
     public static final String PCSTABLE = "pcStable";
 
+    public static final String GES = "ges";
+
     public static final String ALGORITHM_RUNNING = "algorithmRunning";
+
+    public static final String RUN_RESULTS = "runResults";
+
+    public static final String PLOT = "plot";
+
+    public static final String D3_GRAPH = "d3graph";
 
 }

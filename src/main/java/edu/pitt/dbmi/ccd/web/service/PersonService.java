@@ -18,46 +18,35 @@
  */
 package edu.pitt.dbmi.ccd.web.service;
 
-import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.repository.PersonRepository;
-import edu.pitt.dbmi.ccd.db.repository.UserAccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
- * May 14, 2015 1:58:02 PM
+ * Jun 15, 2015 11:45:34 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @Service
 @Transactional
-public class UserAccountService {
-
-    private final UserAccountRepository userAccountRepository;
+public class PersonService {
 
     private final PersonRepository personRepository;
 
     @Autowired(required = true)
-    public UserAccountService(UserAccountRepository userAccountRepository, PersonRepository personRepository) {
-        this.userAccountRepository = userAccountRepository;
+    public PersonService(PersonRepository personRepository) {
         this.personRepository = personRepository;
     }
 
-    public UserAccount findByUsername(String username) {
-        return userAccountRepository.findByUsername(username);
+    public Person findPerson(Long id) {
+        return personRepository.findOne(id);
     }
 
-    public UserAccount save(UserAccount userAccount) {
-        return createNewUserAccount(userAccount);
-    }
-
-    public UserAccount createNewUserAccount(UserAccount userAccount) {
-        personRepository.save(userAccount.getPerson());
-        userAccountRepository.save(userAccount);
-
-        return userAccount;
+    public Person save(Person person) {
+        return personRepository.save(person);
     }
 
 }

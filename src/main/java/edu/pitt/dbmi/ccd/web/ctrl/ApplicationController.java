@@ -22,6 +22,9 @@ import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.UserAccountService;
+import edu.pitt.dbmi.ccd.web.util.AppUserFactory;
+import edu.pitt.dbmi.ccd.web.util.FileUtility;
+import java.util.Date;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -30,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
@@ -76,7 +80,13 @@ public class ApplicationController implements ViewController {
     }
 
     @RequestMapping(value = HOME, method = RequestMethod.GET)
-    public String goHome(Model model) {
+    public String goHome(@ModelAttribute("appUser") AppUser appUser, Model model) {
+        Person person = appUser.getPerson();
+        String userFullName = person.getFirstName() + " " + person.getLastName();
+
+        model.addAttribute("userFullName", userFullName);
+        model.addAttribute("lastLogin", FileUtility.DATE_FORMAT.format(appUser.getLastLoginDate()));
+
         return HOME;
     }
 
@@ -112,15 +122,7 @@ public class ApplicationController implements ViewController {
         String username = (String) currentUser.getPrincipal();
         UserAccount userAccount = userAccountService.findByUsername(username);
         if (userAccount != null) {
-            Person person = userAccount.getPerson();
-
-            AppUser appUser = new AppUser();
-            appUser.setWebUser(false);
-            appUser.setName(person.getFirstName() + " " + person.getLastName());
-            appUser.setCreatedDate(userAccount.getCreatedDate());
-            appUser.setLastLoginDate(userAccount.getLastLoginDate());
-            appUser.setPerson(person);
-            model.addAttribute("appUser", appUser);
+            model.addAttribute("appUser", AppUserFactory.createAppUser(userAccount, false));
         }
 
         return url;
@@ -150,15 +152,10 @@ public class ApplicationController implements ViewController {
                     return REDIRECT_SETUP;
                 }
 
-                Person person = userAccount.getPerson();
+                userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
+                userAccountService.save(userAccount);
 
-                AppUser appUser = new AppUser();
-                appUser.setWebUser(false);
-                appUser.setName(person.getFirstName() + " " + person.getLastName());
-                appUser.setCreatedDate(userAccount.getCreatedDate());
-                appUser.setLastLoginDate(userAccount.getLastLoginDate());
-                appUser.setPerson(person);
-                model.addAttribute("appUser", appUser);
+                model.addAttribute("appUser", AppUserFactory.createAppUser(userAccount, false));
 
                 return REDIRECT_HOME;
             }

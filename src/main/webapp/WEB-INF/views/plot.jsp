@@ -11,7 +11,7 @@
     <head>
         <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-        <title>CCD: Home</title>
+        <title>CCD: Plot</title>
         <meta name="description" content="" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="stylesheet" href="${path}/vendor/bootstrap/css/bootstrap.min.css" />
@@ -20,6 +20,13 @@
         <link rel="stylesheet" href="${path}/vendor/font_awesome/css/font-awesome.min.css" />
         <link rel="stylesheet" href="${path}/vendor/admin/css/sb-admin-2.css" />
         <link rel="stylesheet" href="${path}/css/styles.css" />
+        <style>
+            iframe {
+                width: 100%;
+                height: 500px;
+                border: 1px solid #DEDEDE;
+            }
+        </style>
     </head>
     <body>
         <div id="wrapper">
@@ -39,9 +46,45 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <div class="page-header">
-                            <span class="h2">Welcome ${userFullName}</span>
-                            <span class="pull-right">Last Logged In: ${lastLogin}</span>
+                        <h1 class="page-header">Causal Graph</h1>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <iframe src="${link}" marginwidth="0" marginheight="0" scrolling="no"></iframe>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <p>
+                            <a href="${link}" class="btn btn-info" role="button">View Full Screen</a>
+                        </p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">File: ${plot}</div>
+                            <div class="panel-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Attribute</th>
+                                                <th>Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <c:forEach items="${parameters}" var="params">
+                                                <tr>
+                                                    <td>${params.key}</td>
+                                                    <td>${params.value}</td>
+                                                </tr>
+                                            </c:forEach>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -15,26 +15,26 @@
         <title>CCD: Basic Setup</title>
         <meta name="description" content="" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css" />
-        <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap-theme.min.css" />
-        <link rel="stylesheet" href="css/styles.css" />
-        <style>
-            body {
-                padding-top: 90px;
-            }
-            .nextBtn{}
-            .setup-content{}
-        </style>
+        <link rel="stylesheet" href="${path}/vendor/bootstrap/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="${path}/vendor/bootstrap/css/bootstrap-theme.min.css" />
+        <link rel="stylesheet" href="${path}/css/styles.css" />
+        <link rel="stylesheet" href="css/setup.css" />
     </head>
     <body>
         <div class="container">
             <div class="row">
                 <div class="col-md-6 col-md-offset-3">
+                    <h3>Center for Casual Discovery</h3>
                     <div class="panel panel-pitt">
                         <div class="panel-heading">
-                            <h3 class="panel-title">User Information</h3>
+                            <h3 class="panel-title">User Profile Setup</h3>
                         </div>
                         <div class="panel-body">
+                            <div class="row">
+                                <div class="center-block">
+                                    <img class="profile-img" src="img/login-user.png" alt="profile picture" />
+                                </div>
+                            </div>
                             <div class="row">
                                 <c:if test="${not empty errorMsg}">
                                     <div class="alert alert-danger text-center" role="alert">${errorMsg}</div>
@@ -75,9 +75,9 @@
                 </div>
             </div>
         </div>
-        <script src="vendor/jquery/jquery-2.1.3.min.js"></script>
-        <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
-        <script src="vendor/jquery/jquery.validate.min.js"></script>
-        <script src="js/setup.js"></script>
+        <script src="${path}/vendor/jquery/jquery-2.1.3.min.js"></script>
+        <script src="${path}/vendor/bootstrap/js/bootstrap.min.js"></script>
+        <script src="${path}/vendor/jquery/jquery.validate.min.js"></script>
+        <script src="${path}/js/setup.js"></script>
     </body>
 </html>
