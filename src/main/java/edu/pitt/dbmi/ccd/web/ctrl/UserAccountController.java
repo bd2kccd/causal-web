@@ -99,9 +99,10 @@ public class UserAccountController implements ViewController {
         userAccount.setActive(true);
         userAccount.setPassword(passwordService.encryptPassword(defaultPassword));
         userAccount.setCreatedDate(new Date(System.currentTimeMillis()));
+        userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
         userAccount.setUsername(System.getProperty("user.name"));
         userAccount.setPerson(person);
-
+        
         Path workspace = Paths.get(person.getWorkspaceDirectory());
         if (Files.exists(workspace)) {
             if (!Files.isDirectory(workspace)) {
@@ -130,7 +131,7 @@ public class UserAccountController implements ViewController {
             return SETUP;
         }
 
-//        model.addAttribute("appUser", AppUserFactory.createAppUser(userAccount, false));
+        model.addAttribute("appUser", AppUserFactory.createAppUser(userAccount, false));
         // creating user local directory.  Still need to handle errors properly.
         String baseDir = person.getWorkspaceDirectory();
         Path[] directories = {
@@ -148,7 +149,7 @@ public class UserAccountController implements ViewController {
             }
         }
 
-        return REDIRECT_LOGIN;
+        return REDIRECT_HOME;
     }
 
     @RequestMapping(value = "/registration", method = RequestMethod.POST)
