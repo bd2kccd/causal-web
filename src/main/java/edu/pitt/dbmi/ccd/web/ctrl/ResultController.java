@@ -38,7 +38,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -59,22 +58,16 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @RequestMapping(value = "/results")
 public class ResultController implements ViewController {
 
-    private final String outputDirectory;
-
     private final FileInfoService fileInfoService;
 
     @Autowired(required = true)
-    public ResultController(
-            @Value("${app.outputDir}") String outputDirectory,
-            FileInfoService fileInfoService) {
-        this.outputDirectory = outputDirectory;
+    public ResultController(FileInfoService fileInfoService) {
         this.fileInfoService = fileInfoService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
     public String showRunResultsView(Model model, @ModelAttribute("appUser") AppUser appUser) {
-        String baseDir = appUser.getPerson().getWorkspaceDirectory();
-        model.addAttribute("itemList", FileUtility.getFileListing(Paths.get(baseDir, outputDirectory)));
+        model.addAttribute("itemList", FileUtility.getFileListing(Paths.get(appUser.getOutputDirectory())));
 
         return RUN_RESULTS;
     }
@@ -87,8 +80,7 @@ public class ResultController implements ViewController {
             HttpServletResponse response) throws IOException {
         ServletContext context = request.getServletContext();
 
-        String baseDir = appUser.getPerson().getWorkspaceDirectory();
-        Path file = Paths.get(baseDir, outputDirectory, filename);
+        Path file = Paths.get(appUser.getOutputDirectory(), filename);
 
         String mimeType = context.getMimeType(file.toAbsolutePath().toString());
         if (mimeType == null) {
@@ -109,8 +101,7 @@ public class ResultController implements ViewController {
             value = "file") String filename,
             @ModelAttribute("appUser") AppUser appUser,
             Model model) {
-        String baseDir = appUser.getPerson().getWorkspaceDirectory();
-        Path file = Paths.get(baseDir, outputDirectory, filename);
+        Path file = Paths.get(appUser.getOutputDirectory(), filename);
         try {
             Files.deleteIfExists(file);
         } catch (IOException exception) {
@@ -125,8 +116,7 @@ public class ResultController implements ViewController {
             @RequestParam(value = "file") String filename,
             @ModelAttribute("appUser") AppUser appUser,
             Model model) {
-        String baseDir = appUser.getPerson().getWorkspaceDirectory();
-        Path file = Paths.get(baseDir, outputDirectory, filename);
+        Path file = Paths.get(appUser.getOutputDirectory(), filename);
 
         Map<String, String> parameters = new TreeMap<>();
         Pattern equalDelim = Pattern.compile("=");
@@ -162,8 +152,7 @@ public class ResultController implements ViewController {
             @RequestParam(value = "file") String filename,
             @ModelAttribute("appUser") AppUser appUser,
             Model model) {
-        String baseDir = appUser.getPerson().getWorkspaceDirectory();
-        Path file = Paths.get(baseDir, outputDirectory, filename);
+        Path file = Paths.get(appUser.getOutputDirectory(), filename);
 
         List<Node> links = new LinkedList<>();
         Pattern space = Pattern.compile("\\s+");

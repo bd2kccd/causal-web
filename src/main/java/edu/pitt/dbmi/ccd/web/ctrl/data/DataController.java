@@ -70,8 +70,7 @@ public class DataController implements ViewController {
 
     @RequestMapping(value = "/upload/chunk", method = RequestMethod.GET)
     public void checkChunkExistence(HttpServletResponse response, ResumableChunk chunk, @ModelAttribute("appUser") AppUser appUser) throws IOException {
-        String baseDir = appUser.getPerson().getWorkspaceDirectory();
-        if (fileManager.chunkExists(chunk.getResumableIdentifier(), chunk.getResumableChunkNumber(), chunk.getResumableChunkSize(), baseDir)) {
+        if (fileManager.chunkExists(chunk.getResumableIdentifier(), chunk.getResumableChunkNumber(), chunk.getResumableChunkSize(), appUser.getUploadDirectory())) {
             response.setStatus(200); // do not upload chunk again
         } else {
             response.setStatus(404); // chunk not on the server, upload it
@@ -85,12 +84,11 @@ public class DataController implements ViewController {
             return;
         }
 
-        String baseDir = appUser.getPerson().getWorkspaceDirectory();
-        fileManager.storeChunk(chunk.getResumableIdentifier(), chunk.getResumableChunkNumber(), chunk.getFile().getInputStream(), baseDir);
-        if (fileManager.allChunksUploaded(chunk.getResumableIdentifier(), chunk.getResumableChunkSize(), chunk.getResumableTotalSize(), chunk.getResumableTotalChunks(), baseDir)) {
-            String md5 = fileManager.mergeAndDeleteWithMd5(chunk.getResumableFilename(), chunk.getResumableIdentifier(), chunk.getResumableChunkSize(), chunk.getResumableTotalSize(), chunk.getResumableTotalChunks(), baseDir);
+        fileManager.storeChunk(chunk.getResumableIdentifier(), chunk.getResumableChunkNumber(), chunk.getFile().getInputStream(), appUser.getUploadDirectory());
+        if (fileManager.allChunksUploaded(chunk.getResumableIdentifier(), chunk.getResumableChunkSize(), chunk.getResumableTotalSize(), chunk.getResumableTotalChunks(), appUser.getUploadDirectory())) {
+            String md5 = fileManager.mergeAndDeleteWithMd5(chunk.getResumableFilename(), chunk.getResumableIdentifier(), chunk.getResumableChunkSize(), chunk.getResumableTotalSize(), chunk.getResumableTotalChunks(), appUser.getUploadDirectory());
 
-            Path path = Paths.get(baseDir, fileManager.getUploadDirectory(), chunk.getResumableFilename());
+            Path path = Paths.get(appUser.getUploadDirectory(), chunk.getResumableFilename());
             BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
 
             DataFile dataFile = new DataFile();
@@ -110,14 +108,14 @@ public class DataController implements ViewController {
 
     @RequestMapping(method = RequestMethod.GET)
     public String showDatasetView(Model model, @ModelAttribute("appUser") AppUser appUser) {
-        model.addAttribute("itemList", FileUtility.getFileListing(Paths.get(appUser.getPerson().getWorkspaceDirectory(), fileManager.getUploadDirectory())));
+        model.addAttribute("itemList", FileUtility.getFileListing(Paths.get(appUser.getUploadDirectory())));
 
         return DATASET;
     }
 
     @RequestMapping(value = "/delete", method = RequestMethod.GET)
     public String deleteResultFile(@RequestParam(value = "file") String filename, Model model, @ModelAttribute("appUser") AppUser appUser) {
-        Path file = Paths.get(appUser.getPerson().getWorkspaceDirectory(), fileManager.getUploadDirectory(), filename);
+        Path file = Paths.get(appUser.getUploadDirectory(), filename);
         fileInfoService.deleteFile(file.toAbsolutePath().toString());
         try {
             Files.deleteIfExists(file);

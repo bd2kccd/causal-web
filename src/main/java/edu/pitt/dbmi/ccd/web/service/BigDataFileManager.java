@@ -30,8 +30,6 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -43,11 +41,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class BigDataFileManager {
 
-    private final String uploadDirectory;
-
-    @Autowired(required = true)
-    public BigDataFileManager(@Value(value = "${app.uploadDir}") String uploadDirectory) {
-        this.uploadDirectory = uploadDirectory;
+    public BigDataFileManager() {
     }
 
     /**
@@ -67,16 +61,17 @@ public class BigDataFileManager {
      * @param identifier
      * @param chunkNumber
      * @param chunkSize
-     * @param baseDirectory
+     * @param directory
      * @return
      * @throws IOException
      */
-    public boolean chunkExists(String identifier, int chunkNumber, long chunkSize, String baseDirectory) throws IOException {
-        Path chunkFile = Paths.get(baseDirectory, uploadDirectory, identifier, chunkNumber + "");
+    public boolean chunkExists(String identifier, int chunkNumber, long chunkSize, String directory) throws IOException {
+        Path chunkFile = Paths.get(directory, identifier, chunkNumber + "");
         if (Files.exists(chunkFile)) {
             long size = (Long) Files.getAttribute(chunkFile, "basic:size");
             return size == chunkSize;
         }
+
         return false;
     }
 
@@ -86,11 +81,11 @@ public class BigDataFileManager {
      * @param identifier
      * @param chunkNumber
      * @param inputStream
-     * @param baseDirectory
+     * @param directory
      * @throws IOException
      */
-    public void storeChunk(String identifier, int chunkNumber, InputStream inputStream, String baseDirectory) throws IOException {
-        Path chunkFile = Paths.get(baseDirectory, uploadDirectory, identifier, String.valueOf(chunkNumber));
+    public void storeChunk(String identifier, int chunkNumber, InputStream inputStream, String directory) throws IOException {
+        Path chunkFile = Paths.get(directory, identifier, String.valueOf(chunkNumber));
         if (Files.notExists(chunkFile)) {
             try {
                 Files.createDirectories(chunkFile);
@@ -108,12 +103,12 @@ public class BigDataFileManager {
      * @param chunkSize
      * @param totalSize
      * @param numOfChunks
-     * @param baseDirectory
+     * @param directory
      * @return true if all chunks of the file is on the server
      */
-    public boolean allChunksUploaded(String identifier, long chunkSize, long totalSize, int numOfChunks, String baseDirectory) {
+    public boolean allChunksUploaded(String identifier, long chunkSize, long totalSize, int numOfChunks, String directory) {
         for (int chunkNo = 1; chunkNo <= numOfChunks; chunkNo++) {
-            if (!Files.exists(Paths.get(baseDirectory, uploadDirectory, identifier, String.valueOf(chunkNo)))) {
+            if (!Files.exists(Paths.get(directory, identifier, String.valueOf(chunkNo)))) {
                 return false;
             }
         }
@@ -130,23 +125,24 @@ public class BigDataFileManager {
      * @param chunkSize size of each chunk
      * @param totalSize size of the original file
      * @param numOfChunks number of chunks file is broken into
-     * @param baseDirectory
+     * @param srcDirectory
+     * @param destDirectory
      * @return MD5 hash of the original file
      * @throws IOException
      */
-    public String mergeAndDeleteWithMd5(String fileName, String identifier, long chunkSize, final long totalSize, final int numOfChunks, final String baseDirectory) throws IOException {
-        Path newFilePath = Paths.get(baseDirectory, uploadDirectory, fileName);
+    public String mergeAndDeleteWithMd5(String fileName, String identifier, long chunkSize, final long totalSize, final int numOfChunks, final String directory) throws IOException {
+        Path newFilePath = Paths.get(directory, fileName);
         Files.deleteIfExists(newFilePath); // delete the existing file
         try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(newFilePath.toFile(), false))) {
             for (int chunkNo = 1; chunkNo <= numOfChunks; chunkNo++) {
-                Path chunkPath = Paths.get(baseDirectory, uploadDirectory, identifier, String.valueOf(chunkNo));
+                Path chunkPath = Paths.get(directory, identifier, String.valueOf(chunkNo));
                 Files.copy(chunkPath, bos);
             }
         }
 
         String md5 = MessageDigestHash.computeMD5Hash(newFilePath);
         try {
-            deleteNonEmptyDir(Paths.get(baseDirectory, uploadDirectory, identifier));
+            deleteNonEmptyDir(Paths.get(directory, identifier));
         } catch (IOException exception) {
             exception.printStackTrace(System.err);
         }
@@ -178,15 +174,6 @@ public class BigDataFileManager {
                 return FileVisitResult.CONTINUE;
             }
         });
-    }
-
-    /**
-     * Get the directory where all files are uploaded.
-     *
-     * @return path to uploaded files
-     */
-    public String getUploadDirectory() {
-        return uploadDirectory;
     }
 
 }

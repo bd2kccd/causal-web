@@ -23,8 +23,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.concurrent.Future;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
@@ -38,26 +36,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class AlgorithmService {
 
-    private final String tempDirectory;
-
-    private final String outputDirectory;
-
-    @Autowired(required = true)
-    public AlgorithmService(
-            @Value("${app.tempDir}") String tempDirectory,
-            @Value("${app.outputDir}") String outputDirectory) {
-        this.tempDirectory = tempDirectory;
-        this.outputDirectory = outputDirectory;
+    public AlgorithmService() {
     }
 
     @Async
-    public Future<Void> runAlgorithm(String cmd, String fileName, String baseDirectory) throws Exception {
-        Path workDir = Paths.get(baseDirectory, tempDirectory);
-        Process process = Runtime.getRuntime().exec(cmd + " --out " + workDir.toString());
+    public Future<Void> runAlgorithm(String cmd, String fileName, String tmpDirectory, String outputDirectory) throws Exception {
+        Process process = Runtime.getRuntime().exec(cmd + " --out " + tmpDirectory);
         process.waitFor();
 
-        Path source = Paths.get(baseDirectory, tempDirectory, fileName);
-        Path target = Paths.get(baseDirectory, outputDirectory, fileName);
+        Path source = Paths.get(tmpDirectory, fileName);
+        Path target = Paths.get(outputDirectory, fileName);
         Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
 
         return new AsyncResult<>(null);

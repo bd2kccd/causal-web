@@ -21,9 +21,7 @@ package edu.pitt.dbmi.ccd.web.ctrl;
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.service.PersonService;
 import edu.pitt.dbmi.ccd.web.service.UserAccountService;
-import edu.pitt.dbmi.ccd.web.util.AppUserFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,6 +34,8 @@ import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -53,57 +53,42 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @SessionAttributes("appUser")
 public class UserAccountController implements ViewController {
 
-    private final String defaultPassword;
-
-    private final String setupErrMsg;
-
-    private final String signInErrMsg;
-
-    protected final String uploadDir;
-
-    protected final String outputDir;
-
-    protected final String tmpDir;
-
     private final UserAccountService userAccountService;
-
-    private final PersonService personService;
 
     private final DefaultPasswordService passwordService;
 
     @Autowired(required = true)
     public UserAccountController(
-            @Value("${app.default.pwd:password123}") String defaultPassword,
-            @Value("${app.setup.error:Unable to setup initial settings.}") String setupErrMsg,
-            @Value("${app.login.error:Unable to setup initial settings.}") String signInErrMsg,
-            @Value("${app.uploadDir:upload}") String uploadDir,
-            @Value("${app.outputDir:output}") String outputDir,
-            @Value("${app.tempDir:tmp}") String tmpDir,
             UserAccountService userAccountService,
-            PersonService personService,
             DefaultPasswordService passwordService) {
-        this.defaultPassword = defaultPassword;
-        this.setupErrMsg = setupErrMsg;
-        this.signInErrMsg = signInErrMsg;
-        this.uploadDir = uploadDir;
-        this.outputDir = outputDir;
-        this.tmpDir = tmpDir;
         this.userAccountService = userAccountService;
-        this.personService = personService;
         this.passwordService = passwordService;
     }
 
+    @RequestMapping(value = SETUP, method = RequestMethod.GET)
+    public String setupNewUser(Model model) {
+        if (SecurityUtils.getSubject().isAuthenticated()) {
+            return REDIRECT_HOME;
+        }
+
+        model.addAttribute("person", new Person());
+
+        return SETUP;
+    }
+
     @RequestMapping(value = SETUP, method = RequestMethod.POST)
-    public String setupNewUserAccount(@ModelAttribute("person") Person person, Model model) {
-        UserAccount userAccount = new UserAccount();
-        userAccount.setActive(true);
-        userAccount.setPassword(passwordService.encryptPassword(defaultPassword));
-        userAccount.setCreatedDate(new Date(System.currentTimeMillis()));
-        userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
-        userAccount.setUsername(System.getProperty("user.name"));
-        userAccount.setPerson(person);
-        
-        Path workspace = Paths.get(person.getWorkspaceDirectory());
+    public String setupNewUserAccount(
+            @Value("${app.default.pwd:password123}") String defaultPassword,
+            @Value("${app.setup.error:Unable to setup initial settings.}") String setupErrMsg,
+            @Value("${app.login.error:Unable to setup initial settings.}") String signInErrMsg,
+            @Value("${app.uploadDir:upload}") String uploadDirectory,
+            @Value("${app.outputDir:output}") String outputDirectory,
+            @Value("${app.libDir:lib}") String libDirectory,
+            @Value("${app.tempDir:tmp}") String tmpDirectory,
+            @ModelAttribute("person") Person person,
+            Model model) {
+        String baseDir = person.getWorkspaceDirectory();
+        Path workspace = Paths.get(baseDir);
         if (Files.exists(workspace)) {
             if (!Files.isDirectory(workspace)) {
                 model.addAttribute("errorMsg", "Workspace provided is not a directory.");
@@ -114,12 +99,63 @@ public class UserAccountController implements ViewController {
             return SETUP;
         }
 
+        UserAccount userAccount = new UserAccount();
+        userAccount.setActive(true);
+        userAccount.setPassword(passwordService.encryptPassword(defaultPassword));
+        userAccount.setCreatedDate(new Date(System.currentTimeMillis()));
+        userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
+        userAccount.setUsername(System.getProperty("user.name"));
+        userAccount.setPerson(person);
         try {
             userAccount = userAccountService.createNewUserAccount(userAccount);
         } catch (Exception exception) {
             model.addAttribute("errorMsg", setupErrMsg);
             return SETUP;
         }
+
+        Path uploadDir = Paths.get(baseDir, uploadDirectory);
+        Path outputDir = Paths.get(baseDir, outputDirectory);
+        Path libDir = Paths.get(baseDir, libDirectory);
+        Path tmpDir = Paths.get(baseDir, tmpDirectory);
+        Path[] directories = {uploadDir, outputDir, tmpDir, libDir};
+        for (Path directory : directories) {
+            if (Files.notExists(directory)) {
+                try {
+                    Files.createDirectories(directory);
+                } catch (IOException exception) {
+                    exception.printStackTrace(System.err);
+                }
+            }
+        }
+
+        Resource resource = new ClassPathResource("/lib");
+        try {
+            Path libPath = Paths.get(resource.getFile().getAbsolutePath());
+            Files.walk(libPath).filter(Files::isRegularFile).forEach(file -> {
+                Path destFile = Paths.get(libDir.toAbsolutePath().toString(), libPath.relativize(file).toString());
+                if (!Files.exists(destFile)) {
+                    try {
+                        Files.copy(file, destFile);
+                    } catch (IOException exception) {
+                        exception.printStackTrace(System.err);
+                    }
+                }
+            });
+        } catch (IOException exception) {
+            exception.printStackTrace(System.err);
+        }
+
+        AppUser appUser = new AppUser();
+        appUser.setUsername(userAccount.getUsername());
+        appUser.setFirstName(person.getFirstName());
+        appUser.setLastName(person.getLastName());
+        appUser.setLastLoginDate(userAccount.getLastLoginDate());
+        appUser.setWebUser(false);
+        appUser.setUploadDirectory(uploadDir.toString());
+        appUser.setOutputDirectory(outputDir.toString());
+        appUser.setLibDirectory(libDir.toString());
+        appUser.setTmpDirectory(tmpDir.toString());
+        model.addAttribute("appUser", appUser);
 
         UsernamePasswordToken token = new UsernamePasswordToken(userAccount.getUsername(), defaultPassword);
         token.setRememberMe(true);
@@ -131,27 +167,16 @@ public class UserAccountController implements ViewController {
             return SETUP;
         }
 
-        model.addAttribute("appUser", AppUserFactory.createAppUser(userAccount, false));
-        // creating user local directory.  Still need to handle errors properly.
-        String baseDir = person.getWorkspaceDirectory();
-        Path[] directories = {
-            Paths.get(baseDir, uploadDir),
-            Paths.get(baseDir, outputDir),
-            Paths.get(baseDir, tmpDir)
-        };
-        for (Path directory : directories) {
-            if (Files.notExists(directory)) {
-                try {
-                    Files.createDirectories(directory);
-                } catch (IOException exception) {
-                    exception.printStackTrace(System.err);
-                }
-            }
-        }
-
         return REDIRECT_HOME;
     }
 
+    /**
+     * This method is for web application. Needs more work!
+     *
+     * @param userAccount
+     * @param model
+     * @return
+     */
     @RequestMapping(value = "/registration", method = RequestMethod.POST)
     public String registerNewUserAccount(final UserAccount userAccount, Model model) {
         String username = userAccount.getUsername();
@@ -164,6 +189,7 @@ public class UserAccountController implements ViewController {
         userAccount.setPassword(passwordService.encryptPassword(pwd));
         userAccount.setActive(true);
         userAccount.setCreatedDate(new Date(System.currentTimeMillis()));
+        userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
         userAccount.setPerson(new Person("Default", "User", "user@localhost", ""));
         try {
             userAccountService.createNewUserAccount(userAccount);
@@ -182,8 +208,6 @@ public class UserAccountController implements ViewController {
             return LOGIN;
         }
 
-        model.addAttribute("appUser", AppUserFactory.createAppUser(userAccount, false));
-
         return REDIRECT_HOME;
     }
 
@@ -197,6 +221,10 @@ public class UserAccountController implements ViewController {
 
     @RequestMapping(value = USER_PROFILE, method = RequestMethod.POST)
     public String saveUserProfile(
+            @Value("${app.uploadDir:upload}") String uploadDirectory,
+            @Value("${app.outputDir:output}") String outputDirectory,
+            @Value("${app.libDir:lib}") String libDirectory,
+            @Value("${app.tempDir:tmp}") String tmpDirectory,
             @ModelAttribute("person") Person person,
             @ModelAttribute("appUser") AppUser appUser,
             Model model) {
@@ -204,7 +232,51 @@ public class UserAccountController implements ViewController {
         userAccount.setPerson(person);
         userAccountService.save(userAccount);
 
-        model.addAttribute("appUser", AppUserFactory.createAppUser(userAccount, false));
+        String baseDir = person.getWorkspaceDirectory();
+
+        Path uploadDir = Paths.get(baseDir, uploadDirectory);
+        Path outputDir = Paths.get(baseDir, outputDirectory);
+        Path libDir = Paths.get(baseDir, libDirectory);
+        Path tmpDir = Paths.get(baseDir, tmpDirectory);
+        Path[] directories = {uploadDir, outputDir, tmpDir, libDir};
+        for (Path directory : directories) {
+            if (Files.notExists(directory)) {
+                try {
+                    Files.createDirectories(directory);
+                } catch (IOException exception) {
+                    exception.printStackTrace(System.err);
+                }
+            }
+        }
+
+        Resource resource = new ClassPathResource("/lib");
+        try {
+            Path libPath = Paths.get(resource.getFile().getAbsolutePath());
+            Files.walk(libPath).filter(Files::isRegularFile).forEach(file -> {
+                Path destFile = Paths.get(libDir.toAbsolutePath().toString(), libPath.relativize(file).toString());
+                if (!Files.exists(destFile)) {
+                    try {
+                        Files.copy(file, destFile);
+                    } catch (IOException exception) {
+                        exception.printStackTrace(System.err);
+                    }
+                }
+            });
+        } catch (IOException exception) {
+            exception.printStackTrace(System.err);
+        }
+
+        appUser = new AppUser();
+        appUser.setUsername(userAccount.getUsername());
+        appUser.setFirstName(person.getFirstName());
+        appUser.setLastName(person.getLastName());
+        appUser.setLastLoginDate(userAccount.getLastLoginDate());
+        appUser.setWebUser(false);
+        appUser.setUploadDirectory(uploadDir.toString());
+        appUser.setOutputDirectory(outputDir.toString());
+        appUser.setLibDirectory(libDir.toString());
+        appUser.setTmpDirectory(tmpDir.toString());
+        model.addAttribute("appUser", appUser);
 
         return REDIRECT_USER_PROFILE;
     }

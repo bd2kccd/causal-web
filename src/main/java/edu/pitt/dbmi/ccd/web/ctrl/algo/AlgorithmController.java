@@ -34,22 +34,9 @@ import java.util.TreeMap;
  */
 public abstract class AlgorithmController {
 
-    protected final String uploadDirectory;
-
-    protected final String libDirectory;
-
-    protected final String outputDirectory;
-
-    protected final String tempDirectory;
-
     protected final String algorithmJar;
 
-    public AlgorithmController(String uploadDirectory, String libDirectory,
-            String outputDirectory, String tempDirectory, String algorithmJar) {
-        this.uploadDirectory = uploadDirectory;
-        this.libDirectory = libDirectory;
-        this.outputDirectory = outputDirectory;
-        this.tempDirectory = tempDirectory;
+    public AlgorithmController(String algorithmJar) {
         this.algorithmJar = algorithmJar;
     }
 

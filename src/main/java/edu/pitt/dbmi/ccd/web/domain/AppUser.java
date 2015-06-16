@@ -18,7 +18,6 @@
  */
 package edu.pitt.dbmi.ccd.web.domain;
 
-import edu.pitt.dbmi.ccd.db.entity.Person;
 import java.util.Date;
 import org.springframework.context.annotation.Scope;
 
@@ -33,11 +32,19 @@ public class AppUser {
 
     private String username;
 
-    private Date createdDate;
+    private String firstName;
+
+    private String lastName;
+
+    private String uploadDirectory;
+
+    private String outputDirectory;
+
+    private String libDirectory;
+
+    private String tmpDirectory;
 
     private Date lastLoginDate;
-
-    private Person person;
 
     private boolean webUser;
 
@@ -52,12 +59,52 @@ public class AppUser {
         this.username = username;
     }
 
-    public Date getCreatedDate() {
-        return createdDate;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getUploadDirectory() {
+        return uploadDirectory;
+    }
+
+    public void setUploadDirectory(String uploadDirectory) {
+        this.uploadDirectory = uploadDirectory;
+    }
+
+    public String getOutputDirectory() {
+        return outputDirectory;
+    }
+
+    public void setOutputDirectory(String outputDirectory) {
+        this.outputDirectory = outputDirectory;
+    }
+
+    public String getLibDirectory() {
+        return libDirectory;
+    }
+
+    public void setLibDirectory(String libDirectory) {
+        this.libDirectory = libDirectory;
+    }
+
+    public String getTmpDirectory() {
+        return tmpDirectory;
+    }
+
+    public void setTmpDirectory(String tmpDirectory) {
+        this.tmpDirectory = tmpDirectory;
     }
 
     public Date getLastLoginDate() {
@@ -66,14 +113,6 @@ public class AppUser {
 
     public void setLastLoginDate(Date lastLoginDate) {
         this.lastLoginDate = lastLoginDate;
-    }
-
-    public Person getPerson() {
-        return person;
-    }
-
-    public void setPerson(Person person) {
-        this.person = person;
     }
 
     public boolean isWebUser() {

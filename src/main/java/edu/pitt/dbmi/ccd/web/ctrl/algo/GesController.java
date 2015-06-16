@@ -23,7 +23,6 @@ import static edu.pitt.dbmi.ccd.web.ctrl.ViewController.ALGORITHM_RUNNING;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.GesRunInfo;
 import edu.pitt.dbmi.ccd.web.service.AlgorithmService;
-import edu.pitt.dbmi.ccd.web.service.FileInfoService;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,22 +47,16 @@ public class GesController extends AlgorithmController implements ViewController
 
     private final String ges;
 
-    @Autowired
-    private AlgorithmService algorithmService;
-
-    @Autowired(required = true)
-    private FileInfoService fileInfoService;
+    private final AlgorithmService algorithmService;
 
     @Autowired(required = true)
     public GesController(
             @Value("${app.gesApp:edu.pitt.dbmi.ccd.algorithm.tetrad.GesApp}") String ges,
-            @Value("${app.uploadDir}") String uploadDirectory,
-            @Value("${app.libDir}") String libDirectory,
-            @Value("${app.outputDir}") String outputDirectory,
-            @Value("${app.tempDir}") String tempDirectory,
+            AlgorithmService algorithmService,
             @Value("${app.algoJar:ccd-algorithm-1.0-SNAPSHOT.jar}") String algorithmJar) {
-        super(uploadDirectory, libDirectory, outputDirectory, tempDirectory, algorithmJar);
+        super(algorithmJar);
         this.ges = ges;
+        this.algorithmService = algorithmService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -75,8 +68,7 @@ public class GesController extends AlgorithmController implements ViewController
         gesRunInfo.setVerbose(Boolean.TRUE);
         model.addAttribute("gesRunInfo", gesRunInfo);
 
-        String baseDir = appUser.getPerson().getWorkspaceDirectory();
-        model.addAttribute("dataset", directoryFileListing(Paths.get(baseDir, uploadDirectory)));
+        model.addAttribute("dataset", directoryFileListing(Paths.get(appUser.getUploadDirectory())));
 
         return GES;
     }
@@ -86,12 +78,11 @@ public class GesController extends AlgorithmController implements ViewController
             @ModelAttribute("gesRunInfo") GesRunInfo info,
             @ModelAttribute("appUser") AppUser appUser) {
 
-        String baseDir = appUser.getPerson().getWorkspaceDirectory();
-        Path classPath = Paths.get(baseDir, libDirectory, algorithmJar);
+        Path classPath = Paths.get(appUser.getLibDirectory(), algorithmJar);
         String cmd = String.format("java -cp %s %s", classPath.toString(), ges);
         StringBuilder cmdBuilder = new StringBuilder(cmd);
 
-        Path dataset = Paths.get(baseDir, uploadDirectory, info.getDataset());
+        Path dataset = Paths.get(appUser.getUploadDirectory(), info.getDataset());
         cmdBuilder.append(" --data ");
         cmdBuilder.append(dataset.toString());
 
@@ -115,7 +106,7 @@ public class GesController extends AlgorithmController implements ViewController
 
         // run the algorithm
         try {
-            algorithmService.runAlgorithm(cmdBuilder.toString(), fileName, baseDir);
+            algorithmService.runAlgorithm(cmdBuilder.toString(), fileName, appUser.getTmpDirectory(), appUser.getOutputDirectory());
         } catch (Exception exception) {
             exception.printStackTrace(System.err);
         }
