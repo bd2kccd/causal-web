@@ -21,9 +21,9 @@ package edu.pitt.dbmi.ccd.web.ctrl;
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.PersonService;
 import edu.pitt.dbmi.ccd.web.service.UserAccountService;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,8 +35,6 @@ import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -60,14 +58,18 @@ public class UserAccountController implements ViewController {
 
     private final DefaultPasswordService passwordService;
 
+    private final AppUserService appUserService;
+
     @Autowired(required = true)
     public UserAccountController(
             UserAccountService userAccountService,
             PersonService personService,
-            DefaultPasswordService passwordService) {
+            DefaultPasswordService passwordService,
+            AppUserService appUserService) {
         this.userAccountService = userAccountService;
         this.personService = personService;
         this.passwordService = passwordService;
+        this.appUserService = appUserService;
     }
 
     @RequestMapping(value = SETUP, method = RequestMethod.GET)
@@ -86,10 +88,6 @@ public class UserAccountController implements ViewController {
             @Value("${app.default.pwd:password123}") String defaultPassword,
             @Value("${app.setup.error:Unable to setup initial settings.}") String setupErrMsg,
             @Value("${app.login.error:Unable to setup initial settings.}") String signInErrMsg,
-            @Value("${app.uploadDir:upload}") String uploadDirectory,
-            @Value("${app.outputDir:output}") String outputDirectory,
-            @Value("${app.libDir:lib}") String libDirectory,
-            @Value("${app.tempDir:tmp}") String tmpDirectory,
             @ModelAttribute("person") Person person,
             Model model) {
         String baseDir = person.getWorkspaceDirectory();
@@ -118,50 +116,6 @@ public class UserAccountController implements ViewController {
             return SETUP;
         }
 
-        Path uploadDir = Paths.get(baseDir, uploadDirectory);
-        Path outputDir = Paths.get(baseDir, outputDirectory);
-        Path libDir = Paths.get(baseDir, libDirectory);
-        Path tmpDir = Paths.get(baseDir, tmpDirectory);
-        Path[] directories = {uploadDir, outputDir, tmpDir, libDir};
-        for (Path directory : directories) {
-            if (Files.notExists(directory)) {
-                try {
-                    Files.createDirectories(directory);
-                } catch (IOException exception) {
-                    exception.printStackTrace(System.err);
-                }
-            }
-        }
-
-        Resource resource = new ClassPathResource("/lib");
-        try {
-            Path libPath = Paths.get(resource.getFile().getAbsolutePath());
-            Files.walk(libPath).filter(Files::isRegularFile).forEach(file -> {
-                Path destFile = Paths.get(libDir.toAbsolutePath().toString(), libPath.relativize(file).toString());
-                if (!Files.exists(destFile)) {
-                    try {
-                        Files.copy(file, destFile);
-                    } catch (IOException exception) {
-                        exception.printStackTrace(System.err);
-                    }
-                }
-            });
-        } catch (IOException exception) {
-            exception.printStackTrace(System.err);
-        }
-
-        AppUser appUser = new AppUser();
-        appUser.setUsername(userAccount.getUsername());
-        appUser.setFirstName(person.getFirstName());
-        appUser.setLastName(person.getLastName());
-        appUser.setLastLoginDate(userAccount.getLastLoginDate());
-        appUser.setWebUser(false);
-        appUser.setUploadDirectory(uploadDir.toString());
-        appUser.setOutputDirectory(outputDir.toString());
-        appUser.setLibDirectory(libDir.toString());
-        appUser.setTmpDirectory(tmpDir.toString());
-        model.addAttribute("appUser", appUser);
-
         UsernamePasswordToken token = new UsernamePasswordToken(userAccount.getUsername(), defaultPassword);
         token.setRememberMe(true);
         Subject currentUser = SecurityUtils.getSubject();
@@ -171,6 +125,8 @@ public class UserAccountController implements ViewController {
             model.addAttribute("errorMsg", signInErrMsg);
             return SETUP;
         }
+
+        model.addAttribute("appUser", appUserService.createAppUser(userAccount));
 
         return REDIRECT_HOME;
     }
@@ -226,10 +182,6 @@ public class UserAccountController implements ViewController {
 
     @RequestMapping(value = USER_PROFILE, method = RequestMethod.POST)
     public String saveUserProfile(
-            @Value("${app.uploadDir:upload}") String uploadDirectory,
-            @Value("${app.outputDir:output}") String outputDirectory,
-            @Value("${app.libDir:lib}") String libDirectory,
-            @Value("${app.tempDir:tmp}") String tmpDirectory,
             @ModelAttribute("person") Person person,
             @ModelAttribute("appUser") AppUser appUser,
             Model model) {
@@ -239,51 +191,7 @@ public class UserAccountController implements ViewController {
         personService.save(person);
         userAccount = userAccountService.findByUsername(appUser.getUsername());
 
-        String baseDir = person.getWorkspaceDirectory();
-
-        Path uploadDir = Paths.get(baseDir, uploadDirectory);
-        Path outputDir = Paths.get(baseDir, outputDirectory);
-        Path libDir = Paths.get(baseDir, libDirectory);
-        Path tmpDir = Paths.get(baseDir, tmpDirectory);
-        Path[] directories = {uploadDir, outputDir, tmpDir, libDir};
-        for (Path directory : directories) {
-            if (Files.notExists(directory)) {
-                try {
-                    Files.createDirectories(directory);
-                } catch (IOException exception) {
-                    exception.printStackTrace(System.err);
-                }
-            }
-        }
-
-        Resource resource = new ClassPathResource("/lib");
-        try {
-            Path libPath = Paths.get(resource.getFile().getAbsolutePath());
-            Files.walk(libPath).filter(Files::isRegularFile).forEach(file -> {
-                Path destFile = Paths.get(libDir.toAbsolutePath().toString(), libPath.relativize(file).toString());
-                if (!Files.exists(destFile)) {
-                    try {
-                        Files.copy(file, destFile);
-                    } catch (IOException exception) {
-                        exception.printStackTrace(System.err);
-                    }
-                }
-            });
-        } catch (IOException exception) {
-            exception.printStackTrace(System.err);
-        }
-
-        appUser = new AppUser();
-        appUser.setUsername(userAccount.getUsername());
-        appUser.setFirstName(person.getFirstName());
-        appUser.setLastName(person.getLastName());
-        appUser.setLastLoginDate(userAccount.getLastLoginDate());
-        appUser.setWebUser(false);
-        appUser.setUploadDirectory(uploadDir.toString());
-        appUser.setOutputDirectory(outputDir.toString());
-        appUser.setLibDirectory(libDir.toString());
-        appUser.setTmpDirectory(tmpDir.toString());
-        model.addAttribute("appUser", appUser);
+        model.addAttribute("appUser", appUserService.createAppUser(userAccount));
 
         return REDIRECT_USER_PROFILE;
     }
