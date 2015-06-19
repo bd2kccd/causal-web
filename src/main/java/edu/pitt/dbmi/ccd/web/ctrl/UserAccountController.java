@@ -21,6 +21,7 @@ package edu.pitt.dbmi.ccd.web.ctrl;
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.service.PersonService;
 import edu.pitt.dbmi.ccd.web.service.UserAccountService;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -55,13 +56,17 @@ public class UserAccountController implements ViewController {
 
     private final UserAccountService userAccountService;
 
+    private final PersonService personService;
+
     private final DefaultPasswordService passwordService;
 
     @Autowired(required = true)
     public UserAccountController(
             UserAccountService userAccountService,
+            PersonService personService,
             DefaultPasswordService passwordService) {
         this.userAccountService = userAccountService;
+        this.personService = personService;
         this.passwordService = passwordService;
     }
 
@@ -228,9 +233,11 @@ public class UserAccountController implements ViewController {
             @ModelAttribute("person") Person person,
             @ModelAttribute("appUser") AppUser appUser,
             Model model) {
+
         UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
-        userAccount.setPerson(person);
-        userAccountService.save(userAccount);
+        person.setId(userAccount.getPerson().getId());
+        personService.save(person);
+        userAccount = userAccountService.findByUsername(appUser.getUsername());
 
         String baseDir = person.getWorkspaceDirectory();
 
