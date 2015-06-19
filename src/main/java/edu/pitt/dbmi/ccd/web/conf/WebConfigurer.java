@@ -19,7 +19,9 @@
 package edu.pitt.dbmi.ccd.web.conf;
 
 import edu.pitt.dbmi.ccd.db.CCDDatabaseApplication;
+import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
 import org.springframework.boot.context.embedded.ErrorPage;
@@ -52,12 +54,28 @@ public class WebConfigurer extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public EmbeddedServletContainerCustomizer containerCustomizer() {
+    @ConditionalOnProperty(name = "app.webapp", havingValue = "true")
+    public EmbeddedServletContainerCustomizer webappEmbeddedServletContainerCustomizer() {
+        return (ConfigurableEmbeddedServletContainer container) -> {
+            ErrorPage[] errorPages = {
+                new ErrorPage(HttpStatus.NOT_FOUND, "/404")
+            };
+            container.setContextPath("/ccd");
+            container.addErrorPages(errorPages);
+            container.setSessionTimeout(30, TimeUnit.MINUTES);
+        };
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "app.webapp", havingValue = "false")
+    public EmbeddedServletContainerCustomizer desktopEmbeddedServletContainerCustomizer() {
         return (ConfigurableEmbeddedServletContainer container) -> {
             ErrorPage[] errorPages = {
                 new ErrorPage(HttpStatus.NOT_FOUND, "/404")
             };
             container.addErrorPages(errorPages);
+            container.setContextPath("/ccd");
+            container.setSessionTimeout(-1);
         };
     }
 
