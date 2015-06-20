@@ -21,6 +21,7 @@ package edu.pitt.dbmi.ccd.web.ctrl;
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.model.UserRegistration;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.PersonService;
 import edu.pitt.dbmi.ccd.web.service.UserAccountService;
@@ -131,45 +132,44 @@ public class UserAccountController implements ViewController {
         return REDIRECT_HOME;
     }
 
-    /**
-     * This method is for web application. Needs more work!
-     *
-     * @param userAccount
-     * @param model
-     * @return
-     */
     @RequestMapping(value = "/registration", method = RequestMethod.POST)
-    public String registerNewUserAccount(final UserAccount userAccount, Model model) {
-        String username = userAccount.getUsername();
-        if (userAccountService.findByUsername(username) != null) {
+    public String registerNewUser(
+            @Value("${app.server.workspace}") String workspace,
+            final UserRegistration userRegistration,
+            final Model model) {
+        String username = userRegistration.getUsername();
+        if (userAccountService.findByUsername(username) == null) {
+            String email = userRegistration.getEmail();
+            String password = userRegistration.getPassword();
+
+            Person person = new Person();
+            person.setFirstName("");
+            person.setLastName("");
+            person.setEmail(email);
+            person.setWorkspaceDirectory(Paths.get(workspace, username).toString());
+
+            UserAccount userAccount = new UserAccount();
+            userAccount.setActive(false);
+            userAccount.setUsername(username);
+            userAccount.setPassword(passwordService.encryptPassword(password));
+            userAccount.setCreatedDate(new Date(System.currentTimeMillis()));
+            userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
+            userAccount.setPerson(person);
+
+            try {
+                userAccountService.createNewUserAccount(userAccount);
+            } catch (Exception exception) {
+                model.addAttribute("errorMsg", String.format("Unable to create account for '%s'.", username));
+            }
+
+            String msg = "Thank you for your request.<br />"
+                    + "We will review your account and notify you when it is available.";
+            model.addAttribute("successMsg", msg);
+        } else {
             model.addAttribute("errorMsg", String.format("Username '%s' is already taken.", username));
-            return LOGIN;
         }
 
-        String pwd = userAccount.getPassword();
-        userAccount.setPassword(passwordService.encryptPassword(pwd));
-        userAccount.setActive(true);
-        userAccount.setCreatedDate(new Date(System.currentTimeMillis()));
-        userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
-        userAccount.setPerson(new Person("Default", "User", "user@localhost", ""));
-        try {
-            userAccountService.createNewUserAccount(userAccount);
-        } catch (Exception exception) {
-            model.addAttribute("errorMsg", String.format("Unable to create account for '%s'.", username));
-            return LOGIN;
-        }
-
-        UsernamePasswordToken token = new UsernamePasswordToken(userAccount.getUsername(), pwd);
-        token.setRememberMe(true);
-        Subject currentUser = SecurityUtils.getSubject();
-        try {
-            currentUser.login(token);
-        } catch (AuthenticationException exception) {
-            model.addAttribute("errorMsg", "Unable to sign in.");
-            return LOGIN;
-        }
-
-        return REDIRECT_HOME;
+        return LOGIN;
     }
 
     @RequestMapping(value = USER_PROFILE, method = RequestMethod.GET)

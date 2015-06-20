@@ -69,7 +69,7 @@
                                         </div>
                                     </form>
                                     <div style="border-top: 1px solid #ddd; padding-top:15px; font-size:85%">
-                                        Don't have an account? <a href="#" data-toggle="modal" data-target="#signup">Sign Up Here!</a>
+                                        Don't have an account? <a href="#" data-toggle="modal" data-target="#signup">Request for an account!</a>
                                     </div>
                                 </div>
                             </div>
@@ -88,7 +88,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
-                        <h4 class="modal-title pitt-color">CCD Registration</h4>
+                        <h4 class="modal-title pitt-color">CCD Account Request</h4>
                     </div>
                     <div class="modal-body">
                         <form id="registration" role="form" method="POST" action="${path}/registration">

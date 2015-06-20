@@ -89,24 +89,25 @@ public class ApplicationController implements ViewController {
     public String processLogin(
             final UsernamePasswordToken credentials,
             final Model model) {
-        String url;
 
         Subject currentUser = SecurityUtils.getSubject();
         try {
             currentUser.login(credentials);
-            url = REDIRECT_HOME;
         } catch (AuthenticationException exception) {
             model.addAttribute("errorMsg", "Invalid username and/or password.");
-            url = LOGIN;
+            return LOGIN;
         }
 
         String username = (String) currentUser.getPrincipal();
         UserAccount userAccount = userAccountService.findByUsername(username);
-        if (userAccount != null) {
+        if (userAccount.isActive()) {
             model.addAttribute("appUser", appUserService.createAppUser(userAccount));
-        }
+            return REDIRECT_HOME;
+        } else {
+            model.addAttribute("errorMsg", "Your account has not been activated.");
 
-        return url;
+            return LOGIN;
+        }
     }
 
     @RequestMapping(value = LOGIN, method = RequestMethod.GET)
