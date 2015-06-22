@@ -66,6 +66,7 @@ public class PcStableController extends AlgorithmController implements ViewContr
         info.setDepth(3);
         info.setContinuous(Boolean.TRUE);
         info.setVerbose(Boolean.TRUE);
+        info.setJvmOptions("");
         model.addAttribute("pcStableRunInfo", info);
 
         model.addAttribute("dataset", directoryFileListing(Paths.get(appUser.getUploadDirectory())));
@@ -79,7 +80,10 @@ public class PcStableController extends AlgorithmController implements ViewContr
             @ModelAttribute("appUser") AppUser appUser) {
 
         Path classPath = Paths.get(appUser.getLibDirectory(), algorithmJar);
-        String cmd = String.format("java -cp %s %s", classPath.toString(), pcStable);
+        String jvmOptions = info.getJvmOptions().trim();
+        String cmd = (jvmOptions.length() > 0)
+                ? String.format("java %s -cp %s %s", jvmOptions, classPath.toString(), pcStable)
+                : String.format("java -cp %s %s", classPath.toString(), pcStable);
         StringBuilder cmdBuilder = new StringBuilder(cmd);
 
         Path dataset = Paths.get(appUser.getUploadDirectory(), info.getDataset());

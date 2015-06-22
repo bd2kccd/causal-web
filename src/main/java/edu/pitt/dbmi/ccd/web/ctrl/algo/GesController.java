@@ -79,7 +79,10 @@ public class GesController extends AlgorithmController implements ViewController
             @ModelAttribute("appUser") AppUser appUser) {
 
         Path classPath = Paths.get(appUser.getLibDirectory(), algorithmJar);
-        String cmd = String.format("java -cp %s %s", classPath.toString(), ges);
+        String jvmOptions = info.getJvmOptions().trim();
+        String cmd = (jvmOptions.length() > 0)
+                ? String.format("java %s -cp %s %s", jvmOptions, classPath.toString(), ges)
+                : String.format("java -cp %s %s", classPath.toString(), ges);
         StringBuilder cmdBuilder = new StringBuilder(cmd);
 
         Path dataset = Paths.get(appUser.getUploadDirectory(), info.getDataset());

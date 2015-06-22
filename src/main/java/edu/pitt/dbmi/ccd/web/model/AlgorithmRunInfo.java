@@ -32,6 +32,8 @@ public abstract class AlgorithmRunInfo {
 
     protected Boolean verbose;
 
+    protected String jvmOptions;
+
     public AlgorithmRunInfo() {
     }
 
@@ -57,6 +59,14 @@ public abstract class AlgorithmRunInfo {
 
     public void setVerbose(Boolean verbose) {
         this.verbose = verbose;
+    }
+
+    public String getJvmOptions() {
+        return jvmOptions;
+    }
+
+    public void setJvmOptions(String jvmOptions) {
+        this.jvmOptions = jvmOptions;
     }
 
 }

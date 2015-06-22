@@ -72,42 +72,61 @@
                                 <div class="col-xs-12">
                                     <div class="col-md-12">
                                         <h3> Step 1: Chose Your Dataset</h3>
-                                        <div class="form-group">
-                                            <form:select path="dataset" id="dataset" items="${dataset}" class="form-control" required="required" ng-model="dataset" />
-                                        </div>
-                                        <div class="form-group">
-                                            <div class="checkbox">
-                                                <label for="continuous" class="control-label">
-                                                    <form:checkbox path="continuous" id="continuous" ng-model="continuous" ng-init="continuous=${pcStableRunInfo.continuous}" />
-                                                    Continuous Variables
-                                                </label>
+                                        <div class="panel panel-primary">
+                                            <div class="panel-heading">Dataset</div>
+                                            <div class="panel-body">
+                                                <div class="form-group">
+                                                    <form:select path="dataset" id="dataset" items="${dataset}" class="form-control" required="required" ng-model="dataset" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label for="continuous" class="control-label">
+                                                            <form:checkbox path="continuous" id="continuous" ng-model="continuous" ng-init="continuous=${pcStableRunInfo.continuous}" />
+                                                            Continuous Variables
+                                                        </label>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <button type="button" class="btn btn-primary btn-lg center-block nextBtn">Next</button>
+                                        <button type="button" class="btn btn-primary btn-lg btn-block nextBtn">Next</button>
                                     </div>
                                 </div>
                             </div>
                             <div class="row setup-content" id="step-2">
                                 <div class="col-xs-12">
                                     <div class="col-md-12">
-                                        <h3> Step 2: Algorithm Parameters</h3>
-                                        <div class="form-group">
-                                            <label for="alpha" class="control-label">Alpha</label>
-                                            <form:input path="alpha" id="alpha" maxlength="10" type="text" required="required" class="form-control" placeholder="Alpha" ng-model="alpha" ng-init="alpha=${pcStableRunInfo.alpha}" />
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="depth" class="control-label">Search Depth</label>
-                                            <form:input path="depth" id="depth" maxlength="10" type="text" required="required" class="form-control" placeholder="Depth" ng-model="depth" ng-init="depth=${pcStableRunInfo.depth}" />
-                                        </div>
-                                        <div class="form-group">
-                                            <div class="checkbox">
-                                                <label for="verbose" class="control-label">
-                                                    <form:checkbox path="verbose" id="verbose" ng-model="verbose" ng-init="verbose=${pcStableRunInfo.verbose}" />
-                                                    Verbose
-                                                </label>
+                                        <h3> Step 2: Parameters</h3>
+                                        <div class="panel panel-primary">
+                                            <div class="panel-heading">Algorithm Parameters</div>
+                                            <div class="panel-body">
+                                                <div class="form-group">
+                                                    <label for="alpha" class="control-label">Alpha</label>
+                                                    <form:input path="alpha" id="alpha" maxlength="10" type="text" required="required" class="form-control" placeholder="Alpha" ng-model="alpha" ng-init="alpha=${pcStableRunInfo.alpha}" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="depth" class="control-label">Search Depth</label>
+                                                    <form:input path="depth" id="depth" maxlength="10" type="text" required="required" class="form-control" placeholder="Depth" ng-model="depth" ng-init="depth=${pcStableRunInfo.depth}" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label for="verbose" class="control-label">
+                                                            <form:checkbox path="verbose" id="verbose" ng-model="verbose" ng-init="verbose=${pcStableRunInfo.verbose}" />
+                                                            Verbose
+                                                        </label>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <button type="button" class="btn btn-primary btn-lg center-block nextBtn">Next</button>
+                                        <div class="panel panel-primary">
+                                            <div class="panel-heading">JVM Parameters</div>
+                                            <div class="panel-body">
+                                                <div class="form-group">
+                                                    <label for="jvmOptions" class="control-label">JVM Options</label>
+                                                    <form:input path="jvmOptions" id="jvmOptions" type="text" required="required" class="form-control" placeholder="Depth" ng-model="jvmOptions" ng-init="jvmOptions=${pcStableRunInfo.jvmOptions}" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-primary btn-lg btn-block nextBtn">Next</button>
                                     </div>
                                 </div>
                             </div>
@@ -115,7 +134,7 @@
                                 <div class="col-xs-12">
                                     <div class="col-md-12">
                                         <h3> Step 3: Run the Algorithm</h3>
-                                        <div class="panel panel-default">
+                                        <div class="panel panel-primary">
                                             <div class="panel-heading">Summary</div>
                                             <div class="panel-body">
                                                 <div class="table-responsive">
@@ -141,12 +160,16 @@
                                                                 <td class="col-md-2">Verbose:</td>
                                                                 <td ng-bind="verbose"></td>
                                                             </tr>
+                                                            <tr>
+                                                                <td class="col-md-2">JVM Options:</td>
+                                                                <td ng-bind="jvmOptions"></td>
+                                                            </tr>
                                                         </tbody>
                                                     </table>
                                                 </div>
                                             </div>
                                         </div>
-                                        <button type="submit" class="btn btn-success btn-lg center-block nextBtn">Run Algorithm!</button>
+                                        <button type="submit" class="btn btn-success btn-lg btn-block nextBtn">Run Algorithm!</button>
                                     </div>
                                 </div>
                             </div>
