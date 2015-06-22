@@ -69,7 +69,7 @@
                                         </div>
                                     </form>
                                     <div style="border-top: 1px solid #ddd; padding-top:15px; font-size:85%">
-                                        Don't have an account? <a href="#" data-toggle="modal" data-target="#signup">Request for an account!</a>
+                                        Don't have an account? <a href="#" data-toggle="modal" data-target="#signup">Sign up!</a>
                                     </div>
                                 </div>
                             </div>

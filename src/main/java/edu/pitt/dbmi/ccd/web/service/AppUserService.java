@@ -48,16 +48,20 @@ public class AppUserService {
 
     private final String tmpDirectory;
 
+    private final boolean webUser;
+
     @Autowired(required = true)
     public AppUserService(
             @Value("${app.uploadDir:upload}") String uploadDirectory,
             @Value("${app.outputDir:output}") String outputDirectory,
             @Value("${app.libDir:lib}") String libDirectory,
-            @Value("${app.tempDir:tmp}") String tmpDirectory) {
+            @Value("${app.tempDir:tmp}") String tmpDirectory,
+            @Value("${app.webapp:false}") boolean webUser) {
         this.uploadDirectory = uploadDirectory;
         this.outputDirectory = outputDirectory;
         this.libDirectory = libDirectory;
         this.tmpDirectory = tmpDirectory;
+        this.webUser = webUser;
     }
 
     public AppUser createAppUser(UserAccount userAccount) {
@@ -101,7 +105,7 @@ public class AppUserService {
         appUser.setFirstName(person.getFirstName());
         appUser.setLastName(person.getLastName());
         appUser.setLastLoginDate(userAccount.getLastLoginDate());
-        appUser.setWebUser(false);
+        appUser.setWebUser(webUser);
         appUser.setUploadDirectory(uploadDir.toString());
         appUser.setOutputDirectory(outputDir.toString());
         appUser.setLibDirectory(libDir.toString());

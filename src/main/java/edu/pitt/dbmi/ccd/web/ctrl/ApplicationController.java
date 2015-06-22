@@ -104,6 +104,7 @@ public class ApplicationController implements ViewController {
             model.addAttribute("appUser", appUserService.createAppUser(userAccount));
             return REDIRECT_HOME;
         } else {
+            currentUser.logout();
             model.addAttribute("errorMsg", "Your account has not been activated.");
 
             return LOGIN;
