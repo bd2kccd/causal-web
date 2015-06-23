@@ -126,7 +126,7 @@
                                             <div class="panel-body">
                                                 <div class="form-group">
                                                     <label for="jvmOptions" class="control-label">JVM Options</label>
-                                                    <form:input path="jvmOptions" id="jvmOptions" type="text" required="required" class="form-control" placeholder="Depth" ng-model="jvmOptions" ng-init="jvmOptions=${pcStableRunInfo.jvmOptions}" />
+                                                    <form:input path="jvmOptions" id="jvmOptions" type="text" class="form-control" placeholder="example: -Xmx1024M" ng-model="jvmOptions" ng-init="jvmOptions=${pcStableRunInfo.jvmOptions}" />
                                                 </div>
                                             </div>
                                         </div>

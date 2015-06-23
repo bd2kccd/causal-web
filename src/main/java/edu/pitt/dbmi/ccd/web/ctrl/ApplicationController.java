@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.bind.support.SessionStatus;
 
 /**
  *
@@ -70,12 +71,13 @@ public class ApplicationController implements ViewController {
     }
 
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
-    public String logOut(Model model) {
+    public String logOut(Model model, SessionStatus sessionStatus) {
         String url;
 
         Subject currentUser = SecurityUtils.getSubject();
         if (currentUser.isAuthenticated()) {
             currentUser.logout();
+            sessionStatus.setComplete();
             model.addAttribute("successMsg", "You Have Successfully Logged Out.");
             url = LOGIN;
         } else {
