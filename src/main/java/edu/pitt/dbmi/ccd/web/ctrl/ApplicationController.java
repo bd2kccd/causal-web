@@ -156,9 +156,4 @@ public class ApplicationController implements ViewController {
         return REDIRECT_LOGIN;
     }
 
-    @RequestMapping(value = "/404", method = RequestMethod.GET)
-    public String showPageNotFound() {
-        return "404";
-    }
-
 }
