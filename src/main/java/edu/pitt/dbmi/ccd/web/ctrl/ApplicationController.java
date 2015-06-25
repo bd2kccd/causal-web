@@ -70,6 +70,13 @@ public class ApplicationController implements ViewController {
         return HOME;
     }
 
+    @RequestMapping(value = "/logout", method = RequestMethod.POST)
+    public String processLoginFromLogout(
+            final UsernamePasswordToken credentials,
+            final Model model) {
+        return processLogin(credentials, model);
+    }
+
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
     public String logOut(Model model, SessionStatus sessionStatus) {
         String url;
