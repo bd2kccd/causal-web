@@ -1,0 +1,17 @@
+body {
+    padding-top: 90px;
+}
+
+.nextBtn{}
+
+.setup-content{}
+
+.profile-img {
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 20px;
+    display: block;
+    -moz-border-radius: 50%;
+    -webkit-border-radius: 50%;
+    border-radius: 50%;
+}

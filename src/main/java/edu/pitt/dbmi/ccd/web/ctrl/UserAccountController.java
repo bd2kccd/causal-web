@@ -42,6 +42,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  *
@@ -74,14 +75,20 @@ public class UserAccountController implements ViewController {
     }
 
     @RequestMapping(value = SETUP, method = RequestMethod.GET)
-    public String setupNewUser(Model model) {
+    public String setupNewUser(
+            @Value("${app.webapp:true}") final boolean isWebApplication,
+            Model model) {
         if (SecurityUtils.getSubject().isAuthenticated()) {
             return REDIRECT_HOME;
+        } else {
+            if (isWebApplication) {
+                return REDIRECT_LOGIN;
+            } else {
+                model.addAttribute("person", new Person());
+
+                return SETUP;
+            }
         }
-
-        model.addAttribute("person", new Person());
-
-        return SETUP;
     }
 
     @RequestMapping(value = SETUP, method = RequestMethod.POST)
@@ -136,7 +143,7 @@ public class UserAccountController implements ViewController {
     public String registerNewUser(
             @Value("${app.server.workspace}") String workspace,
             final UserRegistration userRegistration,
-            final Model model) {
+            final RedirectAttributes redirectAttributes) {
         String username = userRegistration.getUsername();
         if (userAccountService.findByUsername(username) == null) {
             String email = userRegistration.getEmail();
@@ -159,17 +166,17 @@ public class UserAccountController implements ViewController {
             try {
                 userAccountService.createNewUserAccount(userAccount);
             } catch (Exception exception) {
-                model.addAttribute("errorMsg", String.format("Unable to create account for '%s'.", username));
+                redirectAttributes.addFlashAttribute("errorMsg", String.format("Unable to create account for '%s'.", username));
             }
 
             String msg = "Thank you for your request.<br />"
                     + "We will review your account and notify you when it is available.";
-            model.addAttribute("successMsg", msg);
+            redirectAttributes.addFlashAttribute("successMsg", msg);
         } else {
-            model.addAttribute("errorMsg", String.format("Username '%s' is already taken.", username));
+            redirectAttributes.addFlashAttribute("errorMsg", String.format("Username '%s' is already taken.", username));
         }
 
-        return LOGIN;
+        return REDIRECT_LOGIN;
     }
 
     @RequestMapping(value = USER_PROFILE, method = RequestMethod.GET)

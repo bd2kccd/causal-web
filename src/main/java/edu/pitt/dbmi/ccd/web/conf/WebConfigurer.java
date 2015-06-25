@@ -20,7 +20,6 @@ package edu.pitt.dbmi.ccd.web.conf;
 
 import edu.pitt.dbmi.ccd.db.CCDDatabaseApplication;
 import java.util.concurrent.TimeUnit;
-import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
@@ -28,12 +27,9 @@ import org.springframework.boot.context.embedded.ErrorPage;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-import org.springframework.web.servlet.view.InternalResourceViewResolver;
-import org.springframework.web.servlet.view.JstlView;
 
 /**
  *
@@ -44,14 +40,6 @@ import org.springframework.web.servlet.view.JstlView;
 @Configuration
 @Import(CCDDatabaseApplication.class)
 public class WebConfigurer extends WebMvcConfigurerAdapter {
-
-    @Bean(name = "ccd")
-    public PropertiesFactoryBean propertiesFactoryBean() {
-        PropertiesFactoryBean bean = new PropertiesFactoryBean();
-        bean.setLocation(new ClassPathResource("/ccd.properties"));
-
-        return bean;
-    }
 
     @Bean
     @ConditionalOnProperty(name = "app.webapp", havingValue = "true")
@@ -79,17 +67,6 @@ public class WebConfigurer extends WebMvcConfigurerAdapter {
             container.setContextPath("/ccd");
             container.setSessionTimeout(-1);
         };
-    }
-
-    @Bean
-    public InternalResourceViewResolver viewResolver() {
-        InternalResourceViewResolver resolver = new InternalResourceViewResolver();
-        resolver.setViewClass(JstlView.class);
-        resolver.setPrefix("/WEB-INF/views/");
-        resolver.setSuffix(".jsp");
-        resolver.setExposeContextBeansAsAttributes(true);
-
-        return resolver;
     }
 
     @Override

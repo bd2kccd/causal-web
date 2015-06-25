@@ -23,23 +23,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.web.SpringBootServletInitializer;
 
-/**
- *
- * May 14, 2015 12:33:28 PM
- *
- * @author Kevin V. Bui (kvb2@pitt.edu)
- */
 @SpringBootApplication
 public class CCDWebApplication extends SpringBootServletInitializer {
 
     @Override
-    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        return application.sources(CCDWebApplication.class);
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder applicationBuilder) {
+        return applicationBuilder.sources(CCDWebApplication.class);
     }
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
         SpringApplication.run(CCDWebApplication.class, args);
     }
