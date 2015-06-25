@@ -23,7 +23,7 @@
                         <div class="panel-body">
                             <div class="row">
                                 <div class="center-block">
-                                    <img class="profile-img" src="img/login-user.png" alt="profile picture" />
+                                    <img class="profile-img" src="../static/img/login-user.png" alt="profile picture" />
                                 </div>
                             </div>
                             <div th:if="${errorMsg}">
@@ -60,11 +60,13 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="text-center">
-                <p class="text-muted">Copyright &copy; <span th:text="${#dates.year(#dates.createNow())}">2015</span> <span th:text="${@environment.getProperty('ccd.copyright')}">University of Pittsburgh Department of Biomedical Informatics</span></p>
-            </div>
+            <footer th:replace="fragments/footer_center :: footer">
+                <div class="row">
+                    <div class="text-center">
+                        <p class="text-muted">Copyright &copy; 1900 University of Pittsburgh Department of Biomedical Informatics</p>
+                    </div>
+                </div>
+            </footer>
         </div>
         <script src="../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
         <script src="../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>

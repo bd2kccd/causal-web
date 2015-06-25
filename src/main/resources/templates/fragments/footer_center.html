@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <title>CCD: Basic</title>
+        <meta name="description" content="" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="../../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{/vendors/bootstrap/css/bootstrap.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/bootstrap/css/bootstrap-theme.min.css" th:href="@{/vendors/bootstrap/css/bootstrap-theme.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/sb-admin-2/css/sb-admin-2.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.css}" /> 
+    </head>
+    <body>
+        <div class="container">
+            <footer>
+                <div class="row">
+                    <div class="text-center">
+                        <p class="text-muted" th:text="'Copyright &copy; ' + ${#dates.year(#dates.createNow())} + ' ' + ${@environment.getProperty('ccd.copyright')}"></p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </body>
+</html>
