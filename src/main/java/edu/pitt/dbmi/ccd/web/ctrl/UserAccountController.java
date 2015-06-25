@@ -194,10 +194,17 @@ public class UserAccountController implements ViewController {
             Model model) {
 
         UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
-        person.setId(userAccount.getPerson().getId());
-        personService.save(person);
-        userAccount = userAccountService.findByUsername(appUser.getUsername());
 
+        Person p = userAccount.getPerson();
+        p.setEmail(person.getEmail().trim());
+        p.setFirstName(person.getFirstName().trim());
+        p.setLastName(person.getLastName().trim());
+        if (!appUser.isWebUser()) {
+            p.setWorkspaceDirectory(person.getWorkspaceDirectory().trim());
+        }
+        personService.save(p);
+
+        userAccount = userAccountService.findByUsername(appUser.getUsername());
         model.addAttribute("appUser", appUserService.createAppUser(userAccount));
 
         return REDIRECT_USER_PROFILE;
