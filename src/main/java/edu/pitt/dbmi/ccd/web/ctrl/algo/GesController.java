@@ -68,7 +68,7 @@ public class GesController extends AlgorithmController implements ViewController
         gesRunInfo.setVerbose(Boolean.TRUE);
         model.addAttribute("gesRunInfo", gesRunInfo);
 
-        model.addAttribute("dataset", directoryFileListing(Paths.get(appUser.getUploadDirectory())));
+        model.addAttribute("datasetList", directoryFileListing(Paths.get(appUser.getUploadDirectory())));
 
         return GES;
     }
@@ -77,7 +77,6 @@ public class GesController extends AlgorithmController implements ViewController
     public String runGes(Model model,
             @ModelAttribute("gesRunInfo") GesRunInfo info,
             @ModelAttribute("appUser") AppUser appUser) {
-
         Path classPath = Paths.get(appUser.getLibDirectory(), algorithmJar);
         String jvmOptions = info.getJvmOptions().trim();
         String cmd = (jvmOptions.length() > 0)
