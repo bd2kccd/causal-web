@@ -56,17 +56,22 @@
                                             <div class="panel-heading">Dataset</div>
                                             <div class="panel-body">
                                                 <div class="form-group">
+                                                    <label>Dataset:</label>
                                                     <select id="dataset" class="form-control" ng-model="dataset" th:field="*{dataset}" required="required" autofocus="autofocus">
                                                         <option th:each="data : ${datasetList}" value="sim_data_100vars_100_cases.txt" th:value="${data.key}" th:text="${data.value}">sim_data_100vars_100_cases.txt (75.48 kB)</option>
                                                     </select>
                                                 </div>
-                                                <div class="form-group">
-                                                    <div class="checkbox">
-                                                        <label for="continuous" class="control-label">
-                                                            <input type="checkbox" id="continuous" ng-model="continuous" th:attr="ng-init='continuous=' + *{continuous}" th:field="*{continuous}" />
-                                                            Continuous Variables
-                                                        </label>
-                                                    </div>
+                                                <div class="form-group" th:attr="ng-init='dataType=\'' + *{dataType} + '\''">
+                                                    <label>Data Type:</label>
+                                                    <label class="radio-inline" th:each="dataType : ${dataTypes}">
+                                                        <input type="radio" name="dataType" id="dataType" th:id="${dataType}" value="continuous" th:value="${dataType}" th:field="*{dataType}" ng-model="dataType" disabled="disabled" /><span th:text="${dataType}">continuous</span>
+                                                    </label>
+                                                </div>
+                                                <div class="form-group" th:attr="ng-init='delimiter=\'' + *{delimiter} + '\''">
+                                                    <label>Delimiter:</label>
+                                                    <label class="radio-inline" th:each="delim : ${delimiters}">
+                                                        <input type="radio" name="delimiter" id="delimiter" th:id="${delim}" value="tab" th:value="${delim}" th:field="*{delimiter}" ng-model="delimiter" /><span th:text="${delim}">tab</span>
+                                                    </label>
                                                 </div>
                                             </div>
                                         </div>
@@ -126,8 +131,12 @@
                                                                 <td ng-bind="dataset"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-3">Continuous Variables</td>
-                                                                <td ng-bind="continuous"></td>
+                                                                <td class="col-md-3">Data Type</td>
+                                                                <td ng-bind="dataType"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="col-md-3">Delimiters</td>
+                                                                <td ng-bind="delimiter"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td class="col-md-2">Alpha:</td>

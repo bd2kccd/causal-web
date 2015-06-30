@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.concurrent.Future;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -40,13 +41,29 @@ public class AlgorithmService {
     }
 
     @Async
-    public Future<Void> runAlgorithm(String cmd, String fileName, String tmpDirectory, String outputDirectory) throws Exception {
-        Process process = Runtime.getRuntime().exec(cmd + " --out " + tmpDirectory);
+    public Future<Void> runAlgorithm(List<String> commands, String fileName, String tmpDirectory, String outputDirectory) throws Exception {
+        commands.add("--out");
+        commands.add(tmpDirectory);
+
+        fileName = String.format("%s.txt", fileName);
+        String errorFileName = String.format("error_%s", fileName);
+        Path error = Paths.get(tmpDirectory, errorFileName);
+        Path errorDest = Paths.get(outputDirectory, errorFileName);
+        Path src = Paths.get(tmpDirectory, fileName);
+        Path dest = Paths.get(outputDirectory, fileName);
+
+        ProcessBuilder pb = new ProcessBuilder(commands);
+        pb.redirectError(error.toFile());
+        Process process = pb.start();
         process.waitFor();
 
-        Path source = Paths.get(tmpDirectory, fileName);
-        Path target = Paths.get(outputDirectory, fileName);
-        Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+        if (process.exitValue() == 0) {
+            Files.move(src, dest, StandardCopyOption.REPLACE_EXISTING);
+            Files.deleteIfExists(error);
+        } else {
+            Files.deleteIfExists(src);
+            Files.move(error, errorDest, StandardCopyOption.REPLACE_EXISTING);
+        }
 
         return new AsyncResult<>(null);
     }

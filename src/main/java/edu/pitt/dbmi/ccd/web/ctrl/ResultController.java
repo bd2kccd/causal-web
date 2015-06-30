@@ -18,7 +18,6 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
 import edu.pitt.dbmi.ccd.web.service.FileInfoService;
@@ -173,13 +172,7 @@ public class ResultController implements ViewController {
             exception.printStackTrace(System.err);
         }
 
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            String json = mapper.writeValueAsString(links);
-            model.addAttribute("data", json);
-        } catch (Exception exception) {
-            exception.printStackTrace(System.err);
-        }
+        model.addAttribute("data", links);
 
         return D3_GRAPH;
     }

@@ -45,11 +45,6 @@
             <artifactId>spring-boot-starter-jetty</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-xml</artifactId>
-        </dependency>
-
         <!-- Shiro -->
         <dependency>
             <groupId>org.apache.shiro</groupId>

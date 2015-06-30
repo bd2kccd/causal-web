@@ -28,7 +28,9 @@ public abstract class AlgorithmRunInfo {
 
     protected String dataset;
 
-    protected Boolean continuous;
+    protected String dataType;
+
+    protected String delimiter;
 
     protected Boolean verbose;
 
@@ -45,12 +47,20 @@ public abstract class AlgorithmRunInfo {
         this.dataset = dataset;
     }
 
-    public Boolean getContinuous() {
-        return continuous;
+    public String getDataType() {
+        return dataType;
     }
 
-    public void setContinuous(Boolean continuous) {
-        this.continuous = continuous;
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
+    }
+
+    public String getDelimiter() {
+        return delimiter;
+    }
+
+    public void setDelimiter(String delimiter) {
+        this.delimiter = delimiter;
     }
 
     public Boolean getVerbose() {

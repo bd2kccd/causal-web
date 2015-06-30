@@ -24,6 +24,9 @@ import edu.pitt.dbmi.ccd.web.model.PcStableRunInfo;
 import edu.pitt.dbmi.ccd.web.service.AlgorithmService;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -61,15 +64,21 @@ public class PcStableController extends AlgorithmController implements ViewContr
 
     @RequestMapping(method = RequestMethod.GET)
     public String showPcStableView(Model model, @ModelAttribute("appUser") AppUser appUser) {
+        String[] dataTypes = {"continuous", "discrete"};
+        String[] delimiters = {"tab", "comma"};
+
         PcStableRunInfo info = new PcStableRunInfo();
         info.setAlpha(0.0001D);
         info.setDepth(3);
-        info.setContinuous(Boolean.TRUE);
+        info.setDataType(dataTypes[0]);
+        info.setDelimiter(delimiters[0]);
         info.setVerbose(Boolean.TRUE);
         info.setJvmOptions("");
         model.addAttribute("pcStableRunInfo", info);
 
         model.addAttribute("datasetList", directoryFileListing(Paths.get(appUser.getUploadDirectory())));
+        model.addAttribute("dataTypes", Arrays.asList(dataTypes));
+        model.addAttribute("delimiters", Arrays.asList(delimiters));
 
         return PCSTABLE;
     }
@@ -78,37 +87,44 @@ public class PcStableController extends AlgorithmController implements ViewContr
     public String runPcStable(Model model,
             @ModelAttribute("pcStableRunInfo") PcStableRunInfo info,
             @ModelAttribute("appUser") AppUser appUser) {
+        List<String> commands = new LinkedList<>();
+        commands.add("java");
+
         Path classPath = Paths.get(appUser.getLibDirectory(), algorithmJar);
+        commands.add("-cp");
+        commands.add(classPath.toString());
+        commands.add(pcStable);
+
         String jvmOptions = info.getJvmOptions().trim();
-        String cmd = (jvmOptions.length() > 0)
-                ? String.format("java %s -cp %s %s", jvmOptions, classPath.toString(), pcStable)
-                : String.format("java -cp %s %s", classPath.toString(), pcStable);
-        StringBuilder cmdBuilder = new StringBuilder(cmd);
-
-        Path dataset = Paths.get(appUser.getUploadDirectory(), info.getDataset());
-        cmdBuilder.append(" --data ");
-        cmdBuilder.append(dataset.toString());
-
-        // continuous variables
-        cmdBuilder.append(" --continuous");
-
-        cmdBuilder.append(" --alpha ");
-        cmdBuilder.append(info.getAlpha());
-
-        cmdBuilder.append(" --depth ");
-        cmdBuilder.append(info.getDepth());
-
-        if (info.getVerbose()) {
-            cmdBuilder.append(" --verbose");
+        if (jvmOptions.length() > 0) {
+            commands.add(jvmOptions);
         }
 
-        String fileName = String.format("pc-stable_%s_%d.txt", info.getDataset(), System.currentTimeMillis());
-        cmdBuilder.append(" --fileName ");
-        cmdBuilder.append(fileName);
+        Path dataset = Paths.get(appUser.getUploadDirectory(), info.getDataset());
+        commands.add("--data");
+        commands.add(dataset.toString());
 
-        // run the algorithm
+        if ("comma".equals(info.getDelimiter())) {
+            commands.add("--delimiter");
+            commands.add(",");
+        }
+
+        commands.add("--alpha");
+        commands.add(String.valueOf(info.getAlpha().doubleValue()));
+
+        commands.add("--depth");
+        commands.add(String.valueOf(info.getDepth().intValue()));
+
+        if (info.getVerbose()) {
+            commands.add("--verbose");
+        }
+
+        String fileName = String.format("pc-stable_%s_%d", info.getDataset(), System.currentTimeMillis());
+        commands.add("--out-filename");
+        commands.add(fileName);
+
         try {
-            algorithmService.runAlgorithm(cmdBuilder.toString(), fileName, appUser.getTmpDirectory(), appUser.getOutputDirectory());
+            algorithmService.runAlgorithm(commands, fileName, appUser.getTmpDirectory(), appUser.getOutputDirectory());
         } catch (Exception exception) {
             exception.printStackTrace(System.err);
         }

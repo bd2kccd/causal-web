@@ -23,8 +23,8 @@ import static edu.pitt.dbmi.ccd.web.ctrl.ViewController.ALGORITHM_RUNNING;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.GesRunInfo;
 import edu.pitt.dbmi.ccd.web.service.AlgorithmService;
-import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -64,11 +64,13 @@ public class GesController extends AlgorithmController implements ViewController
         GesRunInfo gesRunInfo = new GesRunInfo();
         gesRunInfo.setExcludeZeroCorrelationEdges(Boolean.TRUE);
         gesRunInfo.setPenaltyDiscount(2.0);
-        gesRunInfo.setContinuous(Boolean.TRUE);
+        gesRunInfo.setDataType("continuous");
         gesRunInfo.setVerbose(Boolean.TRUE);
         model.addAttribute("gesRunInfo", gesRunInfo);
 
         model.addAttribute("datasetList", directoryFileListing(Paths.get(appUser.getUploadDirectory())));
+        model.addAttribute("dataTypes", Arrays.asList("continuous", "discrete"));
+        model.addAttribute("delimiters", Arrays.asList("tab", "comma"));
 
         return GES;
     }
@@ -77,41 +79,41 @@ public class GesController extends AlgorithmController implements ViewController
     public String runGes(Model model,
             @ModelAttribute("gesRunInfo") GesRunInfo info,
             @ModelAttribute("appUser") AppUser appUser) {
-        Path classPath = Paths.get(appUser.getLibDirectory(), algorithmJar);
-        String jvmOptions = info.getJvmOptions().trim();
-        String cmd = (jvmOptions.length() > 0)
-                ? String.format("java %s -cp %s %s", jvmOptions, classPath.toString(), ges)
-                : String.format("java -cp %s %s", classPath.toString(), ges);
-        StringBuilder cmdBuilder = new StringBuilder(cmd);
-
-        Path dataset = Paths.get(appUser.getUploadDirectory(), info.getDataset());
-        cmdBuilder.append(" --data ");
-        cmdBuilder.append(dataset.toString());
-
-        // continuous variables
-        cmdBuilder.append(" --continuous");
-
-        cmdBuilder.append(" --penalty-discount ");
-        cmdBuilder.append(info.getPenaltyDiscount());
-
-        if (info.getExcludeZeroCorrelationEdges()) {
-            cmdBuilder.append(" --exclude-zero-corr-edge");
-        }
-
-        if (info.getVerbose()) {
-            cmdBuilder.append(" --verbose");
-        }
-
-        String fileName = String.format("ges_%s_%d.txt", info.getDataset(), System.currentTimeMillis());
-        cmdBuilder.append(" --fileName ");
-        cmdBuilder.append(fileName);
-
-        // run the algorithm
-        try {
-            algorithmService.runAlgorithm(cmdBuilder.toString(), fileName, appUser.getTmpDirectory(), appUser.getOutputDirectory());
-        } catch (Exception exception) {
-            exception.printStackTrace(System.err);
-        }
+//        Path classPath = Paths.get(appUser.getLibDirectory(), algorithmJar);
+//        String jvmOptions = info.getJvmOptions().trim();
+//        String cmd = (jvmOptions.length() > 0)
+//                ? String.format("java %s -cp %s %s", jvmOptions, classPath.toString(), ges)
+//                : String.format("java -cp %s %s", classPath.toString(), ges);
+//        StringBuilder cmdBuilder = new StringBuilder(cmd);
+//
+//        Path dataset = Paths.get(appUser.getUploadDirectory(), info.getDataset());
+//        cmdBuilder.append(" --data ");
+//        cmdBuilder.append(dataset.toString());
+//
+//        // continuous variables
+//        cmdBuilder.append(" --continuous");
+//
+//        cmdBuilder.append(" --penalty-discount ");
+//        cmdBuilder.append(info.getPenaltyDiscount());
+//
+//        if (info.getExcludeZeroCorrelationEdges()) {
+//            cmdBuilder.append(" --exclude-zero-corr-edge");
+//        }
+//
+//        if (info.getVerbose()) {
+//            cmdBuilder.append(" --verbose");
+//        }
+//
+//        String fileName = String.format("ges_%s_%d.txt", info.getDataset(), System.currentTimeMillis());
+//        cmdBuilder.append(" --fileName ");
+//        cmdBuilder.append(fileName);
+//
+//        // run the algorithm
+//        try {
+//            algorithmService.runAlgorithm(cmdBuilder.toString(), fileName, appUser.getTmpDirectory(), appUser.getOutputDirectory());
+//        } catch (Exception exception) {
+//            exception.printStackTrace(System.err);
+//        }
 
         model.addAttribute("title", "GES is Running");
 
