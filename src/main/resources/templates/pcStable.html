@@ -47,7 +47,7 @@
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
-                        <form method="post" action="" role="form" th:object="${pcStableRunInfo}">
+                        <form id="algoForm" method="post" action="" role="form" th:object="${pcStableRunInfo}">
                             <div class="row setup-content" id="step1">
                                 <div class="col-xs-12">
                                     <div class="col-md-12">
@@ -56,20 +56,20 @@
                                             <div class="panel-heading">Dataset</div>
                                             <div class="panel-body">
                                                 <div class="form-group">
-                                                    <label>Dataset:</label>
-                                                    <select id="dataset" class="form-control" ng-model="dataset" th:field="*{dataset}" required="required" autofocus="autofocus">
+                                                    <label for="dataset">Dataset:</label>
+                                                    <select id="dataset" name="dataset" class="form-control" ng-model="dataset" th:field="*{dataset}" required="required" autofocus="autofocus">
                                                         <option th:each="data : ${datasetList}" value="sim_data_100vars_100_cases.txt" th:value="${data.key}" th:text="${data.value}">sim_data_100vars_100_cases.txt (75.48 kB)</option>
                                                     </select>
                                                 </div>
                                                 <div class="form-group" th:attr="ng-init='dataType=\'' + *{dataType} + '\''">
                                                     <label>Data Type:</label>
-                                                    <label class="radio-inline" th:each="dataType : ${dataTypes}">
+                                                    <label for="dataType" class="radio-inline" th:each="dataType : ${dataTypes}">
                                                         <input type="radio" name="dataType" id="dataType" th:id="${dataType}" value="continuous" th:value="${dataType}" th:field="*{dataType}" ng-model="dataType" disabled="disabled" /><span th:text="${dataType}">continuous</span>
                                                     </label>
                                                 </div>
                                                 <div class="form-group" th:attr="ng-init='delimiter=\'' + *{delimiter} + '\''">
                                                     <label>Delimiter:</label>
-                                                    <label class="radio-inline" th:each="delim : ${delimiters}">
+                                                    <label for="delimiter" class="radio-inline" th:each="delim : ${delimiters}">
                                                         <input type="radio" name="delimiter" id="delimiter" th:id="${delim}" value="tab" th:value="${delim}" th:field="*{delimiter}" ng-model="delimiter" /><span th:text="${delim}">tab</span>
                                                     </label>
                                                 </div>
@@ -88,16 +88,16 @@
                                             <div class="panel-body">
                                                 <div class="form-group">
                                                     <label for="alpha" class="control-label">Alpha</label>
-                                                    <input type="text" id="alpha" maxlength="10" class="form-control" placeholder="Alpha" ng-model="alpha" th:attr="ng-init='alpha=' + *{alpha}" th:field="*{alpha}" required="required" autofocus="autofocus" />
+                                                    <input type="text" id="alpha" name="alpha" maxlength="10" class="form-control" placeholder="Alpha" ng-model="alpha" th:attr="ng-init='alpha=' + *{alpha}" th:field="*{alpha}" required="required" autofocus="autofocus" />
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="depth" class="control-label">Search Depth</label>
-                                                    <input type="text" id="depth" maxlength="10" class="form-control" placeholder="Depth" ng-model="depth" th:attr="ng-init='depth=' + *{depth}" th:field="*{depth}" required="required" />
+                                                    <input type="text" id="depth" name="depth" maxlength="10" class="form-control" placeholder="Depth" ng-model="depth" th:attr="ng-init='depth=' + *{depth}" th:field="*{depth}" required="required" />
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
                                                         <label for="verbose" class="control-label">
-                                                            <input type="checkbox" id="verbose" ng-model="verbose" th:attr="ng-init='verbose=' + *{verbose}" th:field="*{verbose}" required="required" /> Verbose
+                                                            <input type="checkbox" id="verbose" name="verbose" ng-model="verbose" th:attr="ng-init='verbose=' + *{verbose}" th:field="*{verbose}" /> Verbose
                                                         </label>
                                                     </div>
                                                 </div>
@@ -108,7 +108,7 @@
                                             <div class="panel-body">
                                                 <div class="form-group">
                                                     <label for="jvmOptions" class="control-label">JVM Options</label>
-                                                    <input type="text" id="jvmOptions" class="form-control" placeholder="example: -Xmx1024M" ng-model="jvmOptions" th:attr="ng-init='jvmOptions=' + *{jvmOptions}" th:field="*{jvmOptions}" />
+                                                    <input type="text" id="jvmOptions" name="jvmOptions" class="form-control" placeholder="example: -Xmx1024M" ng-model="jvmOptions" th:attr="ng-init='jvmOptions=' + *{jvmOptions}" th:field="*{jvmOptions}" />
                                                 </div>
                                             </div>
                                         </div>
@@ -180,6 +180,8 @@
         <script src="../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
         <script src="../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
         <script src="../static/vendors/sb-admin-2/js/sb-admin-2.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.js}"></script>
+        <script src="../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
+        <script src="../static/js/pcstableValidate.js" th:src="@{/js/pcstableValidate.js}"></script>
         <script src="../static/js/stepwizard.js" th:src="@{/js/stepwizard.js}"></script>
         <script src="../static/js/algorithm.js" th:src="@{/js/algorithm.js}"></script>
     </body>

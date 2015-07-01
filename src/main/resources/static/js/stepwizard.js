@@ -54,6 +54,9 @@ $(document).ready(function () {
             }
         }
 
+        var validator = $("#algoForm").validate();
+        isValid = validator.form();
+
         if (isValid)
             nextStepWizard.removeAttr('disabled').trigger('click');
     });

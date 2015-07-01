@@ -169,7 +169,7 @@ public class UserAccountController implements ViewController {
                 redirectAttributes.addFlashAttribute("errorMsg", String.format("Unable to create account for '%s'.", username));
             }
 
-            String msg = "Thank you for your request.<br />"
+            String msg = "Thank you for your request."
                     + "We will review your account and notify you when it is available.";
             redirectAttributes.addFlashAttribute("successMsg", msg);
         } else {
