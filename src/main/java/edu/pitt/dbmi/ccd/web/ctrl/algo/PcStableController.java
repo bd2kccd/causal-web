@@ -90,15 +90,15 @@ public class PcStableController extends AlgorithmController implements ViewContr
         List<String> commands = new LinkedList<>();
         commands.add("java");
 
+        String jvmOptions = info.getJvmOptions().trim();
+        if (jvmOptions.length() > 0) {
+            commands.addAll(Arrays.asList(jvmOptions.split("\\s+")));
+        }
+
         Path classPath = Paths.get(appUser.getLibDirectory(), algorithmJar);
         commands.add("-cp");
         commands.add(classPath.toString());
         commands.add(pcStable);
-
-        String jvmOptions = info.getJvmOptions().trim();
-        if (jvmOptions.length() > 0) {
-            commands.add(jvmOptions);
-        }
 
         Path dataset = Paths.get(appUser.getUploadDirectory(), info.getDataset());
         commands.add("--data");

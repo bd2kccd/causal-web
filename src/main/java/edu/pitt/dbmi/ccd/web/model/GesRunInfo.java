@@ -26,19 +26,19 @@ package edu.pitt.dbmi.ccd.web.model;
  */
 public class GesRunInfo extends AlgorithmRunInfo {
 
-    private Boolean excludeZeroCorrelationEdges;
+    protected Double penaltyDiscount;
 
-    private Double penaltyDiscount;
+    protected Integer depth;
 
     public GesRunInfo() {
     }
 
-    public Boolean getExcludeZeroCorrelationEdges() {
-        return excludeZeroCorrelationEdges;
+    public Integer getDepth() {
+        return depth;
     }
 
-    public void setExcludeZeroCorrelationEdges(Boolean excludeZeroCorrelationEdges) {
-        this.excludeZeroCorrelationEdges = excludeZeroCorrelationEdges;
+    public void setDepth(Integer depth) {
+        this.depth = depth;
     }
 
     public Double getPenaltyDiscount() {
