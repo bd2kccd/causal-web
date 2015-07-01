@@ -31,12 +31,17 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Controller
 public class ExceptionHandlingController {
 
-    @RequestMapping(value = "/404", method = RequestMethod.GET)
+    @RequestMapping(value = "/404", method = {RequestMethod.GET, RequestMethod.POST})
     public String showPageNotFound() {
         return "404";
     }
 
-    @RequestMapping(value = "/401", method = RequestMethod.GET)
+    @RequestMapping(value = "/500", method = {RequestMethod.GET, RequestMethod.POST})
+    public String showInternalServerError() {
+        return "500";
+    }
+
+    @RequestMapping(value = "/401", method = {RequestMethod.GET, RequestMethod.POST})
     public String showUnauthorizedAccess() {
         return "unauthorized";
     }

@@ -49,7 +49,8 @@ public class WebConfigurer extends WebMvcConfigurerAdapter {
         return (ConfigurableEmbeddedServletContainer container) -> {
             ErrorPage[] errorPages = {
                 new ErrorPage(HttpStatus.NOT_FOUND, "/404"),
-                new ErrorPage(HttpStatus.UNAUTHORIZED, "/401")
+                new ErrorPage(HttpStatus.UNAUTHORIZED, "/401"),
+                new ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/500")
             };
             container.setContextPath("/ccd");
             container.addErrorPages(errorPages);
@@ -63,7 +64,8 @@ public class WebConfigurer extends WebMvcConfigurerAdapter {
         return (ConfigurableEmbeddedServletContainer container) -> {
             ErrorPage[] errorPages = {
                 new ErrorPage(HttpStatus.NOT_FOUND, "/404"),
-                new ErrorPage(HttpStatus.UNAUTHORIZED, "/401")
+                new ErrorPage(HttpStatus.UNAUTHORIZED, "/401"),
+                new ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/500")
             };
             container.addErrorPages(errorPages);
             container.setContextPath("/ccd");

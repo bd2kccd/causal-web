@@ -153,7 +153,7 @@ public class UserAccountController implements ViewController {
             person.setFirstName("");
             person.setLastName("");
             person.setEmail(email);
-            person.setWorkspaceDirectory(Paths.get(workspace, username).toString());
+            person.setWorkspaceDirectory(Paths.get(workspace).toString());
 
             UserAccount userAccount = new UserAccount();
             userAccount.setActive(false);

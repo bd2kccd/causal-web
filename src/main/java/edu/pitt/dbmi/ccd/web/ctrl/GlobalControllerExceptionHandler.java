@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl;
 
+import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.HttpSessionRequiredException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -36,6 +37,11 @@ public class GlobalControllerExceptionHandler {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     @ExceptionHandler(HttpSessionRequiredException.class)
     public void handleSessionRequiredException() {
+    }
+
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(InvalidDataAccessResourceUsageException.class)
+    public void handleInvalidDataAccessResourceUsageException() {
     }
 
 }

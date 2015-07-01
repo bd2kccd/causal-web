@@ -69,10 +69,11 @@ public class AppUserService {
 
         Person person = userAccount.getPerson();
         String baseDir = person.getWorkspaceDirectory();
-        Path uploadDir = Paths.get(baseDir, uploadDirectory);
-        Path outputDir = Paths.get(baseDir, outputDirectory);
+        String username = userAccount.getUsername();
+        Path uploadDir = Paths.get(baseDir, username, uploadDirectory);
+        Path outputDir = Paths.get(baseDir, username, outputDirectory);
         Path libDir = Paths.get(baseDir, libDirectory);
-        Path tmpDir = Paths.get(baseDir, tmpDirectory);
+        Path tmpDir = Paths.get(baseDir, username, tmpDirectory);
         Path[] directories = {uploadDir, outputDir, tmpDir, libDir};
         for (Path directory : directories) {
             if (Files.notExists(directory)) {
