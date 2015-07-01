@@ -12,6 +12,11 @@
         <link rel="stylesheet" href="../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{/vendors/font-awesome/css/font-awesome.min.css}" />
         <link rel="stylesheet" href="../static/vendors/sb-admin-2/css/sb-admin-2.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.css}" />
         <link rel="stylesheet" href="../static/css/styles.css" th:href="@{/css/styles.css}" />
+        <style>
+            .table tbody tr > td.warning {
+                background-color: #f97777 !important;
+            }
+        </style>
     </head>
     <body>
         <div id="wrapper">
@@ -41,11 +46,16 @@
                                         </thead>
                                         <tbody>
                                             <tr th:each="item : ${itemList}">
-                                                <td><a href="#" th:href="@{results/plot(file=${item.fileName})}" th:text="${item.fileName}"></a></td>
-                                                <td th:text="${item.creationDate}"></td>
-                                                <td th:text="${item.size}"></td>
-                                                <td><p data-placement="top" data-toggle="tooltip" title="Save"><a href="#" th:href="@{results/download(file=${item.fileName})}"><button class="btn btn-success btn-xs" data-title="Save" data-toggle="modal" data-target="#Save" ><span class="glyphicon glyphicon-save"></span></button></a></p></td>
-                                                <td><p data-placement="top" data-toggle="tooltip" title="Delete"><button class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#confirm-delete" data-href="results/delete?file=" th:attr="data-href='results/delete?file=' + ${item.fileName}"><span class="glyphicon glyphicon-trash"></span></button></p></td>
+                                                <td class="warning" th:if="${#strings.startsWith(item.fileName,'error')}">
+                                                    <span class="glyphicon glyphicon-warning-sign"></span> <a href="#" th:href="@{results/content(file=${item.fileName})}" data-toggle="modal" data-target="#displayError" th:text="${item.fileName}"></a>
+                                                </td>
+                                                <td th:unless="${#strings.startsWith(item.fileName,'error')}">
+                                                    <a href="#" th:href="@{results/plot(file=${item.fileName})}" th:text="${item.fileName}"></a>
+                                                </td>
+                                                <td th:class="${#strings.startsWith(item.fileName,'error')} ? warning" th:text="${item.creationDate}"></td>
+                                                <td th:class="${#strings.startsWith(item.fileName,'error')} ? warning" th:text="${item.size}"></td>
+                                                <td th:class="${#strings.startsWith(item.fileName,'error')} ? warning"><p data-placement="top" data-toggle="tooltip" title="Save"><a href="#" th:href="@{results/download(file=${item.fileName})}"><button class="btn btn-success btn-xs" data-title="Save" data-toggle="modal" data-target="#Save" ><span class="glyphicon glyphicon-save"></span></button></a></p></td>
+                                                <td th:class="${#strings.startsWith(item.fileName,'error')} ? warning"><p data-placement="top" data-toggle="tooltip" title="Delete"><button class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#confirm-delete" data-href="results/delete?file=" th:attr="data-href='results/delete?file=' + ${item.fileName}"><span class="glyphicon glyphicon-trash"></span></button></p></td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -82,6 +92,22 @@
                 <!-- /.modal-content --> 
             </div>
             <!-- /.modal-dialog --> 
+        </div>
+        <div id="displayError" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="error" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                        <h4 class="modal-title custom_align" id="Heading">Error</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger"></div>
+                    </div>
+                    <div class="modal-footer ">
+                        <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> OK</button>
+                    </div>
+                </div>
+            </div>
         </div>
         <script src="../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
         <script src="../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>

@@ -24,6 +24,7 @@ import edu.pitt.dbmi.ccd.web.service.FileInfoService;
 import edu.pitt.dbmi.ccd.web.util.FileUtility;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,6 +38,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -69,6 +71,38 @@ public class ResultController implements ViewController {
         model.addAttribute("itemList", FileUtility.getFileListing(Paths.get(appUser.getOutputDirectory())));
 
         return RUN_RESULTS;
+    }
+
+    @RequestMapping(value = "/content", method = RequestMethod.GET)
+    public void viewFileContent(@RequestParam(value = "file") String filename,
+            @ModelAttribute("appUser") AppUser appUser,
+            HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
+        Path file = Paths.get(appUser.getOutputDirectory(), filename);
+
+        response.setContentType(MediaType.TEXT_PLAIN_VALUE);
+
+        StringBuilder dataBuilder = new StringBuilder();
+        dataBuilder.append("<div class=\"modal-header\">");
+        dataBuilder.append("<button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">");
+        dataBuilder.append("<span class=\"glyphicon glyphicon-remove\" aria-hidden=\"true\">");
+        dataBuilder.append("</span></button>");
+        dataBuilder.append("<h4 class=\"modal-title custom_align\" id=\"Heading\">Error</h4>");
+        dataBuilder.append("</div>");
+        dataBuilder.append("<div class=\"modal-body\">");
+        dataBuilder.append("<div class=\"alert alert-danger\">");
+        try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                dataBuilder.append(line);
+            }
+        } catch (IOException exception) {
+            exception.printStackTrace(System.err);
+        }
+        dataBuilder.append("</div>");
+        dataBuilder.append("</div>");
+
+        PrintWriter out = response.getWriter();
+        out.write(dataBuilder.toString());
     }
 
     @RequestMapping(value = "/download", method = RequestMethod.GET)
@@ -116,7 +150,6 @@ public class ResultController implements ViewController {
             @ModelAttribute("appUser") AppUser appUser,
             Model model) {
         Path file = Paths.get(appUser.getOutputDirectory(), filename);
-
         Map<String, String> parameters = new TreeMap<>();
         Pattern equalDelim = Pattern.compile("=");
         try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {

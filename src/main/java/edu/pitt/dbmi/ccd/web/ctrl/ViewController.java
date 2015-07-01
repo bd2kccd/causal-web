@@ -54,6 +54,8 @@ public interface ViewController {
 
     public static final String RUN_RESULTS = "runResults";
 
+    public static final String REDIRECT_RUN_RESULTS = "redirect:/runResults";
+
     public static final String PLOT = "plot";
 
     public static final String D3_GRAPH = "d3graph";
