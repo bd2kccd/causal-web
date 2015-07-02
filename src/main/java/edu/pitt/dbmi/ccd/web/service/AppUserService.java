@@ -85,21 +85,23 @@ public class AppUserService {
             }
         }
 
-        Resource resource = new ClassPathResource("/lib");
-        try {
-            Path libPath = Paths.get(resource.getFile().getAbsolutePath());
-            Files.walk(libPath).filter(Files::isRegularFile).forEach(file -> {
-                Path destFile = Paths.get(libDir.toAbsolutePath().toString(), libPath.relativize(file).toString());
-                if (!Files.exists(destFile)) {
-                    try {
-                        Files.copy(file, destFile);
-                    } catch (IOException exception) {
-                        exception.printStackTrace(System.err);
+        if (Files.notExists(libDir)) {
+            Resource resource = new ClassPathResource("/lib");
+            try {
+                Path libPath = Paths.get(resource.getFile().getAbsolutePath());
+                Files.walk(libPath).filter(Files::isRegularFile).forEach(file -> {
+                    Path destFile = Paths.get(libDir.toAbsolutePath().toString(), libPath.relativize(file).toString());
+                    if (!Files.exists(destFile)) {
+                        try {
+                            Files.copy(file, destFile);
+                        } catch (IOException exception) {
+                            exception.printStackTrace(System.err);
+                        }
                     }
-                }
-            });
-        } catch (IOException exception) {
-            exception.printStackTrace(System.err);
+                });
+            } catch (IOException exception) {
+                exception.printStackTrace(System.err);
+            }
         }
 
         appUser.setUsername(userAccount.getUsername());
