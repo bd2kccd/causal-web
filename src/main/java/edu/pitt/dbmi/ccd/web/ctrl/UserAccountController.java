@@ -216,8 +216,11 @@ public class UserAccountController implements ViewController {
 
     @RequestMapping(value = DIR_BROWSER, method = RequestMethod.GET)
     public String browsingServerSideDirectory(
-            @RequestParam(value = "dir", defaultValue = "", required = false) String directory,
+            @RequestParam(value = "dir", required = false) String directory,
             Model model) {
+        if (directory == null) {
+            directory = System.getProperty("user.home");
+        }
         Path path = Paths.get(directory);
         model.addAttribute("itemList", FileUtility.getDirListing(path.toAbsolutePath().toString()));
         model.addAttribute("currDir", path.toAbsolutePath().toString());
@@ -230,7 +233,7 @@ public class UserAccountController implements ViewController {
             @RequestParam(value = "dir", required = false) String directory,
             @RequestParam(value = "newFolder") String newFolder, Model model) {
         if (directory == null) {
-            directory = "";
+            directory = System.getProperty("user.home");
         }
         Path path = Paths.get(directory);
         Path newDir = Paths.get(path.toAbsolutePath().toString(), newFolder);
