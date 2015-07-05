@@ -44,6 +44,8 @@ public interface ViewController {
 
     public static final String DATA_UPLOAD = "dataUpload";
 
+    public static final String DIR_BROWSER = "dirBrowser";
+
     public static final String DATASET = "dataset";
 
     public static final String PCSTABLE = "pcStable";

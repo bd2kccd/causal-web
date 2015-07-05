@@ -28,6 +28,9 @@ public class FileInfo {
 
     private String fileName;
 
+    // Added to support directory browsing
+    private String filePath;
+
     private String size;
 
     private String creationDate;
@@ -47,6 +50,14 @@ public class FileInfo {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 
     public String getSize() {

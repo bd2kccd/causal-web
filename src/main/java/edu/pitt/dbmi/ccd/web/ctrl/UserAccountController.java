@@ -20,11 +20,14 @@ package edu.pitt.dbmi.ccd.web.ctrl;
 
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import static edu.pitt.dbmi.ccd.web.ctrl.ViewController.DIR_BROWSER;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.UserRegistration;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.PersonService;
 import edu.pitt.dbmi.ccd.web.service.UserAccountService;
+import edu.pitt.dbmi.ccd.web.util.FileUtility;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,6 +44,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -208,6 +212,38 @@ public class UserAccountController implements ViewController {
         model.addAttribute("appUser", appUserService.createAppUser(userAccount));
 
         return REDIRECT_USER_PROFILE;
+    }
+
+    @RequestMapping(value = DIR_BROWSER, method = RequestMethod.GET)
+    public String browsingServerSideDirectory(
+            @RequestParam(value = "dir", defaultValue = "", required = false) String directory,
+            Model model) {
+        Path path = Paths.get(directory);
+        model.addAttribute("itemList", FileUtility.getDirListing(path.toAbsolutePath().toString()));
+        model.addAttribute("currDir", path.toAbsolutePath().toString());
+
+        return DIR_BROWSER;
+    }
+
+    @RequestMapping(value = DIR_BROWSER, method = RequestMethod.POST)
+    public String createNewDirectory(
+            @RequestParam(value = "dir", required = false) String directory,
+            @RequestParam(value = "newFolder") String newFolder, Model model) {
+        if (directory == null) {
+            directory = "";
+        }
+        Path path = Paths.get(directory);
+        Path newDir = Paths.get(path.toAbsolutePath().toString(), newFolder);
+        if (Files.notExists(newDir)) {
+            try {
+                Files.createDirectories(newDir);
+            } catch (IOException exception) {
+                exception.printStackTrace(System.err);
+            }
+        }
+        model.addAttribute("itemList", FileUtility.getDirListing(path.toAbsolutePath().toString()));
+        model.addAttribute("currDir", path.toAbsolutePath().toString());
+        return DIR_BROWSER;
     }
 
 }
