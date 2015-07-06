@@ -28,6 +28,8 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -47,6 +49,8 @@ import org.springframework.web.bind.support.SessionStatus;
 @Controller
 @SessionAttributes("appUser")
 public class ApplicationController implements ViewController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationController.class);
 
     private final UserAccountService userAccountService;
 
@@ -103,6 +107,9 @@ public class ApplicationController implements ViewController {
         try {
             currentUser.login(credentials);
         } catch (AuthenticationException exception) {
+            LOGGER.warn(
+                    String.format("Failed login attempt from user %s.", credentials.getUsername()),
+                    exception);
             model.addAttribute("errorMsg", "Invalid username and/or password.");
             return LOGIN;
         }
@@ -144,6 +151,9 @@ public class ApplicationController implements ViewController {
                 try {
                     currentUser.login(token);
                 } catch (AuthenticationException exception) {
+                    LOGGER.warn(
+                            String.format("Failed login attempt from user %s.", token.getUsername()),
+                            exception);
                     model.addAttribute("errorMsg", signInErrMsg);
                     return REDIRECT_SETUP;
                 }

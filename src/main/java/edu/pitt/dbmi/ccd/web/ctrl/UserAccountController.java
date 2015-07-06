@@ -37,6 +37,8 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.apache.shiro.subject.Subject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -57,6 +59,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @SessionAttributes("appUser")
 public class UserAccountController implements ViewController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserAccountController.class);
 
     private final UserAccountService userAccountService;
 
@@ -124,6 +128,9 @@ public class UserAccountController implements ViewController {
         try {
             userAccount = userAccountService.createNewUserAccount(userAccount);
         } catch (Exception exception) {
+            LOGGER.warn(
+                    String.format("Unable to set up new user account for %s.", userAccount.getUsername()),
+                    exception);
             model.addAttribute("errorMsg", setupErrMsg);
             return SETUP;
         }
@@ -134,6 +141,9 @@ public class UserAccountController implements ViewController {
         try {
             currentUser.login(token);
         } catch (AuthenticationException exception) {
+            LOGGER.warn(
+                    String.format("Failed login attempt from user %s.", token.getUsername()),
+                    exception);
             model.addAttribute("errorMsg", signInErrMsg);
             return SETUP;
         }
@@ -170,6 +180,9 @@ public class UserAccountController implements ViewController {
             try {
                 userAccountService.createNewUserAccount(userAccount);
             } catch (Exception exception) {
+                LOGGER.warn(
+                        String.format("Unable to register new user account for %s.", userAccount.getUsername()),
+                        exception);
                 redirectAttributes.addFlashAttribute("errorMsg", String.format("Unable to create account for '%s'.", username));
             }
 
@@ -246,6 +259,7 @@ public class UserAccountController implements ViewController {
         }
         model.addAttribute("itemList", FileUtility.getDirListing(path.toAbsolutePath().toString()));
         model.addAttribute("currDir", path.toAbsolutePath().toString());
+
         return DIR_BROWSER;
     }
 
