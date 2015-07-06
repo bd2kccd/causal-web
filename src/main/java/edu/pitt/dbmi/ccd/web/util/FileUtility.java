@@ -67,12 +67,14 @@ public class FileUtility {
         List<FileInfoMeta> fileMeta = new LinkedList<>();
         try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(directory)) {
             for (Path path : directoryStream) {
-                BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
-                FileInfoMeta info = new FileInfoMeta();
-                info.setFileName(path.getFileName().toString());
-                info.setSize(attrs.size());
-                info.setCreationDate(new Date(attrs.creationTime().toMillis()));
-                fileMeta.add(info);
+                if (!Files.isHidden(path)) {
+                    BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
+                    FileInfoMeta info = new FileInfoMeta();
+                    info.setFileName(path.getFileName().toString());
+                    info.setSize(attrs.size());
+                    info.setCreationDate(new Date(attrs.creationTime().toMillis()));
+                    fileMeta.add(info);
+                }
             }
         } catch (IOException exception) {
         }
@@ -107,15 +109,12 @@ public class FileUtility {
         Path parentPath = Paths.get(directory).getParent();
         if (parentPath != null) {
             try {
-                BasicFileAttributes attrs = Files.readAttributes(parentPath,
-                        BasicFileAttributes.class);
+                BasicFileAttributes attrs = Files.readAttributes(parentPath, BasicFileAttributes.class);
                 if (attrs.isDirectory()) {
                     FileInfoMeta info = new FileInfoMeta();
                     info.setFileName("..");
-                    info.setFilePath(parentPath.toAbsolutePath()
-                            .toString());
-                    info.setCreationDate(new Date(attrs.creationTime()
-                            .toMillis()));
+                    info.setFilePath(parentPath.toAbsolutePath().toString());
+                    info.setCreationDate(new Date(attrs.creationTime().toMillis()));
                     info.setSize(attrs.size());
                     fileList.add(info);
                 }
@@ -126,20 +125,18 @@ public class FileUtility {
         }
 
         // Get sub-directories
-        try (DirectoryStream<Path> directoryStream = Files
-                .newDirectoryStream(Paths.get(directory))) {
+        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(directory))) {
             for (Path path : directoryStream) {
-                BasicFileAttributes attrs = Files.readAttributes(path,
-                        BasicFileAttributes.class);
-                if (attrs.isDirectory()) {
-                    FileInfoMeta info = new FileInfoMeta();
-                    info.setFileName(path.getFileName().toString());
-                    info.setFilePath(path.toAbsolutePath()
-                            .toString());
-                    info.setCreationDate(new Date(attrs.creationTime()
-                            .toMillis()));
-                    info.setSize(attrs.size());
-                    fileList.add(info);
+                if (!Files.isHidden(path)) {
+                    BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
+                    if (attrs.isDirectory()) {
+                        FileInfoMeta info = new FileInfoMeta();
+                        info.setFileName(path.getFileName().toString());
+                        info.setFilePath(path.toAbsolutePath().toString());
+                        info.setCreationDate(new Date(attrs.creationTime().toMillis()));
+                        info.setSize(attrs.size());
+                        fileList.add(info);
+                    }
                 }
             }
         } catch (IOException exception) {
@@ -168,7 +165,7 @@ public class FileUtility {
          */
         @Override
         public int compare(FileInfoMeta o1, FileInfoMeta o2) {
-	    // TODO Auto-generated method stub
+            // TODO Auto-generated method stub
             // Keep parent directory in the top of list
             if (o1.getFileName().equalsIgnoreCase("..")) {
                 return -1;
