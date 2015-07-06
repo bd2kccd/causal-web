@@ -28,7 +28,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -79,25 +78,16 @@ public class FileUtility {
         } catch (IOException exception) {
         }
 
-        Collections.sort(fileMeta, new FileDateSort());
-        for (FileInfoMeta info : fileMeta) {
+        Collections.sort(fileMeta, (FileInfoMeta o1, FileInfoMeta o2) -> o1.getCreationDate().compareTo(o2.getCreationDate()));
+        fileMeta.stream().forEach(info -> {
             FileInfo resultFile = new FileInfo();
             resultFile.setCreationDate(FileUtility.formatDate(info.getCreationDate()));
             resultFile.setFileName(info.getFileName());
             resultFile.setSize(FileUtility.humanReadableSize(info.getSize(), true));
             list.add(resultFile);
-        }
+        });
 
         return list;
-    }
-
-    private static class FileDateSort implements Comparator<FileInfoMeta> {
-
-        @Override
-        public int compare(FileInfoMeta o1, FileInfoMeta o2) {
-            return o1.getCreationDate().compareTo(o2.getCreationDate());
-        }
-
     }
 
     public static List<FileInfo> getDirListing(String directory) {
@@ -143,39 +133,25 @@ public class FileUtility {
             exception.printStackTrace();
         }
 
-        Collections.sort(fileList, new FileNameSort());
-        for (FileInfoMeta info : fileList) {
+        Collections.sort(fileList, (FileInfoMeta o1, FileInfoMeta o2) -> {
+            if (o1.getFileName().equalsIgnoreCase("..")) {
+                return -1;
+            } else if (o2.getFileName().equalsIgnoreCase("..")) {
+                return 1;
+            } else {
+                return o1.getFileName().compareToIgnoreCase(o2.getFileName());
+            }
+        });
+        fileList.stream().forEach(info -> {
             FileInfo resultFile = new FileInfo();
             resultFile.setFileName(info.getFileName());
             resultFile.setFilePath(info.getFilePath());
             resultFile.setCreationDate(FileUtility.formatDate(info.getCreationDate()));
             resultFile.setSize(FileUtility.humanReadableSize(info.getSize(), true));
             list.add(resultFile);
-        }
+        });
 
         return list;
-    }
-
-    private static class FileNameSort implements Comparator<FileInfoMeta> {
-
-        /*
-         * (non-Javadoc)
-         *
-         * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-         */
-        @Override
-        public int compare(FileInfoMeta o1, FileInfoMeta o2) {
-            // TODO Auto-generated method stub
-            // Keep parent directory in the top of list
-            if (o1.getFileName().equalsIgnoreCase("..")) {
-                return -1;
-            }
-            if (o2.getFileName().equalsIgnoreCase("..")) {
-                return 1;
-            }
-            return o1.getFileName().compareTo(o2.getFileName());
-        }
-
     }
 
     private static class FileInfoMeta {
