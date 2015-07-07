@@ -18,12 +18,15 @@
  */
 package edu.pitt.dbmi.ccd.web.service;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
@@ -37,11 +40,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class AlgorithmService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmService.class);
+
     public AlgorithmService() {
     }
 
     @Async
-    public Future<Void> runAlgorithm(List<String> commands, String fileName, String tmpDirectory, String outputDirectory) throws Exception {
+    public Future<Void> runAlgorithm(List<String> commands, String fileName, String tmpDirectory, String outputDirectory) {
         commands.add("--out");
         commands.add(tmpDirectory);
 
@@ -52,17 +57,28 @@ public class AlgorithmService {
         Path src = Paths.get(tmpDirectory, fileName);
         Path dest = Paths.get(outputDirectory, fileName);
 
-        ProcessBuilder pb = new ProcessBuilder(commands);
-        pb.redirectError(error.toFile());
-        Process process = pb.start();
-        process.waitFor();
+        StringBuilder sb = new StringBuilder();
+        commands.forEach(cmd -> {
+            sb.append(cmd);
+            sb.append(" ");
+        });
+        LOGGER.info("Algorithm command: " + sb.toString());
 
-        if (process.exitValue() == 0) {
-            Files.move(src, dest, StandardCopyOption.REPLACE_EXISTING);
-            Files.deleteIfExists(error);
-        } else {
-            Files.deleteIfExists(src);
-            Files.move(error, errorDest, StandardCopyOption.REPLACE_EXISTING);
+        try {
+            ProcessBuilder pb = new ProcessBuilder(commands);
+            pb.redirectError(error.toFile());
+            Process process = pb.start();
+            process.waitFor();
+
+            if (process.exitValue() == 0) {
+                Files.move(src, dest, StandardCopyOption.REPLACE_EXISTING);
+                Files.deleteIfExists(error);
+            } else {
+                Files.deleteIfExists(src);
+                Files.move(error, errorDest, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException | InterruptedException exception) {
+            LOGGER.error("Algorithm did not run successfully.", exception);
         }
 
         return new AsyncResult<>(null);

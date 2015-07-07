@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -39,6 +41,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class AppUserService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AppUserService.class);
 
     private final String uploadDirectory;
 
@@ -80,7 +84,9 @@ public class AppUserService {
                 try {
                     Files.createDirectories(directory);
                 } catch (IOException exception) {
-                    exception.printStackTrace(System.err);
+                    LOGGER.error(
+                            String.format("Unable to create directory '%s'.", directory),
+                            exception);
                 }
             }
         }
@@ -100,7 +106,7 @@ public class AppUserService {
                     }
                 });
             } catch (IOException exception) {
-                exception.printStackTrace(System.err);
+                LOGGER.error("Unable to copy resources (lib).", exception);
             }
         }
 

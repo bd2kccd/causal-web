@@ -27,6 +27,8 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -47,6 +49,8 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @SessionAttributes("appUser")
 @RequestMapping(value = "/algorithm/pcStable")
 public class PcStableController extends AlgorithmController implements ViewController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PcStableController.class);
 
     private final String pcStable;
 
@@ -126,7 +130,7 @@ public class PcStableController extends AlgorithmController implements ViewContr
         try {
             algorithmService.runAlgorithm(commands, fileName, appUser.getTmpDirectory(), appUser.getOutputDirectory());
         } catch (Exception exception) {
-            exception.printStackTrace(System.err);
+            LOGGER.error("Unable to run GES.", exception);
         }
 
         model.addAttribute("title", "PC-Stable is Running");

@@ -30,6 +30,8 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -40,6 +42,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class BigDataFileManager {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BigDataFileManager.class);
 
     public BigDataFileManager() {
     }
@@ -90,7 +94,7 @@ public class BigDataFileManager {
             try {
                 Files.createDirectories(chunkFile);
             } catch (IOException exception) {
-                exception.printStackTrace(System.err);
+                LOGGER.error(exception.getMessage());
             }
         }
         Files.copy(inputStream, chunkFile, StandardCopyOption.REPLACE_EXISTING);
@@ -116,8 +120,6 @@ public class BigDataFileManager {
     }
 
     /**
-     * Merge all the chunks together into the original file. Delete the
-     * directory containing the chunks. Compute MD5 hash on the original file.
      *
      * @param fileName the name given (usually original file name) to the merged
      * file
@@ -125,8 +127,7 @@ public class BigDataFileManager {
      * @param chunkSize size of each chunk
      * @param totalSize size of the original file
      * @param numOfChunks number of chunks file is broken into
-     * @param srcDirectory
-     * @param destDirectory
+     * @param directory
      * @return MD5 hash of the original file
      * @throws IOException
      */
@@ -144,7 +145,7 @@ public class BigDataFileManager {
         try {
             deleteNonEmptyDir(Paths.get(directory, identifier));
         } catch (IOException exception) {
-            exception.printStackTrace(System.err);
+            LOGGER.error(exception.getMessage());
         }
         return md5;
     }

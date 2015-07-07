@@ -20,7 +20,6 @@ package edu.pitt.dbmi.ccd.web.ctrl;
 
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
-import edu.pitt.dbmi.ccd.web.service.FileInfoService;
 import edu.pitt.dbmi.ccd.web.util.FileUtility;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -37,7 +36,8 @@ import java.util.regex.Pattern;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -59,11 +59,9 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @RequestMapping(value = "/results")
 public class ResultController implements ViewController {
 
-    private final FileInfoService fileInfoService;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ResultController.class);
 
-    @Autowired(required = true)
-    public ResultController(FileInfoService fileInfoService) {
-        this.fileInfoService = fileInfoService;
+    public ResultController() {
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -110,23 +108,33 @@ public class ResultController implements ViewController {
             @RequestParam(value = "file") String filename,
             @ModelAttribute("appUser") AppUser appUser,
             HttpServletRequest request,
-            HttpServletResponse response) throws IOException {
+            HttpServletResponse response) {
         ServletContext context = request.getServletContext();
 
         Path file = Paths.get(appUser.getOutputDirectory(), filename);
 
         String mimeType = context.getMimeType(file.toAbsolutePath().toString());
         if (mimeType == null) {
-            mimeType = "application/octet-stream";
+            mimeType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
         }
         response.setContentType(mimeType);
-        response.setContentLength((int) Files.size(file));
+        try {
+            response.setContentLength((int) Files.size(file));
+        } catch (IOException exception) {
+            LOGGER.error(
+                    String.format("Unable to get file '%s' size.", filename),
+                    exception);
+        }
 
         String headerKey = "Content-Disposition";
         String headerValue = String.format("attachment; filename=\"%s\"", filename);
         response.setHeader(headerKey, headerValue);
 
-        Files.copy(file, response.getOutputStream());
+        try {
+            Files.copy(file, response.getOutputStream());
+        } catch (IOException exception) {
+            LOGGER.error(String.format("Unable to download file '%s'.", filename), exception);
+        }
     }
 
     @RequestMapping(value = "/delete", method = RequestMethod.GET)
@@ -169,7 +177,7 @@ public class ResultController implements ViewController {
                 }
             }
         } catch (IOException exception) {
-            exception.printStackTrace(System.err);
+            LOGGER.error(String.format("Unable to read file '%s'.", filename), exception);
         }
 
         model.addAttribute("plot", filename);
@@ -202,7 +210,7 @@ public class ResultController implements ViewController {
                 }
             }
         } catch (IOException exception) {
-            exception.printStackTrace(System.err);
+            LOGGER.error(String.format("Unable to read file '%s'.", filename), exception);
         }
 
         model.addAttribute("data", links);

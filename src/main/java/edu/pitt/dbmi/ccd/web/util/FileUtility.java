@@ -31,6 +31,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -39,6 +41,8 @@ import java.util.List;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class FileUtility {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileUtility.class);
 
     public static final DateFormat DATE_FORMAT = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss");
 
@@ -76,10 +80,11 @@ public class FileUtility {
                 }
             }
         } catch (IOException exception) {
+            LOGGER.error(exception.getMessage());
         }
 
         Collections.sort(fileMeta, (FileInfoMeta o1, FileInfoMeta o2) -> o1.getCreationDate().compareTo(o2.getCreationDate()));
-        fileMeta.stream().forEach(info -> {
+        fileMeta.forEach(info -> {
             FileInfo resultFile = new FileInfo();
             resultFile.setCreationDate(FileUtility.formatDate(info.getCreationDate()));
             resultFile.setFileName(info.getFileName());
@@ -108,9 +113,8 @@ public class FileUtility {
                     info.setSize(attrs.size());
                     fileList.add(info);
                 }
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            } catch (IOException exception) {
+                LOGGER.error(exception.getMessage());
             }
         }
 
@@ -130,7 +134,7 @@ public class FileUtility {
                 }
             }
         } catch (IOException exception) {
-            exception.printStackTrace();
+            LOGGER.error(exception.getMessage());
         }
 
         Collections.sort(fileList, (FileInfoMeta o1, FileInfoMeta o2) -> {
@@ -142,7 +146,7 @@ public class FileUtility {
                 return o1.getFileName().compareToIgnoreCase(o2.getFileName());
             }
         });
-        fileList.stream().forEach(info -> {
+        fileList.forEach(info -> {
             FileInfo resultFile = new FileInfo();
             resultFile.setFileName(info.getFileName());
             resultFile.setFilePath(info.getFilePath());

@@ -32,6 +32,8 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 import javax.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -52,6 +54,8 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @SessionAttributes("appUser")
 @RequestMapping(value = "/data")
 public class DataController implements ViewController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataController.class);
 
     private final BigDataFileManager fileManager;
 
@@ -84,24 +88,31 @@ public class DataController implements ViewController {
             return;
         }
 
-        fileManager.storeChunk(chunk.getResumableIdentifier(), chunk.getResumableChunkNumber(), chunk.getFile().getInputStream(), appUser.getUploadDirectory());
-        if (fileManager.allChunksUploaded(chunk.getResumableIdentifier(), chunk.getResumableChunkSize(), chunk.getResumableTotalSize(), chunk.getResumableTotalChunks(), appUser.getUploadDirectory())) {
-            String md5 = fileManager.mergeAndDeleteWithMd5(chunk.getResumableFilename(), chunk.getResumableIdentifier(), chunk.getResumableChunkSize(), chunk.getResumableTotalSize(), chunk.getResumableTotalChunks(), appUser.getUploadDirectory());
+        try {
+            fileManager.storeChunk(chunk.getResumableIdentifier(), chunk.getResumableChunkNumber(), chunk.getFile().getInputStream(), appUser.getUploadDirectory());
+            if (fileManager.allChunksUploaded(chunk.getResumableIdentifier(), chunk.getResumableChunkSize(), chunk.getResumableTotalSize(), chunk.getResumableTotalChunks(), appUser.getUploadDirectory())) {
+                String md5 = fileManager.mergeAndDeleteWithMd5(chunk.getResumableFilename(), chunk.getResumableIdentifier(), chunk.getResumableChunkSize(), chunk.getResumableTotalSize(), chunk.getResumableTotalChunks(), appUser.getUploadDirectory());
 
-            Path path = Paths.get(appUser.getUploadDirectory(), chunk.getResumableFilename());
-            BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
+                Path path = Paths.get(appUser.getUploadDirectory(), chunk.getResumableFilename());
+                BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
 
-            DataFile dataFile = new DataFile();
-            dataFile.setFileName(path.getFileName().toString());
-            dataFile.setFileAbsolutePath(path.toAbsolutePath().toString());
-            dataFile.setCreationTime(new Date(attrs.creationTime().toMillis()));
-            dataFile.setLastAccessTime(new Date(attrs.lastAccessTime().toMillis()));
-            dataFile.setLastModifiedTime(new Date(attrs.lastModifiedTime().toMillis()));
-            dataFile.setFileSize(attrs.size());
-            dataFile.setMd5CheckSum(md5);
-            fileInfoService.saveFile(dataFile);
+                DataFile dataFile = new DataFile();
+                dataFile.setFileName(path.getFileName().toString());
+                dataFile.setFileAbsolutePath(path.toAbsolutePath().toString());
+                dataFile.setCreationTime(new Date(attrs.creationTime().toMillis()));
+                dataFile.setLastAccessTime(new Date(attrs.lastAccessTime().toMillis()));
+                dataFile.setLastModifiedTime(new Date(attrs.lastModifiedTime().toMillis()));
+                dataFile.setFileSize(attrs.size());
+                dataFile.setMd5CheckSum(md5);
+                fileInfoService.saveFile(dataFile);
 
-            response.getWriter().println(md5);
+                response.getWriter().println(md5);
+            }
+        } catch (IOException exception) {
+            LOGGER.error(
+                    String.format("Unable to upload chunk %s.", chunk.getResumableFilename()),
+                    exception);
+            throw exception;
         }
         response.setStatus(200);
     }
@@ -120,7 +131,9 @@ public class DataController implements ViewController {
         try {
             Files.deleteIfExists(file);
         } catch (IOException exception) {
-            exception.printStackTrace(System.err);
+            LOGGER.error(
+                    String.format("Unable to delete file %s.", file.toAbsolutePath().toString()),
+                    exception);
         }
 
         return "redirect:/data";
