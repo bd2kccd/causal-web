@@ -21,32 +21,46 @@ The web version allows multiple users to run the algorithms on their dataset on 
 * ccd-db-0.4.jar
 
 #### Building the Application
-Since this is a maven project all the dependencies will be download from the Maven public repository when compiling.  There is one dependency that is need to be install manually.  That is the [ccd-db-04](https://github.com/bd2kccd/ccd-db/tree/v0.4-alpha).  Download the ccd-db-0.4 project from GitHub and do a **maven install**.  After ccd-db-0.4 is installed do a **maven package** for this project.  There should be a jar file called ccd-web.jar in the target folder.
+Since this is a maven project all the dependencies will be download from the Maven public repository when compiling. There is one dependency that must be built and installed manually, the database component.  
+* Download the [ccd-db-04](https://github.com/bd2kccd/ccd-db/tree/v0.4-alpha) project from GitHub.
+* In the ccd-db-04 directory run **mvn install** to build and install the ccd-db-0.4.jar library   
+* After ccd-db-0.4 has been successfully built and installed, go to the **ccd-web** directory and run **mvn package**. This will create a jar file called **ccd-web.jar** in the **/target** folder.
 
 
 ## Run As a Desktop Application
 ### Configurations
-Open up the application.properties file in the jar file.  Change the properties to the following:
+In order to run as a desktop application you must edit the **application.properties** file in the jar file and change the following properties:
 
-**spring.profiles.active = desktop
-spring.jpa.show-sql = false
-app.webapp = false**
+* spring.profiles.active = desktop
+
+* spring.jpa.show-sql = false
+
+* app.webapp = false
+
+* server.port=[port]     *// add this property if you have a conflict with the default port 8080, (e.g,. server.port=8181) *
+
+> *Note: this file follows the standard Spring boot configurations properties. see [here](http://docs.spring.io/spring-boot/docs/current-SNAPSHOT/reference/htmlsingle/#common-application-properties) for more information
 
 ### Setup Workspace
 Workspace is the directory where the application will be working in.  The application will be working from this directory.
 
-Create a directory called **workspace** in your home directory.  For an example, ***C:\Users\kevin\workspace***.
+1. Create a directory called **workspace** in your home directory.  For an example, ***C:\Users\kevin\workspace***.
 
-Create a folder called **lib** in the **workspace** directory.  For an example, ***C:\Users\kevin\workspace\lib***.
+2. Create a folder called **lib** in the **workspace** directory.  For an example, ***C:\Users\kevin\workspace\lib***.
 
-Copy all the algorithm dependencies into the lib folder.  This is where the application will call the algorithms.
 
 ### Launch the Program
 ```java
 java -jar ccd-web.jar
 ```
-To give the program 4GB of memory to run on, type the follow:
+To give the program 4GB of memory to run on, type the follow, using the jvm options:
 ```java
 java -Xmx4G -jar ccd-web.jar
 ```
+
+To launch app in the browser
+```
+http://localhost:[port]/ccd       // default port is 8080, otherwise change to specified port
+```
+
 ******
