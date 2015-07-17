@@ -62,4 +62,6 @@ public interface ViewController {
 
     public static final String D3_GRAPH = "d3graph";
 
+    public static final String FILE_INFO = "fileInfo";
+
 }

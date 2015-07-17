@@ -71,12 +71,11 @@ public class ResultController implements ViewController {
     @RequestMapping(method = RequestMethod.GET)
     public String showRunResultsView(Model model, @ModelAttribute("appUser") AppUser appUser) {
         List<FileInfo> listing = new LinkedList<>();
-
         try {
-            List<Path> list = FileInfos.getDirectoryListing(Paths.get(appUser.getOutputDirectory()), false);
+            List<Path> list = FileInfos.listDirectory(Paths.get(appUser.getOutputDirectory()), false);
             List<Path> files = list.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
 
-            List<BasicFileInfo> result = FileInfos.getBasicInfos(files);
+            List<BasicFileInfo> result = FileInfos.listBasicPathInfo(files);
             result.forEach(info -> {
                 FileInfo resultFile = new FileInfo();
                 resultFile.setCreationDate(FilePrint.fileTimestamp(info.getCreationTime()));

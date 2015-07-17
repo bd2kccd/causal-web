@@ -12,6 +12,13 @@
         <link rel="stylesheet" href="../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{/vendors/font-awesome/css/font-awesome.min.css}" />
         <link rel="stylesheet" href="../static/vendors/sb-admin-2/css/sb-admin-2.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.css}" />
         <link rel="stylesheet" href="../static/css/styles.css" th:href="@{/css/styles.css}" />
+        <style>
+            iframe {
+                width: 100%;
+                height: 400px;
+                border: none;
+            }
+        </style>
     </head>
     <body>
         <div id="wrapper">
@@ -40,7 +47,9 @@
                                         </thead>
                                         <tbody>
                                             <tr th:each="item : ${itemList}">
-                                                <td th:text="${item.fileName}"></td>
+                                                <td>
+                                                    <a href="#" th:attr="data-filename=${item.fileName}" th:text="${item.fileName}" data-toggle="modal" data-target="#fileInfo"></a>
+                                                </td>
                                                 <td th:text="${item.creationDate}"></td>
                                                 <td th:text="${item.size}"></td>
                                                 <td><p data-placement="top" data-toggle="tooltip" title="Delete"><button class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#confirm-delete" data-href="data/delete?file=" th:attr="data-href='data/delete?file=' + ${item.fileName}"><span class="glyphicon glyphicon-trash"></span></button></p></td>
@@ -80,6 +89,37 @@
                 <!-- /.modal-content --> 
             </div>
             <!-- /.modal-dialog --> 
+        </div>
+        <div id="fileInfo" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="info" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                        <h4 class="modal-title custom_align" id="Heading">File Information</h4>
+                    </div>
+                    <div class="modal-body">
+                    </div>
+                    <div class="modal-footer ">
+                        <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="fileInfo" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="info" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                        <h4 class="modal-title"></h4>
+                    </div>
+                    <div class="modal-body">
+                        <iframe class="embed-responsive-item" id="fileInfoFrame" marginwidth="0" marginheight="0" scrolling="yes"></iframe>
+                    </div>
+                    <div class="modal-footer ">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
         </div>
         <script src="../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
         <script src="../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
