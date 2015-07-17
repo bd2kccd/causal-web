@@ -18,9 +18,12 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl;
 
+import edu.pitt.dbmi.ccd.commons.file.FilePrint;
+import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
+import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.model.FileInfo;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
-import edu.pitt.dbmi.ccd.web.util.FileUtility;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -33,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -66,7 +70,25 @@ public class ResultController implements ViewController {
 
     @RequestMapping(method = RequestMethod.GET)
     public String showRunResultsView(Model model, @ModelAttribute("appUser") AppUser appUser) {
-        model.addAttribute("itemList", FileUtility.getFileListing(Paths.get(appUser.getOutputDirectory())));
+        List<FileInfo> listing = new LinkedList<>();
+
+        try {
+            List<Path> list = FileInfos.getDirectoryListing(Paths.get(appUser.getOutputDirectory()), false);
+            List<Path> files = list.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
+
+            List<BasicFileInfo> result = FileInfos.getBasicInfos(files);
+            result.forEach(info -> {
+                FileInfo resultFile = new FileInfo();
+                resultFile.setCreationDate(FilePrint.fileTimestamp(info.getCreationTime()));
+                resultFile.setFileName(info.getFilename());
+                resultFile.setSize(FilePrint.humanReadableSize(info.getSize(), true));
+                listing.add(resultFile);
+            });
+        } catch (IOException exception) {
+            LOGGER.error(exception.getMessage());
+        }
+
+        model.addAttribute("itemList", listing);
 
         return RUN_RESULTS;
     }

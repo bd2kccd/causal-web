@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.2.4.RELEASE</version>
+        <version>1.2.5.RELEASE</version>
     </parent>
 
     <properties>
@@ -96,6 +96,11 @@
             <groupId>edu.pitt.dbmi</groupId>
             <artifactId>ccd-db</artifactId>
             <version>0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.pitt.dbmi</groupId>
+            <artifactId>ccd-commons</artifactId>
+            <version>0.1</version>
         </dependency>
     </dependencies>
 	

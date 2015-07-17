@@ -18,19 +18,25 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.data;
 
+import edu.pitt.dbmi.ccd.commons.file.FilePrint;
+import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
+import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
 import edu.pitt.dbmi.ccd.db.entity.DataFile;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.model.FileInfo;
 import edu.pitt.dbmi.ccd.web.model.ResumableChunk;
 import edu.pitt.dbmi.ccd.web.service.BigDataFileManager;
 import edu.pitt.dbmi.ccd.web.service.FileInfoService;
-import edu.pitt.dbmi.ccd.web.util.FileUtility;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,7 +125,25 @@ public class DataController implements ViewController {
 
     @RequestMapping(method = RequestMethod.GET)
     public String showDatasetView(Model model, @ModelAttribute("appUser") AppUser appUser) {
-        model.addAttribute("itemList", FileUtility.getFileListing(Paths.get(appUser.getUploadDirectory())));
+        List<FileInfo> listing = new LinkedList<>();
+
+        try {
+            List<Path> list = FileInfos.getDirectoryListing(Paths.get(appUser.getUploadDirectory()), false);
+            List<Path> files = list.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
+
+            List<BasicFileInfo> result = FileInfos.getBasicInfos(files);
+            result.forEach(info -> {
+                FileInfo resultFile = new FileInfo();
+                resultFile.setCreationDate(FilePrint.fileTimestamp(info.getCreationTime()));
+                resultFile.setFileName(info.getFilename());
+                resultFile.setSize(FilePrint.humanReadableSize(info.getSize(), true));
+                listing.add(resultFile);
+            });
+        } catch (IOException exception) {
+            LOGGER.error(exception.getMessage());
+        }
+
+        model.addAttribute("itemList", listing);
 
         return DATASET;
     }
