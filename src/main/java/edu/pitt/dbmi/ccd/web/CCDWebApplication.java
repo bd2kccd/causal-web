@@ -18,10 +18,15 @@
  */
 package edu.pitt.dbmi.ccd.web;
 
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.web.SpringBootServletInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
 
 @SpringBootApplication
 public class CCDWebApplication extends SpringBootServletInitializer {
@@ -32,7 +37,33 @@ public class CCDWebApplication extends SpringBootServletInitializer {
     }
 
     public static void main(String[] args) {
-        SpringApplication.run(CCDWebApplication.class, args);
+        ConfigurableApplicationContext context = SpringApplication.run(CCDWebApplication.class, args);
+        String[] profiles = context.getEnvironment().getActiveProfiles();
+        for (String profile : profiles) {
+            if ("desktop".equals(profile)) {
+                launchBrowser();
+                break;
+            }
+        }
+    }
+
+    private static void launchBrowser() {
+        String url = "http://localhost:8080/ccd";
+        if (Desktop.isDesktopSupported()) {
+            Desktop desktop = Desktop.getDesktop();
+            try {
+                desktop.browse(new URI(url));
+            } catch (IOException | URISyntaxException exception) {
+                exception.printStackTrace(System.err);
+            }
+        } else {
+            Runtime runtime = Runtime.getRuntime();
+            try {
+                runtime.exec("xdg-open " + url);
+            } catch (IOException exception) {
+                exception.printStackTrace(System.err);
+            }
+        }
     }
 
 }
