@@ -17,11 +17,9 @@
             <div class="panel-body">
                 <table class="table table-striped table-condensed">
                     <tbody>
-                        <tr>
-                            <td>Jul 17, 2015 10:31:21</td>
-                        </tr>
-                        <tr>
-                            <td>37.93 kB</td>
+                        <tr th:each="info : ${basicInfo}">
+                            <td th:text="${info.attribute}"></td>
+                            <td th:text="${info.value}"></td>
                         </tr>
                     </tbody>
                 </table>

@@ -18,9 +18,21 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl;
 
+import edu.pitt.dbmi.ccd.commons.file.FilePrint;
+import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
+import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.model.AttributeValue;
+import edu.pitt.dbmi.ccd.web.util.MessageDigestHash;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.LinkedList;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -38,18 +50,28 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @RequestMapping(value = "/fs")
 public class FilesystemController implements ViewController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(FilesystemController.class);
+
     @RequestMapping(value = "/fileInfo", method = RequestMethod.GET)
     public String getFileFInfo(
             @RequestParam(value = "file") String filename,
-            @ModelAttribute("appUser") AppUser appUser) throws IOException {
+            @ModelAttribute("appUser") AppUser appUser,
+            Model model) throws IOException {
+        List<AttributeValue> basicInfo = new LinkedList<>();
+        Path file = Paths.get(appUser.getUploadDirectory(), filename);
+        try {
+            BasicFileInfo info = FileInfos.basicPathInfo(file);
+            basicInfo.add(new AttributeValue("Size:", FilePrint.humanReadableSize(info.getSize(), true)));
+            basicInfo.add(new AttributeValue("Creation Time:", FilePrint.fileTimestamp(info.getCreationTime())));
+            basicInfo.add(new AttributeValue("Last Access Time:", FilePrint.fileTimestamp(info.getLastAccessTime())));
+            basicInfo.add(new AttributeValue("Last Modified Time:", FilePrint.fileTimestamp(info.getLastModifiedTime())));
+            basicInfo.add(new AttributeValue("MD5:", MessageDigestHash.computeMD5Hash(file)));
+        } catch (IOException exception) {
+            LOGGER.error(exception.getMessage());
+        }
 
-        System.out.printf("I'm here: %s\n", filename);
+        model.addAttribute("basicInfo", basicInfo);
 
-//        Path file = Paths.get(appUser.getUploadDirectory(), filename);
-//        try {
-//            BasicFileInfo info = FileInfos.basicPathInfo(file);
-//        } catch (IOException exception) {
-//        }
         return FILE_INFO;
     }
 
