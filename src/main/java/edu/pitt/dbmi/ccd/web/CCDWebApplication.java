@@ -27,6 +27,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.ConfigurableEnvironment;
 
 @SpringBootApplication
 public class CCDWebApplication extends SpringBootServletInitializer {
@@ -35,20 +36,27 @@ public class CCDWebApplication extends SpringBootServletInitializer {
     protected SpringApplicationBuilder configure(SpringApplicationBuilder applicationBuilder) {
         return applicationBuilder.sources(CCDWebApplication.class);
     }
-
+    
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(CCDWebApplication.class, args);
         String[] profiles = context.getEnvironment().getActiveProfiles();
+        boolean desktop = false;
         for (String profile : profiles) {
             if ("desktop".equals(profile)) {
-                launchBrowser();
+                desktop = true;
                 break;
             }
         }
+
+        if (desktop) {
+            launchBrowser(context.getEnvironment());
+        }
     }
 
-    private static void launchBrowser() {
-        String url = "http://localhost:8080/ccd";
+    private static void launchBrowser(ConfigurableEnvironment environment) {
+        String port = environment.getProperty("server.port", "8080");
+        String address = environment.getProperty("server.address", "localhost");
+        String url = String.format("http://%s:%s/ccd", address, port);
         if (Desktop.isDesktopSupported()) {
             Desktop desktop = Desktop.getDesktop();
             try {
