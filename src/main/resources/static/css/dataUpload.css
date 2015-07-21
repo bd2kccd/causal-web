@@ -34,6 +34,12 @@ MA 02110-1301  USA
     font: 20pt bold 'Vollkorn';
     color: #bbb;
 }
+.resumable-drop i {
+    font-size: 10em;
+    display: block;
+    color: #f5f5f5;
+    text-shadow: 0 -1px 1px #d8d8d8;
+}
 
 .resumable-list {
     display: none;

@@ -1,7 +1,7 @@
 .login-panel {
     margin-top: 25%;
 }
-.profile-img {
+/*.profile-img {
     width: 96px;
     height: 96px;
     margin: 0 auto 20px;
@@ -9,6 +9,12 @@
     -moz-border-radius: 50%;
     -webkit-border-radius: 50%;
     border-radius: 50%;
+}*/
+.profile-img {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 20px;
+    display: block;
 }
 .forgot-password {
     color: rgb(104, 145, 162);

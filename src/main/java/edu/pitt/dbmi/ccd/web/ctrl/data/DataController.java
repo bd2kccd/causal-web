@@ -21,19 +21,15 @@ package edu.pitt.dbmi.ccd.web.ctrl.data;
 import edu.pitt.dbmi.ccd.commons.file.FilePrint;
 import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
-import edu.pitt.dbmi.ccd.db.entity.DataFile;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.FileInfo;
 import edu.pitt.dbmi.ccd.web.model.ResumableChunk;
 import edu.pitt.dbmi.ccd.web.service.BigDataFileManager;
-import edu.pitt.dbmi.ccd.web.service.FileInfoService;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,12 +61,9 @@ public class DataController implements ViewController {
 
     private final BigDataFileManager fileManager;
 
-    private final FileInfoService fileInfoService;
-
     @Autowired(required = true)
-    public DataController(BigDataFileManager fileManager, FileInfoService fileInfoService) {
+    public DataController(BigDataFileManager fileManager) {
         this.fileManager = fileManager;
-        this.fileInfoService = fileInfoService;
     }
 
     @RequestMapping(value = "/upload", method = RequestMethod.GET)
@@ -99,19 +92,8 @@ public class DataController implements ViewController {
             if (fileManager.allChunksUploaded(chunk.getResumableIdentifier(), chunk.getResumableChunkSize(), chunk.getResumableTotalSize(), chunk.getResumableTotalChunks(), appUser.getUploadDirectory())) {
                 String md5 = fileManager.mergeAndDeleteWithMd5(chunk.getResumableFilename(), chunk.getResumableIdentifier(), chunk.getResumableChunkSize(), chunk.getResumableTotalSize(), chunk.getResumableTotalChunks(), appUser.getUploadDirectory());
 
-                Path path = Paths.get(appUser.getUploadDirectory(), chunk.getResumableFilename());
-                BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
-
-                DataFile dataFile = new DataFile();
-                dataFile.setFileName(path.getFileName().toString());
-                dataFile.setFileAbsolutePath(path.toAbsolutePath().toString());
-                dataFile.setCreationTime(new Date(attrs.creationTime().toMillis()));
-                dataFile.setLastAccessTime(new Date(attrs.lastAccessTime().toMillis()));
-                dataFile.setLastModifiedTime(new Date(attrs.lastModifiedTime().toMillis()));
-                dataFile.setFileSize(attrs.size());
-                dataFile.setMd5CheckSum(md5);
-                fileInfoService.saveFile(dataFile);
-
+//                Path path = Paths.get(appUser.getUploadDirectory(), chunk.getResumableFilename());
+//                BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
                 response.getWriter().println(md5);
             }
         } catch (IOException exception) {
@@ -151,7 +133,6 @@ public class DataController implements ViewController {
     @RequestMapping(value = "/delete", method = RequestMethod.GET)
     public String deleteResultFile(@RequestParam(value = "file") String filename, Model model, @ModelAttribute("appUser") AppUser appUser) {
         Path file = Paths.get(appUser.getUploadDirectory(), filename);
-        fileInfoService.deleteFile(file.toAbsolutePath().toString());
         try {
             Files.deleteIfExists(file);
         } catch (IOException exception) {
