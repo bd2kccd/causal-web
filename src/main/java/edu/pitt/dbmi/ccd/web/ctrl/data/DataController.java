@@ -18,14 +18,13 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.data;
 
-import edu.pitt.dbmi.ccd.commons.file.FilePrint;
-import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.model.FileInfo;
+import edu.pitt.dbmi.ccd.web.model.DataListItem;
 import edu.pitt.dbmi.ccd.web.model.ResumableChunk;
 import edu.pitt.dbmi.ccd.web.service.BigDataFileManager;
+import edu.pitt.dbmi.ccd.web.service.DataFileService;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,9 +60,12 @@ public class DataController implements ViewController {
 
     private final BigDataFileManager fileManager;
 
+    private final DataFileService dataFileService;
+
     @Autowired(required = true)
-    public DataController(BigDataFileManager fileManager) {
+    public DataController(BigDataFileManager fileManager, DataFileService dataFileService) {
         this.fileManager = fileManager;
+        this.dataFileService = dataFileService;
     }
 
     @RequestMapping(value = "/upload", method = RequestMethod.GET)
@@ -107,25 +109,17 @@ public class DataController implements ViewController {
 
     @RequestMapping(method = RequestMethod.GET)
     public String showDatasetView(Model model, @ModelAttribute("appUser") AppUser appUser) {
-        List<FileInfo> listing = new LinkedList<>();
+        List<DataListItem> listItems = new LinkedList<>();
 
         try {
             List<Path> list = FileInfos.listDirectory(Paths.get(appUser.getUploadDirectory()), false);
             List<Path> files = list.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
-
-            List<BasicFileInfo> result = FileInfos.listBasicPathInfo(files);
-            result.forEach(info -> {
-                FileInfo resultFile = new FileInfo();
-                resultFile.setCreationDate(FilePrint.fileTimestamp(info.getCreationTime()));
-                resultFile.setFileName(info.getFilename());
-                resultFile.setSize(FilePrint.humanReadableSize(info.getSize(), true));
-                listing.add(resultFile);
-            });
+            listItems.addAll(dataFileService.generateListItem(files));
         } catch (IOException exception) {
             LOGGER.error(exception.getMessage());
         }
 
-        model.addAttribute("itemList", listing);
+        model.addAttribute("itemList", listItems);
 
         return DATASET;
     }
