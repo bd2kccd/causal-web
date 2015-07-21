@@ -21,6 +21,8 @@ package edu.pitt.dbmi.ccd.web.ctrl.data;
 import edu.pitt.dbmi.ccd.commons.file.FilePrint;
 import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
+import edu.pitt.dbmi.ccd.db.repository.FileDelimiterRepository;
+import edu.pitt.dbmi.ccd.db.repository.VariableTypeRepository;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.AttributeValue;
@@ -31,6 +33,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -52,6 +55,16 @@ public class DataAnalysisController implements ViewController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataAnalysisController.class);
 
+    private final VariableTypeRepository variableTypeRepository;
+
+    private final FileDelimiterRepository fileDelimiterRepository;
+
+    @Autowired(required = true)
+    public DataAnalysisController(VariableTypeRepository variableTypeRepository, FileDelimiterRepository fileDelimiterRepository) {
+        this.variableTypeRepository = variableTypeRepository;
+        this.fileDelimiterRepository = fileDelimiterRepository;
+    }
+
     @RequestMapping(value = "/analyze", method = RequestMethod.GET)
     public String getFileFInfo(
             @RequestParam(value = "file") String fileName,
@@ -72,6 +85,9 @@ public class DataAnalysisController implements ViewController {
         }
 
         model.addAttribute("basicInfo", basicInfo);
+
+        model.addAttribute("variableTypes", variableTypeRepository.findAll());
+        model.addAttribute("fileDelimiters", fileDelimiterRepository.findAll());
 
         return DATA_ANALYSIS;
     }
