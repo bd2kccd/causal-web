@@ -18,8 +18,25 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.data;
 
+import edu.pitt.dbmi.ccd.commons.file.FilePrint;
+import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
+import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
+import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
+import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.model.AttributeValue;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.LinkedList;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
 /**
@@ -31,6 +48,32 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @Controller
 @SessionAttributes("appUser")
 @RequestMapping(value = "/data/analysis")
-public class DataAnalysisController {
+public class DataAnalysisController implements ViewController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataAnalysisController.class);
+
+    @RequestMapping(value = "/analyze", method = RequestMethod.GET)
+    public String getFileFInfo(
+            @RequestParam(value = "file") String fileName,
+            @ModelAttribute("appUser") AppUser appUser,
+            Model model) throws IOException {
+        model.addAttribute("fileName", fileName);
+
+        List<AttributeValue> basicInfo = new LinkedList<>();
+        Path file = Paths.get(appUser.getUploadDirectory(), fileName);
+        try {
+            BasicFileInfo info = FileInfos.basicPathInfo(file);
+            basicInfo.add(new AttributeValue("Size:", FilePrint.humanReadableSize(info.getSize(), true)));
+            basicInfo.add(new AttributeValue("Creation Time:", FilePrint.fileTimestamp(info.getCreationTime())));
+            basicInfo.add(new AttributeValue("Last Access Time:", FilePrint.fileTimestamp(info.getLastAccessTime())));
+            basicInfo.add(new AttributeValue("Last Modified Time:", FilePrint.fileTimestamp(info.getLastModifiedTime())));
+        } catch (IOException exception) {
+            LOGGER.error(exception.getMessage());
+        }
+
+        model.addAttribute("basicInfo", basicInfo);
+
+        return DATA_ANALYSIS;
+    }
 
 }
