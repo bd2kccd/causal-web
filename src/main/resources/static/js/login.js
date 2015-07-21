@@ -17,21 +17,27 @@
  * MA 02110-1301  USA
  */
 
+$.validator.addMethod("nowhitespace", function (value, element) {
+    return this.optional(element) || /^\S+$/i.test(value);
+}, "No white space please");
+
 $(document).ready(function () {
     $('#login').validate({
         rules: {
             username: {
                 minlength: 4,
+                nowhitespace: true,
                 required: true
             },
             password: {
                 minlength: 5,
                 maxlength: 25,
+                nowhitespace: true,
                 required: true
             }
         },
         messages: {
-            username: "Please enter your username.",
+            username: "Please enter a valid username.",
             password: "Please enter your password."
         },
         highlight: function (element) {
@@ -54,6 +60,7 @@ $(document).ready(function () {
         rules: {
             username: {
                 minlength: 4,
+                nowhitespace: true,
                 required: true
             },
             email: {
@@ -63,6 +70,7 @@ $(document).ready(function () {
             password: {
                 minlength: 5,
                 maxlength: 25,
+                nowhitespace: true,
                 required: true
             },
             confirmPassword: {
@@ -70,9 +78,9 @@ $(document).ready(function () {
             }
         },
         messages: {
-            username: "Please enter a username.",
+            username: "Please enter a valid username (no white space).",
             email: "Please enter a valid email.",
-            password: "Please enter a password.",
+            password: "Please enter valid a password (5-25 chars).",
             confirmPassword: "Please reenter password."
         },
         highlight: function (element) {
