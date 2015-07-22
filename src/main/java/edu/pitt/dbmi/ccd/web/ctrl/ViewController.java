@@ -64,6 +64,6 @@ public interface ViewController {
 
     public static final String FILE_INFO = "fileInfo";
 
-    public static final String DATA_ANALYSIS = "dataAnalysis";
+    public static final String DATA_VALIDATION = "dataValidation";
 
 }

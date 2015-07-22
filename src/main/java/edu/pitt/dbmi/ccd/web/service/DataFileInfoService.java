@@ -16,29 +16,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.model;
+package edu.pitt.dbmi.ccd.web.service;
 
-import edu.pitt.dbmi.ccd.db.entity.VariableType;
+import edu.pitt.dbmi.ccd.db.repository.DataFileInfoRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
- * Jul 21, 2015 11:45:04 PM
+ * Jul 22, 2015 10:04:49 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class DataAnalysisInfo {
+@Service
+@Transactional
+public class DataFileInfoService {
 
-    private VariableType variableType;
+    private final DataFileInfoRepository dataFileInfoRepository;
 
-    public DataAnalysisInfo() {
+    @Autowired(required = true)
+    public DataFileInfoService(DataFileInfoRepository dataFileInfoRepository) {
+        this.dataFileInfoRepository = dataFileInfoRepository;
     }
 
-    public VariableType getVariableType() {
-        return variableType;
-    }
-
-    public void setVariableType(VariableType variableType) {
-        this.variableType = variableType;
+    public DataFileInfoRepository getDataFileInfoRepository() {
+        return dataFileInfoRepository;
     }
 
 }

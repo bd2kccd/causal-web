@@ -112,4 +112,12 @@ public class DataFileService {
         return listItems;
     }
 
+    public DataFileRepository getDataFileRepository() {
+        return dataFileRepository;
+    }
+
+    public DataFileInfoRepository getDataFileInfoRepository() {
+        return dataFileInfoRepository;
+    }
+
 }

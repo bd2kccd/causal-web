@@ -18,8 +18,8 @@
  */
 package edu.pitt.dbmi.ccd.web.service;
 
-import edu.pitt.dbmi.ccd.db.entity.VariableType;
-import edu.pitt.dbmi.ccd.db.repository.VariableTypeRepository;
+import edu.pitt.dbmi.ccd.db.entity.FileDelimiter;
+import edu.pitt.dbmi.ccd.db.repository.FileDelimiterRepository;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,34 +27,34 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
- * Jul 21, 2015 11:05:49 PM
+ * Jul 22, 2015 8:48:31 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @Service
 @Transactional
-public class VariableTypeService {
+public class FileDelimiterService {
 
-    private final VariableTypeRepository variableTypeRepository;
+    private final FileDelimiterRepository fileDelimiterRepository;
 
     @Autowired(required = true)
-    public VariableTypeService(VariableTypeRepository variableTypeRepository) {
-        this.variableTypeRepository = variableTypeRepository;
+    public FileDelimiterService(FileDelimiterRepository fileDelimiterRepository) {
+        this.fileDelimiterRepository = fileDelimiterRepository;
     }
 
-    public List<VariableType> findAll() {
-        List<VariableType> variableTypes = variableTypeRepository.findAll();
-        if (variableTypes.isEmpty()) {
-            variableTypes.add(new VariableType("continuous"));
-            variableTypes.add(new VariableType("discrete"));
-            variableTypes = variableTypeRepository.save(variableTypes);
+    public List<FileDelimiter> findAll() {
+        List<FileDelimiter> delimiters = fileDelimiterRepository.findAll();
+        if (delimiters.isEmpty()) {
+            delimiters.add(new FileDelimiter("tab"));
+            delimiters.add(new FileDelimiter("comma"));
+            delimiters = fileDelimiterRepository.save(delimiters);
         }
 
-        return variableTypes;
+        return delimiters;
     }
 
-    public VariableTypeRepository getVariableTypeRepository() {
-        return variableTypeRepository;
+    public FileDelimiterRepository getFileDelimiterRepository() {
+        return fileDelimiterRepository;
     }
 
 }
