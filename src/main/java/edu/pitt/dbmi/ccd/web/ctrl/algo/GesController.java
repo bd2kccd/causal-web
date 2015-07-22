@@ -23,6 +23,7 @@ import static edu.pitt.dbmi.ccd.web.ctrl.ViewController.ALGORITHM_RUNNING;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.GesRunInfo;
 import edu.pitt.dbmi.ccd.web.service.AlgorithmService;
+import edu.pitt.dbmi.ccd.web.service.DataFileInfoService;
 import edu.pitt.dbmi.ccd.web.service.DataFileService;
 import edu.pitt.dbmi.ccd.web.service.FileDelimiterService;
 import edu.pitt.dbmi.ccd.web.service.VariableTypeService;
@@ -66,8 +67,9 @@ public class GesController extends AlgorithmController implements ViewController
             @Value("${app.algoJar:ccd-algorithm-1.0-SNAPSHOT.jar}") String algorithmJar,
             VariableTypeService variableTypeService,
             FileDelimiterService fileDelimiterService,
-            DataFileService dataFileService) {
-        super(algorithmJar, variableTypeService, fileDelimiterService, dataFileService);
+            DataFileService dataFileService,
+            DataFileInfoService dataFileInfoService) {
+        super(algorithmJar, variableTypeService, fileDelimiterService, dataFileService, dataFileInfoService);
         this.ges = ges;
         this.algorithmService = algorithmService;
     }
@@ -109,10 +111,9 @@ public class GesController extends AlgorithmController implements ViewController
         commands.add("--data");
         commands.add(dataset.toString());
 
-//        if ("comma".equals(info.getDelimiter())) {
-//            commands.add("--delimiter");
-//            commands.add(",");
-//        }
+        commands.add("--delimiter");
+        commands.add(getFileDelimiter(info.getDataset()));
+
         commands.add("--penalty-discount");
         commands.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));
 
@@ -127,11 +128,12 @@ public class GesController extends AlgorithmController implements ViewController
         commands.add("--out-filename");
         commands.add(fileName);
 
-//        try {
-//            algorithmService.runAlgorithm(commands, fileName, appUser.getTmpDirectory(), appUser.getOutputDirectory());
-//        } catch (Exception exception) {
-//            LOGGER.error("Unable to run GES.", exception);
-//        }
+        try {
+            algorithmService.runAlgorithm(commands, fileName, appUser.getTmpDirectory(), appUser.getOutputDirectory());
+        } catch (Exception exception) {
+            LOGGER.error("Unable to run GES.", exception);
+        }
+
         model.addAttribute("title", "GES is Running");
 
         return ALGORITHM_RUNNING;

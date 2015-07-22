@@ -134,7 +134,7 @@ public class DataValidationController implements ViewController {
         dataFileInfo.setFileDelimiter(dataValidation.getFileDelimiter());
         dataFileInfo.setVariableType(dataValidation.getVariableType());
 
-        char delimiter = FileInfos.delimiterStringToChar(dataValidation.getFileDelimiter().getName());
+        char delimiter = FileInfos.delimiterNameToChar(dataValidation.getFileDelimiter().getName());
         try {
             dataFileInfo.setNumOfRows(FileInfos.countLine(file.toFile()));
             dataFileInfo.setNumOfColumns(FileInfos.countColumn(file.toFile(), delimiter));

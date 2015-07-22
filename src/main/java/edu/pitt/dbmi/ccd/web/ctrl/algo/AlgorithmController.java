@@ -19,8 +19,10 @@
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
+import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
 import edu.pitt.dbmi.ccd.db.entity.VariableType;
 import edu.pitt.dbmi.ccd.web.model.DataListItem;
+import edu.pitt.dbmi.ccd.web.service.DataFileInfoService;
 import edu.pitt.dbmi.ccd.web.service.DataFileService;
 import edu.pitt.dbmi.ccd.web.service.FileDelimiterService;
 import edu.pitt.dbmi.ccd.web.service.VariableTypeService;
@@ -48,11 +50,27 @@ public abstract class AlgorithmController {
 
     protected final DataFileService dataFileService;
 
-    public AlgorithmController(String algorithmJar, VariableTypeService variableTypeService, FileDelimiterService fileDelimiterService, DataFileService dataFileService) {
+    protected final DataFileInfoService dataFileInfoService;
+
+    public AlgorithmController(
+            String algorithmJar,
+            VariableTypeService variableTypeService,
+            FileDelimiterService fileDelimiterService,
+            DataFileService dataFileService,
+            DataFileInfoService dataFileInfoService) {
         this.algorithmJar = algorithmJar;
         this.variableTypeService = variableTypeService;
         this.fileDelimiterService = fileDelimiterService;
         this.dataFileService = dataFileService;
+        this.dataFileInfoService = dataFileInfoService;
+    }
+
+    protected String getFileDelimiter(String fileName) {
+        DataFileInfo dataFileInfo = dataFileInfoService
+                .getDataFileInfoRepository()
+                .findByDataFileName(fileName);
+
+        return FileInfos.delimiterNameToString(dataFileInfo.getFileDelimiter().getName());
     }
 
     protected Map<String, String> directoryFileListing(Path directory) {
