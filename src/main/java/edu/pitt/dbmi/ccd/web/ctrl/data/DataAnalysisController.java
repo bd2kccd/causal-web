@@ -21,10 +21,10 @@ package edu.pitt.dbmi.ccd.web.ctrl.data;
 import edu.pitt.dbmi.ccd.commons.file.FilePrint;
 import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
-import edu.pitt.dbmi.ccd.db.entity.VariableType;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.AttributeValue;
+import edu.pitt.dbmi.ccd.web.model.DataAnalysisInfo;
 import edu.pitt.dbmi.ccd.web.service.VariableTypeService;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -83,13 +83,12 @@ public class DataAnalysisController implements ViewController {
 
         model.addAttribute("basicInfo", basicInfo);
 
-        model.addAttribute("variableTypes", variableTypeService.getAllVariableTypes());
-//        model.addAttribute("fileDelimiters", fileDelimiterRepository.findAll());
+        DataAnalysisInfo dataAnalysisInfo = new DataAnalysisInfo();
+        dataAnalysisInfo.setVariableType(variableTypeService.findByName("continuous"));
 
-        List<VariableType> variableTypes = variableTypeService.getAllVariableTypes();
-        variableTypes.forEach(var -> {
-            System.out.printf("%d) %s\n", var.getId(), var.getName());
-        });
+        model.addAttribute("dataAnalysisInfo", dataAnalysisInfo);
+        model.addAttribute("variableTypes", variableTypeService.findAll());
+//        model.addAttribute("fileDelimiters", fileDelimiterRepository.findAll());
 
         return DATA_ANALYSIS;
     }

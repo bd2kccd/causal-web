@@ -40,7 +40,7 @@ public class VariableTypeService {
         this.variableTypeRepository = variableTypeRepository;
     }
 
-    public List<VariableType> getAllVariableTypes() {
+    public List<VariableType> findAll() {
         List<VariableType> variableTypes = variableTypeRepository.findAll();
         if (variableTypes.isEmpty()) {
             variableTypes.add(new VariableType("continuous"));
@@ -50,6 +50,10 @@ public class VariableTypeService {
         }
 
         return variableTypes;
+    }
+
+    public VariableType findByName(String name) {
+        return variableTypeRepository.findByName(name);
     }
 
 }
