@@ -59,6 +59,29 @@ public class DataFileService {
         this.dataFileInfoRepository = dataFileInfoRepository;
     }
 
+    public boolean deleteDataFileByName(String name) {
+        DataFile dataFile = dataFileRepository.findByName(name);
+        try {
+            dataFileInfoRepository.deleteByDataFile(dataFile);
+            dataFileRepository.delete(dataFile);
+        } catch (Exception exception) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean deleteDataFile(DataFile dataFile) {
+        try {
+            dataFileInfoRepository.deleteByDataFile(dataFile);
+            dataFileRepository.delete(dataFile);
+        } catch (Exception exception) {
+            return false;
+        }
+
+        return true;
+    }
+
     public List<DataListItem> generateListItem(List<Path> files) {
         List<DataListItem> listItems = new LinkedList<>();
 

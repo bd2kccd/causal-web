@@ -127,12 +127,14 @@ public class DataController implements ViewController {
     @RequestMapping(value = "/delete", method = RequestMethod.GET)
     public String deleteResultFile(@RequestParam(value = "file") String filename, Model model, @ModelAttribute("appUser") AppUser appUser) {
         Path file = Paths.get(appUser.getUploadDirectory(), filename);
-        try {
-            Files.deleteIfExists(file);
-        } catch (IOException exception) {
-            LOGGER.error(
-                    String.format("Unable to delete file %s.", file.toAbsolutePath().toString()),
-                    exception);
+        if (dataFileService.deleteDataFileByName(filename)) {
+            try {
+                Files.deleteIfExists(file);
+            } catch (IOException exception) {
+                LOGGER.error(
+                        String.format("Unable to delete file %s.", file.toAbsolutePath().toString()),
+                        exception);
+            }
         }
 
         return "redirect:/data";
