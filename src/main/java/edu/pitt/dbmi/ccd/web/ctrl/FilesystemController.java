@@ -23,7 +23,6 @@ import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.AttributeValue;
-import edu.pitt.dbmi.ccd.web.util.MessageDigestHash;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -65,7 +64,6 @@ public class FilesystemController implements ViewController {
             basicInfo.add(new AttributeValue("Creation Time:", FilePrint.fileTimestamp(info.getCreationTime())));
             basicInfo.add(new AttributeValue("Last Access Time:", FilePrint.fileTimestamp(info.getLastAccessTime())));
             basicInfo.add(new AttributeValue("Last Modified Time:", FilePrint.fileTimestamp(info.getLastModifiedTime())));
-            basicInfo.add(new AttributeValue("MD5:", MessageDigestHash.computeMD5Hash(file)));
         } catch (IOException exception) {
             LOGGER.error(exception.getMessage());
         }

@@ -133,14 +133,17 @@ public class DataValidationController implements ViewController {
         }
         dataFileInfo.setFileDelimiter(dataValidation.getFileDelimiter());
         dataFileInfo.setVariableType(dataValidation.getVariableType());
+
+        char delimiter = FileInfos.delimiterStringToChar(dataValidation.getFileDelimiter().getName());
         try {
+            dataFileInfo.setNumOfRows(FileInfos.countLine(file.toFile()));
+            dataFileInfo.setNumOfColumns(FileInfos.countColumn(file.toFile(), delimiter));
             dataFileInfo.setMd5checkSum(MessageDigestHash.computeMD5Hash(file));
         } catch (IOException exception) {
             LOGGER.error(exception.getMessage());
         }
-        dataFileInfo.setMissingValue(Boolean.TRUE);
-        dataFileInfo.setNumOfRows(20);
-        dataFileInfo.setNumOfColumns(50);
+
+        dataFileInfo.setMissingValue(Boolean.FALSE);
         dataFileInfoRepository.save(dataFileInfo);
 
         fileInfo.add(new AttributeValue("Row:", String.valueOf(dataFileInfo.getNumOfRows())));

@@ -20,7 +20,7 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h1 class="page-header" th:text="${fileName}">file name</h1>
+                        <h3 class="page-header" th:text="'Data Summary: ' + ${fileName}">file name</h3>
                     </div>
                 </div>
                 <div class="row">
@@ -61,17 +61,17 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="panel panel-default" th:class="${#lists.isEmpty(additionalInfo)}?'panel panel-danger' : 'panel panel-default'">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i th:if="${#lists.isEmpty(additionalInfo)}" class="fa fa-warning"></i> Data Validation</h3>
-                            </div>
-                            <div class="panel-body">
-                                <form id="dataValidation" method="post" action="" role="form" th:object="${dataValidation}">
+                <form id="dataValidation" method="post" action="" role="form" th:object="${dataValidation}">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="panel panel-default" th:class="${#lists.isEmpty(additionalInfo)}?'panel panel-danger' : 'panel panel-default'">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title"><i th:if="${#lists.isEmpty(additionalInfo)}" class="fa fa-warning"></i> Data Description</h3>
+                                </div>
+                                <div class="panel-body">
                                     <input type="hidden" name="fileName" id="fileName" value="file name" th:value="${dataValidation.fileName}" th:field="*{fileName}" />
                                     <div class="form-group">
-                                        <label>Data Type:</label>
+                                        <label>Variable Type:</label>
                                         <label for="varType" class="radio-inline" th:each="varType : ${variableTypes}">
                                             <input type="radio" name="varType" id="varType" th:id="${varType.name}" value="continuous" th:value="${varType.id}" th:field="*{variableType}" required="required" /><span th:text="${varType.name}">continuous</span>
                                         </label>
@@ -82,12 +82,16 @@
                                             <input type="radio" name="delim" id="delimiter" th:id="${delim.name}" value="tab" th:value="${delim.id}" th:field="*{fileDelimiter}" required="required" /><span th:text="${delim.name}">tab</span>
                                         </label>
                                     </div>
-                                    <button type="submit" class="btn btn-primary btn-lg btn-block">Validate</button>
-                                </form>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <button type="submit" class="btn btn-primary btn-lg btn-block">Summarize</button>
+                        </div>
+                    </div>
+                </form>
                 <footer th:replace="fragments/footer :: footer">
                     <div class="row">
                         <div class="col-lg-12">
