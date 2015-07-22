@@ -149,7 +149,7 @@ public class DataValidationController implements ViewController {
         fileInfo.add(new AttributeValue("Row:", String.valueOf(dataFileInfo.getNumOfRows())));
         fileInfo.add(new AttributeValue("Column:", String.valueOf(dataFileInfo.getNumOfColumns())));
         fileInfo.add(new AttributeValue("MD5:", dataFileInfo.getMd5checkSum()));
-        fileInfo.add(new AttributeValue("Missing Value:", dataFileInfo.getMissingValue() ? "Yes" : "No"));
+//        fileInfo.add(new AttributeValue("Missing Value:", dataFileInfo.getMissingValue() ? "Yes" : "No"));
 
         return fileInfo;
     }
@@ -163,9 +163,7 @@ public class DataValidationController implements ViewController {
             fileInfo.add(new AttributeValue("Row:", String.valueOf(dataFileInfo.getNumOfRows())));
             fileInfo.add(new AttributeValue("Column:", String.valueOf(dataFileInfo.getNumOfColumns())));
             fileInfo.add(new AttributeValue("MD5:", dataFileInfo.getMd5checkSum()));
-            fileInfo.add(new AttributeValue("Missing Value:", dataFileInfo.getMissingValue() ? "Yes" : "No"));
-//            fileInfo.add(new AttributeValue());
-//            fileInfo.add(new AttributeValue());
+//            fileInfo.add(new AttributeValue("Missing Value:", dataFileInfo.getMissingValue() ? "Yes" : "No"));
         }
         return fileInfo;
     }
@@ -188,12 +186,19 @@ public class DataValidationController implements ViewController {
 
     private DataValidation getDataValidation(String fileName) {
         DataValidation dataValidation = new DataValidation();
-
         dataValidation.setFileName(fileName);
-        dataValidation.setVariableType(variableTypeService.getVariableTypeRepository()
-                .findByName("continuous"));
-        dataValidation.setFileDelimiter(fileDelimiterService.getFileDelimiterRepository()
-                .findByName("tab"));
+
+        DataFileInfoRepository dataFileInfoRepository = dataFileInfoService.getDataFileInfoRepository();
+        DataFileInfo dataFileInfo = dataFileInfoRepository.findByDataFileName(fileName);
+        if (dataFileInfo == null) {
+            dataValidation.setVariableType(variableTypeService.getVariableTypeRepository()
+                    .findByName("continuous"));
+            dataValidation.setFileDelimiter(fileDelimiterService.getFileDelimiterRepository()
+                    .findByName("tab"));
+        } else {
+            dataValidation.setVariableType(dataFileInfo.getVariableType());
+            dataValidation.setFileDelimiter(dataFileInfo.getFileDelimiter());
+        }
 
         return dataValidation;
     }
