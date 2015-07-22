@@ -21,11 +21,11 @@ package edu.pitt.dbmi.ccd.web.ctrl.data;
 import edu.pitt.dbmi.ccd.commons.file.FilePrint;
 import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
-import edu.pitt.dbmi.ccd.db.repository.FileDelimiterRepository;
-import edu.pitt.dbmi.ccd.db.repository.VariableTypeRepository;
+import edu.pitt.dbmi.ccd.db.entity.VariableType;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.AttributeValue;
+import edu.pitt.dbmi.ccd.web.service.VariableTypeService;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -55,14 +55,11 @@ public class DataAnalysisController implements ViewController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataAnalysisController.class);
 
-    private final VariableTypeRepository variableTypeRepository;
-
-    private final FileDelimiterRepository fileDelimiterRepository;
+    private final VariableTypeService variableTypeService;
 
     @Autowired(required = true)
-    public DataAnalysisController(VariableTypeRepository variableTypeRepository, FileDelimiterRepository fileDelimiterRepository) {
-        this.variableTypeRepository = variableTypeRepository;
-        this.fileDelimiterRepository = fileDelimiterRepository;
+    public DataAnalysisController(VariableTypeService variableTypeService) {
+        this.variableTypeService = variableTypeService;
     }
 
     @RequestMapping(value = "/analyze", method = RequestMethod.GET)
@@ -86,8 +83,13 @@ public class DataAnalysisController implements ViewController {
 
         model.addAttribute("basicInfo", basicInfo);
 
-        model.addAttribute("variableTypes", variableTypeRepository.findAll());
-        model.addAttribute("fileDelimiters", fileDelimiterRepository.findAll());
+        model.addAttribute("variableTypes", variableTypeService.getAllVariableTypes());
+//        model.addAttribute("fileDelimiters", fileDelimiterRepository.findAll());
+
+        List<VariableType> variableTypes = variableTypeService.getAllVariableTypes();
+        variableTypes.forEach(var -> {
+            System.out.printf("%d) %s\n", var.getId(), var.getName());
+        });
 
         return DATA_ANALYSIS;
     }
