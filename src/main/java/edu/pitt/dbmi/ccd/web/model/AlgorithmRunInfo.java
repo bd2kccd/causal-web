@@ -28,10 +28,6 @@ public abstract class AlgorithmRunInfo {
 
     protected String dataset;
 
-    protected String dataType;
-
-    protected String delimiter;
-
     protected Boolean verbose;
 
     protected String jvmOptions;
@@ -45,22 +41,6 @@ public abstract class AlgorithmRunInfo {
 
     public void setDataset(String dataset) {
         this.dataset = dataset;
-    }
-
-    public String getDataType() {
-        return dataType;
-    }
-
-    public void setDataType(String dataType) {
-        this.dataType = dataType;
-    }
-
-    public String getDelimiter() {
-        return delimiter;
-    }
-
-    public void setDelimiter(String delimiter) {
-        this.delimiter = delimiter;
     }
 
     public Boolean getVerbose() {

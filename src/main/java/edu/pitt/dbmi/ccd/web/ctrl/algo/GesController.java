@@ -23,6 +23,9 @@ import static edu.pitt.dbmi.ccd.web.ctrl.ViewController.ALGORITHM_RUNNING;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.GesRunInfo;
 import edu.pitt.dbmi.ccd.web.service.AlgorithmService;
+import edu.pitt.dbmi.ccd.web.service.DataFileService;
+import edu.pitt.dbmi.ccd.web.service.FileDelimiterService;
+import edu.pitt.dbmi.ccd.web.service.VariableTypeService;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -60,30 +63,26 @@ public class GesController extends AlgorithmController implements ViewController
     public GesController(
             @Value("${app.gesApp:edu.pitt.dbmi.ccd.algorithm.tetrad.GesApp}") String ges,
             AlgorithmService algorithmService,
-            @Value("${app.algoJar:ccd-algorithm-1.0-SNAPSHOT.jar}") String algorithmJar) {
-        super(algorithmJar);
+            @Value("${app.algoJar:ccd-algorithm-1.0-SNAPSHOT.jar}") String algorithmJar,
+            VariableTypeService variableTypeService,
+            FileDelimiterService fileDelimiterService,
+            DataFileService dataFileService) {
+        super(algorithmJar, variableTypeService, fileDelimiterService, dataFileService);
         this.ges = ges;
         this.algorithmService = algorithmService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
     public String showGesView(Model model, @ModelAttribute("appUser") AppUser appUser) {
-        String[] dataTypes = {"continuous", "discrete"};
-        String[] delimiters = {"tab", "comma"};
-
         GesRunInfo info = new GesRunInfo();
         info.setPenaltyDiscount(2.0);
         info.setDepth(3);
-        info.setDataType(dataTypes[0]);
-        info.setDelimiter(delimiters[0]);
         info.setVerbose(Boolean.TRUE);
         info.setJvmOptions("");
 
         model.addAttribute("gesRunInfo", info);
 
         model.addAttribute("datasetList", directoryFileListing(Paths.get(appUser.getUploadDirectory())));
-        model.addAttribute("dataTypes", Arrays.asList("continuous", "discrete"));
-        model.addAttribute("delimiters", Arrays.asList("tab", "comma"));
 
         return GES;
     }
@@ -110,11 +109,10 @@ public class GesController extends AlgorithmController implements ViewController
         commands.add("--data");
         commands.add(dataset.toString());
 
-        if ("comma".equals(info.getDelimiter())) {
-            commands.add("--delimiter");
-            commands.add(",");
-        }
-
+//        if ("comma".equals(info.getDelimiter())) {
+//            commands.add("--delimiter");
+//            commands.add(",");
+//        }
         commands.add("--penalty-discount");
         commands.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));
 
@@ -129,12 +127,11 @@ public class GesController extends AlgorithmController implements ViewController
         commands.add("--out-filename");
         commands.add(fileName);
 
-        try {
-            algorithmService.runAlgorithm(commands, fileName, appUser.getTmpDirectory(), appUser.getOutputDirectory());
-        } catch (Exception exception) {
-            LOGGER.error("Unable to run GES.", exception);
-        }
-
+//        try {
+//            algorithmService.runAlgorithm(commands, fileName, appUser.getTmpDirectory(), appUser.getOutputDirectory());
+//        } catch (Exception exception) {
+//            LOGGER.error("Unable to run GES.", exception);
+//        }
         model.addAttribute("title", "GES is Running");
 
         return ALGORITHM_RUNNING;

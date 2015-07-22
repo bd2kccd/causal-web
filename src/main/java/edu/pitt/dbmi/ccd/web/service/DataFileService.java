@@ -23,6 +23,7 @@ import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
 import edu.pitt.dbmi.ccd.db.entity.DataFile;
 import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
+import edu.pitt.dbmi.ccd.db.entity.VariableType;
 import edu.pitt.dbmi.ccd.db.repository.DataFileInfoRepository;
 import edu.pitt.dbmi.ccd.db.repository.DataFileRepository;
 import edu.pitt.dbmi.ccd.web.model.DataListItem;
@@ -82,6 +83,25 @@ public class DataFileService {
         return true;
     }
 
+    public List<DataListItem> generateListItem(
+            List<Path> files,
+            VariableType variableType) {
+        List<DataListItem> results = new LinkedList<>();
+
+        List<DataListItem> listItems = generateListItem(files);
+        listItems.forEach(item -> {
+            DataFileInfo dataFileInfo = dataFileInfoRepository.findByDataFileName(item.getFileName());
+            if (dataFileInfo != null) {
+                VariableType varType = dataFileInfo.getVariableType();
+                if (varType.getId().longValue() == variableType.getId()) {
+                    results.add(item);
+                }
+            }
+        });
+
+        return results;
+    }
+
     public List<DataListItem> generateListItem(List<Path> files) {
         List<DataListItem> listItems = new LinkedList<>();
 
@@ -104,6 +124,7 @@ public class DataFileService {
             List<BasicFileInfo> result = FileInfos.listBasicPathInfo(files);
             result.forEach(info -> {
                 DataListItem item = new DataListItem();
+                item.setFileName(info.getFilename());
                 item.setCreationDate(FilePrint.fileTimestamp(info.getCreationTime()));
                 item.setFileName(info.getFilename());
                 item.setSize(FilePrint.humanReadableSize(info.getSize(), true));

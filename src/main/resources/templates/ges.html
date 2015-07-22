@@ -64,18 +64,6 @@
                                                         <option th:each="data : ${datasetList}" value="sim_data_100vars_100_cases.txt" th:value="${data.key}" th:text="${data.value}">sim_data_100vars_100_cases.txt (75.48 kB)</option>
                                                     </select>
                                                 </div>
-                                                <div class="form-group" th:attr="ng-init='dataType=\'' + *{dataType} + '\''">
-                                                    <label>Data Type:</label>
-                                                    <label for="dataType" class="radio-inline" th:each="dataType : ${dataTypes}">
-                                                        <input type="radio" name="dataType" id="dataType" th:id="${dataType}" value="continuous" th:value="${dataType}" th:field="*{dataType}" ng-model="dataType" disabled="disabled" required="required" /><span th:text="${dataType}">continuous</span>
-                                                    </label>
-                                                </div>
-                                                <div class="form-group" th:attr="ng-init='delimiter=\'' + *{delimiter} + '\''">
-                                                    <label for="delimiter">Delimiter:</label>
-                                                    <label class="radio-inline" th:each="delim : ${delimiters}">
-                                                        <input type="radio" name="delimiter" id="delimiter" th:id="${delim}" value="tab" th:value="${delim}" th:field="*{delimiter}" ng-model="delimiter" required="required" /><span th:text="${delim}">tab</span>
-                                                    </label>
-                                                </div>
                                             </div>
                                         </div>
                                         <button type="button" class="btn btn-primary btn-lg btn-block nextBtn">Next</button>
@@ -140,14 +128,6 @@
                                                             <tr>
                                                                 <td class="col-md-3">Dataset:</td>
                                                                 <td ng-bind="dataset"></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td class="col-md-3">Data Type</td>
-                                                                <td ng-bind="dataType"></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td class="col-md-3">Delimiters</td>
-                                                                <td ng-bind="delimiter"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td class="col-md-3">Penalty Discount:</td>

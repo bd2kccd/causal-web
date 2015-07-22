@@ -22,6 +22,9 @@ import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.PcStableRunInfo;
 import edu.pitt.dbmi.ccd.web.service.AlgorithmService;
+import edu.pitt.dbmi.ccd.web.service.DataFileService;
+import edu.pitt.dbmi.ccd.web.service.FileDelimiterService;
+import edu.pitt.dbmi.ccd.web.service.VariableTypeService;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -60,29 +63,25 @@ public class PcStableController extends AlgorithmController implements ViewContr
     public PcStableController(
             @Value("${app.pcStableApp:edu.pitt.dbmi.ccd.algorithm.tetrad.PcStableApp}") String pcStable,
             AlgorithmService algorithmService,
-            @Value("${app.algoJar:ccd-algorithm-1.0-SNAPSHOT.jar}") String algorithmJar) {
-        super(algorithmJar);
+            @Value("${app.algoJar:ccd-algorithm-1.0-SNAPSHOT.jar}") String algorithmJar,
+            VariableTypeService variableTypeService,
+            FileDelimiterService fileDelimiterService,
+            DataFileService dataFileService) {
+        super(algorithmJar, variableTypeService, fileDelimiterService, dataFileService);
         this.pcStable = pcStable;
         this.algorithmService = algorithmService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
     public String showPcStableView(Model model, @ModelAttribute("appUser") AppUser appUser) {
-        String[] dataTypes = {"continuous", "discrete"};
-        String[] delimiters = {"tab", "comma"};
-
         PcStableRunInfo info = new PcStableRunInfo();
         info.setAlpha(0.0001D);
         info.setDepth(3);
-        info.setDataType(dataTypes[0]);
-        info.setDelimiter(delimiters[0]);
         info.setVerbose(Boolean.TRUE);
         info.setJvmOptions("");
         model.addAttribute("pcStableRunInfo", info);
 
         model.addAttribute("datasetList", directoryFileListing(Paths.get(appUser.getUploadDirectory())));
-        model.addAttribute("dataTypes", Arrays.asList(dataTypes));
-        model.addAttribute("delimiters", Arrays.asList(delimiters));
 
         return PCSTABLE;
     }
@@ -108,11 +107,10 @@ public class PcStableController extends AlgorithmController implements ViewContr
         commands.add("--data");
         commands.add(dataset.toString());
 
-        if ("comma".equals(info.getDelimiter())) {
-            commands.add("--delimiter");
-            commands.add(",");
-        }
-
+//        if ("comma".equals(info.getDelimiter())) {
+//            commands.add("--delimiter");
+//            commands.add(",");
+//        }
         commands.add("--alpha");
         commands.add(String.valueOf(info.getAlpha().doubleValue()));
 
@@ -127,12 +125,11 @@ public class PcStableController extends AlgorithmController implements ViewContr
         commands.add("--out-filename");
         commands.add(fileName);
 
-        try {
-            algorithmService.runAlgorithm(commands, fileName, appUser.getTmpDirectory(), appUser.getOutputDirectory());
-        } catch (Exception exception) {
-            LOGGER.error("Unable to run GES.", exception);
-        }
-
+//        try {
+//            algorithmService.runAlgorithm(commands, fileName, appUser.getTmpDirectory(), appUser.getOutputDirectory());
+//        } catch (Exception exception) {
+//            LOGGER.error("Unable to run GES.", exception);
+//        }
         model.addAttribute("title", "PC-Stable is Running");
 
         return ALGORITHM_RUNNING;
