@@ -18,10 +18,8 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.data;
 
-import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.model.DataListItem;
 import edu.pitt.dbmi.ccd.web.model.ResumableChunk;
 import edu.pitt.dbmi.ccd.web.service.BigDataFileManager;
 import edu.pitt.dbmi.ccd.web.service.DataFileService;
@@ -29,9 +27,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,17 +104,7 @@ public class DataController implements ViewController {
 
     @RequestMapping(method = RequestMethod.GET)
     public String showDatasetView(Model model, @ModelAttribute("appUser") AppUser appUser) {
-        List<DataListItem> listItems = new LinkedList<>();
-
-        try {
-            List<Path> list = FileInfos.listDirectory(Paths.get(appUser.getUploadDirectory()), false);
-            List<Path> files = list.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
-            listItems.addAll(dataFileService.generateListItem(files));
-        } catch (IOException exception) {
-            LOGGER.error(exception.getMessage());
-        }
-
-        model.addAttribute("itemList", listItems);
+        model.addAttribute("itemList", dataFileService.createListItem(appUser.getUploadDirectory()));
 
         return DATASET;
     }
@@ -127,7 +112,7 @@ public class DataController implements ViewController {
     @RequestMapping(value = "/delete", method = RequestMethod.GET)
     public String deleteResultFile(@RequestParam(value = "file") String filename, Model model, @ModelAttribute("appUser") AppUser appUser) {
         Path file = Paths.get(appUser.getUploadDirectory(), filename);
-        if (dataFileService.deleteDataFileByName(filename)) {
+        if (dataFileService.deleteDataFileByNameAndAbsolutePath(filename, appUser.getUploadDirectory())) {
             try {
                 Files.deleteIfExists(file);
             } catch (IOException exception) {

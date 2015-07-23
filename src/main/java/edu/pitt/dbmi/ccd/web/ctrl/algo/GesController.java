@@ -84,7 +84,7 @@ public class GesController extends AlgorithmController implements ViewController
 
         model.addAttribute("gesRunInfo", info);
 
-        model.addAttribute("datasetList", directoryFileListing(Paths.get(appUser.getUploadDirectory())));
+        model.addAttribute("datasetList", directoryFileListing(appUser.getUploadDirectory()));
 
         return GES;
     }
@@ -112,7 +112,7 @@ public class GesController extends AlgorithmController implements ViewController
         commands.add(dataset.toString());
 
         commands.add("--delimiter");
-        commands.add(getFileDelimiter(info.getDataset()));
+        commands.add(getFileDelimiter(info.getDataset(), appUser.getUploadDirectory()));
 
         commands.add("--penalty-discount");
         commands.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));

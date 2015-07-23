@@ -26,13 +26,9 @@ import edu.pitt.dbmi.ccd.web.service.DataFileInfoService;
 import edu.pitt.dbmi.ccd.web.service.DataFileService;
 import edu.pitt.dbmi.ccd.web.service.FileDelimiterService;
 import edu.pitt.dbmi.ccd.web.service.VariableTypeService;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -65,30 +61,24 @@ public abstract class AlgorithmController {
         this.dataFileInfoService = dataFileInfoService;
     }
 
-    protected String getFileDelimiter(String fileName) {
-        DataFileInfo dataFileInfo = dataFileInfoService
-                .getDataFileInfoRepository()
-                .findByDataFileName(fileName);
+    protected String getFileDelimiter(String name, String absolutePath) {
+        DataFileInfo dataFileInfo = dataFileInfoService.getDataFileInfoRepository()
+                .findByDataFileNameAndAbsolutePath(name, absolutePath);
 
         return FileInfos.delimiterNameToString(dataFileInfo.getFileDelimiter().getName());
     }
 
-    protected Map<String, String> directoryFileListing(Path directory) {
+    protected Map<String, String> directoryFileListing(String baseDir) {
         Map<String, String> map = new TreeMap<>();
 
-        try {
-            List<Path> list = FileInfos.listDirectory(directory, false);
-            List<Path> files = list.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
+        VariableType variableType = variableTypeService.getVariableTypeRepository().findByName("continuous");
+        List<DataListItem> dataListItems = dataFileService.createListItem(baseDir, variableType);
+        dataListItems.forEach(item -> {
+            String key = item.getFileName();
+            String value = String.format(("%s (%s)"), item.getFileName(), item.getSize());
+            map.put(key, value);
+        });
 
-            VariableType variableType = variableTypeService.getVariableTypeRepository().findByName("continuous");
-            List<DataListItem> dataListItems = dataFileService.generateListItem(files, variableType);
-            dataListItems.forEach(item -> {
-                String key = item.getFileName();
-                String value = String.format(("%s (%s)"), item.getFileName(), item.getSize());
-                map.put(key, value);
-            });
-        } catch (IOException exception) {
-        }
         return map;
     }
 

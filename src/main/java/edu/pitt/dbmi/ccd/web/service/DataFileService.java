@@ -28,12 +28,15 @@ import edu.pitt.dbmi.ccd.db.repository.DataFileInfoRepository;
 import edu.pitt.dbmi.ccd.db.repository.DataFileRepository;
 import edu.pitt.dbmi.ccd.web.model.DataListItem;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,9 +63,9 @@ public class DataFileService {
         this.dataFileInfoRepository = dataFileInfoRepository;
     }
 
-    public boolean deleteDataFileByName(String name) {
-        DataFile dataFile = dataFileRepository.findByName(name);
+    public boolean deleteDataFileByNameAndAbsolutePath(String name, String absolutePath) {
         try {
+            DataFile dataFile = dataFileRepository.findByNameAndAbsolutePath(name, absolutePath);
             dataFileInfoRepository.deleteByDataFile(dataFile);
             dataFileRepository.delete(dataFile);
         } catch (Exception exception) {
@@ -83,14 +86,13 @@ public class DataFileService {
         return true;
     }
 
-    public List<DataListItem> generateListItem(
-            List<Path> files,
-            VariableType variableType) {
+    public List<DataListItem> createListItem(String baseDir, VariableType variableType) {
         List<DataListItem> results = new LinkedList<>();
 
-        List<DataListItem> listItems = generateListItem(files);
+        List<DataListItem> listItems = createListItem(baseDir);
         listItems.forEach(item -> {
-            DataFileInfo dataFileInfo = dataFileInfoRepository.findByDataFileName(item.getFileName());
+            DataFileInfo dataFileInfo = dataFileInfoRepository
+                    .findByDataFileNameAndAbsolutePath(item.getFileName(), baseDir);
             if (dataFileInfo != null) {
                 VariableType varType = dataFileInfo.getVariableType();
                 if (varType.getId().longValue() == variableType.getId()) {
@@ -102,25 +104,29 @@ public class DataFileService {
         return results;
     }
 
-    public List<DataListItem> generateListItem(List<Path> files) {
+    public List<DataListItem> createListItem(String baseDir) {
         List<DataListItem> listItems = new LinkedList<>();
 
-        // get the filenames of the data that are stored in the database
-        Set<String> dataFileNames = new HashSet<>();
-        List<DataFile> dataFiles = dataFileRepository.findAll();
-        dataFiles.forEach(info -> {
-            dataFileNames.add(info.getName());
-        });
-
-        // get the names of the data that contains file information
-        Set<String> dataFileInfoNames = new HashSet<>();
-        List<DataFileInfo> dataFileInfos = dataFileInfoRepository.findAll();
-        dataFileInfos.forEach(info -> {
-            dataFileInfoNames.add(info.getDataFile().getName());
-        });
-
+        Path basePath = Paths.get(baseDir);
         List<DataFile> dataFileToSave = new LinkedList<>();
         try {
+            List<Path> list = FileInfos.listDirectory(basePath, false);
+            List<Path> files = list.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
+
+            // get the filenames of the data that are stored in the database
+            Set<String> dbFileName = new HashSet<>();
+            List<DataFile> dataFiles = dataFileRepository.findByAbsolutePath(baseDir);
+            dataFiles.forEach(info -> {
+                dbFileName.add(info.getName());
+            });
+
+            // get the names of the data that contains file information
+            Set<String> dbDataFileInfoNames = new HashSet<>();
+            List<DataFileInfo> dataFileInfos = dataFileInfoRepository.findByDataFileAbsolutePath(baseDir);
+            dataFileInfos.forEach(info -> {
+                dbDataFileInfoNames.add(info.getDataFile().getName());
+            });
+
             List<BasicFileInfo> result = FileInfos.listBasicPathInfo(files);
             result.forEach(info -> {
                 DataListItem item = new DataListItem();
@@ -129,8 +135,8 @@ public class DataFileService {
                 item.setFileName(info.getFilename());
                 item.setSize(FilePrint.humanReadableSize(info.getSize(), true));
 
-                if (dataFileNames.contains(info.getFilename())) {
-                    item.setAlert(!dataFileInfoNames.contains(info.getFilename()));
+                if (dbFileName.contains(info.getFilename())) {
+                    item.setAlert(!dbDataFileInfoNames.contains(info.getFilename()));
                 } else {
                     DataFile file = new DataFile();
                     file.setAbsolutePath(info.getAbsolutePath().toString());

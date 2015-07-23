@@ -84,17 +84,18 @@ public class DataValidationController implements ViewController {
     }
 
     @RequestMapping(value = "/validate", method = RequestMethod.POST)
-    public String runDataValidation(
+    public String runDataSummary(
             @ModelAttribute("dataValidation") DataValidation dataValidation,
             @ModelAttribute("appUser") AppUser appUser,
             Model model) {
+        String baseDir = appUser.getUploadDirectory();
         String fileName = dataValidation.getFileName();
-        Path file = Paths.get(appUser.getUploadDirectory(), fileName);
+        Path file = Paths.get(baseDir, fileName);
 
         model.addAttribute("fileName", fileName);
         model.addAttribute("basicInfo", getFileBasicInfo(file));
-        model.addAttribute("additionalInfo", getFileAdditionalInfo(file, dataValidation));
-        model.addAttribute("dataValidation", getDataValidation(fileName));
+        model.addAttribute("additionalInfo", getFileAdditionalInfo(fileName, baseDir, dataValidation));
+        model.addAttribute("dataValidation", getDataValidation(fileName, baseDir));
         model.addAttribute("variableTypes", variableTypeService.findAll());
         model.addAttribute("fileDelimiters", fileDelimiterService.findAll());
 
@@ -102,30 +103,30 @@ public class DataValidationController implements ViewController {
     }
 
     @RequestMapping(value = "/validate", method = RequestMethod.GET)
-    public String showDataValidation(
+    public String showDataSummary(
             @RequestParam(value = "file") String fileName,
             @ModelAttribute("appUser") AppUser appUser,
             Model model) throws IOException {
-        Path file = Paths.get(appUser.getUploadDirectory(), fileName);
+        String baseDir = appUser.getUploadDirectory();
+        Path file = Paths.get(baseDir, fileName);
 
         model.addAttribute("fileName", fileName);
         model.addAttribute("basicInfo", getFileBasicInfo(file));
-        model.addAttribute("additionalInfo", getFileAdditionalInfo(file));
-        model.addAttribute("dataValidation", getDataValidation(fileName));
+        model.addAttribute("additionalInfo", getFileAdditionalInfo(fileName, baseDir));
+        model.addAttribute("dataValidation", getDataValidation(fileName, baseDir));
         model.addAttribute("variableTypes", variableTypeService.findAll());
         model.addAttribute("fileDelimiters", fileDelimiterService.findAll());
 
         return DATA_VALIDATION;
     }
 
-    private List<AttributeValue> getFileAdditionalInfo(Path file, DataValidation dataValidation) {
+    private List<AttributeValue> getFileAdditionalInfo(String name, String absolutePath, DataValidation dataValidation) {
         List<AttributeValue> fileInfo = new LinkedList<>();
 
         DataFileInfoRepository dataFileInfoRepository = dataFileInfoService.getDataFileInfoRepository();
         DataFileRepository dataFileRepository = dataFileService.getDataFileRepository();
 
-        String fileName = file.getFileName().toString();
-        DataFile dataFile = dataFileRepository.findByName(fileName);
+        DataFile dataFile = dataFileRepository.findByNameAndAbsolutePath(name, absolutePath);
 
         DataFileInfo dataFileInfo = dataFileInfoRepository.findByDataFile(dataFile);
         if (dataFileInfo == null) {
@@ -136,6 +137,7 @@ public class DataValidationController implements ViewController {
 
         char delimiter = FileInfos.delimiterNameToChar(dataValidation.getFileDelimiter().getName());
         try {
+            Path file = Paths.get(absolutePath, name);
             dataFileInfo.setNumOfRows(FileInfos.countLine(file.toFile()));
             dataFileInfo.setNumOfColumns(FileInfos.countColumn(file.toFile(), delimiter));
             dataFileInfo.setMd5checkSum(MessageDigestHash.computeMD5Hash(file));
@@ -144,7 +146,7 @@ public class DataValidationController implements ViewController {
         }
 
         dataFileInfo.setMissingValue(Boolean.FALSE);
-        dataFileInfoRepository.save(dataFileInfo);
+        dataFileInfo = dataFileInfoRepository.save(dataFileInfo);
 
         fileInfo.add(new AttributeValue("Row:", String.valueOf(dataFileInfo.getNumOfRows())));
         fileInfo.add(new AttributeValue("Column:", String.valueOf(dataFileInfo.getNumOfColumns())));
@@ -154,17 +156,18 @@ public class DataValidationController implements ViewController {
         return fileInfo;
     }
 
-    private List<AttributeValue> getFileAdditionalInfo(Path file) {
+    private List<AttributeValue> getFileAdditionalInfo(String name, String absolutePath) {
         List<AttributeValue> fileInfo = new LinkedList<>();
 
-        String fileName = file.getFileName().toString();
-        DataFileInfo dataFileInfo = dataFileInfoService.getDataFileInfoRepository().findByDataFileName(fileName);
+        DataFileInfo dataFileInfo = dataFileInfoService.getDataFileInfoRepository()
+                .findByDataFileNameAndAbsolutePath(name, absolutePath);
         if (dataFileInfo != null) {
             fileInfo.add(new AttributeValue("Row:", String.valueOf(dataFileInfo.getNumOfRows())));
             fileInfo.add(new AttributeValue("Column:", String.valueOf(dataFileInfo.getNumOfColumns())));
             fileInfo.add(new AttributeValue("MD5:", dataFileInfo.getMd5checkSum()));
 //            fileInfo.add(new AttributeValue("Missing Value:", dataFileInfo.getMissingValue() ? "Yes" : "No"));
         }
+
         return fileInfo;
     }
 
@@ -184,12 +187,12 @@ public class DataValidationController implements ViewController {
         return fileInfo;
     }
 
-    private DataValidation getDataValidation(String fileName) {
+    private DataValidation getDataValidation(String name, String absolutePath) {
         DataValidation dataValidation = new DataValidation();
-        dataValidation.setFileName(fileName);
+        dataValidation.setFileName(name);
 
         DataFileInfoRepository dataFileInfoRepository = dataFileInfoService.getDataFileInfoRepository();
-        DataFileInfo dataFileInfo = dataFileInfoRepository.findByDataFileName(fileName);
+        DataFileInfo dataFileInfo = dataFileInfoRepository.findByDataFileNameAndAbsolutePath(name, absolutePath);
         if (dataFileInfo == null) {
             dataValidation.setVariableType(variableTypeService.getVariableTypeRepository()
                     .findByName("continuous"));

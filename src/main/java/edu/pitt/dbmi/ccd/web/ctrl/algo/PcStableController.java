@@ -83,7 +83,7 @@ public class PcStableController extends AlgorithmController implements ViewContr
         info.setJvmOptions("");
         model.addAttribute("pcStableRunInfo", info);
 
-        model.addAttribute("datasetList", directoryFileListing(Paths.get(appUser.getUploadDirectory())));
+        model.addAttribute("datasetList", directoryFileListing(appUser.getUploadDirectory()));
 
         return PCSTABLE;
     }
@@ -110,7 +110,7 @@ public class PcStableController extends AlgorithmController implements ViewContr
         commands.add(dataset.toString());
 
         commands.add("--delimiter");
-        commands.add(getFileDelimiter(info.getDataset()));
+        commands.add(getFileDelimiter(info.getDataset(), appUser.getUploadDirectory()));
 
         commands.add("--alpha");
         commands.add(String.valueOf(info.getAlpha().doubleValue()));
