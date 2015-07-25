@@ -19,9 +19,9 @@
 package edu.pitt.dbmi.ccd.web.ctrl;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
-import edu.pitt.dbmi.ccd.web.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.util.FileUtility;
 import java.util.Date;
 import org.apache.shiro.SecurityUtils;
@@ -116,7 +116,7 @@ public class ApplicationController implements ViewController {
 
         String username = (String) currentUser.getPrincipal();
         UserAccount userAccount = userAccountService.findByUsername(username);
-        if (userAccount.isActive()) {
+        if (userAccount.getActive()) {
             model.addAttribute("appUser", appUserService.createAppUser(userAccount));
             return REDIRECT_HOME;
         } else {

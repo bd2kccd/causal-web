@@ -32,16 +32,23 @@ public class DataListItem {
 
     private String size;
 
-    private boolean alert;
+    private String delimiter;
+
+    private String variableType;
 
     public DataListItem() {
     }
 
-    public DataListItem(String fileName, String creationDate, String size, boolean alert) {
+    public DataListItem(String fileName, String creationDate, String size) {
+        this(fileName, creationDate, size, null, null);
+    }
+
+    public DataListItem(String fileName, String creationDate, String size, String delimiter, String variableType) {
         this.fileName = fileName;
         this.creationDate = creationDate;
         this.size = size;
-        this.alert = alert;
+        this.delimiter = delimiter;
+        this.variableType = variableType;
     }
 
     public String getFileName() {
@@ -68,12 +75,20 @@ public class DataListItem {
         this.size = size;
     }
 
-    public boolean isAlert() {
-        return alert;
+    public String getDelimiter() {
+        return delimiter;
     }
 
-    public void setAlert(boolean alert) {
-        this.alert = alert;
+    public void setDelimiter(String delimiter) {
+        this.delimiter = delimiter;
+    }
+
+    public String getVariableType() {
+        return variableType;
+    }
+
+    public void setVariableType(String variableType) {
+        this.variableType = variableType;
     }
 
 }

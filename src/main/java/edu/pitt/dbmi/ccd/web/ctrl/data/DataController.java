@@ -22,7 +22,7 @@ import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.ResumableChunk;
 import edu.pitt.dbmi.ccd.web.service.BigDataFileManager;
-import edu.pitt.dbmi.ccd.web.service.DataFileService;
+import edu.pitt.dbmi.ccd.web.service.DataService;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,12 +55,12 @@ public class DataController implements ViewController {
 
     private final BigDataFileManager fileManager;
 
-    private final DataFileService dataFileService;
+    private final DataService dataService;
 
     @Autowired(required = true)
-    public DataController(BigDataFileManager fileManager, DataFileService dataFileService) {
+    public DataController(BigDataFileManager fileManager, DataService dataService) {
         this.fileManager = fileManager;
-        this.dataFileService = dataFileService;
+        this.dataService = dataService;
     }
 
     @RequestMapping(value = "/upload", method = RequestMethod.GET)
@@ -104,15 +104,16 @@ public class DataController implements ViewController {
 
     @RequestMapping(method = RequestMethod.GET)
     public String showDatasetView(Model model, @ModelAttribute("appUser") AppUser appUser) {
-        model.addAttribute("itemList", dataFileService.createListItem(appUser.getUploadDirectory()));
+        model.addAttribute("itemList", dataService.createListItem(appUser.getUploadDirectory()));
 
         return DATASET;
     }
 
     @RequestMapping(value = "/delete", method = RequestMethod.GET)
     public String deleteResultFile(@RequestParam(value = "file") String filename, Model model, @ModelAttribute("appUser") AppUser appUser) {
-        Path file = Paths.get(appUser.getUploadDirectory(), filename);
-        if (dataFileService.deleteDataFileByNameAndAbsolutePath(filename, appUser.getUploadDirectory())) {
+        String baseDir = appUser.getUploadDirectory();
+        Path file = Paths.get(baseDir, filename);
+        if (dataService.getDataFileService().deleteDataFileByNameAndAbsolutePath(baseDir, filename)) {
             try {
                 Files.deleteIfExists(file);
             } catch (IOException exception) {

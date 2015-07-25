@@ -54,9 +54,9 @@
                                             <input id="email" name="email" class="form-control" type="text" value="" th:value="${person.email}" required="required" />
                                         </div>
                                         <div class="form-group">
-                                            <label for="workspaceDirectory">Workspace Directory:</label>
+                                            <label for="workspace">Workspace Directory:</label>
                                             <div class="input-group">
-                                                <input id="workspaceDirectory" name="workspaceDirectory" class="form-control" type="text" value="" th:value="${person.workspaceDirectory}" required="required" />
+                                                <input id="workspace" name="workspace" class="form-control" type="text" value="" th:value="${person.workspace}" required="required" />
                                                 <span class="input-group-btn">
                                                     <button type="button" class="btn btn-default" data-toggle="modal" data-target="#browseModal">Browse...</button>
                                                 </span>
@@ -89,16 +89,16 @@
                         <h4 class="modal-title" id="newFolderModalLabel">Browse Workspace Directory</h4>
                     </div>
                     <div class="modal-body">
-                        <div th:if="${person.workspaceDirectory}">
-                            <iframe id="frmBrowse" src="dirBrowser?dir=${person.workspaceDirectory}" th:src="@{/dirBrowser} + '?dir=' + ${person.workspaceDirectory}" marginwidth="0" marginheight="0" scrolling="yes"></iframe>
+                        <div th:if="${person.workspace}">
+                            <iframe id="frmBrowse" src="dirBrowser?dir=${person.workspace}" th:src="@{/dirBrowser} + '?dir=' + ${person.workspace}" marginwidth="0" marginheight="0" scrolling="yes"></iframe>
                         </div>
-                        <div th:if="${person.workspaceDirectory} == null">
+                        <div th:if="${person.workspace} == null">
                             <iframe id="frmBrowse" src="dirBrowser" marginwidth="0" marginheight="0" scrolling="yes"></iframe>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary" data-dismiss="modal" onclick="$('#workspaceDirectory').val($('#frmBrowse').contents().find('#selectedDir').val());">Select</button>
+                        <button type="submit" class="btn btn-primary" data-dismiss="modal" onclick="$('#workspace').val($('#frmBrowse').contents().find('#selectedDir').val());">Select</button>
                     </div>
                 </div>
             </div>

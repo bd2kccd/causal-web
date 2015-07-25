@@ -18,14 +18,13 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
-import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
-import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
 import edu.pitt.dbmi.ccd.db.entity.VariableType;
+import edu.pitt.dbmi.ccd.db.service.DataFileInfoService;
+import edu.pitt.dbmi.ccd.db.service.DataFileService;
+import edu.pitt.dbmi.ccd.db.service.FileDelimiterService;
+import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.model.DataListItem;
-import edu.pitt.dbmi.ccd.web.service.DataFileInfoService;
-import edu.pitt.dbmi.ccd.web.service.DataFileService;
-import edu.pitt.dbmi.ccd.web.service.FileDelimiterService;
-import edu.pitt.dbmi.ccd.web.service.VariableTypeService;
+import edu.pitt.dbmi.ccd.web.service.DataService;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -48,31 +47,36 @@ public abstract class AlgorithmController {
 
     protected final DataFileInfoService dataFileInfoService;
 
+    protected final DataService dataService;
+
     public AlgorithmController(
             String algorithmJar,
             VariableTypeService variableTypeService,
             FileDelimiterService fileDelimiterService,
             DataFileService dataFileService,
-            DataFileInfoService dataFileInfoService) {
+            DataFileInfoService dataFileInfoService,
+            DataService dataService) {
         this.algorithmJar = algorithmJar;
         this.variableTypeService = variableTypeService;
         this.fileDelimiterService = fileDelimiterService;
         this.dataFileService = dataFileService;
         this.dataFileInfoService = dataFileInfoService;
+        this.dataService = dataService;
     }
 
     protected String getFileDelimiter(String name, String absolutePath) {
-        DataFileInfo dataFileInfo = dataFileInfoService.getDataFileInfoRepository()
-                .findByDataFileNameAndAbsolutePath(name, absolutePath);
-
-        return FileInfos.delimiterNameToString(dataFileInfo.getFileDelimiter().getName());
+        return "\t";
+//        DataFileInfo dataFileInfo = dataFileInfoService.getDataFileInfoRepository()
+//                .findByDataFileNameAndAbsolutePath(name, absolutePath);
+//
+//        return FileInfos.delimiterNameToString(dataFileInfo.getFileDelimiter().getName());
     }
 
     protected Map<String, String> directoryFileListing(String baseDir) {
         Map<String, String> map = new TreeMap<>();
 
-        VariableType variableType = variableTypeService.getVariableTypeRepository().findByName("continuous");
-        List<DataListItem> dataListItems = dataFileService.createListItem(baseDir, variableType);
+        VariableType variableType = variableTypeService.findByName("continuous");
+        List<DataListItem> dataListItems = dataService.createListItem(baseDir, variableType);
         dataListItems.forEach(item -> {
             String key = item.getFileName();
             String value = String.format(("%s (%s)"), item.getFileName(), item.getSize());

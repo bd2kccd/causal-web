@@ -20,12 +20,12 @@ package edu.pitt.dbmi.ccd.web.ctrl;
 
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.PersonService;
+import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import static edu.pitt.dbmi.ccd.web.ctrl.ViewController.DIR_BROWSER;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.UserRegistration;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
-import edu.pitt.dbmi.ccd.web.service.PersonService;
-import edu.pitt.dbmi.ccd.web.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.util.FileUtility;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -106,7 +106,7 @@ public class UserAccountController implements ViewController {
             @Value("${app.login.error:Unable to setup initial settings.}") String signInErrMsg,
             @ModelAttribute("person") Person person,
             Model model) {
-        String baseDir = person.getWorkspaceDirectory();
+        String baseDir = person.getWorkspace();
         Path workspace = Paths.get(baseDir);
         if (Files.exists(workspace)) {
             if (!Files.isDirectory(workspace)) {
@@ -167,7 +167,7 @@ public class UserAccountController implements ViewController {
             person.setFirstName("");
             person.setLastName("");
             person.setEmail(email);
-            person.setWorkspaceDirectory(Paths.get(workspace).toString());
+            person.setWorkspace(Paths.get(workspace).toString());
 
             UserAccount userAccount = new UserAccount();
             userAccount.setActive(false);
@@ -217,7 +217,7 @@ public class UserAccountController implements ViewController {
         p.setFirstName(person.getFirstName().trim());
         p.setLastName(person.getLastName().trim());
         if (!appUser.isWebUser()) {
-            p.setWorkspaceDirectory(person.getWorkspaceDirectory().trim());
+            p.setWorkspace(person.getWorkspace().trim());
         }
         personService.save(p);
 

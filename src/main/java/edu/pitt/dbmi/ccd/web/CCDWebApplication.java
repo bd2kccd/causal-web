@@ -36,7 +36,7 @@ public class CCDWebApplication extends SpringBootServletInitializer {
     protected SpringApplicationBuilder configure(SpringApplicationBuilder applicationBuilder) {
         return applicationBuilder.sources(CCDWebApplication.class);
     }
-    
+
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(CCDWebApplication.class, args);
         String[] profiles = context.getEnvironment().getActiveProfiles();

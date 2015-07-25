@@ -5,7 +5,7 @@
 
     <groupId>edu.pitt.dbmi</groupId>
     <artifactId>ccd-web</artifactId>
-    <version>0.4.1</version>
+    <version>0.4.2</version>
     <packaging>jar</packaging>
 
     <name>CCDWebApplication</name>
@@ -53,7 +53,7 @@
         </dependency>
 
         <!-- Uncomment tomcat to use as war -->
-        <!--        <dependency>
+<!--        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-tomcat</artifactId>
             <scope>provided</scope>
@@ -95,7 +95,7 @@
         <dependency>
             <groupId>edu.pitt.dbmi</groupId>
             <artifactId>ccd-db</artifactId>
-            <version>0.4.1</version>
+            <version>0.4.2</version>
         </dependency>
         <dependency>
             <groupId>edu.pitt.dbmi</groupId>

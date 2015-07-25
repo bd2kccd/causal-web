@@ -72,7 +72,7 @@ public class AppUserService {
         AppUser appUser = new AppUser();
 
         Person person = userAccount.getPerson();
-        String baseDir = person.getWorkspaceDirectory();
+        String baseDir = person.getWorkspace();
         String username = userAccount.getUsername();
         Path uploadDir = Paths.get(baseDir, username, uploadDirectory);
         Path outputDir = Paths.get(baseDir, username, outputDirectory);

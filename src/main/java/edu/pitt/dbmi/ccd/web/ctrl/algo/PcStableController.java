@@ -18,14 +18,15 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
+import edu.pitt.dbmi.ccd.db.service.DataFileInfoService;
+import edu.pitt.dbmi.ccd.db.service.DataFileService;
+import edu.pitt.dbmi.ccd.db.service.FileDelimiterService;
+import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.PcStableRunInfo;
 import edu.pitt.dbmi.ccd.web.service.AlgorithmService;
-import edu.pitt.dbmi.ccd.web.service.DataFileInfoService;
-import edu.pitt.dbmi.ccd.web.service.DataFileService;
-import edu.pitt.dbmi.ccd.web.service.FileDelimiterService;
-import edu.pitt.dbmi.ccd.web.service.VariableTypeService;
+import edu.pitt.dbmi.ccd.web.service.DataService;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -68,8 +69,9 @@ public class PcStableController extends AlgorithmController implements ViewContr
             VariableTypeService variableTypeService,
             FileDelimiterService fileDelimiterService,
             DataFileService dataFileService,
-            DataFileInfoService dataFileInfoService) {
-        super(algorithmJar, variableTypeService, fileDelimiterService, dataFileService, dataFileInfoService);
+            DataFileInfoService dataFileInfoService,
+            DataService dataService) {
+        super(algorithmJar, variableTypeService, fileDelimiterService, dataFileService, dataFileInfoService, dataService);
         this.pcStable = pcStable;
         this.algorithmService = algorithmService;
     }

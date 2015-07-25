@@ -19,7 +19,7 @@
 package edu.pitt.dbmi.ccd.web.shiro;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.web.service.UserAccountService;
+import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.apache.shiro.authc.AuthenticationException;
