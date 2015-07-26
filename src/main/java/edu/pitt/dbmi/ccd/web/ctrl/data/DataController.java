@@ -104,16 +104,16 @@ public class DataController implements ViewController {
 
     @RequestMapping(method = RequestMethod.GET)
     public String showDatasetView(Model model, @ModelAttribute("appUser") AppUser appUser) {
-        model.addAttribute("itemList", dataService.createListItem(appUser.getUploadDirectory()));
+        model.addAttribute("itemList", dataService.createListItem(appUser.getUsername(), appUser.getUploadDirectory()));
 
         return DATASET;
     }
 
     @RequestMapping(value = "/delete", method = RequestMethod.GET)
     public String deleteResultFile(@RequestParam(value = "file") String filename, Model model, @ModelAttribute("appUser") AppUser appUser) {
-        String baseDir = appUser.getUploadDirectory();
-        Path file = Paths.get(baseDir, filename);
-        if (dataService.getDataFileService().deleteDataFileByNameAndAbsolutePath(baseDir, filename)) {
+        String dataDir = appUser.getUploadDirectory();
+        Path file = Paths.get(dataDir, filename);
+        if (dataService.getDataFileService().deleteDataFileByNameAndAbsolutePath(dataDir, filename)) {
             try {
                 Files.deleteIfExists(file);
             } catch (IOException exception) {

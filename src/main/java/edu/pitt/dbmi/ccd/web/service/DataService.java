@@ -23,9 +23,11 @@ import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
 import edu.pitt.dbmi.ccd.db.entity.DataFile;
 import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.entity.VariableType;
 import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.db.service.FileDelimiterService;
+import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.model.AttributeValue;
 import edu.pitt.dbmi.ccd.web.model.DataListItem;
@@ -35,6 +37,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -64,34 +67,107 @@ public class DataService {
 
     private final FileDelimiterService fileDelimiterService;
 
+    private final UserAccountService userAccountService;
+
     @Autowired(required = true)
     public DataService(
             DataFileService dataFileService,
             VariableTypeService variableTypeService,
-            FileDelimiterService fileDelimiterService) {
+            FileDelimiterService fileDelimiterService,
+            UserAccountService userAccountService) {
         this.dataFileService = dataFileService;
         this.variableTypeService = variableTypeService;
         this.fileDelimiterService = fileDelimiterService;
+        this.userAccountService = userAccountService;
     }
 
-    public List<DataListItem> createListItem(String baseDir, VariableType variableType) {
+    public List<DataListItem> createListItem(String dataDir, VariableType variableType) {
         String varType = "continuous";
-        List<DataListItem> listItems = createListItem(baseDir);
+        List<DataListItem> listItems = createListItem(dataDir);
 
         return listItems.stream()
                 .filter(item -> varType.equals(item.getVariableType()))
                 .collect(Collectors.toList());
     }
 
-    public List<DataListItem> createListItem(String baseDir) {
+    public List<DataListItem> createListItem(String username, String dataDir) {
         List<DataListItem> listItems = new LinkedList<>();
 
-        Path basePath = Paths.get(baseDir);
+        UserAccount userAccount = userAccountService.findByUsername(username);
+
+        List<DataFile> dataFiles = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
+        Map<String, DataFile> dbDataFile = new HashMap<>();
+        dataFiles.forEach(file -> {
+            dbDataFile.put(file.getName(), file);
+        });
+
+        List<DataFile> dataFileToSave = new LinkedList<>();
+        List<DataFile> dataFileToRemove = new LinkedList<>();
+        try {
+            List<Path> list = FileInfos.listDirectory(Paths.get(dataDir), false);
+            List<Path> files = list.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
+
+            List<BasicFileInfo> result = FileInfos.listBasicPathInfo(files);
+            result.forEach(info -> {
+                String fileName = info.getFilename();
+                String creationDate = FilePrint.fileTimestamp(info.getCreationTime());
+                String size = FilePrint.humanReadableSize(info.getSize(), true);
+
+                DataListItem item = new DataListItem(fileName, creationDate, size);
+
+                DataFile dataFile = dbDataFile.get(fileName);
+                if (dataFile == null) {
+                    dataFile = new DataFile();
+                    dataFile.setName(fileName);
+                    dataFile.setAbsolutePath(info.getAbsolutePath().toString());
+                    dataFile.setCreationTime(new Date(info.getCreationTime()));
+                    dataFile.setFileSize(info.getSize());
+                    dataFile.setLastModifiedTime(new Date(info.getLastModifiedTime()));
+                    dataFile.setDataFileInfo(null);
+                    dataFile.setUserAccounts(Collections.singleton(userAccount));
+
+                    dataFileToSave.add(dataFile);
+                }
+
+                DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
+                if (dataFileInfo != null) {
+                    item.setDelimiter(dataFileInfo.getFileDelimiter().getName());
+                    item.setVariableType(dataFileInfo.getVariableType().getName());
+                }
+
+                dbDataFile.remove(fileName);
+
+                listItems.add(item);
+            });
+        } catch (IOException exception) {
+            LOGGER.error(exception.getMessage());
+        }
+
+        Set<String> keySet = dbDataFile.keySet();
+        keySet.forEach(key -> {
+            dataFileToRemove.add(dbDataFile.get(key));
+        });
+        if (!dataFileToRemove.isEmpty()) {
+            dataFileService.deleteDataFile(dataFileToRemove);
+        }
+
+        // save all the new files found in the workspace
+        if (!dataFileToSave.isEmpty()) {
+            dataFileService.saveDataFile(dataFileToSave);
+        }
+
+        return listItems;
+    }
+
+    public List<DataListItem> createListItem(String dataDir) {
+        List<DataListItem> listItems = new LinkedList<>();
+
+        Path basePath = Paths.get(dataDir);
         List<DataFile> dataFileToSave = new LinkedList<>();
         List<DataFile> dataFileToRemove = new LinkedList<>();
 
         // get the filenames of the data that are stored in the database
-        List<DataFile> dataFiles = dataFileService.findByAbsolutePath(baseDir);
+        List<DataFile> dataFiles = dataFileService.findByAbsolutePath(dataDir);
         Map<String, DataFile> dbDataFile = new HashMap<>();
         dataFiles.forEach(file -> {
             dbDataFile.put(file.getName(), file);
