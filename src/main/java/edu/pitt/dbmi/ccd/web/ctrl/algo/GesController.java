@@ -86,7 +86,7 @@ public class GesController extends AlgorithmController implements ViewController
 
         model.addAttribute("gesRunInfo", info);
 
-        model.addAttribute("datasetList", directoryFileListing(appUser.getUploadDirectory()));
+        model.addAttribute("datasetList", directoryFileListing(appUser.getUsername(), appUser.getUploadDirectory()));
 
         return GES;
     }

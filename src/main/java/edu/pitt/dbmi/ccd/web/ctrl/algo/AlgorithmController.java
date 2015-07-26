@@ -72,11 +72,11 @@ public abstract class AlgorithmController {
 //        return FileInfos.delimiterNameToString(dataFileInfo.getFileDelimiter().getName());
     }
 
-    protected Map<String, String> directoryFileListing(String baseDir) {
+    protected Map<String, String> directoryFileListing(String username, String dataDir) {
         Map<String, String> map = new TreeMap<>();
 
         VariableType variableType = variableTypeService.findByName("continuous");
-        List<DataListItem> dataListItems = dataService.createListItem(baseDir, variableType);
+        List<DataListItem> dataListItems = dataService.createListItem(username, dataDir, variableType);
         dataListItems.forEach(item -> {
             String key = item.getFileName();
             String value = String.format(("%s (%s)"), item.getFileName(), item.getSize());

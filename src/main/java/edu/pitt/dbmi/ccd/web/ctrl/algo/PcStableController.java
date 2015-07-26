@@ -85,7 +85,7 @@ public class PcStableController extends AlgorithmController implements ViewContr
         info.setJvmOptions("");
         model.addAttribute("pcStableRunInfo", info);
 
-        model.addAttribute("datasetList", directoryFileListing(appUser.getUploadDirectory()));
+        model.addAttribute("datasetList", directoryFileListing(appUser.getUsername(), appUser.getUploadDirectory()));
 
         return PCSTABLE;
     }
