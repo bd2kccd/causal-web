@@ -126,4 +126,9 @@ public class DataController implements ViewController {
         return "redirect:/data";
     }
 
+    @RequestMapping(value = "/example", method = RequestMethod.GET)
+    public String getFileFInfo(@RequestParam(value = "type") String type) {
+        return type;
+    }
+
 }

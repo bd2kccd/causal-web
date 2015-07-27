@@ -104,3 +104,12 @@ $(document).ready(function () {
     }
 });
 
+$('#dataExample').on('show.bs.modal', function (event) {
+    var link = $(event.relatedTarget);
+    var title = link.data('title');
+    var type = link.data('type');
+
+    var modal = $(this);
+    modal.find('.modal-title').text(title + ' Dataset');
+    modal.find('#dataExampleFrame').attr('src', 'example?type=' + type);
+});
