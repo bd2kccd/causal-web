@@ -23,6 +23,7 @@ import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.util.FileUtility;
+import java.time.Instant;
 import java.util.Date;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -118,6 +119,10 @@ public class ApplicationController implements ViewController {
         UserAccount userAccount = userAccountService.findByUsername(username);
         if (userAccount.getActive()) {
             model.addAttribute("appUser", appUserService.createAppUser(userAccount));
+
+            userAccount.setLastLoginDate(Date.from(Instant.now()));
+            userAccountService.save(userAccount);
+
             return REDIRECT_HOME;
         } else {
             currentUser.logout();

@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.Date;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -121,8 +122,8 @@ public class UserAccountController implements ViewController {
         UserAccount userAccount = new UserAccount();
         userAccount.setActive(true);
         userAccount.setPassword(passwordService.encryptPassword(defaultPassword));
-        userAccount.setCreatedDate(new Date(System.currentTimeMillis()));
-        userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
+        userAccount.setCreatedDate(Date.from(Instant.now()));
+        userAccount.setLastLoginDate(Date.from(Instant.now()));
         userAccount.setUsername(System.getProperty("user.name"));
         userAccount.setPerson(person);
         try {
@@ -173,8 +174,8 @@ public class UserAccountController implements ViewController {
             userAccount.setActive(false);
             userAccount.setUsername(username);
             userAccount.setPassword(passwordService.encryptPassword(password));
-            userAccount.setCreatedDate(new Date(System.currentTimeMillis()));
-            userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
+            userAccount.setCreatedDate(Date.from(Instant.now()));
+            userAccount.setLastLoginDate(Date.from(Instant.now()));
             userAccount.setPerson(person);
 
             try {
