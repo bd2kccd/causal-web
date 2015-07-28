@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,11 @@ import org.springframework.stereotype.Service;
  * Jun 19, 2015 9:40:09 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * 
+ * Jul 17, 2015 10:41:02 AM
+ * 
+ * @author Chirayu (Kong) Wongchokprasitti (chw20@pitt.edu)
+ * 
  */
 @Service
 public class AppUserService {
@@ -91,7 +97,7 @@ public class AppUserService {
             }
         }
 
-        if (Files.notExists(libDir)) {
+        /*if (Files.notExists(libDir)) {
             Resource resource = new ClassPathResource("/lib");
             try {
                 Path libPath = Paths.get(resource.getFile().getAbsolutePath());
@@ -105,11 +111,32 @@ public class AppUserService {
                         }
                     }
                 });
+                
+            } catch (IOException exception) {
+                LOGGER.error("Unable to copy resources (lib).", exception);
+            }
+        }*/
+
+        Path appPath = Paths.get("");
+        Path libPath = Paths.get(appPath.toAbsolutePath().toString(),libDirectory);
+        if(Files.exists(libPath)){
+        	try {
+                Files.walk(libPath).filter(Files::isRegularFile).forEach(file -> {
+                    Path destFile = Paths.get(libDir.toAbsolutePath().toString(), libPath.relativize(file).toString());
+                    if (!Files.exists(destFile)) {
+                        try {
+                            Files.copy(file, destFile);
+                        } catch (IOException exception) {
+                            exception.printStackTrace(System.err);
+                        }
+                    }
+                });
+                
             } catch (IOException exception) {
                 LOGGER.error("Unable to copy resources (lib).", exception);
             }
         }
-
+              
         appUser.setUsername(userAccount.getUsername());
         appUser.setFirstName(person.getFirstName());
         appUser.setLastName(person.getLastName());

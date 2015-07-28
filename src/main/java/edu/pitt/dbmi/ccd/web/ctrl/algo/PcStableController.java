@@ -93,7 +93,7 @@ public class PcStableController extends AlgorithmController implements ViewContr
             @ModelAttribute("appUser") AppUser appUser) {
         List<String> commands = new LinkedList<>();
         commands.add("java");
-
+        
         String jvmOptions = info.getJvmOptions().trim();
         if (jvmOptions.length() > 0) {
             commands.addAll(Arrays.asList(jvmOptions.split("\\s+")));

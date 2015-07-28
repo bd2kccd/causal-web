@@ -95,6 +95,12 @@
 			<version>0.4</version>
 		</dependency>
 
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.4</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -131,7 +137,8 @@
 								<fileVersion>0.4.1.0</fileVersion>
 								<txtFileVersion>0.4.1.0</txtFileVersion>
 								<fileDescription>CCD Desktop Windows Application</fileDescription>
-								<copyright>my copyright</copyright>
+								<copyright>Department of Biomedical Informatics University of
+									Pittsburgh</copyright>
 								<productVersion>0.4.1.0</productVersion>
 								<txtProductVersion>0.4.1.0</txtProductVersion>
 								<productName>CCD-Desktop</productName>

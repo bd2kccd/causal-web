@@ -18,6 +18,11 @@
  */
 package edu.pitt.dbmi.ccd.web;
 
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -33,6 +38,32 @@ public class CCDWebApplication extends SpringBootServletInitializer {
 
     public static void main(String[] args) {
         SpringApplication.run(CCDWebApplication.class, args);
+
+        String os = System.getProperty("os.name");
+        System.getProperties().list(System.out);
+        
+        List<String> commands = new LinkedList<>();
+        try {
+            if(os.contains("Mac")){
+            	String[] env = {"PATH=/bin:/usr/bin/"};
+            	commands.add("open");
+            	commands.add("http://localhost:8080/ccd");
+            	Runtime.getRuntime().exec(StringUtils.join(commands.toArray(), " "), env);
+            }else if(os.contains("Windows")){
+            	commands.add("cmd");
+            	commands.add("/c");
+            	commands.add("start");
+            	commands.add("http://localhost:8080/ccd");
+            	Runtime.getRuntime().exec(StringUtils.join(commands.toArray(), " "));
+            }else{//Unix/Linux
+            	commands.add("xdg-open");
+            	commands.add("http://localhost:8080/ccd");
+            	Runtime.getRuntime().exec(StringUtils.join(commands.toArray(), " "));
+            }
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
 }
