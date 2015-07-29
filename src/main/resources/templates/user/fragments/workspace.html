@@ -106,19 +106,19 @@
         <script src="../../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
         <script src="../../../static/vendors/sb-admin-2/js/sb-admin-2.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.js}"></script>
         <script>
-                            $(document).ready(function () {
+                        $(document).ready(function () {
+                            $("#view_workspace_panel").show();
+                            $("#edit_workspace_panel").hide();
+
+                            $("#edit_workspace").click(function () {
+                                $("#view_workspace_panel").hide();
+                                $("#edit_workspace_panel").show();
+                            });
+                            $("#cancel_workspace").click(function () {
                                 $("#view_workspace_panel").show();
                                 $("#edit_workspace_panel").hide();
-
-                                $("#edit_workspace").click(function () {
-                                    $("#view_workspace_panel").hide();
-                                    $("#edit_workspace_panel").show();
-                                });
-                                $("#cancel_workspace").click(function () {
-                                    $("#view_workspace_panel").show();
-                                    $("#edit_workspace_panel").hide();
-                                });
                             });
+                        });
         </script>
     </body>
 </html>

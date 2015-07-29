@@ -20,6 +20,7 @@ package edu.pitt.dbmi.ccd.web.ctrl.user;
 
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.SecurityAnswer;
+import edu.pitt.dbmi.ccd.db.entity.SecurityQuestion;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.SecurityAnswerService;
 import edu.pitt.dbmi.ccd.db.service.SecurityQuestionService;
@@ -84,19 +85,24 @@ public class UserProfileController implements ViewController {
 
     @RequestMapping(value = "security", method = RequestMethod.POST)
     public String updateSecurityQuestionAnswer(
-            @ModelAttribute("usqa") final UserSecurityQuestionAnswer userSecurityQuestionAnswer,
+            @ModelAttribute("usqa") final UserSecurityQuestionAnswer usqa,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
         UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
 
         List<SecurityAnswer> list = securityAnswerService.findByUserAccounts(Collections.singleton(userAccount));
-        securityAnswerService.deleteSecurityAnswer(list);
-
-        SecurityAnswer securityAnswer = new SecurityAnswer();
-        securityAnswer.setAnswer(userSecurityQuestionAnswer.getAnswer());
-        securityAnswer.setSecurityQuestion(userSecurityQuestionAnswer.getSecurityQuestion());
-        securityAnswer.setUserAccounts(Collections.singleton(userAccount));
-        list.add(securityAnswer);
+        if (list.isEmpty()) {
+            SecurityAnswer securityAnswer = new SecurityAnswer();
+            securityAnswer.setAnswer(usqa.getAnswer());
+            securityAnswer.setSecurityQuestion(usqa.getSecurityQuestion());
+            securityAnswer.setUserAccounts(Collections.singleton(userAccount));
+            list.add(securityAnswer);
+        } else {
+            list.forEach(securityAnswer -> {
+                securityAnswer.setAnswer(usqa.getAnswer());
+                securityAnswer.setSecurityQuestion(usqa.getSecurityQuestion());
+            });
+        }
 
         securityAnswerService.saveSecurityAnswer(list);
 
@@ -183,11 +189,15 @@ public class UserProfileController implements ViewController {
         passwordChange.setNewPassword("");
         passwordChange.setConfirmPassword("");
 
-        UserSecurityQuestionAnswer usqa = new UserSecurityQuestionAnswer();
+        UserSecurityQuestionAnswer usqa = null;
         List<SecurityAnswer> securityAnswers = securityAnswerService
                 .findByUserAccounts(Collections.singleton(userAccount));
         for (SecurityAnswer sa : securityAnswers) {
             usqa = new UserSecurityQuestionAnswer(sa.getSecurityQuestion(), sa.getAnswer());
+        }
+        if (usqa == null) {
+            usqa = new UserSecurityQuestionAnswer();
+            usqa.setSecurityQuestion(new SecurityQuestion());
         }
 
         model.addAttribute("userInfo", userInfo);

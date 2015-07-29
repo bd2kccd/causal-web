@@ -36,7 +36,7 @@
                                     <table class="table table-responsive table-condensed">
                                         <tbody>
                                             <tr>
-                                                <td><label>Question:</label> <span th:text="${usqa.securityQuestion.question}">question</span></td>
+                                                <td><label>Question:</label> <span th:text="*{securityQuestion.question}">question</span></td>
                                             </tr>
                                             <tr>
                                                 <td><label>Answer:</label> <span th:text="*{answer}">answer</span></td>
