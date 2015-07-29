@@ -125,7 +125,7 @@ public class UserAccountController implements ViewController {
         userAccount.setUsername(System.getProperty("user.name"));
         userAccount.setPerson(person);
         try {
-            userAccount = userAccountService.createNewUserAccount(userAccount);
+            userAccount = userAccountService.saveUserAccount(userAccount);
         } catch (Exception exception) {
             LOGGER.warn(
                     String.format("Unable to set up new user account for %s.", userAccount.getUsername()),
@@ -177,7 +177,7 @@ public class UserAccountController implements ViewController {
             userAccount.setPerson(person);
 
             try {
-                userAccountService.createNewUserAccount(userAccount);
+                userAccountService.saveUserAccount(userAccount);
             } catch (Exception exception) {
                 LOGGER.warn(
                         String.format("Unable to register new user account for %s.", userAccount.getUsername()),

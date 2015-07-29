@@ -120,7 +120,7 @@ public class ApplicationController implements ViewController {
             model.addAttribute("appUser", appUserService.createAppUser(userAccount));
 
             userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
-            userAccountService.save(userAccount);
+            userAccountService.saveUserAccount(userAccount);
 
             return REDIRECT_HOME;
         } else {
@@ -163,7 +163,7 @@ public class ApplicationController implements ViewController {
                 }
 
                 userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
-                userAccountService.save(userAccount);
+                userAccountService.saveUserAccount(userAccount);
 
                 model.addAttribute("appUser", appUserService.createAppUser(userAccount));
 

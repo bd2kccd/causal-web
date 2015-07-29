@@ -19,14 +19,20 @@
 package edu.pitt.dbmi.ccd.web.ctrl.user;
 
 import edu.pitt.dbmi.ccd.db.entity.Person;
+import edu.pitt.dbmi.ccd.db.entity.SecurityAnswer;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.SecurityAnswerService;
+import edu.pitt.dbmi.ccd.db.service.SecurityQuestionService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.user.PasswordChange;
 import edu.pitt.dbmi.ccd.web.model.user.UserInfo;
+import edu.pitt.dbmi.ccd.web.model.user.UserSecurityQuestionAnswer;
 import edu.pitt.dbmi.ccd.web.model.user.UserWorkspace;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
+import java.util.Collections;
+import java.util.List;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,14 +64,43 @@ public class UserProfileController implements ViewController {
 
     private final DefaultPasswordService passwordService;
 
+    private final SecurityAnswerService securityAnswerService;
+
+    private final SecurityQuestionService securityQuestionService;
+
     @Autowired(required = true)
     public UserProfileController(
             UserAccountService userAccountService,
             AppUserService appUserService,
-            DefaultPasswordService passwordService) {
+            DefaultPasswordService passwordService,
+            SecurityAnswerService securityAnswerService,
+            SecurityQuestionService securityQuestionService) {
         this.userAccountService = userAccountService;
         this.appUserService = appUserService;
         this.passwordService = passwordService;
+        this.securityAnswerService = securityAnswerService;
+        this.securityQuestionService = securityQuestionService;
+    }
+
+    @RequestMapping(value = "security", method = RequestMethod.POST)
+    public String updateSecurityQuestionAnswer(
+            @ModelAttribute("usqa") final UserSecurityQuestionAnswer userSecurityQuestionAnswer,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+
+        List<SecurityAnswer> list = securityAnswerService.findByUserAccounts(Collections.singleton(userAccount));
+        securityAnswerService.deleteSecurityAnswer(list);
+
+        SecurityAnswer securityAnswer = new SecurityAnswer();
+        securityAnswer.setAnswer(userSecurityQuestionAnswer.getAnswer());
+        securityAnswer.setSecurityQuestion(userSecurityQuestionAnswer.getSecurityQuestion());
+        securityAnswer.setUserAccounts(Collections.singleton(userAccount));
+        list.add(securityAnswer);
+
+        securityAnswerService.saveSecurityAnswer(list);
+
+        return REDIRECT_USER_PROFILE;
     }
 
     @RequestMapping(value = "pwd", method = RequestMethod.POST)
@@ -81,7 +116,7 @@ public class UserProfileController implements ViewController {
         if (passwordService.passwordsMatch(currentPwd, encryptedPwd)) {
             String newPwd = passwordChange.getNewPassword();
             userAccount.setPassword(passwordService.encryptPassword(newPwd));
-            userAccountService.save(userAccount);
+            userAccountService.saveUserAccount(userAccount);
         } else {
             redirectAttributes.addFlashAttribute("pwdChangeErr", "Invalid password.");
         }
@@ -101,7 +136,7 @@ public class UserProfileController implements ViewController {
         Person person = userAccount.getPerson();
         person.setWorkspace(userWorkspace.getWorkspace());
 
-        userAccount = userAccountService.save(userAccount);
+        userAccount = userAccountService.saveUserAccount(userAccount);
 
         model.addAttribute("appUser", appUserService.createAppUser(userAccount));
 
@@ -121,7 +156,7 @@ public class UserProfileController implements ViewController {
         person.setFirstName(userInfo.getFirstName());
         person.setLastName(userInfo.getLastName());
 
-        userAccount = userAccountService.save(userAccount);
+        userAccount = userAccountService.saveUserAccount(userAccount);
 
         model.addAttribute("appUser", appUserService.createAppUser(userAccount));
 
@@ -148,9 +183,18 @@ public class UserProfileController implements ViewController {
         passwordChange.setNewPassword("");
         passwordChange.setConfirmPassword("");
 
+        UserSecurityQuestionAnswer usqa = new UserSecurityQuestionAnswer();
+        List<SecurityAnswer> securityAnswers = securityAnswerService
+                .findByUserAccounts(Collections.singleton(userAccount));
+        for (SecurityAnswer sa : securityAnswers) {
+            usqa = new UserSecurityQuestionAnswer(sa.getSecurityQuestion(), sa.getAnswer());
+        }
+
         model.addAttribute("userInfo", userInfo);
         model.addAttribute("userWorkspace", userWorkspace);
         model.addAttribute("passwordChange", passwordChange);
+        model.addAttribute("usqa", usqa);
+        model.addAttribute("securityQuestions", securityQuestionService.findAllSecurityQuestion());
 
         return USER_PROFILE;
     }

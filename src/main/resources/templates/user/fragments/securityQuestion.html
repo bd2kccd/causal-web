@@ -16,15 +16,15 @@
     <body>
         <div class="row">
             <div class="col-lg-12">
-                <form method="post" action="" th:action="@{/user/profile/info}" th:object="${userInfo}" role="form">
-                    <div class="panel panel-default" id="view_info_panel">
+                <form method="post" action="" th:action="@{/user/profile/security}" th:object="${usqa}" role="form">
+                    <div class="panel panel-default" id="view_usqa_panel">
                         <div class="panel-heading clearfix">
                             <div class="pull-left">
-                                <h4><i class="fa fa-user fa-fw"></i> User Information</h4>
+                                <h4><i class="fa fa-user fa-fw"></i> User Security Question &amp; Answer</h4>
                             </div>
                             <div class="pull-right">
                                 <div class="btn-group">
-                                    <button type="button" class="btn btn-default" id="edit_info">
+                                    <button type="button" class="btn btn-default" id="edit_usqa">
                                         <span class="glyphicon glyphicon-edit"></span> Edit
                                     </button>
                                 </div>
@@ -33,19 +33,13 @@
                         <div class="panel-body">
                             <div class="row">
                                 <div class="col-sm-12">
-                                    <table class="table table-striped table-hover table-responsive table-condensed">
+                                    <table class="table table-responsive table-condensed">
                                         <tbody>
                                             <tr>
-                                                <td><b>First Name:</b></td>
-                                                <td th:text="*{firstName}"></td>
+                                                <td><label>Question:</label> <span th:text="${usqa.securityQuestion.question}">question</span></td>
                                             </tr>
                                             <tr>
-                                                <td><b>Last Name:</b></td>
-                                                <td th:text="*{lastName}"></td>
-                                            </tr>
-                                            <tr>
-                                                <td><b>E-mail:</b></td>
-                                                <td th:text="*{email}"></td>
+                                                <td><label>Answer:</label> <span th:text="*{answer}">answer</span></td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -53,14 +47,14 @@
                             </div>
                         </div>
                     </div>
-                    <div class="panel panel-default" id="edit_info_panel">
+                    <div class="panel panel-default" id="edit_usqa_panel">
                         <div class="panel-heading clearfix">
                             <div class="pull-left">
-                                <h4><i class="fa fa-user fa-fw"></i> User Information</h4>
+                                <h4><i class="fa fa-user fa-fw"></i> User Security Question &amp; Answer</h4>
                             </div>
                             <div class="pull-right">
                                 <div class="btn-group">
-                                    <button type="button" class="btn btn-default" id="cancel_info">
+                                    <button type="button" class="btn btn-default" id="cancel_usqa">
                                         <span class="glyphicon glyphicon-remove-sign"></span> Cancel
                                     </button>
                                 </div>
@@ -70,16 +64,14 @@
                             <div class="row">
                                 <div class="col-sm-12">
                                     <div class="form-group">
-                                        <label for="firstName">First Name:</label>
-                                        <input id="firstName" class="form-control" type="text" value="" th:value="*{firstName}" th:field="*{firstName}" autofocus="autofocus" />
+                                        <label for="secureQues">Security Question</label>
+                                        <select id="secureQues" name="secureQues" class="form-control" title="Please select a security question." th:field="*{securityQuestion}" required="required" autofocus="autofocus">
+                                            <option th:each="squestion : ${securityQuestions}" value="" th:value="${squestion.id}" th:text="${squestion.question}"></option>
+                                        </select>
                                     </div>
                                     <div class="form-group">
-                                        <label for="lastName">Last Name:</label>
-                                        <input id="lastName" class="form-control" type="text" value="" th:value="*{lastName}" th:field="*{lastName}" />
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="email">Email:</label>
-                                        <input id="email" class="form-control" type="text" value="" th:value="*{email}" th:field="*{email}" required="required" />
+                                        <label for="secureAnsw" class="control-label">Security Answer</label>
+                                        <input type="text" id="secureAnsw" name="secureAnsw" maxlength="10" class="form-control" th:field="*{answer}" required="required" />
                                     </div>
                                     <div class="form-group">
                                         <input type="submit" class="btn btn-lg btn-block btn-success" value="Save" />
@@ -97,16 +89,16 @@
         <script src="../../../static/vendors/sb-admin-2/js/sb-admin-2.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.js}"></script>
         <script>
             $(document).ready(function () {
-                $("#view_info_panel").show();
-                $("#edit_info_panel").hide();
+                $("#view_usqa_panel").show();
+                $("#edit_usqa_panel").hide();
 
-                $("#edit_info").click(function () {
-                    $("#view_info_panel").hide();
-                    $("#edit_info_panel").show();
+                $("#edit_usqa").click(function () {
+                    $("#view_usqa_panel").hide();
+                    $("#edit_usqa_panel").show();
                 });
-                $("#cancel_info").click(function () {
-                    $("#view_info_panel").show();
-                    $("#edit_info_panel").hide();
+                $("#cancel_usqa").click(function () {
+                    $("#view_usqa_panel").show();
+                    $("#edit_usqa_panel").hide();
                 });
             });
         </script>

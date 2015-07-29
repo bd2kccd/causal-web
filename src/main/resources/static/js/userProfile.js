@@ -22,6 +22,18 @@ $(document).ready(function () {
         $("#view_workspace_panel").show();
         $("#edit_workspace_panel").hide();
     });
+
+    $("#view_usqa_panel").show();
+    $("#edit_usqa_panel").hide();
+
+    $("#edit_usqa").click(function () {
+        $("#view_usqa_panel").hide();
+        $("#edit_usqa_panel").show();
+    });
+    $("#cancel_usqa").click(function () {
+        $("#view_usqa_panel").show();
+        $("#edit_usqa_panel").hide();
+    });
 });
 
 $.validator.addMethod("nowhitespace", function (value, element) {
