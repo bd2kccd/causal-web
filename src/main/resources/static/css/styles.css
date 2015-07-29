@@ -50,3 +50,8 @@ body {
     background-color: #111150;
     border-color: #111150;
 }
+
+a:link {
+    text-decoration: none;
+}
+

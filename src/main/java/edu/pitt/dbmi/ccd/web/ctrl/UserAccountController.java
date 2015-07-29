@@ -23,7 +23,6 @@ import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.PersonService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import static edu.pitt.dbmi.ccd.web.ctrl.ViewController.DIR_BROWSER;
-import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.UserRegistration;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.util.FileUtility;
@@ -31,7 +30,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Instant;
 import java.util.Date;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -122,8 +120,8 @@ public class UserAccountController implements ViewController {
         UserAccount userAccount = new UserAccount();
         userAccount.setActive(true);
         userAccount.setPassword(passwordService.encryptPassword(defaultPassword));
-        userAccount.setCreatedDate(Date.from(Instant.now()));
-        userAccount.setLastLoginDate(Date.from(Instant.now()));
+        userAccount.setCreatedDate(new Date(System.currentTimeMillis()));
+        userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
         userAccount.setUsername(System.getProperty("user.name"));
         userAccount.setPerson(person);
         try {
@@ -174,8 +172,8 @@ public class UserAccountController implements ViewController {
             userAccount.setActive(false);
             userAccount.setUsername(username);
             userAccount.setPassword(passwordService.encryptPassword(password));
-            userAccount.setCreatedDate(Date.from(Instant.now()));
-            userAccount.setLastLoginDate(Date.from(Instant.now()));
+            userAccount.setCreatedDate(new Date(System.currentTimeMillis()));
+            userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
             userAccount.setPerson(person);
 
             try {
@@ -195,37 +193,6 @@ public class UserAccountController implements ViewController {
         }
 
         return REDIRECT_LOGIN;
-    }
-
-    @RequestMapping(value = USER_PROFILE, method = RequestMethod.GET)
-    public String showPageUserProfile(@ModelAttribute("appUser") AppUser appUser, Model model) {
-        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
-        model.addAttribute("person", userAccount.getPerson());
-
-        return USER_PROFILE;
-    }
-
-    @RequestMapping(value = USER_PROFILE, method = RequestMethod.POST)
-    public String saveUserProfile(
-            @ModelAttribute("person") Person person,
-            @ModelAttribute("appUser") AppUser appUser,
-            Model model) {
-
-        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
-
-        Person p = userAccount.getPerson();
-        p.setEmail(person.getEmail().trim());
-        p.setFirstName(person.getFirstName().trim());
-        p.setLastName(person.getLastName().trim());
-        if (!appUser.isWebUser()) {
-            p.setWorkspace(person.getWorkspace().trim());
-        }
-        personService.save(p);
-
-        userAccount = userAccountService.findByUsername(appUser.getUsername());
-        model.addAttribute("appUser", appUserService.createAppUser(userAccount));
-
-        return REDIRECT_USER_PROFILE;
     }
 
     @RequestMapping(value = DIR_BROWSER, method = RequestMethod.GET)

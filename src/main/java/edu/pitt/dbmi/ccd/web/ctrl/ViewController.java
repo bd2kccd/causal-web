@@ -38,9 +38,9 @@ public interface ViewController {
 
     public static final String REDIRECT_SETUP = "redirect:/setup";
 
-    public static final String USER_PROFILE = "userProfile";
+    public static final String USER_PROFILE = "user/userProfile";
 
-    public static final String REDIRECT_USER_PROFILE = "redirect:/userProfile";
+    public static final String REDIRECT_USER_PROFILE = "redirect:/user/profile";
 
     public static final String DATA_UPLOAD = "dataUpload";
 
