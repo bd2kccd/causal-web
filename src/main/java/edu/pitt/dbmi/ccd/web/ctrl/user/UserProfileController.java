@@ -74,16 +74,16 @@ public class UserProfileController implements ViewController {
             @ModelAttribute("appUser") final AppUser appUser,
             final RedirectAttributes redirectAttributes,
             final Model model) {
-        String currentPwd = passwordChange.getCurrentPassword();
-        String encryptedPwd = passwordService.encryptPassword(currentPwd);
-
         UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
-        if (userAccount.getPassword().equals(encryptedPwd)) {
+        String currentPwd = passwordChange.getCurrentPassword();
+        String encryptedPwd = userAccount.getPassword();
+
+        if (passwordService.passwordsMatch(currentPwd, encryptedPwd)) {
             String newPwd = passwordChange.getNewPassword();
-            userAccount.setPassword(newPwd);
+            userAccount.setPassword(passwordService.encryptPassword(newPwd));
             userAccountService.save(userAccount);
         } else {
-            redirectAttributes.addAttribute("pwdChangeErr", "Uncorrect password.");
+            redirectAttributes.addFlashAttribute("pwdChangeErr", "Invalid password.");
         }
 
         return REDIRECT_USER_PROFILE;
