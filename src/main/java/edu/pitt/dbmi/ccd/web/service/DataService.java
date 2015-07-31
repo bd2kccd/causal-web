@@ -81,6 +81,144 @@ public class DataService {
         this.userAccountService = userAccountService;
     }
 
+    public List<DataFile> syncDataDirectory(String username, String dataDir, VariableType variableType) {
+        if (variableType == null) {
+            return new LinkedList<>();
+        }
+
+        List<DataFile> results = new LinkedList<>();
+
+        UserAccount userAccount = userAccountService.findByUsername(username);
+
+        //get the files stored in the database
+        List<DataFile> dbDataFiles = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
+        Map<String, DataFile> dbDataFileMap = new HashMap<>();
+        dbDataFiles.forEach(file -> {
+            dbDataFileMap.put(file.getName(), file);
+        });
+
+        List<DataFile> dataFileToSave = new LinkedList<>();
+        try {
+            List<Path> localFileAndDir = FileInfos.listDirectory(Paths.get(dataDir), false);
+            List<Path> localFiles = localFileAndDir.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
+
+            List<BasicFileInfo> localFileInfos = FileInfos.listBasicPathInfo(localFiles);
+            localFileInfos.forEach(info -> {
+                String fileName = info.getFilename();
+
+                DataFile dataFile = dbDataFileMap.get(fileName);
+                if (dataFile == null) {
+                    dataFile = new DataFile();
+                    dataFile.setName(fileName);
+                    dataFile.setAbsolutePath(info.getAbsolutePath().toString());
+                    dataFile.setCreationTime(new Date(info.getCreationTime()));
+                    dataFile.setFileSize(info.getSize());
+                    dataFile.setLastModifiedTime(new Date(info.getLastModifiedTime()));
+                    dataFile.setDataFileInfo(null);
+                    dataFile.setUserAccounts(Collections.singleton(userAccount));
+
+                    dataFileToSave.add(dataFile);
+                } else {
+                    dbDataFileMap.remove(fileName);
+                }
+
+                DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
+                if (dataFileInfo != null) {
+                    VariableType varType = dataFileInfo.getVariableType();
+                    if (varType != null && varType.getId().equals(variableType.getId())) {
+                        results.add(dataFile);
+                    }
+                }
+            });
+        } catch (IOException exception) {
+            LOGGER.error(exception.getMessage());
+        }
+
+        // save all the new files found in the workspace
+        if (!dataFileToSave.isEmpty()) {
+            dataFileService.saveDataFile(dataFileToSave);
+        }
+
+        List<DataFile> dataFileToRemove = new LinkedList<>();
+        Set<String> keySet = dbDataFileMap.keySet();
+        keySet.forEach(key -> {
+            dataFileToRemove.add(dbDataFileMap.get(key));
+        });
+        if (!dataFileToRemove.isEmpty()) {
+            dataFileService.deleteDataFile(dataFileToRemove);
+        }
+
+        return results;
+    }
+
+    /**
+     * Read the retrieve the data files from the user's local directory and sync
+     * with the list in the database.
+     *
+     * @param username application username
+     * @param dataDir directory contain user's data file
+     * @return
+     */
+    public List<DataFile> syncDataDirectory(String username, String dataDir) {
+        List<DataFile> results = new LinkedList<>();
+
+        UserAccount userAccount = userAccountService.findByUsername(username);
+
+        //get the files stored in the database
+        List<DataFile> dbDataFiles = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
+        Map<String, DataFile> dbDataFileMap = new HashMap<>();
+        dbDataFiles.forEach(file -> {
+            dbDataFileMap.put(file.getName(), file);
+        });
+
+        List<DataFile> dataFileToSave = new LinkedList<>();
+        try {
+            List<Path> localFileAndDir = FileInfos.listDirectory(Paths.get(dataDir), false);
+            List<Path> localFiles = localFileAndDir.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
+
+            List<BasicFileInfo> localFileInfos = FileInfos.listBasicPathInfo(localFiles);
+            localFileInfos.forEach(info -> {
+                String fileName = info.getFilename();
+
+                DataFile dataFile = dbDataFileMap.get(fileName);
+                if (dataFile == null) {
+                    dataFile = new DataFile();
+                    dataFile.setName(fileName);
+                    dataFile.setAbsolutePath(info.getAbsolutePath().toString());
+                    dataFile.setCreationTime(new Date(info.getCreationTime()));
+                    dataFile.setFileSize(info.getSize());
+                    dataFile.setLastModifiedTime(new Date(info.getLastModifiedTime()));
+                    dataFile.setDataFileInfo(null);
+                    dataFile.setUserAccounts(Collections.singleton(userAccount));
+
+                    dataFileToSave.add(dataFile);
+                } else {
+                    dbDataFileMap.remove(fileName);
+                }
+
+                results.add(dataFile);
+            });
+        } catch (IOException exception) {
+            LOGGER.error(exception.getMessage());
+        }
+
+        // save all the new files found in the workspace
+        if (!dataFileToSave.isEmpty()) {
+            dataFileService.saveDataFile(dataFileToSave);
+        }
+
+        List<DataFile> dataFileToRemove = new LinkedList<>();
+        Set<String> keySet = dbDataFileMap.keySet();
+        keySet.forEach(key -> {
+            dataFileToRemove.add(dbDataFileMap.get(key));
+        });
+        if (!dataFileToRemove.isEmpty()) {
+            dataFileService.deleteDataFile(dataFileToRemove);
+        }
+
+        return results;
+    }
+
     public List<DataListItem> createListItem(String username, String dataDir, VariableType variableType) {
         String varType = "continuous";
         List<DataListItem> listItems = createListItem(username, dataDir);
