@@ -21,18 +21,19 @@ package edu.pitt.dbmi.ccd.web.ctrl;
 import edu.pitt.dbmi.ccd.db.entity.SecurityAnswer;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.SecurityAnswerService;
-import edu.pitt.dbmi.ccd.db.service.SecurityQuestionService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.model.ResetPasswordInfo;
 import java.util.Collections;
 import java.util.List;
+import org.apache.shiro.authc.credential.DefaultPasswordService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  *
@@ -44,25 +45,26 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping(value = "account")
 public class AccountController implements ViewController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccountController.class);
+
     private final UserAccountService userAccountService;
 
     private final SecurityAnswerService securityAnswerService;
 
-    private final SecurityQuestionService securityQuestionService;
+    private final DefaultPasswordService passwordService;
 
     @Autowired(required = true)
     public AccountController(
             UserAccountService userAccountService,
             SecurityAnswerService securityAnswerService,
-            SecurityQuestionService securityQuestionService) {
+            DefaultPasswordService passwordService) {
         this.userAccountService = userAccountService;
         this.securityAnswerService = securityAnswerService;
-        this.securityQuestionService = securityQuestionService;
+        this.passwordService = passwordService;
     }
 
     @RequestMapping(value = "reset/pwd", method = RequestMethod.POST)
     public String processUsernameRequest(
-            @RequestParam(value = "type") String type,
             @ModelAttribute("info") final ResetPasswordInfo info,
             final Model model) {
         String username = info.getUsername();
@@ -84,22 +86,50 @@ public class AccountController implements ViewController {
             return "account/reqestUsername";
         }
 
-        switch (type) {
-            case "usr":
-                list.forEach(item -> {
-                    info.setQuestion(item.getSecurityQuestion().getQuestion());
-                });
-                model.addAttribute("info", info);
-                return "account/reqestAnswer";
-            case "ans":
-                String ans = "";
-                for (SecurityAnswer item : list) {
-                    ans = item.getAnswer();
-                }
-                return "s";
-            default:
-                return "account/reqestAnswer";
+        list.forEach(item -> {
+            info.setQuestion(item.getSecurityQuestion().getQuestion());
+        });
+
+        String answer = info.getAnswer();
+        if (answer == null || answer.trim().length() == 0) {
+            model.addAttribute("info", info);
+            return "account/reqestAnswer";
         }
+
+        String ans = "";
+        for (SecurityAnswer item : list) {
+            ans = item.getAnswer();
+        }
+        if (!ans.equalsIgnoreCase(answer)) {
+            model.addAttribute("strErrMsg", "Incorrect Security Answer!");
+            model.addAttribute("errMsg", "Please try again.");
+            info.setAnswer("");
+            model.addAttribute("info", info);
+            return "account/reqestAnswer";
+        }
+
+        String password = info.getPassword();
+        if (password == null || password.trim().length() == 0) {
+            model.addAttribute("info", info);
+            return "account/reqestNewPassword";
+        }
+
+        userAccount.setPassword(passwordService.encryptPassword(password));
+        try {
+            userAccountService.saveUserAccount(userAccount);
+        } catch (Exception exception) {
+            LOGGER.warn(
+                    String.format("Unable to reset password for %s.", userAccount.getUsername()),
+                    exception);
+            info.setAnswer("");
+            info.setPassword("");
+            info.setQuestion("");
+            info.setUsername("");
+            model.addAttribute("errMsg", "error");
+            return "account/requestPwdChangeDone";
+        }
+
+        return "account/requestPwdChangeDone";
     }
 
     @RequestMapping(value = "reset/pwd", method = RequestMethod.GET)

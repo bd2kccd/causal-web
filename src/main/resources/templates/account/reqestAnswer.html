@@ -12,7 +12,7 @@
     </head>
     <body>
         <div class="alert alert-danger" th:if="${strErrMsg}"><strong th:text="${strErrMsg}"></strong>&nbsp;&nbsp;<span th:text="${errMsg}"></span></div>
-        <form id="resetPwdForm" role="form" method="POST" action="" th:action="@{/account/reset/pwd(type=ans)}" th:object="${info}">
+        <form id="resetPwdForm" role="form" method="POST" action="" th:object="${info}">
             <input type="hidden" name="username" id="username" value="username" th:value="*{username}" th:field="*{username}" />
             <fieldset>
                 <div class="form-group">
@@ -21,25 +21,7 @@
                 </div>
                 <div class="form-group">
                     <label for="answer" class="control-label">Security Answer:</label>
-                    <input type="text" id="answer" name="answer" maxlength="10" class="form-control" th:field="*{answer}" required="required" />
-                </div>
-                <div class="form-group">
-                    <label for="password" class="control-label">New Password:</label>
-                    <div class="input-group">
-                        <span class="input-group-addon">
-                            <i class="glyphicon glyphicon-lock pitt-color"></i>
-                        </span> 
-                        <input id="password" class="form-control" name="password" type="password" required="required" th:field="*{password}" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="confirmPassword" class="control-label">Confirm New Password:</label>
-                    <div class="input-group">
-                        <span class="input-group-addon">
-                            <i class="glyphicon glyphicon-lock pitt-color"></i>
-                        </span> 
-                        <input id="confirmPassword" class="form-control" name="confirmPassword" type="password" required="required" />
-                    </div>
+                    <input type="text" id="answer" name="answer" class="form-control" th:field="*{answer}" required="required" />
                 </div>
                 <button type="submit" class="btn btn-primary btn-lg btn-block">Submit</button>
             </fieldset>
