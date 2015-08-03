@@ -81,7 +81,7 @@ public class DataService {
         this.userAccountService = userAccountService;
     }
 
-    public List<DataFile> syncDataDirectory(String username, String dataDir, VariableType variableType) {
+    public List<DataFile> listDirectorySync(String dataDir, String username, VariableType variableType) {
         if (variableType == null) {
             return new LinkedList<>();
         }
@@ -159,7 +159,7 @@ public class DataService {
      * @param dataDir directory contain user's data file
      * @return
      */
-    public List<DataFile> syncDataDirectory(String username, String dataDir) {
+    public List<DataFile> listDirectorySync(String dataDir, String username) {
         List<DataFile> results = new LinkedList<>();
 
         UserAccount userAccount = userAccountService.findByUsername(username);

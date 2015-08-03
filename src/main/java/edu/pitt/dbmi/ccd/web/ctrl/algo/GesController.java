@@ -33,6 +33,8 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,16 +86,26 @@ public class GesController extends AlgorithmController implements ViewController
         info.setVerbose(Boolean.TRUE);
         info.setJvmOptions("");
 
-        model.addAttribute("gesRunInfo", info);
+        Map<String, String> map = directoryFileListing(appUser.getUploadDirectory(), appUser.getUsername());
+        if (map.isEmpty()) {
+            info.setDataset("");
+        } else {
+            Set<String> keySet = map.keySet();
+            for (String key : keySet) {
+                info.setDataset(key);
+                break;
+            }
+        }
 
-        model.addAttribute("datasetList", directoryFileListing(appUser.getUsername(), appUser.getUploadDirectory()));
+        model.addAttribute("datasetList", map);
+        model.addAttribute("algoInfo", info);
 
         return GES;
     }
 
     @RequestMapping(method = RequestMethod.POST)
     public String runGes(Model model,
-            @ModelAttribute("gesRunInfo") GesRunInfo info,
+            @ModelAttribute("algoInfo") GesRunInfo info,
             @ModelAttribute("appUser") AppUser appUser) {
 
         List<String> commands = new LinkedList<>();
@@ -114,7 +126,7 @@ public class GesController extends AlgorithmController implements ViewController
         commands.add(dataset.toString());
 
         commands.add("--delimiter");
-        commands.add(getFileDelimiter(info.getDataset(), appUser.getUploadDirectory()));
+        commands.add(getFileDelimiter(appUser.getUploadDirectory(), info.getDataset()));
 
         commands.add("--penalty-discount");
         commands.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));

@@ -18,12 +18,15 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
+import edu.pitt.dbmi.ccd.commons.file.FilePrint;
+import edu.pitt.dbmi.ccd.db.entity.DataFile;
+import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
+import edu.pitt.dbmi.ccd.db.entity.FileDelimiter;
 import edu.pitt.dbmi.ccd.db.entity.VariableType;
 import edu.pitt.dbmi.ccd.db.service.DataFileInfoService;
 import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.db.service.FileDelimiterService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
-import edu.pitt.dbmi.ccd.web.model.DataListItem;
 import edu.pitt.dbmi.ccd.web.service.DataService;
 import java.util.List;
 import java.util.Map;
@@ -64,23 +67,25 @@ public abstract class AlgorithmController {
         this.dataService = dataService;
     }
 
-    protected String getFileDelimiter(String name, String absolutePath) {
-        return "\t";
-//        DataFileInfo dataFileInfo = dataFileInfoService.getDataFileInfoRepository()
-//                .findByDataFileNameAndAbsolutePath(name, absolutePath);
-//
-//        return FileInfos.delimiterNameToString(dataFileInfo.getFileDelimiter().getName());
+    protected String getFileDelimiter(String baseDir, String name) {
+        DataFile dataFile = dataFileService.findByAbsolutePathAndName(baseDir, name);
+        DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
+        FileDelimiter fileDelimiter = dataFileInfo.getFileDelimiter();
+
+        return fileDelimiter.getValue();
     }
 
-    protected Map<String, String> directoryFileListing(String username, String dataDir) {
+    protected Map<String, String> directoryFileListing(String baseDir, String username) {
         Map<String, String> map = new TreeMap<>();
 
         VariableType variableType = variableTypeService.findByName("continuous");
-        List<DataListItem> dataListItems = dataService.createListItem(username, dataDir, variableType);
-        dataListItems.forEach(item -> {
-            String key = item.getFileName();
-            String value = String.format(("%s (%s)"), item.getFileName(), item.getSize());
-            map.put(key, value);
+        List<DataFile> dataFiles = dataService.listDirectorySync(baseDir, username, variableType);
+        dataFiles.forEach(file -> {
+            String size = FilePrint.humanReadableSize(file.getFileSize(), true);
+            String name = file.getName();
+            String description = String.format("%s (%s)", name, size);
+
+            map.put(name, description);
         });
 
         return map;

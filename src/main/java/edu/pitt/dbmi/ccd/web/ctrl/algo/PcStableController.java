@@ -32,6 +32,8 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,22 +79,35 @@ public class PcStableController extends AlgorithmController implements ViewContr
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public String showPcStableView(Model model, @ModelAttribute("appUser") AppUser appUser) {
+    public String showPcStableView(
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
         PcStableRunInfo info = new PcStableRunInfo();
         info.setAlpha(0.0001D);
         info.setDepth(3);
         info.setVerbose(Boolean.TRUE);
         info.setJvmOptions("");
-        model.addAttribute("pcStableRunInfo", info);
 
-        model.addAttribute("datasetList", directoryFileListing(appUser.getUsername(), appUser.getUploadDirectory()));
+        Map<String, String> map = directoryFileListing(appUser.getUploadDirectory(), appUser.getUsername());
+        if (map.isEmpty()) {
+            info.setDataset("");
+        } else {
+            Set<String> keySet = map.keySet();
+            for (String key : keySet) {
+                info.setDataset(key);
+                break;
+            }
+        }
+
+        model.addAttribute("datasetList", map);
+        model.addAttribute("algoInfo", info);
 
         return PCSTABLE;
     }
 
     @RequestMapping(method = RequestMethod.POST)
     public String runPcStable(Model model,
-            @ModelAttribute("pcStableRunInfo") PcStableRunInfo info,
+            @ModelAttribute("algoInfo") PcStableRunInfo info,
             @ModelAttribute("appUser") AppUser appUser) {
         List<String> commands = new LinkedList<>();
         commands.add("java");
@@ -112,7 +127,7 @@ public class PcStableController extends AlgorithmController implements ViewContr
         commands.add(dataset.toString());
 
         commands.add("--delimiter");
-        commands.add(getFileDelimiter(info.getDataset(), appUser.getUploadDirectory()));
+        commands.add(getFileDelimiter(appUser.getUploadDirectory(), info.getDataset()));
 
         commands.add("--alpha");
         commands.add(String.valueOf(info.getAlpha().doubleValue()));
