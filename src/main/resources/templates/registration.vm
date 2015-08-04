@@ -1,0 +1,24 @@
+<html>
+    <body>
+        Hello ${user.username},
+        <p>
+            Thank you for your registration.  Below is the summary of your registration:
+        </p>
+        <table>
+            <caption><h4>User Information</h4></caption>
+            <tbody>
+                <tr>
+                    <td>Username:</td>
+                    <td>${user.username}</td>
+                </tr>
+                <tr>
+                    <td>Email:</td>
+                    <td>${user.email}</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>
+            Please click <a href="${activationUrl}">here</a> to activate your account.
+        </p>
+    </body>
+</html>

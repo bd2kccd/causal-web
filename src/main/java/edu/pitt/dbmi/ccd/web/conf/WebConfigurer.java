@@ -19,6 +19,7 @@
 package edu.pitt.dbmi.ccd.web.conf;
 
 import edu.pitt.dbmi.ccd.db.CCDDatabaseApplication;
+import edu.pitt.dbmi.ccd.mail.CCDMailApplication;
 import java.util.concurrent.TimeUnit;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
@@ -39,7 +40,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @Configuration
-@Import(CCDDatabaseApplication.class)
+@Import({CCDDatabaseApplication.class, CCDMailApplication.class})
 @EnableAsync
 public class WebConfigurer extends WebMvcConfigurerAdapter {
 
