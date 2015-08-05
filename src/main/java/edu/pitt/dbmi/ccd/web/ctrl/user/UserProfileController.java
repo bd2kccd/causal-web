@@ -164,7 +164,9 @@ public class UserProfileController implements ViewController {
 
         userAccount = userAccountService.saveUserAccount(userAccount);
 
-        model.addAttribute("appUser", appUserService.createAppUser(userAccount));
+        AppUser user = appUserService.createAppUser(userAccount);
+        user.setLastLoginDate(appUser.getLastLoginDate());
+        model.addAttribute("appUser", user);
 
         return REDIRECT_USER_PROFILE;
     }

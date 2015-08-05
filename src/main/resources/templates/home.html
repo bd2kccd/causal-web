@@ -20,7 +20,10 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h1 class="page-header" th:text="'Welcome ' + ${userFullName}">Welcome User</h1>
+                        <div class="page-header">
+                            <span class="h2" th:text="'Welcome ' + ${userFullName}">Welcome User</span>
+                            <span class="pull-right" th:if="${appUser.webUser}" th:text="'Last Logon: ' + ${lastLogin}">Last Logged In:</span>
+                        </div>
                     </div>
                 </div>
                 <footer th:replace="fragments/footer :: footer">
