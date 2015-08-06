@@ -18,21 +18,28 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
+import edu.pitt.dbmi.ccd.db.entity.JobQueueInfo;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.DataFileInfoService;
 import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.db.service.FileDelimiterService;
+import edu.pitt.dbmi.ccd.db.service.JobQueueInfoService;
+import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
 import static edu.pitt.dbmi.ccd.web.ctrl.ViewController.ALGORITHM_RUNNING;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.GesRunInfo;
-import edu.pitt.dbmi.ccd.web.service.AlgorithmService;
 import edu.pitt.dbmi.ccd.web.service.DataService;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,90 +62,102 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @RequestMapping(value = "/algorithm/ges")
 public class GesController extends AlgorithmController implements ViewController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GesController.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(GesController.class);
 
-    private final String ges;
+	private final String ges;
 
-    private final AlgorithmService algorithmService;
+	//private final AlgorithmService algorithmService;
 
-    @Autowired(required = true)
-    public GesController(
-            @Value("${app.gesApp:edu.pitt.dbmi.ccd.algorithm.tetrad.GesApp}") String ges,
-            AlgorithmService algorithmService,
-            @Value("${app.algoJar:ccd-algorithm-1.0-SNAPSHOT.jar}") String algorithmJar,
-            VariableTypeService variableTypeService,
-            FileDelimiterService fileDelimiterService,
-            DataFileService dataFileService,
-            DataFileInfoService dataFileInfoService,
-            DataService dataService) {
-        super(algorithmJar, variableTypeService, fileDelimiterService, dataFileService, dataFileInfoService, dataService);
-        this.ges = ges;
-        this.algorithmService = algorithmService;
-    }
+	private final JobQueueInfoService queuedJobInfoService;
+	
+	private final UserAccountService userAccountService;
 
-    @RequestMapping(method = RequestMethod.GET)
-    public String showGesView(Model model, @ModelAttribute("appUser") AppUser appUser) {
-        GesRunInfo info = new GesRunInfo();
-        info.setPenaltyDiscount(2.0);
-        info.setDepth(3);
-        info.setVerbose(Boolean.TRUE);
-        info.setJvmOptions("");
+	@Autowired(required = true)
+	public GesController(@Value("${app.gesApp:edu.pitt.dbmi.ccd.algorithm.tetrad.GesApp}") String ges,
+			//AlgorithmService algorithmService,
+			@Value("${app.algoJar:ccd-algorithm-1.0-SNAPSHOT.jar}") String algorithmJar,
+			VariableTypeService variableTypeService, FileDelimiterService fileDelimiterService,
+			DataFileService dataFileService, DataFileInfoService dataFileInfoService, DataService dataService,
+			JobQueueInfoService queuedJobInfoService,
+			UserAccountService userAccountService) {
+		super(algorithmJar, variableTypeService, fileDelimiterService, dataFileService, dataFileInfoService,
+				dataService);
+		this.ges = ges;
+		//this.algorithmService = algorithmService;
+		this.queuedJobInfoService = queuedJobInfoService;
+		this.userAccountService = userAccountService;
+	}
 
-        model.addAttribute("gesRunInfo", info);
+	@RequestMapping(method = RequestMethod.GET)
+	public String showGesView(Model model, @ModelAttribute("appUser") AppUser appUser) {
+		GesRunInfo info = new GesRunInfo();
+		info.setPenaltyDiscount(2.0);
+		info.setDepth(3);
+		info.setVerbose(Boolean.TRUE);
+		info.setJvmOptions("");
 
-        model.addAttribute("datasetList", directoryFileListing(appUser.getUsername(), appUser.getUploadDirectory()));
+		model.addAttribute("gesRunInfo", info);
 
-        return GES;
-    }
+		model.addAttribute("datasetList", directoryFileListing(appUser.getUsername(), appUser.getUploadDirectory()));
 
-    @RequestMapping(method = RequestMethod.POST)
-    public String runGes(Model model,
-            @ModelAttribute("gesRunInfo") GesRunInfo info,
-            @ModelAttribute("appUser") AppUser appUser) {
+		return GES;
+	}
 
-        List<String> commands = new LinkedList<>();
-        commands.add("java");
+	@RequestMapping(method = RequestMethod.POST)
+	public String runGes(Model model, @ModelAttribute("gesRunInfo") GesRunInfo info,
+			@ModelAttribute("appUser") AppUser appUser) {
 
-        String jvmOptions = info.getJvmOptions().trim();
-        if (jvmOptions.length() > 0) {
-            commands.addAll(Arrays.asList(jvmOptions.split("\\s+")));
-        }
+		List<String> commands = new LinkedList<>();
+		commands.add("java");
 
-        Path classPath = Paths.get(appUser.getLibDirectory(), algorithmJar);
-        commands.add("-cp");
-        commands.add(classPath.toString());
-        commands.add(ges);
+		String jvmOptions = info.getJvmOptions().trim();
+		if (jvmOptions.length() > 0) {
+			commands.addAll(Arrays.asList(jvmOptions.split("\\s+")));
+		}
 
-        Path dataset = Paths.get(appUser.getUploadDirectory(), info.getDataset());
-        commands.add("--data");
-        commands.add(dataset.toString());
+		Path classPath = Paths.get(appUser.getLibDirectory(), algorithmJar);
+		commands.add("-cp");
+		commands.add(classPath.toString());
+		commands.add(ges);
 
-        commands.add("--delimiter");
-        commands.add(getFileDelimiter(info.getDataset(), appUser.getUploadDirectory()));
+		Path dataset = Paths.get(appUser.getUploadDirectory(), info.getDataset());
+		commands.add("--data");
+		commands.add(dataset.toString());
 
-        commands.add("--penalty-discount");
-        commands.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));
+		commands.add("--delimiter");
+		commands.add(getFileDelimiter(info.getDataset(), appUser.getUploadDirectory()));
 
-        commands.add("--depth");
-        commands.add(String.valueOf(info.getDepth().intValue()));
+		commands.add("--penalty-discount");
+		commands.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));
 
-        if (info.getVerbose()) {
-            commands.add("--verbose");
-        }
+		commands.add("--depth");
+		commands.add(String.valueOf(info.getDepth().intValue()));
 
-        String fileName = String.format("ges_%s_%d", info.getDataset(), System.currentTimeMillis());
-        commands.add("--out-filename");
-        commands.add(fileName);
+		if (info.getVerbose()) {
+			commands.add("--verbose");
+		}
 
-        try {
-            algorithmService.runAlgorithm(commands, fileName, appUser.getTmpDirectory(), appUser.getOutputDirectory());
-        } catch (Exception exception) {
-            LOGGER.error("Unable to run GES.", exception);
-        }
+		String fileName = String.format("ges_%s_%d", info.getDataset(), System.currentTimeMillis());
+		commands.add("--out-filename");
+		commands.add(fileName);
 
-        model.addAttribute("title", "GES is Running");
+		String command = StringUtils.join(commands.toArray(), ";");
+		//System.out.println(command);
+		UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+		JobQueueInfo queuedJobInfo = new JobQueueInfo(null, "GES", command, fileName, appUser.getTmpDirectory(),
+				appUser.getOutputDirectory(), new Integer(0), new Date(System.currentTimeMillis()),Collections.singleton(userAccount));
+		queuedJobInfo = queuedJobInfoService.saveJobIntoQueue(queuedJobInfo);
+        LOGGER.info("Add Job into Queue: " + queuedJobInfo.getId());
 
-        return ALGORITHM_RUNNING;
-    }
+		/*try {
+			algorithmService.runAlgorithm(commands, fileName, appUser.getTmpDirectory(), appUser.getOutputDirectory());
+		} catch (Exception exception) {
+			LOGGER.error("Unable to run GES.", exception);
+		}*/
+
+		model.addAttribute("title", "GES is Added into Queue");
+
+		return REDIRECT_JOB_QUEUE;
+	}
 
 }

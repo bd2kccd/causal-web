@@ -91,6 +91,7 @@ public class AppUserService {
             }
         }
 
+        // Copy algorithm jar files from "lib" folder to user workspace "lib" folder in the development environment
         if (Files.notExists(libDir)) {
             Resource resource = new ClassPathResource("/lib");
             try {
@@ -110,6 +111,27 @@ public class AppUserService {
             }
         }
 
+        // Copy algorithm jar files from "lib" folder to user workspace "lib" folder in the deployment environment
+        Path appPath = Paths.get("");
+        Path libPath = Paths.get(appPath.toAbsolutePath().toString(),libDirectory);
+        if(Files.exists(libPath)){
+        	try {
+                Files.walk(libPath).filter(Files::isRegularFile).forEach(file -> {
+                    Path destFile = Paths.get(libDir.toAbsolutePath().toString(), libPath.relativize(file).toString());
+                    if (!Files.exists(destFile)) {
+                        try {
+                            Files.copy(file, destFile);
+                        } catch (IOException exception) {
+                            exception.printStackTrace(System.err);
+                        }
+                    }
+                });
+                
+            } catch (IOException exception) {
+                LOGGER.error("Unable to copy resources (lib).", exception);
+            }
+        }
+              
         appUser.setUsername(userAccount.getUsername());
         appUser.setFirstName(person.getFirstName());
         appUser.setLastName(person.getLastName());

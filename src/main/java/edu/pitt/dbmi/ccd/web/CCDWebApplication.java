@@ -22,14 +22,20 @@ import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableScheduling
 public class CCDWebApplication extends SpringBootServletInitializer {
 
     @Override
@@ -65,12 +71,37 @@ public class CCDWebApplication extends SpringBootServletInitializer {
                 exception.printStackTrace(System.err);
             }
         } else {
-            Runtime runtime = Runtime.getRuntime();
+            /*Runtime runtime = Runtime.getRuntime();
             try {
                 runtime.exec("xdg-open " + url);
             } catch (IOException exception) {
                 exception.printStackTrace(System.err);
-            }
+            }*/
+        	String os = System.getProperty("os.name");
+            System.getProperties().list(System.out);
+            
+            List<String> commands = new LinkedList<>();
+            try {
+                if(os.contains("Mac")){
+                	String[] env = {"PATH=/bin:/usr/bin/"};
+                	commands.add("open");
+                	commands.add(url);
+                	Runtime.getRuntime().exec(StringUtils.join(commands.toArray(), " "), env);
+                }else if(os.contains("Windows")){
+                	commands.add("cmd");
+                	commands.add("/c");
+                	commands.add("start");
+                	commands.add(url);
+                	Runtime.getRuntime().exec(StringUtils.join(commands.toArray(), " "));
+                }else{//Unix/Linux/FreeBSD
+                	commands.add("xdg-open");
+                	commands.add(url);
+                	Runtime.getRuntime().exec(StringUtils.join(commands.toArray(), " "));
+                }
+    		} catch (IOException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
         }
     }
 

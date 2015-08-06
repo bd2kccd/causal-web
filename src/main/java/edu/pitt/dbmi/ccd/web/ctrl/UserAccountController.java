@@ -22,7 +22,9 @@ import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.PersonService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
+
 import static edu.pitt.dbmi.ccd.web.ctrl.ViewController.DIR_BROWSER;
+
 import edu.pitt.dbmi.ccd.web.model.UserRegistration;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.util.FileUtility;
@@ -31,6 +33,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
+
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;

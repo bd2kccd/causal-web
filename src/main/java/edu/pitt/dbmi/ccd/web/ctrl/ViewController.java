@@ -53,6 +53,10 @@ public interface ViewController {
     public static final String GES = "ges";
 
     public static final String ALGORITHM_RUNNING = "algorithmRunning";
+    
+    public static final String JOB_QUEUE = "jobQueue";
+
+    public static final String REDIRECT_JOB_QUEUE = "redirect:/jobQueue";
 
     public static final String RUN_RESULTS = "runResults";
 
