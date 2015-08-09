@@ -96,7 +96,7 @@ public class UserService {
         emailUser.setFirstName("");
         emailUser.setLastName("");
         emailUser.setUsername(username);
-        mailService.sendRegistrationConfirmation(emailUser, activationURL);
+        mailService.sendRegistrationActivation(emailUser, activationURL);
     }
 
 }
