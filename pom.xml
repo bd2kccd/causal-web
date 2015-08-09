@@ -5,7 +5,7 @@
 
     <groupId>edu.pitt.dbmi</groupId>
     <artifactId>ccd-web</artifactId>
-    <version>0.4.2</version>
+    <version>0.4.3</version>
     <packaging>jar</packaging>
 
     <name>CCDWebApplication</name>
