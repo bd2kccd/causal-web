@@ -74,10 +74,10 @@
                     </div>
                     <div class="modal-body">
                         <div th:if="${userWorkspace.workspace}">
-                            <iframe id="frmBrowse" src="" th:src="@{/dirBrowser(dir=${userWorkspace.workspace})}" marginwidth="0" marginheight="0" scrolling="yes"></iframe>
+                            <iframe id="frmBrowse" src="" th:src="@{/fs/dirBrowser(dir=${userWorkspace.workspace})}" marginwidth="0" marginheight="0" scrolling="yes"></iframe>
                         </div>
                         <div th:if="${userWorkspace.workspace} == null">
-                            <iframe id="frmBrowse" src="" th:src="@{/dirBrowser}" marginwidth="0" marginheight="0" scrolling="yes"></iframe>
+                            <iframe id="frmBrowse" src="" th:src="@{/fs/dirBrowser}" marginwidth="0" marginheight="0" scrolling="yes"></iframe>
                         </div>
                     </div>
                     <div class="modal-footer">
