@@ -31,7 +31,7 @@ import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.model.AttributeValue;
 import edu.pitt.dbmi.ccd.web.model.DataListItem;
-import edu.pitt.dbmi.ccd.web.model.DataValidation;
+import edu.pitt.dbmi.ccd.web.model.data.DataSummary;
 import edu.pitt.dbmi.ccd.web.util.MessageDigestHash;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -312,7 +312,7 @@ public class DataService {
         return fileInfo;
     }
 
-    public List<AttributeValue> getDataFileAdditionalInfo(String absolutePath, String name, DataValidation dataValidation) {
+    public List<AttributeValue> getDataFileAdditionalInfo(String absolutePath, String name, DataSummary dataSummary) {
         List<AttributeValue> fileInfo = new LinkedList<>();
 
         DataFile dataFile = dataFileService.findByAbsolutePathAndName(absolutePath, name);
@@ -321,11 +321,11 @@ public class DataService {
         if (dataFileInfo == null) {
             dataFileInfo = new DataFileInfo();
         }
-        dataFileInfo.setFileDelimiter(dataValidation.getFileDelimiter());
-        dataFileInfo.setVariableType(dataValidation.getVariableType());
+        dataFileInfo.setFileDelimiter(dataSummary.getFileDelimiter());
+        dataFileInfo.setVariableType(dataSummary.getVariableType());
 
         try {
-            char delimiter = FileInfos.delimiterNameToChar(dataValidation.getFileDelimiter().getName());
+            char delimiter = FileInfos.delimiterNameToChar(dataSummary.getFileDelimiter().getName());
             Path file = Paths.get(absolutePath, name);
             dataFileInfo.setNumOfRows(FileInfos.countLine(file.toFile()));
             dataFileInfo.setNumOfColumns(FileInfos.countColumn(file.toFile(), delimiter));
@@ -347,22 +347,22 @@ public class DataService {
         return fileInfo;
     }
 
-    public DataValidation getDataValidation(String absolutePath, String name) {
-        DataValidation dataValidation = new DataValidation();
-        dataValidation.setFileName(name);
+    public DataSummary getDataSummary(String absolutePath, String name) {
+        DataSummary dataSummary = new DataSummary();
+        dataSummary.setFileName(name);
 
         DataFile dataFile = dataFileService.findByAbsolutePathAndName(absolutePath, name);
         DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
         if (dataFileInfo == null) {
-            dataValidation.setVariableType(variableTypeService.findByName("continuous"));
-            dataValidation.setFileDelimiter(fileDelimiterService.getFileDelimiterRepository()
+            dataSummary.setVariableType(variableTypeService.findByName("continuous"));
+            dataSummary.setFileDelimiter(fileDelimiterService.getFileDelimiterRepository()
                     .findByName("tab"));
         } else {
-            dataValidation.setVariableType(dataFileInfo.getVariableType());
-            dataValidation.setFileDelimiter(dataFileInfo.getFileDelimiter());
+            dataSummary.setVariableType(dataFileInfo.getVariableType());
+            dataSummary.setFileDelimiter(dataFileInfo.getFileDelimiter());
         }
 
-        return dataValidation;
+        return dataSummary;
     }
 
     public DataFileService getDataFileService() {

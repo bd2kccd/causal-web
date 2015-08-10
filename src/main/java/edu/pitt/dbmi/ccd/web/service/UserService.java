@@ -20,15 +20,17 @@ package edu.pitt.dbmi.ccd.web.service;
 
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.service.PersonService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.mail.domain.User;
-import edu.pitt.dbmi.ccd.mail.service.BasicUserMailService;
+import edu.pitt.dbmi.ccd.mail.service.UserMailService;
 import edu.pitt.dbmi.ccd.web.model.UserRegistration;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Date;
+import javax.mail.MessagingException;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -41,21 +43,19 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
+
     private final UserAccountService userAccountService;
 
     private final DefaultPasswordService passwordService;
 
-    private final BasicUserMailService mailService;
+    @Autowired(required = false)
+    private UserMailService userMailService;
 
     @Autowired(required = true)
-    public UserService(
-            UserAccountService userAccountService,
-            PersonService personService,
-            DefaultPasswordService passwordService,
-            BasicUserMailService mailService) {
+    public UserService(UserAccountService userAccountService, DefaultPasswordService passwordService) {
         this.userAccountService = userAccountService;
         this.passwordService = passwordService;
-        this.mailService = mailService;
     }
 
     public void registerNewUser(
@@ -91,12 +91,21 @@ public class UserService {
 
         userAccountService.saveUserAccount(userAccount);
 
-        User emailUser = new User();
-        emailUser.setEmail(email);
-        emailUser.setFirstName("");
-        emailUser.setLastName("");
-        emailUser.setUsername(username);
-        mailService.sendRegistrationActivation(emailUser, activationURL);
+        if (userMailService != null) {
+            Thread t = new Thread(() -> {
+                User emailUser = new User();
+                emailUser.setEmail(email);
+                emailUser.setFirstName("");
+                emailUser.setLastName("");
+                emailUser.setUsername(username);
+                try {
+                    userMailService.sendRegistrationActivation(emailUser, activationURL);
+                } catch (MessagingException exception) {
+                    LOGGER.warn(String.format("Unable to send registration email for user '%s'.", username), exception);
+                }
+            });
+            t.start();
+        }
     }
 
 }

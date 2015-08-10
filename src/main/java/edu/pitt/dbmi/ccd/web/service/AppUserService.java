@@ -21,6 +21,7 @@ package edu.pitt.dbmi.ccd.web.service;
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.util.FileUtility;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,13 +30,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 /**
  *
- * Jun 19, 2015 9:40:09 AM
+ * Aug 5, 2015 5:51:49 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
@@ -44,80 +43,61 @@ public class AppUserService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AppUserService.class);
 
-    private final String uploadDirectory;
+    private final Boolean webapp;
 
-    private final String outputDirectory;
+    final String dataFolder;
 
-    private final String libDirectory;
+    final String resultFolder;
 
-    private final String tmpDirectory;
+    final String libFolder;
 
-    private final boolean webUser;
+    final String tmpFolder;
 
     @Autowired(required = true)
     public AppUserService(
-            @Value("${app.uploadDir:upload}") String uploadDirectory,
-            @Value("${app.outputDir:output}") String outputDirectory,
-            @Value("${app.libDir:lib}") String libDirectory,
-            @Value("${app.tempDir:tmp}") String tmpDirectory,
-            @Value("${app.webapp:false}") boolean webUser) {
-        this.uploadDirectory = uploadDirectory;
-        this.outputDirectory = outputDirectory;
-        this.libDirectory = libDirectory;
-        this.tmpDirectory = tmpDirectory;
-        this.webUser = webUser;
+            Boolean webapp,
+            @Value("${ccd.data.folder:data}") String dataFolder,
+            @Value("${ccd.result.folder:result}") String resultFolder,
+            @Value("${ccd.lib.folder:lib}") String libFolder,
+            @Value("${ccd.tmp.folder:tmp}") String tmpFolder) {
+        this.webapp = webapp;
+        this.dataFolder = dataFolder;
+        this.resultFolder = resultFolder;
+        this.libFolder = libFolder;
+        this.tmpFolder = tmpFolder;
     }
 
-    public AppUser createAppUser(UserAccount userAccount) {
-        AppUser appUser = new AppUser();
-
+    public AppUser createAppUser(final UserAccount userAccount) {
         Person person = userAccount.getPerson();
-        String baseDir = person.getWorkspace();
+        String workspace = person.getWorkspace();
         String username = userAccount.getUsername();
-        Path uploadDir = Paths.get(baseDir, username, uploadDirectory);
-        Path outputDir = Paths.get(baseDir, username, outputDirectory);
-        Path libDir = Paths.get(baseDir, libDirectory);
-        Path tmpDir = Paths.get(baseDir, username, tmpDirectory);
-        Path[] directories = {uploadDir, outputDir, tmpDir, libDir};
+
+        Path dataDir = Paths.get(workspace, username, dataFolder);
+        Path resultDir = Paths.get(workspace, username, resultFolder);
+        Path libDir = Paths.get(workspace, libFolder);
+        Path tmpDir = Paths.get(workspace, username, tmpFolder);
+
+        // create user directories
+        Path[] directories = {dataDir, resultDir, tmpDir, libDir};
         for (Path directory : directories) {
             if (Files.notExists(directory)) {
                 try {
                     Files.createDirectories(directory);
                 } catch (IOException exception) {
-                    LOGGER.error(
-                            String.format("Unable to create directory '%s'.", directory),
-                            exception);
+                    LOGGER.error(String.format("Unable to create directory '%s'.", directory), exception);
                 }
             }
         }
 
-        if (Files.notExists(libDir)) {
-            Resource resource = new ClassPathResource("/lib");
-            try {
-                Path libPath = Paths.get(resource.getFile().getAbsolutePath());
-                Files.walk(libPath).filter(Files::isRegularFile).forEach(file -> {
-                    Path destFile = Paths.get(libDir.toAbsolutePath().toString(), libPath.relativize(file).toString());
-                    if (!Files.exists(destFile)) {
-                        try {
-                            Files.copy(file, destFile);
-                        } catch (IOException exception) {
-                            exception.printStackTrace(System.err);
-                        }
-                    }
-                });
-            } catch (IOException exception) {
-                LOGGER.error("Unable to copy resources (lib).", exception);
-            }
-        }
-
-        appUser.setUsername(userAccount.getUsername());
+        AppUser appUser = new AppUser();
+        appUser.setUsername(username);
         appUser.setFirstName(person.getFirstName());
         appUser.setLastName(person.getLastName());
-        appUser.setLastLoginDate(userAccount.getLastLoginDate());
-        appUser.setWebUser(webUser);
-        appUser.setUploadDirectory(uploadDir.toString());
-        appUser.setOutputDirectory(outputDir.toString());
+        appUser.setLastLogin(FileUtility.DATE_FORMAT.format(userAccount.getLastLoginDate()));
+        appUser.setWebUser(webapp);
+        appUser.setDataDirectory(dataDir.toString());
         appUser.setLibDirectory(libDir.toString());
+        appUser.setResultDirectory(resultDir.toString());
         appUser.setTmpDirectory(tmpDir.toString());
 
         return appUser;

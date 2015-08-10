@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * Apr 9, 2015 11:21:55 AM
+ * Aug 5, 2015 9:22:14 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
@@ -64,36 +64,6 @@ public class FileUtility {
         return String.format("%.2f %sB", fileSize / Math.pow(unit, exp), pre);
     }
 
-//    public static List<FileInfo> getFileListing(Path directory) {
-//        List<FileInfo> list = new LinkedList<>();
-//
-//        List<FileInfoMeta> fileMeta = new LinkedList<>();
-//        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(directory)) {
-//            for (Path path : directoryStream) {
-//                if (!Files.isHidden(path)) {
-//                    BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
-//                    FileInfoMeta info = new FileInfoMeta();
-//                    info.setFileName(path.getFileName().toString());
-//                    info.setSize(attrs.size());
-//                    info.setCreationDate(new Date(attrs.creationTime().toMillis()));
-//                    fileMeta.add(info);
-//                }
-//            }
-//        } catch (IOException exception) {
-//            LOGGER.error(exception.getMessage());
-//        }
-//
-//        Collections.sort(fileMeta, (FileInfoMeta o1, FileInfoMeta o2) -> o1.getCreationDate().compareTo(o2.getCreationDate()));
-//        fileMeta.forEach(info -> {
-//            FileInfo resultFile = new FileInfo();
-//            resultFile.setCreationDate(FileUtility.formatDate(info.getCreationDate()));
-//            resultFile.setFileName(info.getFileName());
-//            resultFile.setSize(FileUtility.humanReadableSize(info.getSize(), true));
-//            list.add(resultFile);
-//        });
-//
-//        return list;
-//    }
     public static List<FileInfo> getDirListing(String directory) {
         List<FileInfo> list = new LinkedList<>();
 

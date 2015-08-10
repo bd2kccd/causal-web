@@ -20,9 +20,9 @@ package edu.pitt.dbmi.ccd.web.ctrl;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
+import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.LOGIN;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
-import edu.pitt.dbmi.ccd.web.util.FileUtility;
 import java.util.Date;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -39,7 +39,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+/**
+ *
+ * Aug 5, 2015 1:54:06 PM
+ *
+ * @author Kevin V. Bui (kvb2@pitt.edu)
+ */
 /**
  *
  * May 14, 2015 12:39:47 PM
@@ -48,7 +55,7 @@ import org.springframework.web.bind.support.SessionStatus;
  */
 @Controller
 @SessionAttributes("appUser")
-public class ApplicationController implements ViewController {
+public class ApplicationController implements ViewPath {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationController.class);
 
@@ -56,92 +63,29 @@ public class ApplicationController implements ViewController {
 
     private final AppUserService appUserService;
 
+    private final boolean webapp;
+
     @Autowired(required = true)
-    public ApplicationController(
-            UserAccountService userAccountService,
-            AppUserService appUserService) {
+    public ApplicationController(UserAccountService userAccountService, AppUserService appUserService, boolean webapp) {
         this.userAccountService = userAccountService;
         this.appUserService = appUserService;
+        this.webapp = webapp;
     }
 
-    @RequestMapping(value = HOME, method = RequestMethod.GET)
-    public String goHome(@ModelAttribute("appUser") AppUser appUser, Model model) {
-        String userFullName = appUser.getFirstName() + " " + appUser.getLastName();
-
-        model.addAttribute("userFullName", userFullName);
-        model.addAttribute("lastLogin", FileUtility.DATE_FORMAT.format(appUser.getLastLoginDate()));
-
-        return HOME;
-    }
-
-    @RequestMapping(value = "/logout", method = RequestMethod.POST)
-    public String processLoginFromLogout(
-            final UsernamePasswordToken credentials,
-            final Model model) {
-        return processLogin(credentials, model);
-    }
-
-    @RequestMapping(value = "/logout", method = RequestMethod.GET)
-    public String logOut(Model model, SessionStatus sessionStatus) {
-        String url;
-
-        Subject currentUser = SecurityUtils.getSubject();
-        if (currentUser.isAuthenticated()) {
-            currentUser.logout();
-            sessionStatus.setComplete();
-            model.addAttribute("successMsg", "You Have Successfully Logged Out.");
-            url = LOGIN;
-        } else {
-            url = REDIRECT_LOGIN;
-        }
-
-        return url;
-    }
-
-    @RequestMapping(value = LOGIN, method = RequestMethod.POST)
-    public String processLogin(
-            final UsernamePasswordToken credentials,
-            final Model model) {
-
-        Subject currentUser = SecurityUtils.getSubject();
-        try {
-            currentUser.login(credentials);
-        } catch (AuthenticationException exception) {
-            LOGGER.warn(
-                    String.format("Failed login attempt from user %s.", credentials.getUsername()),
-                    exception);
-            model.addAttribute("errorMsg", "Invalid username and/or password.");
-            return LOGIN;
-        }
-
-        String username = (String) currentUser.getPrincipal();
-        UserAccount userAccount = userAccountService.findByUsername(username);
-        if (userAccount.getActive()) {
-            model.addAttribute("appUser", appUserService.createAppUser(userAccount));
-
-            userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
-            userAccountService.saveUserAccount(userAccount);
-
-            return REDIRECT_HOME;
-        } else {
-            currentUser.logout();
-            model.addAttribute("errorMsg", "Your account has not been activated.");
-
-            return LOGIN;
-        }
+    @RequestMapping(value = "/", method = RequestMethod.GET)
+    public String showIndexPage(final Model model) {
+        return REDIRECT_LOGIN;
     }
 
     @RequestMapping(value = LOGIN, method = RequestMethod.GET)
-    public String showLoginPage(
-            @Value("${app.webapp:true}") final boolean isWebApplication,
-            @Value("${app.default.pwd:password123}") final String defaultPassword,
-            @Value("${app.login.error:Unable to setup initial settings.}") final String signInErrMsg,
+    public String showLoginPage(@Value("${ccd.desktop.default.pwd:password123}") final String defaultPassword,
+            @Value("${ccd.desktop.set.error:Unable to setup initial settings.}") final String signInErrMsg,
             final Model model) {
         if (SecurityUtils.getSubject().isAuthenticated()) {
             return REDIRECT_HOME;
         } else {
-            if (isWebApplication) {
-                return LOGIN;
+            if (webapp) {
+                return LOGIN_VIEW;
             } else {
                 String username = System.getProperty("user.name");
                 UserAccount userAccount = userAccountService.findByUsername(username);
@@ -167,13 +111,56 @@ public class ApplicationController implements ViewController {
 
                 model.addAttribute("appUser", appUserService.createAppUser(userAccount));
 
+                userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
+                userAccountService.saveUserAccount(userAccount);
+
                 return REDIRECT_HOME;
             }
         }
     }
 
-    @RequestMapping(value = "/", method = RequestMethod.GET)
-    public String showIndexPage(final Model model) {
+    @RequestMapping(value = LOGIN, method = RequestMethod.POST)
+    public String processLogin(final UsernamePasswordToken credentials, final Model model) {
+        Subject currentUser = SecurityUtils.getSubject();
+        String username = credentials.getUsername();
+        try {
+            currentUser.login(credentials);
+        } catch (AuthenticationException exception) {
+            LOGGER.warn(String.format("Failed login attempt from user %s.", username), exception);
+            model.addAttribute("errorMsg", "Invalid username and/or password.");
+            return LOGIN_VIEW;
+        }
+
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        if (userAccount.getActive()) {
+            model.addAttribute("appUser", appUserService.createAppUser(userAccount));
+
+            userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
+            userAccountService.saveUserAccount(userAccount);
+
+            return REDIRECT_HOME;
+        } else {
+            currentUser.logout();
+            model.addAttribute("errorMsg", "Your account has not been activated.");
+
+            return LOGIN_VIEW;
+        }
+    }
+
+    @RequestMapping(value = HOME, method = RequestMethod.GET)
+    public String goHome(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+        return HOME_VIEW;
+    }
+
+    @RequestMapping(value = "/logout", method = RequestMethod.GET)
+    public String logOut(final SessionStatus sessionStatus, final RedirectAttributes redirectAttributes) {
+        Subject currentUser = SecurityUtils.getSubject();
+        if (currentUser.isAuthenticated()) {
+            currentUser.logout();
+            sessionStatus.setComplete();
+            redirectAttributes.addFlashAttribute("successMsg", "You Have Successfully Logged Out.");
+        }
+
         return REDIRECT_LOGIN;
     }
 

@@ -22,9 +22,9 @@ import edu.pitt.dbmi.ccd.db.service.DataFileInfoService;
 import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.db.service.FileDelimiterService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
-import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
+import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.model.PcStableRunInfo;
+import edu.pitt.dbmi.ccd.web.model.algo.PcStableRunInfo;
 import edu.pitt.dbmi.ccd.web.service.AlgorithmService;
 import edu.pitt.dbmi.ccd.web.service.DataService;
 import java.nio.file.Path;
@@ -50,24 +50,23 @@ import org.springframework.web.bind.annotation.SessionAttributes;
  * Apr 4, 2015 8:09:20 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
- * @author Chirayu (Kong) Wongchokprasitti (chw20@pitt.edu)
  */
 @Controller
 @SessionAttributes("appUser")
 @RequestMapping(value = "/algorithm/pcStable")
-public class PcStableController extends AlgorithmController implements ViewController {
+public class PcStableController extends AbstractAlgorithmController implements ViewPath {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PcStableController.class);
 
     private final String pcStable;
 
-    final private AlgorithmService algorithmService;
+    private final AlgorithmService algorithmService;
 
     @Autowired(required = true)
     public PcStableController(
-            @Value("${app.pcStableApp:edu.pitt.dbmi.ccd.algorithm.tetrad.PcStableApp}") String pcStable,
+            @Value("${ccd.algorithm.pcstable:edu.pitt.dbmi.ccd.algorithm.tetrad.PcStableApp}") String pcStable,
             AlgorithmService algorithmService,
-            @Value("${app.algoJar:ccd-algorithm-1.0-SNAPSHOT.jar}") String algorithmJar,
+            @Value("${ccd.algorithm.jar:ccd-algorithm.jar}") String algorithmJar,
             VariableTypeService variableTypeService,
             FileDelimiterService fileDelimiterService,
             DataFileService dataFileService,
@@ -79,16 +78,14 @@ public class PcStableController extends AlgorithmController implements ViewContr
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public String showPcStableView(
-            @ModelAttribute("appUser") final AppUser appUser,
-            final Model model) {
+    public String showPcStableView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         PcStableRunInfo info = new PcStableRunInfo();
         info.setAlpha(0.0001D);
         info.setDepth(3);
         info.setVerbose(Boolean.TRUE);
         info.setJvmOptions("");
 
-        Map<String, String> map = directoryFileListing(appUser.getUploadDirectory(), appUser.getUsername());
+        Map<String, String> map = directoryFileListing(appUser.getDataDirectory(), appUser.getUsername());
         if (map.isEmpty()) {
             info.setDataset("");
         } else {
@@ -102,13 +99,14 @@ public class PcStableController extends AlgorithmController implements ViewContr
         model.addAttribute("datasetList", map);
         model.addAttribute("algoInfo", info);
 
-        return PCSTABLE;
+        return PC_STABLE_VIEW;
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public String runPcStable(Model model,
-            @ModelAttribute("algoInfo") PcStableRunInfo info,
-            @ModelAttribute("appUser") AppUser appUser) {
+    public String runPcStable(
+            @ModelAttribute("algoInfo") final PcStableRunInfo info,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
         List<String> commands = new LinkedList<>();
         commands.add("java");
 
@@ -122,12 +120,12 @@ public class PcStableController extends AlgorithmController implements ViewContr
         commands.add(classPath.toString());
         commands.add(pcStable);
 
-        Path dataset = Paths.get(appUser.getUploadDirectory(), info.getDataset());
+        Path dataset = Paths.get(appUser.getDataDirectory(), info.getDataset());
         commands.add("--data");
         commands.add(dataset.toString());
 
         commands.add("--delimiter");
-        commands.add(getFileDelimiter(appUser.getUploadDirectory(), info.getDataset()));
+        commands.add(getFileDelimiter(appUser.getDataDirectory(), info.getDataset()));
 
         commands.add("--alpha");
         commands.add(String.valueOf(info.getAlpha().doubleValue()));
@@ -144,14 +142,14 @@ public class PcStableController extends AlgorithmController implements ViewContr
         commands.add(fileName);
 
         try {
-            algorithmService.runAlgorithm(commands, fileName, appUser.getTmpDirectory(), appUser.getOutputDirectory());
+            algorithmService.runAlgorithm(commands, fileName, appUser.getTmpDirectory(), appUser.getResultDirectory());
         } catch (Exception exception) {
-            LOGGER.error("Unable to run GES.", exception);
+            LOGGER.error("Unable to run PC-Stable.", exception);
         }
 
         model.addAttribute("title", "PC-Stable is Running");
 
-        return ALGORITHM_RUNNING;
+        return ALGO_RUN_CONFIRM_VIEW;
     }
 
 }

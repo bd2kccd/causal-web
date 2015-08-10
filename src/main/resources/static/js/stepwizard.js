@@ -1,50 +1,31 @@
-
-/* 
- * Copyright (C) 2015 University of Pittsburgh.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
- */
-
 $(document).ready(function () {
-    var navListItems = $('div.setup-panel div a'),
-            allWells = $('.setup-content'),
-            allNextBtn = $('.nextBtn');
+    var navList = $('div.setup-panel div button');
+    var wizard = $('.setup-content');
+    var nextBtn = $('.nextBtn');
 
-    allWells.hide();
-
-    navListItems.click(function (e) {
+    wizard.hide();
+    
+    navList.click(function (e) {
         e.preventDefault();
-        var $target = $($(this).attr('href')),
-                $item = $(this);
+        var str = $(this).attr('onclick').replace("window.location.href='", "").replace("'", "");
+        var $target = $(str);
+        var $item = $(this);
 
         if (!$item.hasClass('disabled')) {
-            navListItems.removeClass('btn-primary').addClass('btn-default');
+            navList.removeClass('btn-primary').addClass('btn-default');
             $item.addClass('btn-primary');
-            allWells.hide();
+            wizard.hide();
             $target.show();
             $target.find('input:eq(0)').focus();
         }
     });
-
-    allNextBtn.click(function () {
-        var curStep = $(this).closest(".setup-content"),
-                curStepBtn = curStep.attr("id"),
-                nextStepWizard = $('div.setup-panel div a[href="#' + curStepBtn + '"]').parent().next().children("a"),
-                curInputs = curStep.find("input[type='text'],input[type='url']"),
-                isValid = true;
+    
+    nextBtn.click(function () {
+        var curStep = $(this).closest(".setup-content");
+        var curStepBtn = curStep.attr("id") + 'btn';
+        var nextStepWizard = $('div.setup-panel div button[id="' + curStepBtn + '"]').parent().next().children("button");
+        var curInputs = curStep.find("input[type='text'],input[type='url']");
+        var isValid = true;
 
         $(".form-group").removeClass("has-error");
         for (var i = 0; i < curInputs.length; i++) {
@@ -61,5 +42,5 @@ $(document).ready(function () {
             nextStepWizard.removeAttr('disabled').trigger('click');
     });
 
-    $('div.setup-panel div a.btn-primary').trigger('click');
+    $('div.setup-panel div button.btn-primary').trigger('click');
 });

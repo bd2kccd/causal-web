@@ -21,8 +21,8 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="page-header">
-                            <span class="h2" th:text="'Welcome ' + ${userFullName}">Welcome User</span>
-                            <span class="pull-right" th:if="${appUser.webUser}" th:text="'Last Logon: ' + ${lastLogin}">Last Logged In:</span>
+                            <span class="h2" th:text="'Welcome ' + ${appUser.firstName} + ' ' + ${appUser.lastName}">Welcome User</span>
+                            <span class="pull-right" th:if="${appUser.webUser}" th:text="'Last Logon: ' + ${appUser.lastLogin}">Last Logged In:</span>
                         </div>
                     </div>
                 </div>

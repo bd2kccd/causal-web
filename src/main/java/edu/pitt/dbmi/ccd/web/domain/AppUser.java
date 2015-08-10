@@ -18,7 +18,6 @@
  */
 package edu.pitt.dbmi.ccd.web.domain;
 
-import java.util.Date;
 import org.springframework.context.annotation.Scope;
 
 /**
@@ -36,15 +35,15 @@ public class AppUser {
 
     private String lastName;
 
-    private String uploadDirectory;
+    private String dataDirectory;
 
-    private String outputDirectory;
+    private String resultDirectory;
 
     private String libDirectory;
 
     private String tmpDirectory;
 
-    private Date lastLoginDate;
+    private String lastLogin;
 
     private boolean webUser;
 
@@ -75,20 +74,20 @@ public class AppUser {
         this.lastName = lastName;
     }
 
-    public String getUploadDirectory() {
-        return uploadDirectory;
+    public String getDataDirectory() {
+        return dataDirectory;
     }
 
-    public void setUploadDirectory(String uploadDirectory) {
-        this.uploadDirectory = uploadDirectory;
+    public void setDataDirectory(String dataDirectory) {
+        this.dataDirectory = dataDirectory;
     }
 
-    public String getOutputDirectory() {
-        return outputDirectory;
+    public String getResultDirectory() {
+        return resultDirectory;
     }
 
-    public void setOutputDirectory(String outputDirectory) {
-        this.outputDirectory = outputDirectory;
+    public void setResultDirectory(String resultDirectory) {
+        this.resultDirectory = resultDirectory;
     }
 
     public String getLibDirectory() {
@@ -107,15 +106,15 @@ public class AppUser {
         this.tmpDirectory = tmpDirectory;
     }
 
-    public Date getLastLoginDate() {
-        return lastLoginDate;
+    public String getLastLogin() {
+        return lastLogin;
     }
 
-    public void setLastLoginDate(Date lastLoginDate) {
-        this.lastLoginDate = lastLoginDate;
+    public void setLastLogin(String lastLogin) {
+        this.lastLogin = lastLogin;
     }
 
-    public boolean isWebUser() {
+    public boolean getWebUser() {
         return webUser;
     }
 

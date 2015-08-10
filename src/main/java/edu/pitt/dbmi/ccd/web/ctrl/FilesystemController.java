@@ -23,7 +23,9 @@ import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.AttributeValue;
+import edu.pitt.dbmi.ccd.web.util.FileUtility;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedList;
@@ -40,24 +42,24 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 
 /**
  *
- * Jul 17, 2015 10:48:10 AM
+ * Aug 6, 2015 10:27:26 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @Controller
 @SessionAttributes("appUser")
 @RequestMapping(value = "/fs")
-public class FilesystemController implements ViewController {
+public class FilesystemController implements ViewPath {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FilesystemController.class);
 
-    @RequestMapping(value = "/fileInfo", method = RequestMethod.GET)
+    @RequestMapping(value = FILE_INFO, method = RequestMethod.GET)
     public String getFileFInfo(
-            @RequestParam(value = "file") String filename,
-            @ModelAttribute("appUser") AppUser appUser,
-            Model model) throws IOException {
+            @RequestParam(value = "file") final String filename,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) throws IOException {
         List<AttributeValue> basicInfo = new LinkedList<>();
-        Path file = Paths.get(appUser.getUploadDirectory(), filename);
+        Path file = Paths.get(appUser.getDataDirectory(), filename);
         try {
             BasicFileInfo info = FileInfos.basicPathInfo(file);
             basicInfo.add(new AttributeValue("Size:", FilePrint.humanReadableSize(info.getSize(), true)));
@@ -70,7 +72,43 @@ public class FilesystemController implements ViewController {
 
         model.addAttribute("basicInfo", basicInfo);
 
-        return FILE_INFO;
+        return FILE_INFO_VIEW;
+    }
+
+    @RequestMapping(value = DIR_BROWSER, method = RequestMethod.GET)
+    public String browseServerSideDirectory(
+            @RequestParam(value = "dir", required = false) String directory,
+            final Model model) {
+        if (directory == null) {
+            directory = System.getProperty("user.home");
+        }
+        model.addAttribute("itemList", FileUtility.getDirListing(directory));
+        model.addAttribute("currDir", directory);
+
+        return DIR_BROWSER_VIEW;
+    }
+
+    @RequestMapping(value = DIR_BROWSER, method = RequestMethod.POST)
+    public String createNewServerSideDirectory(
+            @RequestParam(value = "dir", required = false) String directory,
+            @RequestParam(value = "newFolder", required = false) String newFolder,
+            final Model model) {
+        if (directory == null) {
+            directory = System.getProperty("user.home");
+        }
+        Path path = Paths.get(directory);
+        Path newDir = Paths.get(path.toAbsolutePath().toString(), newFolder);
+        if (Files.notExists(newDir)) {
+            try {
+                Files.createDirectories(newDir);
+            } catch (IOException exception) {
+                exception.printStackTrace(System.err);
+            }
+        }
+        model.addAttribute("itemList", FileUtility.getDirListing(path.toAbsolutePath().toString()));
+        model.addAttribute("currDir", path.toAbsolutePath().toString());
+
+        return DIR_BROWSER_VIEW;
     }
 
 }

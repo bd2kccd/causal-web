@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <title>CCD: File Information</title>
+        <meta name="description" content="" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="../../../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{/vendors/bootstrap/css/bootstrap.min.css}" />
+        <link rel="stylesheet" href="../../../static/vendors/bootstrap/css/bootstrap-theme.min.css" th:href="@{/vendors/bootstrap/css/bootstrap-theme.min.css}" />
+        <style>
+            .table th, .table td { 
+                border: none !important; 
+            }
+        </style>
+    </head>
+    <body>
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <thead>
+                    <tr>
+                        <th>X0</th>
+                        <th>X1</th>
+                        <th>X2</th>
+                        <th>X3</th>
+                        <th>X4</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0.8044</td>
+                        <td>-1.7096</td>
+                        <td>1.4422</td>
+                        <td>2.4030</td>
+                        <td>-1.1369</td>
+                    </tr>
+                    <tr>
+                        <td>2.4475</td>
+                        <td>0.5148</td>
+                        <td>2.5901</td>
+                        <td>-0.0721</td>
+                        <td>1.4016</td>
+                    </tr>
+                    <tr>
+                        <td>1.9147</td>
+                        <td>0.0218</td>
+                        <td>2.3734</td>
+                        <td>3.4512</td>
+                        <td>1.2840</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <script src="../../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
+        <script src="../../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
+    </body>
+</html>

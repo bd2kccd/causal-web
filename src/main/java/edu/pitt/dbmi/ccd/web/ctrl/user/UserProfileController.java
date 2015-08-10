@@ -25,7 +25,7 @@ import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.SecurityAnswerService;
 import edu.pitt.dbmi.ccd.db.service.SecurityQuestionService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
-import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
+import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.user.PasswordChange;
 import edu.pitt.dbmi.ccd.web.model.user.UserInfo;
@@ -55,7 +55,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @SessionAttributes("appUser")
 @RequestMapping(value = "user/profile")
-public class UserProfileController implements ViewController {
+public class UserProfileController implements ViewPath {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserProfileController.class);
 
@@ -81,6 +81,46 @@ public class UserProfileController implements ViewController {
         this.passwordService = passwordService;
         this.securityAnswerService = securityAnswerService;
         this.securityQuestionService = securityQuestionService;
+    }
+
+    @RequestMapping(method = RequestMethod.GET)
+    public String showPageUserProfile(
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+        Person person = userAccount.getPerson();
+
+        UserInfo userInfo = new UserInfo();
+        userInfo.setEmail(person.getEmail());
+        userInfo.setFirstName(person.getFirstName());
+        userInfo.setLastName(person.getLastName());
+
+        UserWorkspace userWorkspace = new UserWorkspace();
+        userWorkspace.setWorkspace(person.getWorkspace());
+
+        PasswordChange passwordChange = new PasswordChange();
+        passwordChange.setCurrentPassword("");
+        passwordChange.setNewPassword("");
+        passwordChange.setConfirmPassword("");
+
+        UserSecurityQuestionAnswer usqa = null;
+        List<SecurityAnswer> securityAnswers = securityAnswerService
+                .findByUserAccounts(Collections.singleton(userAccount));
+        for (SecurityAnswer sa : securityAnswers) {
+            usqa = new UserSecurityQuestionAnswer(sa.getSecurityQuestion(), sa.getAnswer());
+        }
+        if (usqa == null) {
+            usqa = new UserSecurityQuestionAnswer();
+            usqa.setSecurityQuestion(new SecurityQuestion());
+        }
+
+        model.addAttribute("userInfo", userInfo);
+        model.addAttribute("userWorkspace", userWorkspace);
+        model.addAttribute("passwordChange", passwordChange);
+        model.addAttribute("usqa", usqa);
+        model.addAttribute("securityQuestions", securityQuestionService.findAllSecurityQuestion());
+
+        return USER_PROFILE_VIEW;
     }
 
     @RequestMapping(value = "security", method = RequestMethod.POST)
@@ -165,50 +205,10 @@ public class UserProfileController implements ViewController {
         userAccount = userAccountService.saveUserAccount(userAccount);
 
         AppUser user = appUserService.createAppUser(userAccount);
-        user.setLastLoginDate(appUser.getLastLoginDate());
+        user.setLastLogin(appUser.getLastLogin());
         model.addAttribute("appUser", user);
 
         return REDIRECT_USER_PROFILE;
-    }
-
-    @RequestMapping(method = RequestMethod.GET)
-    public String showPageUserProfile(
-            @ModelAttribute("appUser") final AppUser appUser,
-            final Model model) {
-        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
-        Person person = userAccount.getPerson();
-
-        UserInfo userInfo = new UserInfo();
-        userInfo.setEmail(person.getEmail());
-        userInfo.setFirstName(person.getFirstName());
-        userInfo.setLastName(person.getLastName());
-
-        UserWorkspace userWorkspace = new UserWorkspace();
-        userWorkspace.setWorkspace(person.getWorkspace());
-
-        PasswordChange passwordChange = new PasswordChange();
-        passwordChange.setCurrentPassword("");
-        passwordChange.setNewPassword("");
-        passwordChange.setConfirmPassword("");
-
-        UserSecurityQuestionAnswer usqa = null;
-        List<SecurityAnswer> securityAnswers = securityAnswerService
-                .findByUserAccounts(Collections.singleton(userAccount));
-        for (SecurityAnswer sa : securityAnswers) {
-            usqa = new UserSecurityQuestionAnswer(sa.getSecurityQuestion(), sa.getAnswer());
-        }
-        if (usqa == null) {
-            usqa = new UserSecurityQuestionAnswer();
-            usqa.setSecurityQuestion(new SecurityQuestion());
-        }
-
-        model.addAttribute("userInfo", userInfo);
-        model.addAttribute("userWorkspace", userWorkspace);
-        model.addAttribute("passwordChange", passwordChange);
-        model.addAttribute("usqa", usqa);
-        model.addAttribute("securityQuestions", securityQuestionService.findAllSecurityQuestion());
-
-        return USER_PROFILE;
     }
 
 }

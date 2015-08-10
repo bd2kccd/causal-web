@@ -22,10 +22,9 @@ import edu.pitt.dbmi.ccd.db.service.DataFileInfoService;
 import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.db.service.FileDelimiterService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
-import edu.pitt.dbmi.ccd.web.ctrl.ViewController;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewController.ALGORITHM_RUNNING;
+import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.model.GesRunInfo;
+import edu.pitt.dbmi.ccd.web.model.algo.GesRunInfo;
 import edu.pitt.dbmi.ccd.web.service.AlgorithmService;
 import edu.pitt.dbmi.ccd.web.service.DataService;
 import java.nio.file.Path;
@@ -55,7 +54,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @Controller
 @SessionAttributes("appUser")
 @RequestMapping(value = "/algorithm/ges")
-public class GesController extends AlgorithmController implements ViewController {
+public class GesController extends AbstractAlgorithmController implements ViewPath {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GesController.class);
 
@@ -65,9 +64,9 @@ public class GesController extends AlgorithmController implements ViewController
 
     @Autowired(required = true)
     public GesController(
-            @Value("${app.gesApp:edu.pitt.dbmi.ccd.algorithm.tetrad.GesApp}") String ges,
+            @Value("${ccd.algorithm.ges:edu.pitt.dbmi.ccd.algorithm.tetrad.FastGesApp}") String ges,
             AlgorithmService algorithmService,
-            @Value("${app.algoJar:ccd-algorithm-1.0-SNAPSHOT.jar}") String algorithmJar,
+            @Value("${ccd.algorithm.jar:ccd-algorithm.jar}") String algorithmJar,
             VariableTypeService variableTypeService,
             FileDelimiterService fileDelimiterService,
             DataFileService dataFileService,
@@ -79,14 +78,14 @@ public class GesController extends AlgorithmController implements ViewController
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public String showGesView(Model model, @ModelAttribute("appUser") AppUser appUser) {
+    public String showGesView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         GesRunInfo info = new GesRunInfo();
         info.setPenaltyDiscount(2.0);
         info.setDepth(3);
         info.setVerbose(Boolean.TRUE);
         info.setJvmOptions("");
 
-        Map<String, String> map = directoryFileListing(appUser.getUploadDirectory(), appUser.getUsername());
+        Map<String, String> map = directoryFileListing(appUser.getDataDirectory(), appUser.getUsername());
         if (map.isEmpty()) {
             info.setDataset("");
         } else {
@@ -100,14 +99,14 @@ public class GesController extends AlgorithmController implements ViewController
         model.addAttribute("datasetList", map);
         model.addAttribute("algoInfo", info);
 
-        return GES;
+        return GES_VIEW;
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public String runGes(Model model,
-            @ModelAttribute("algoInfo") GesRunInfo info,
-            @ModelAttribute("appUser") AppUser appUser) {
-
+    public String runPcStable(
+            @ModelAttribute("algoInfo") final GesRunInfo info,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
         List<String> commands = new LinkedList<>();
         commands.add("java");
 
@@ -121,12 +120,12 @@ public class GesController extends AlgorithmController implements ViewController
         commands.add(classPath.toString());
         commands.add(ges);
 
-        Path dataset = Paths.get(appUser.getUploadDirectory(), info.getDataset());
+        Path dataset = Paths.get(appUser.getDataDirectory(), info.getDataset());
         commands.add("--data");
         commands.add(dataset.toString());
 
         commands.add("--delimiter");
-        commands.add(getFileDelimiter(appUser.getUploadDirectory(), info.getDataset()));
+        commands.add(getFileDelimiter(appUser.getDataDirectory(), info.getDataset()));
 
         commands.add("--penalty-discount");
         commands.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));
@@ -143,14 +142,14 @@ public class GesController extends AlgorithmController implements ViewController
         commands.add(fileName);
 
         try {
-            algorithmService.runAlgorithm(commands, fileName, appUser.getTmpDirectory(), appUser.getOutputDirectory());
+            algorithmService.runAlgorithm(commands, fileName, appUser.getTmpDirectory(), appUser.getResultDirectory());
         } catch (Exception exception) {
             LOGGER.error("Unable to run GES.", exception);
         }
 
         model.addAttribute("title", "GES is Running");
 
-        return ALGORITHM_RUNNING;
+        return ALGO_RUN_CONFIRM_VIEW;
     }
 
 }
