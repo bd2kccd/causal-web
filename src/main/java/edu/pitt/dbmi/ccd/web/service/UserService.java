@@ -49,13 +49,16 @@ public class UserService {
 
     private final DefaultPasswordService passwordService;
 
-    @Autowired(required = false)
-    private UserMailService userMailService;
+    private final UserMailService userMailService;
 
     @Autowired(required = true)
-    public UserService(UserAccountService userAccountService, DefaultPasswordService passwordService) {
+    public UserService(
+            UserAccountService userAccountService,
+            DefaultPasswordService passwordService,
+            UserMailService userMailService) {
         this.userAccountService = userAccountService;
         this.passwordService = passwordService;
+        this.userMailService = userMailService;
     }
 
     public void registerNewUser(

@@ -16,39 +16,27 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.conf;
+package edu.pitt.dbmi.ccd.web.mail;
 
 import edu.pitt.dbmi.ccd.mail.service.SimpleMailService;
-import edu.pitt.dbmi.ccd.mail.service.UserMailService;
-import edu.pitt.dbmi.ccd.web.mail.BasicWebServiceMail;
-import edu.pitt.dbmi.ccd.web.mail.BasicWebServiceUserMail;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
+import javax.mail.MessagingException;
 
 /**
  *
- * Aug 5, 2015 9:08:28 PM
+ * Aug 12, 2015 11:32:23 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-@Profile("desktop")
-@Configuration
-public class DesktopConfigurer {
+public class BasicWebServiceMail implements SimpleMailService {
 
-    @Bean
-    public Boolean webapp() {
-        return Boolean.FALSE;
-    }
+    @Override
+    public void send(String to, String subject, String body, boolean html) throws MessagingException {
+        System.out.println("================================================================================");
+        System.out.printf("To: %s\n", to);
+        System.out.printf("Subject: %s\n", subject);
+        System.out.printf("HTML: %s\n", html);
+        System.out.println("================================================================================");
 
-    @Bean
-    public SimpleMailService simpleMailService() {
-        return new BasicWebServiceMail();
-    }
-
-    @Bean
-    public UserMailService userMailService() {
-        return new BasicWebServiceUserMail();
     }
 
 }

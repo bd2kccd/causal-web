@@ -19,10 +19,16 @@
 package edu.pitt.dbmi.ccd.web.conf;
 
 import edu.pitt.dbmi.ccd.mail.CCDMailApplication;
+import edu.pitt.dbmi.ccd.mail.service.BasicMailService;
+import edu.pitt.dbmi.ccd.mail.service.BasicUserMailService;
+import edu.pitt.dbmi.ccd.mail.service.SimpleMailService;
+import edu.pitt.dbmi.ccd.mail.service.UserMailService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.thymeleaf.spring4.SpringTemplateEngine;
 
 /**
  *
@@ -38,6 +44,16 @@ public class ServerConfigurer {
     @Bean
     public Boolean webapp() {
         return Boolean.TRUE;
+    }
+
+    @Bean
+    public SimpleMailService simpleMailService(JavaMailSender javaMailSender) {
+        return new BasicMailService(javaMailSender);
+    }
+
+    @Bean
+    public UserMailService userMailService(SpringTemplateEngine springTemplateEngine, JavaMailSender javaMailSender) {
+        return new BasicUserMailService(springTemplateEngine, javaMailSender);
     }
 
 }
