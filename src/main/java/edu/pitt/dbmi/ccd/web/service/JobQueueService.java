@@ -50,19 +50,14 @@ public class JobQueueService {
 
 	private final UserAccountService userAccountService;
 
-	private final JobQueueManager jobQueueManager;
-	
 	/**
 	 * @param jobQueueInfoService
 	 * @param userAccountService
-	 * @param jobQueueManager
 	 */
 	@Autowired(required = true)
-	public JobQueueService(JobQueueInfoService jobQueueInfoService, UserAccountService userAccountService,
-			JobQueueManager jobQueueManager) {
+	public JobQueueService(JobQueueInfoService jobQueueInfoService, UserAccountService userAccountService) {
 		this.jobQueueInfoService = jobQueueInfoService;
 		this.userAccountService = userAccountService;
-		this.jobQueueManager = jobQueueManager;
 	}
 
 	public List<AlgorithmJob> createJobQueueList(String username) {
@@ -79,7 +74,9 @@ public class JobQueueService {
 		return listItems;
 	}
 	
-	public boolean removeJobQueue(Long queueId){
-		return jobQueueManager.killJob(queueId);
+	public void removeJobQueue(Long queueId){
+		JobQueueInfo jobQueueInfo = jobQueueInfoService.findOne(queueId);
+		jobQueueInfo.setStatus(2);
+		jobQueueInfoService.saveJobIntoQueue(jobQueueInfo);
 	}
 }

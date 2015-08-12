@@ -26,13 +26,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-import de.flapdoodle.embed.process.config.ISupportConfig;
 import de.flapdoodle.embed.process.distribution.Platform;
-import de.flapdoodle.embed.process.io.IStreamProcessor;
 import de.flapdoodle.embed.process.runtime.Processes;
 import edu.pitt.dbmi.ccd.db.entity.JobQueueInfo;
 import edu.pitt.dbmi.ccd.db.service.JobQueueInfoService;
@@ -44,7 +41,7 @@ import edu.pitt.dbmi.ccd.db.service.JobQueueInfoService;
  * @author Chirayu (Kong) Wongchokprasitti
  *
  */
-@Component
+@Service
 public class JobQueueManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobQueueManager.class);
@@ -69,9 +66,10 @@ public class JobQueueManager {
 	public void executeJobInQueue() {
 		int numRunningJobs = jobQueueInfoService.getNumRunningJobs();
 		if (numRunningJobs < queueSize) {
-			System.out.println("numRunningJobs: " + numRunningJobs);
+			//System.out.println("numRunningJobs: " + numRunningJobs);
 			//int totalJobs = jobQueueInfoService.findAll().size();
 			//System.out.println("numWatingInQueueJobs: " + (totalJobs - numRunningJobs));
+			//Waiting list to execute
 			List<JobQueueInfo> jobList = jobQueueInfoService.findByStatus(new Integer(0));
 			if(jobList != null && jobList.size() > 0){
 				for(int i=0;i<(queueSize - numRunningJobs);i++){
@@ -91,53 +89,64 @@ public class JobQueueManager {
 			}
 			
 		}
+		
+		//Waiting list to terminate
+		List<JobQueueInfo> jobList = jobQueueInfoService.findByStatus(new Integer(2));
+		if(jobList != null && jobList.size() > 0){
+			for(int i=0;i<(queueSize - numRunningJobs);i++){
+				JobQueueInfo queuedJobInfo = jobList.get(i);
+				killJob(queuedJobInfo.getId());
+			}
+		}
+
 	}
 	
-	//@Async
-	public boolean killJob(Long queueId){
+	private void killJob(Long queueId){
 		
-		JobQueueInfo queuedJobInfo = jobQueueInfoService.findOne(queueId);
-		if(queuedJobInfo.getStatus() == 0){
+		JobQueueInfo jobQueueInfo = jobQueueInfoService.findOne(queueId);
+		if(jobQueueInfo.getStatus() == 0){
 	        LOGGER.info("Delete Job ID by user from queue: " + queueId);
 	        jobQueueInfoService.deleteJobById(queueId);
 		}else{
-			Long pid = queuedJobInfo.getPid();
-			Platform platform = Platform.detect();
-			System.out.println("Processes.isProcessRunning(platform, pid):" + Processes.isProcessRunning(platform, pid));
-			if(Processes.isProcessRunning(platform, pid)){
-				/*ISupportConfig support = null;
-				IStreamProcessor output = null;*/
-				List<String> commands = new LinkedList<>();
-				if (platform == Platform.Windows) {
-					//return Processes.tryKillProcess(support, platform, output, pid.intValue());
-					commands.add("taskkill");
-					commands.add("/pid");
-					commands.add(String.valueOf(pid));
-					commands.add("/f");
-					commands.add("/t");
-				}else{
-					//return Processes.killProcess(support, platform, output, pid.intValue());
-					commands.add("kill");
-					commands.add("-9");
-					commands.add(String.valueOf(pid));
-				}
-				LOGGER.info("Set Job's status to be 2 (kill request): " + queuedJobInfo.getId());
-				queuedJobInfo.setStatus(2);			
-				jobQueueInfoService.saveJobIntoQueue(queuedJobInfo);
-				ProcessBuilder pb = new ProcessBuilder(commands);
-				try {
-					pb.start();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					LOGGER.error("Request to kill an algorithm job did not run successfully.", e);
-				}
-			}else{
-		        LOGGER.info("Job does not exist, delete Job ID from queue: " + queueId);
+			Long pid = jobQueueInfo.getPid();
+			if(pid == null){
+		        LOGGER.info("Delete Job ID by user from queue: " + queueId);
 		        jobQueueInfoService.deleteJobById(queueId);
+			}else{
+				Platform platform = Platform.detect();
+				System.out.println("Processes.isProcessRunning(platform, pid):" + Processes.isProcessRunning(platform, pid));
+				if(Processes.isProcessRunning(platform, pid)){
+					/*ISupportConfig support = null;
+					IStreamProcessor output = null;*/
+					List<String> commands = new LinkedList<>();
+					if (platform == Platform.Windows) {
+						//return Processes.tryKillProcess(support, platform, output, pid.intValue());
+						commands.add("taskkill");
+						commands.add("/pid");
+						commands.add(String.valueOf(pid));
+						commands.add("/f");
+						commands.add("/t");
+					}else{
+						//return Processes.killProcess(support, platform, output, pid.intValue());
+						commands.add("kill");
+						commands.add("-9");
+						commands.add(String.valueOf(pid));
+					}
+					LOGGER.info("Kill Job Queue Id: " + jobQueueInfo.getId());
+					jobQueueInfo.setStatus(2);			
+					jobQueueInfoService.saveJobIntoQueue(jobQueueInfo);
+					ProcessBuilder pb = new ProcessBuilder(commands);
+					try {
+						pb.start();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						LOGGER.error("Request to kill an algorithm job did not run successfully.", e);
+					}
+				}else{
+			        LOGGER.info("Job does not exist, delete Job ID from queue: " + queueId);
+			        jobQueueInfoService.deleteJobById(queueId);
+				}
 			}
-			return true;
 		}
-		
-		return false;
 	}
 }
