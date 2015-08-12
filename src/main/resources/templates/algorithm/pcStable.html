@@ -31,15 +31,15 @@
                         <div class="stepwizard">
                             <div class="stepwizard-row setup-panel">
                                 <div class="stepwizard-step">
-                                    <button id="step1btn" class="btn btn-primary btn-circle" onclick="window.location.href='#step1'">1</button>
+                                    <button id="step1btn" class="btn btn-primary btn-circle" onclick="window.location.href = '#step1'">1</button>
                                     <p>Choose Dataset</p>
                                 </div>
                                 <div class="stepwizard-step">
-                                    <button id="step2btn" class="btn btn-default btn-circle" onclick="window.location.href='#step2'" disabled="disabled">2</button>
+                                    <button id="step2btn" class="btn btn-default btn-circle" onclick="window.location.href = '#step2'" disabled="disabled">2</button>
                                     <p>Set Parameters</p>
                                 </div>
                                 <div class="stepwizard-step">
-                                    <button id="step3btn" class="btn btn-default btn-circle" onclick="window.location.href='#step3'" disabled="disabled">3</button>
+                                    <button id="step3btn" class="btn btn-default btn-circle" onclick="window.location.href = '#step3'" disabled="disabled">3</button>
                                     <p>Run Algorithm</p>
                                 </div>
                             </div>
@@ -88,11 +88,11 @@
                                             <div class="panel-body">
                                                 <div class="form-group">
                                                     <label for="alpha" class="control-label">Alpha</label>
-                                                    <input type="text" id="alpha" name="alpha" maxlength="10" class="form-control" placeholder="Alpha" ng-model="alpha" th:attr="ng-init='alpha=' + *{alpha}" th:field="*{alpha}" required="required" autofocus="autofocus" />
+                                                    <input type="number" id="alpha" name="alpha" maxlength="10" class="form-control" placeholder="Alpha" ng-model="alpha" th:attr="ng-init='alpha=' + *{alpha}" th:field="*{alpha}" required="required" autofocus="autofocus" />
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="depth" class="control-label">Search Depth</label>
-                                                    <input type="text" id="depth" name="depth" maxlength="10" class="form-control" placeholder="Depth" ng-model="depth" th:attr="ng-init='depth=' + *{depth}" th:field="*{depth}" required="required" />
+                                                    <input type="number" id="depth" name="depth" maxlength="10" class="form-control" placeholder="Depth" ng-model="depth" th:attr="ng-init='depth=' + *{depth}" th:field="*{depth}" required="required" />
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
