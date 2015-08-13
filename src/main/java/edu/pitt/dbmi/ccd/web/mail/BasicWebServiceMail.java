@@ -32,55 +32,58 @@ public class BasicWebServiceMail implements SimpleMailService {
 
     private final String uri;
 
-    public BasicWebServiceMail(String uri) {
+    private final String appId;
+
+    public BasicWebServiceMail(String uri, String appId) {
         this.uri = uri;
+        this.appId = appId;
     }
 
     @Override
     public void send(String to, String subject, String body, boolean html) throws MessagingException {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.postForEntity(uri, new BasicMail(to, subject, body), String.class);
+        restTemplate.postForEntity(uri, new FeedbackRequest(to, body, appId), String.class);
     }
 
-    private class BasicMail {
+    private class FeedbackRequest {
 
-        private String to;
+        private String email;
 
-        private String subject;
+        private String feedback;
 
-        private String body;
+        private String appId;
 
-        public BasicMail() {
+        public FeedbackRequest() {
         }
 
-        public BasicMail(String to, String subject, String body) {
-            this.to = to;
-            this.subject = subject;
-            this.body = body;
+        public FeedbackRequest(String email, String feedback, String appId) {
+            this.email = email;
+            this.feedback = feedback;
+            this.appId = appId;
         }
 
-        public String getTo() {
-            return to;
+        public String getEmail() {
+            return email;
         }
 
-        public void setTo(String to) {
-            this.to = to;
+        public void setEmail(String email) {
+            this.email = email;
         }
 
-        public String getSubject() {
-            return subject;
+        public String getFeedback() {
+            return feedback;
         }
 
-        public void setSubject(String subject) {
-            this.subject = subject;
+        public void setFeedback(String feedback) {
+            this.feedback = feedback;
         }
 
-        public String getBody() {
-            return body;
+        public String getAppId() {
+            return appId;
         }
 
-        public void setBody(String body) {
-            this.body = body;
+        public void setAppId(String appId) {
+            this.appId = appId;
         }
     }
 

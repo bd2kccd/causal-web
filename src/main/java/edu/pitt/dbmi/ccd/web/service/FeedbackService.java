@@ -24,7 +24,6 @@ import javax.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -40,26 +39,18 @@ public class FeedbackService {
 
     private final SimpleMailService simpleMailService;
 
-    private final String ccdEmail;
-
     @Autowired(required = true)
-    public FeedbackService(
-            SimpleMailService simpleMailService,
-            @Value("${spring.mail.username:ccd.webapp@gmail.com}") String ccdEmail) {
+    public FeedbackService(SimpleMailService simpleMailService) {
         this.simpleMailService = simpleMailService;
-        this.ccdEmail = ccdEmail;
     }
 
     public void sendFeedback(final Feedback feedback) {
         String email = feedback.getEmail();
         String feedbackMsg = feedback.getFeedbackMsg();
 
-        String subject = (email == null || email.trim().length() == 0)
-                ? "CCD Webapp Feedback From Anonymous User" : "CCD Webapp Feedback From " + email;
-
         Thread t = new Thread(() -> {
             try {
-                simpleMailService.send(ccdEmail, subject, feedbackMsg, false);
+                simpleMailService.send(email, null, feedbackMsg, false);
             } catch (MessagingException exception) {
                 LOGGER.error(exception.getMessage());
             }

@@ -44,8 +44,9 @@ public class DesktopConfigurer {
 
     @Bean
     public SimpleMailService simpleMailService(
-            @Value("${ccd.mail.basic.uri:http://:9000/ccd/mail/basic}") String uri) {
-        return new BasicWebServiceMail(uri);
+            @Value("${ccd.mail.feedback.uri:http://localhost:9000/ccd-ws/mail/feedback}") String uri,
+            @Value("${ccd.mail.feedback.appId:1}") String appId) {
+        return new BasicWebServiceMail(uri, appId);
     }
 
     @Bean
