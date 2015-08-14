@@ -24,6 +24,8 @@ import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.util.FileUtility;
 import java.util.Date;
+import java.util.Optional;
+
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -115,7 +117,7 @@ public class ApplicationController implements ViewController {
         }
 
         String username = (String) currentUser.getPrincipal();
-        UserAccount userAccount = userAccountService.findByUsername(username);
+        UserAccount userAccount = userAccountService.findByUsername(username).get();
         if (userAccount.getActive()) {
             model.addAttribute("appUser", appUserService.createAppUser(userAccount));
 
@@ -144,11 +146,11 @@ public class ApplicationController implements ViewController {
                 return LOGIN;
             } else {
                 String username = System.getProperty("user.name");
-                UserAccount userAccount = userAccountService.findByUsername(username);
-                if (userAccount == null) {
+                Optional<UserAccount> ua = userAccountService.findByUsername(username);
+                if (!ua.isPresent()) {
                     return REDIRECT_SETUP;
                 }
-
+                UserAccount userAccount = ua.get();
                 UsernamePasswordToken token = new UsernamePasswordToken(userAccount.getUsername(), defaultPassword);
                 token.setRememberMe(true);
                 Subject currentUser = SecurityUtils.getSubject();

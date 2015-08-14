@@ -21,6 +21,7 @@ package edu.pitt.dbmi.ccd.web.shiro;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -50,8 +51,8 @@ public class CCDAuthorizingRealm extends AuthorizingRealm {
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
         final String username = (String) principalCollection.getPrimaryPrincipal();
-        final UserAccount userAccount = userAccountService.findByUsername(username);
-        if (userAccount == null) {
+        final Optional<UserAccount> userAccount = userAccountService.findByUsername(username);
+        if (!userAccount.isPresent()) {
             throw new UnknownAccountException("Account does not exist");
         }
 
@@ -73,12 +74,12 @@ public class CCDAuthorizingRealm extends AuthorizingRealm {
         if (username == null) {
             throw new UnknownAccountException("Username not provided");
         }
-        final UserAccount userAccount = userAccountService.findByUsername(username);
-        if (userAccount == null) {
+        final Optional<UserAccount> userAccount = userAccountService.findByUsername(username);
+        if (!userAccount.isPresent()) {
             throw new UnknownAccountException("Account does not exist");
         }
 
-        return new SimpleAuthenticationInfo(username, userAccount.getPassword().toCharArray(), getName());
+        return new SimpleAuthenticationInfo(username, userAccount.get().getPassword().toCharArray(), getName());
     }
 
 }

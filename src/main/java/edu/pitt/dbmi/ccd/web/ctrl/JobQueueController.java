@@ -24,9 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
@@ -64,8 +64,8 @@ public class JobQueueController implements ViewController {
     	return JOB_QUEUE;
     }
 
-	@RequestMapping(value = "/remove", method = RequestMethod.GET)
-	public String deleteJobQueue(@RequestParam(value = "id") Long id){
+	@RequestMapping(value = "/remove/{id}", method = RequestMethod.GET)
+	public String deleteJobQueue(@PathVariable Long id){
 		jobQueueService.removeJobQueue(id);
 		return REDIRECT_JOB_QUEUE;
 	}

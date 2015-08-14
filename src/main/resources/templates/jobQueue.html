@@ -56,7 +56,7 @@
                                                 <td th:text="${job.addedTime}"></td>
                                                 <td>
                                                     <p data-placement="top" data-toggle="tooltip" title="Remove Job">
-                                                        <button class="btn btn-danger btn-xs" data-title="Remove" data-toggle="modal" data-target="#confirm-remove" data-href="jobQueue/remove?id=" th:attr="data-href='jobQueue/remove?id=' + ${job.id}"><span class="glyphicon glyphicon-trash"></span></button>
+                                                        <button class="btn btn-danger btn-xs" data-title="Remove" data-toggle="modal" data-target="#confirm-remove" data-href="jobQueue/remove/" th:attr="data-href='jobQueue/remove/' + ${job.id}"><span class="glyphicon glyphicon-trash"></span></button>
                                                     </p>
                                                 </td>
                                             </tr>

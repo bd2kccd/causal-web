@@ -21,6 +21,7 @@ package edu.pitt.dbmi.ccd.web.service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,20 +64,27 @@ public class JobQueueService {
 	public List<AlgorithmJob> createJobQueueList(String username) {
 		List<AlgorithmJob> listItems = new ArrayList<AlgorithmJob>();
 
-		UserAccount userAccount = userAccountService.findByUsername(username);
-		List<JobQueueInfo> listJobs = jobQueueInfoService.findByUserAccounts(Collections.singleton(userAccount));
+		Optional<UserAccount> userAccount = userAccountService.findByUsername(username);
+		List<JobQueueInfo> listJobs = jobQueueInfoService.findByUserAccounts(Collections.singleton(userAccount.get()));
 		listJobs.forEach(job -> {
-			AlgorithmJob algorithmJob = new AlgorithmJob(job.getId(), job.getAlgorName(), job.getFileName(),
-					(job.getStatus().intValue() == 0 ? "Queued" : (job.getStatus().intValue() == 1 ? "Running" : "Kill Request")),
-					FilePrint.fileTimestamp(job.getAddedTime().getTime()));
+			AlgorithmJob algorithmJob = convertJobEntity2JobModel(job);
 			listItems.add(algorithmJob);
 		});
 		return listItems;
 	}
 	
-	public void removeJobQueue(Long queueId){
-		JobQueueInfo jobQueueInfo = jobQueueInfoService.findOne(queueId);
-		jobQueueInfo.setStatus(2);
-		jobQueueInfoService.saveJobIntoQueue(jobQueueInfo);
+	public AlgorithmJob removeJobQueue(Long queueId){
+		JobQueueInfo job = jobQueueInfoService.findOne(queueId);
+		job.setStatus(2);
+		jobQueueInfoService.saveJobIntoQueue(job);
+		return convertJobEntity2JobModel(job);
 	}
+	
+	private AlgorithmJob convertJobEntity2JobModel(JobQueueInfo job){
+		return new AlgorithmJob(job.getId(), job.getAlgorName(), job.getFileName(),
+				(job.getStatus().intValue() == 0 ? "Queued" : (job.getStatus().intValue() == 1 ? "Running" : "Kill Request")),
+				FilePrint.fileTimestamp(job.getAddedTime().getTime()));
+	}
+	
+
 }

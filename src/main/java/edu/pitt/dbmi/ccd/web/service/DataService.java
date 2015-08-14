@@ -93,7 +93,7 @@ public class DataService {
     public List<DataListItem> createListItem(String username, String dataDir) {
         List<DataListItem> listItems = new LinkedList<>();
 
-        UserAccount userAccount = userAccountService.findByUsername(username);
+        UserAccount userAccount = userAccountService.findByUsername(username).get();
 
         List<DataFile> dataFiles = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
         Map<String, DataFile> dbDataFile = new HashMap<>();

@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -148,9 +149,9 @@ public class PcStableController extends AlgorithmController implements ViewContr
 
 		String command = StringUtils.join(commands.toArray(), ";");
 		System.out.println(command);
-		UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+		Optional<UserAccount> userAccount = userAccountService.findByUsername(appUser.getUsername());
 		JobQueueInfo queuedJobInfo = new JobQueueInfo(null, "PC-Stable", command, fileName, appUser.getTmpDirectory(),
-				appUser.getOutputDirectory(), new Integer(0), new Date(System.currentTimeMillis()), Collections.singleton(userAccount));
+				appUser.getOutputDirectory(), new Integer(0), new Date(System.currentTimeMillis()), Collections.singleton(userAccount.get()));
 		queuedJobInfo = queuedJobInfoService.saveJobIntoQueue(queuedJobInfo);
         LOGGER.info("Add Job into Queue: " + queuedJobInfo.getId());
 
