@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.model;
+package edu.pitt.dbmi.ccd.web.model.data;
 
 import org.springframework.web.multipart.MultipartFile;
 

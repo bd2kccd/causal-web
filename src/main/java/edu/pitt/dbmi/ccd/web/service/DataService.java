@@ -30,7 +30,7 @@ import edu.pitt.dbmi.ccd.db.service.FileDelimiterService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.model.AttributeValue;
-import edu.pitt.dbmi.ccd.web.model.DataListItem;
+import edu.pitt.dbmi.ccd.web.model.data.DataListItem;
 import edu.pitt.dbmi.ccd.web.model.data.DataSummary;
 import edu.pitt.dbmi.ccd.web.util.MessageDigestHash;
 import java.io.IOException;
