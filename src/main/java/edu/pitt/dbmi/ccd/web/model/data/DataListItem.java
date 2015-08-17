@@ -32,6 +32,8 @@ public class DataListItem {
 
     private String size;
 
+    private boolean onCloud;
+
     private String delimiter;
 
     private String variableType;
@@ -40,13 +42,14 @@ public class DataListItem {
     }
 
     public DataListItem(String fileName, String creationDate, String size) {
-        this(fileName, creationDate, size, null, null);
+        this(fileName, creationDate, size, false, null, null);
     }
 
-    public DataListItem(String fileName, String creationDate, String size, String delimiter, String variableType) {
+    public DataListItem(String fileName, String creationDate, String size, boolean onCloud, String delimiter, String variableType) {
         this.fileName = fileName;
         this.creationDate = creationDate;
         this.size = size;
+        this.onCloud = onCloud;
         this.delimiter = delimiter;
         this.variableType = variableType;
     }
@@ -73,6 +76,14 @@ public class DataListItem {
 
     public void setSize(String size) {
         this.size = size;
+    }
+
+    public boolean isOnCloud() {
+        return onCloud;
+    }
+
+    public void setOnCloud(boolean onCloud) {
+        this.onCloud = onCloud;
     }
 
     public String getDelimiter() {

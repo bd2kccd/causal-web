@@ -23,6 +23,8 @@ import edu.pitt.dbmi.ccd.mail.service.BasicMailService;
 import edu.pitt.dbmi.ccd.mail.service.BasicUserMailService;
 import edu.pitt.dbmi.ccd.mail.service.SimpleMailService;
 import edu.pitt.dbmi.ccd.mail.service.UserMailService;
+import edu.pitt.dbmi.ccd.web.service.cloud.CloudDataService;
+import edu.pitt.dbmi.ccd.web.service.cloud.ServerCloudDataService;
 import edu.pitt.dbmi.ccd.web.service.mail.MailService;
 import edu.pitt.dbmi.ccd.web.service.mail.ServerMailService;
 import org.springframework.beans.factory.annotation.Value;
@@ -66,6 +68,11 @@ public class ServerConfigurer {
             SimpleMailService simpleMailService,
             UserMailService userMailService) {
         return new ServerMailService(sendTo, subject, simpleMailService, userMailService);
+    }
+
+    @Bean
+    public CloudDataService cloudDataService() {
+        return new ServerCloudDataService();
     }
 
 }

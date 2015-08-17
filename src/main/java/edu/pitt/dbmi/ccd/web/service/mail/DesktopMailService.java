@@ -19,6 +19,8 @@
 package edu.pitt.dbmi.ccd.web.service.mail;
 
 import javax.mail.MessagingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -28,6 +30,8 @@ import org.springframework.web.client.RestTemplate;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class DesktopMailService implements MailService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DesktopMailService.class);
 
     private final String feedbackUri;
 

@@ -32,6 +32,7 @@ import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.model.AttributeValue;
 import edu.pitt.dbmi.ccd.web.model.data.DataListItem;
 import edu.pitt.dbmi.ccd.web.model.data.DataSummary;
+import edu.pitt.dbmi.ccd.web.service.cloud.CloudDataService;
 import edu.pitt.dbmi.ccd.web.util.MessageDigestHash;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -69,16 +70,20 @@ public class DataService {
 
     private final UserAccountService userAccountService;
 
+    private final CloudDataService cloudDataService;
+
     @Autowired(required = true)
     public DataService(
             DataFileService dataFileService,
             VariableTypeService variableTypeService,
             FileDelimiterService fileDelimiterService,
-            UserAccountService userAccountService) {
+            UserAccountService userAccountService,
+            CloudDataService cloudDataService) {
         this.dataFileService = dataFileService;
         this.variableTypeService = variableTypeService;
         this.fileDelimiterService = fileDelimiterService;
         this.userAccountService = userAccountService;
+        this.cloudDataService = cloudDataService;
     }
 
     public List<DataFile> listDirectorySync(String dataDir, String username, VariableType variableType) {
@@ -231,6 +236,8 @@ public class DataService {
     public List<DataListItem> createListItem(String username, String dataDir) {
         List<DataListItem> listItems = new LinkedList<>();
 
+        Set<String> remoteFileHashes = cloudDataService.getDataMd5Hash(username);
+
         UserAccount userAccount = userAccountService.findByUsername(username);
 
         List<DataFile> dataFiles = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
@@ -271,6 +278,10 @@ public class DataService {
                 if (dataFileInfo != null) {
                     item.setDelimiter(dataFileInfo.getFileDelimiter().getName());
                     item.setVariableType(dataFileInfo.getVariableType().getName());
+
+                    if (remoteFileHashes.contains(dataFileInfo.getMd5checkSum())) {
+                        item.setOnCloud(true);
+                    }
                 }
 
                 dbDataFile.remove(fileName);
