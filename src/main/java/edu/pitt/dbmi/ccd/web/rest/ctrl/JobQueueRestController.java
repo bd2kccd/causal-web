@@ -97,15 +97,15 @@ public class JobQueueRestController {
 
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<?>  addJobQueue(@PathVariable String username,
-			@RequestBody JobQueueInfo job,
-			//@RequestParam(value = "algorName") String algorName,
-			//@RequestParam(value = "command") String command, @RequestParam(value = "fileName") String fileName,
+			//@RequestBody JobQueueInfo job,
+			@RequestParam(value = "algorName") String algorName,
+			@RequestParam(value = "command") String command, @RequestParam(value = "fileName") String fileName,
 			@ModelAttribute("appUser") AppUser appUser) {
 		validateUser(username);
 		Optional<UserAccount> userAccount = userAccountService.findByUsername(username);
-		//JobQueueInfo job = new JobQueueInfo(null, algorName, command, fileName, appUser.getTmpDirectory(),
-		//		appUser.getOutputDirectory(), new Integer(0), new Date(System.currentTimeMillis()),
-		//		Collections.singleton(userAccount.get()));
+		JobQueueInfo job = new JobQueueInfo(null, algorName, command, fileName, appUser.getTmpDirectory(),
+				appUser.getOutputDirectory(), new Integer(0), new Date(System.currentTimeMillis()),
+				Collections.singleton(userAccount.get()));
 		job.setTmpDirectory(appUser.getTmpDirectory());
 		job.setOutputDirectory(appUser.getOutputDirectory());
 		job.setStatus(new Integer(0));
