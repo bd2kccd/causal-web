@@ -43,7 +43,7 @@
         </dependency>
 
         <!-- Uncomment tomcat to use as war -->
-        <!--        <dependency>
+<!--        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-tomcat</artifactId>
             <scope>provided</scope>
@@ -112,6 +112,7 @@
     </dependencies>
 
     <build>
+        <finalName>ccd</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
