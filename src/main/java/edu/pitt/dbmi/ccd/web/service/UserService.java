@@ -21,9 +21,8 @@ package edu.pitt.dbmi.ccd.web.service;
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
-import edu.pitt.dbmi.ccd.mail.domain.User;
-import edu.pitt.dbmi.ccd.mail.service.UserMailService;
 import edu.pitt.dbmi.ccd.web.model.UserRegistration;
+import edu.pitt.dbmi.ccd.web.service.mail.MailService;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Date;
@@ -49,16 +48,16 @@ public class UserService {
 
     private final DefaultPasswordService passwordService;
 
-    private final UserMailService userMailService;
+    private final MailService mailService;
 
     @Autowired(required = true)
     public UserService(
             UserAccountService userAccountService,
             DefaultPasswordService passwordService,
-            UserMailService userMailService) {
+            MailService mailService) {
         this.userAccountService = userAccountService;
         this.passwordService = passwordService;
-        this.userMailService = userMailService;
+        this.mailService = mailService;
     }
 
     public void registerNewUser(
@@ -94,21 +93,14 @@ public class UserService {
 
         userAccountService.saveUserAccount(userAccount);
 
-        if (userMailService != null) {
-            Thread t = new Thread(() -> {
-                User emailUser = new User();
-                emailUser.setEmail(email);
-                emailUser.setFirstName("");
-                emailUser.setLastName("");
-                emailUser.setUsername(username);
-                try {
-                    userMailService.sendRegistrationActivation(emailUser, activationURL);
-                } catch (MessagingException exception) {
-                    LOGGER.warn(String.format("Unable to send registration email for user '%s'.", username), exception);
-                }
-            });
-            t.start();
-        }
+        Thread t = new Thread(() -> {
+            try {
+                mailService.sendRegistrationActivation(username, email, activationURL);
+            } catch (MessagingException exception) {
+                LOGGER.warn(String.format("Unable to send registration email for user '%s'.", username), exception);
+            }
+        });
+        t.start();
     }
 
 }

@@ -19,7 +19,10 @@
 package edu.pitt.dbmi.ccd.web.ctrl;
 
 import edu.pitt.dbmi.ccd.web.model.Feedback;
-import edu.pitt.dbmi.ccd.web.service.FeedbackService;
+import edu.pitt.dbmi.ccd.web.service.mail.MailService;
+import javax.mail.MessagingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -39,11 +42,13 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @RequestMapping(value = "feedback")
 public class FeedbackController implements ViewPath {
 
-    private final FeedbackService feedbackService;
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeedbackController.class);
+
+    private final MailService mailService;
 
     @Autowired(required = true)
-    public FeedbackController(FeedbackService feedbackService) {
-        this.feedbackService = feedbackService;
+    public FeedbackController(MailService mailService) {
+        this.mailService = mailService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -58,7 +63,14 @@ public class FeedbackController implements ViewPath {
         model.addAttribute("feedback", feedback);
         model.addAttribute("successMsg", "Thank you for your feedback!");
 
-        feedbackService.sendFeedback(feedback);
+        Thread t = new Thread(() -> {
+            try {
+                mailService.sendFeedback(feedback.getEmail(), feedback.getFeedbackMsg());
+            } catch (MessagingException exception) {
+                LOGGER.error(exception.getMessage());
+            }
+        });
+        t.start();
 
         return "feedback";
     }

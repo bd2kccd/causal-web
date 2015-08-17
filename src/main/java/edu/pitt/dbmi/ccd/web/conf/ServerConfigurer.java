@@ -23,6 +23,9 @@ import edu.pitt.dbmi.ccd.mail.service.BasicMailService;
 import edu.pitt.dbmi.ccd.mail.service.BasicUserMailService;
 import edu.pitt.dbmi.ccd.mail.service.SimpleMailService;
 import edu.pitt.dbmi.ccd.mail.service.UserMailService;
+import edu.pitt.dbmi.ccd.web.service.mail.MailService;
+import edu.pitt.dbmi.ccd.web.service.mail.ServerMailService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -52,8 +55,17 @@ public class ServerConfigurer {
     }
 
     @Bean
-    public UserMailService userMailService(SpringTemplateEngine springTemplateEngine, JavaMailSender javaMailSender) {
-        return new BasicUserMailService(springTemplateEngine, javaMailSender);
+    public UserMailService userMailService(SpringTemplateEngine templateEngine, JavaMailSender javaMailSender) {
+        return new BasicUserMailService(templateEngine, javaMailSender);
+    }
+
+    @Bean
+    public MailService mailService(
+            @Value("${ccd.mail.feedback.to:ccd.web@gmail.com}") String sendTo,
+            @Value("${ccd.mail.feedback.subject:Feedback}") String subject,
+            SimpleMailService simpleMailService,
+            UserMailService userMailService) {
+        return new ServerMailService(sendTo, subject, simpleMailService, userMailService);
     }
 
 }

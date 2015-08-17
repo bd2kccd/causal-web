@@ -16,22 +16,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.mail;
+package edu.pitt.dbmi.ccd.web.service.mail;
 
-import edu.pitt.dbmi.ccd.mail.domain.User;
-import edu.pitt.dbmi.ccd.mail.service.UserMailService;
 import javax.mail.MessagingException;
 
 /**
  *
- * Aug 12, 2015 11:34:47 AM
+ * Aug 16, 2015 4:22:17 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class BasicWebServiceUserMail implements UserMailService {
+public interface MailService {
 
-    @Override
-    public void sendRegistrationActivation(User user, String activationUrl) throws MessagingException {
-    }
+    public void sendRegistrationActivation(String username, String email, String activationUrl) throws MessagingException;
+
+    public void sendFeedback(String email, String feedback) throws MessagingException;
 
 }

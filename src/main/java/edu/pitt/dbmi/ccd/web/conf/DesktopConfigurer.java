@@ -18,10 +18,8 @@
  */
 package edu.pitt.dbmi.ccd.web.conf;
 
-import edu.pitt.dbmi.ccd.mail.service.SimpleMailService;
-import edu.pitt.dbmi.ccd.mail.service.UserMailService;
-import edu.pitt.dbmi.ccd.web.mail.BasicWebServiceMail;
-import edu.pitt.dbmi.ccd.web.mail.BasicWebServiceUserMail;
+import edu.pitt.dbmi.ccd.web.service.mail.DesktopMailService;
+import edu.pitt.dbmi.ccd.web.service.mail.MailService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,15 +41,10 @@ public class DesktopConfigurer {
     }
 
     @Bean
-    public SimpleMailService simpleMailService(
-            @Value("${ccd.mail.feedback.uri:http://localhost:9000/ccd-ws/mail/feedback}") String uri,
+    public MailService mailService(
+            @Value("${ccd.mail.feedback.uri:http://localhost:9000/ccd-ws/mail/feedback}") String feedbackUri,
             @Value("${ccd.mail.feedback.appId:1}") String appId) {
-        return new BasicWebServiceMail(uri, appId);
-    }
-
-    @Bean
-    public UserMailService userMailService() {
-        return new BasicWebServiceUserMail();
+        return new DesktopMailService(feedbackUri, appId);
     }
 
 }

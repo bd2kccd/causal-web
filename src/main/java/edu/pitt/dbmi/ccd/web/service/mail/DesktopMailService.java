@@ -16,33 +16,37 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.mail;
+package edu.pitt.dbmi.ccd.web.service.mail;
 
-import edu.pitt.dbmi.ccd.mail.service.SimpleMailService;
 import javax.mail.MessagingException;
 import org.springframework.web.client.RestTemplate;
 
 /**
  *
- * Aug 12, 2015 11:32:23 AM
+ * Aug 16, 2015 4:22:52 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class BasicWebServiceMail implements SimpleMailService {
+public class DesktopMailService implements MailService {
 
-    private final String uri;
+    private final String feedbackUri;
 
     private final String appId;
 
-    public BasicWebServiceMail(String uri, String appId) {
-        this.uri = uri;
+    public DesktopMailService(String feedbackUri, String appId) {
+        this.feedbackUri = feedbackUri;
         this.appId = appId;
     }
 
     @Override
-    public void send(String to, String subject, String body, boolean html) throws MessagingException {
+    public void sendRegistrationActivation(String username, String email, String activationUrl) throws MessagingException {
+        throw new UnsupportedOperationException("Not supported for desktop application.");
+    }
+
+    @Override
+    public void sendFeedback(String email, String feedback) throws MessagingException {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.postForEntity(uri, new FeedbackRequest(to, body, appId), String.class);
+        restTemplate.postForEntity(feedbackUri, new FeedbackRequest(email, feedback, appId), String.class);
     }
 
     private class FeedbackRequest {
