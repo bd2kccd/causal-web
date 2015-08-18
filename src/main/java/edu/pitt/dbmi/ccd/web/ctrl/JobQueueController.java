@@ -18,6 +18,11 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +34,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
+import edu.pitt.dbmi.ccd.db.entity.JobQueueInfo;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.JobQueueInfoService;
+import edu.pitt.dbmi.ccd.db.service.UserAccountService;
+import edu.pitt.dbmi.ccd.queue.model.AlgorithmJob;
+import edu.pitt.dbmi.ccd.queue.util.JobQueueUtility;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.service.JobQueueService;
 
 /**
  * 
@@ -46,27 +56,40 @@ public class JobQueueController implements ViewController {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(JobQueueController.class);
 	
-    private final JobQueueService jobQueueService;
+	private final JobQueueInfoService jobQueueInfoService;
+
+	private final UserAccountService userAccountService;
     
     /**
-	 * @param jobQueueService
+	 * @param jobQueueInfoService
+	 * @param userAccountService
 	 */
-    @Autowired(required = true)
-	public JobQueueController(JobQueueService jobQueueService) {
-		this.jobQueueService = jobQueueService;
+	@Autowired(required = true)
+	public JobQueueController(JobQueueInfoService jobQueueInfoService, UserAccountService userAccountService) {
+		this.jobQueueInfoService = jobQueueInfoService;
+		this.userAccountService = userAccountService;
 	}
-
 
 	@RequestMapping(method = RequestMethod.GET)
     public String showJobQueue(@ModelAttribute("appUser") AppUser appUser, 
     		Model model){
-    	model.addAttribute("jobList", jobQueueService.createJobQueueList(appUser.getUsername()));
+		List<AlgorithmJob> listItems = new ArrayList<AlgorithmJob>();
+
+		Optional<UserAccount> userAccount = userAccountService.findByUsername(appUser.getUsername());
+		List<JobQueueInfo> listJobs = jobQueueInfoService.findByUserAccounts(Collections.singleton(userAccount.get()));
+		listJobs.forEach(job -> {
+			AlgorithmJob algorithmJob = JobQueueUtility.convertJobEntity2JobModel(job);
+			listItems.add(algorithmJob);
+		});
+    	model.addAttribute("jobList", listItems);
     	return JOB_QUEUE;
     }
 
 	@RequestMapping(value = "/remove/{id}", method = RequestMethod.GET)
 	public String deleteJobQueue(@PathVariable Long id){
-		jobQueueService.removeJobQueue(id);
+		JobQueueInfo job = jobQueueInfoService.findOne(id);
+		job.setStatus(2);
+		jobQueueInfoService.saveJobIntoQueue(job);
 		return REDIRECT_JOB_QUEUE;
 	}
 	

@@ -142,7 +142,8 @@ public class GesController extends AlgorithmController implements ViewController
 		commands.add(fileName);
 
 		String command = StringUtils.join(commands.toArray(), ";");
-		//System.out.println(command);
+		System.out.println(command);
+		System.out.println(fileName);
 		Optional<UserAccount> userAccount = userAccountService.findByUsername(appUser.getUsername());
 		JobQueueInfo queuedJobInfo = new JobQueueInfo(null, "GES", command, fileName, appUser.getTmpDirectory(),
 				appUser.getOutputDirectory(), new Integer(0), new Date(System.currentTimeMillis()),Collections.singleton(userAccount.get()));

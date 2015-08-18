@@ -107,12 +107,13 @@
 			<artifactId>commons-lang</artifactId>
 			<version>2.4</version>
 		</dependency>
+<!-- 
 		<dependency>
 			<groupId>de.flapdoodle.embed</groupId>
 			<artifactId>de.flapdoodle.embed.process</artifactId>
 			<version>1.41.2</version>
 		</dependency>
-
+ -->
     	<dependency>
     		<groupId>commons-httpclient</groupId>
     		<artifactId>commons-httpclient</artifactId>
@@ -122,6 +123,13 @@
     		<groupId>org.springframework.boot</groupId>
     		<artifactId>spring-boot-starter-test</artifactId>
     	</dependency>
+
+		<dependency>
+			<groupId>edu.pitt.dbmi</groupId>
+			<artifactId>ccd-job-queue</artifactId>
+			<version>0.1.0</version>
+		</dependency>
+
     </dependencies>
 	
     <build>
