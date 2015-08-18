@@ -78,11 +78,25 @@ public class ApplicationController implements ViewPath {
     }
 
     @RequestMapping(value = LOGIN, method = RequestMethod.GET)
-    public String showLoginPage(@Value("${ccd.desktop.default.pwd:password123}") final String defaultPassword,
+    public String showLoginPage(
+            @Value("${ccd.desktop.default.pwd:password123}") final String defaultPassword,
             @Value("${ccd.desktop.set.error:Unable to setup initial settings.}") final String signInErrMsg,
+            final SessionStatus sessionStatus,
             final Model model) {
-        if (SecurityUtils.getSubject().isAuthenticated()) {
-            return REDIRECT_HOME;
+        Subject currentUser = SecurityUtils.getSubject();
+        if (currentUser.isAuthenticated()) {
+            if (sessionStatus.isComplete()) {
+                currentUser.logout();
+                return REDIRECT_LOGIN;
+            } else {
+                if (model.containsAttribute("appUser")) {
+                    return REDIRECT_HOME;
+                } else {
+                    currentUser.logout();
+                    sessionStatus.setComplete();
+                    return REDIRECT_LOGIN;
+                }
+            }
         } else {
             if (webapp) {
                 return LOGIN_VIEW;
@@ -95,7 +109,6 @@ public class ApplicationController implements ViewPath {
 
                 UsernamePasswordToken token = new UsernamePasswordToken(userAccount.getUsername(), defaultPassword);
                 token.setRememberMe(true);
-                Subject currentUser = SecurityUtils.getSubject();
                 try {
                     currentUser.login(token);
                 } catch (AuthenticationException exception) {
