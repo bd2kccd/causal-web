@@ -81,22 +81,10 @@ public class ApplicationController implements ViewPath {
     public String showLoginPage(
             @Value("${ccd.desktop.default.pwd:password123}") final String defaultPassword,
             @Value("${ccd.desktop.set.error:Unable to setup initial settings.}") final String signInErrMsg,
-            final SessionStatus sessionStatus,
             final Model model) {
         Subject currentUser = SecurityUtils.getSubject();
         if (currentUser.isAuthenticated()) {
-            if (sessionStatus.isComplete()) {
-                currentUser.logout();
-                return REDIRECT_LOGIN;
-            } else {
-                if (model.containsAttribute("appUser")) {
-                    return REDIRECT_HOME;
-                } else {
-                    currentUser.logout();
-                    sessionStatus.setComplete();
-                    return REDIRECT_LOGIN;
-                }
-            }
+            return REDIRECT_HOME;
         } else {
             if (webapp) {
                 return LOGIN_VIEW;
