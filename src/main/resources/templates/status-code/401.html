@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="utf-8" />
         <title>CCD: Unauthorized Access</title>
@@ -49,6 +49,6 @@
     </head>
     <body>
         <h1>Unauthorized Access</h1>
-        <p>Sorry, you need to sign in to view this page.</p>
+        <p>Sorry, you need to <a href="../login.html" th:href="@{/login}">sign in</a> to view this page.</p>
     </body>
 </html>
