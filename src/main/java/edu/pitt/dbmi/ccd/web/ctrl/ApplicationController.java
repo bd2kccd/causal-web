@@ -81,41 +81,51 @@ public class ApplicationController implements ViewPath {
     public String showLoginPage(
             @Value("${ccd.desktop.default.pwd:password123}") final String defaultPassword,
             @Value("${ccd.desktop.set.error:Unable to setup initial settings.}") final String signInErrMsg,
+            final SessionStatus sessionStatus,
             final Model model) {
         Subject currentUser = SecurityUtils.getSubject();
-        if (currentUser.isAuthenticated()) {
-            return REDIRECT_HOME;
-        } else {
+        if (sessionStatus.isComplete()) {
+            currentUser.logout();
             if (webapp) {
                 return LOGIN_VIEW;
             } else {
-                String username = System.getProperty("user.name");
-                UserAccount userAccount = userAccountService.findByUsername(username);
-                if (userAccount == null) {
-                    return REDIRECT_SETUP;
-                }
-
-                UsernamePasswordToken token = new UsernamePasswordToken(userAccount.getUsername(), defaultPassword);
-                token.setRememberMe(true);
-                try {
-                    currentUser.login(token);
-                } catch (AuthenticationException exception) {
-                    LOGGER.warn(
-                            String.format("Failed login attempt from user %s.", token.getUsername()),
-                            exception);
-                    model.addAttribute("errorMsg", signInErrMsg);
-                    return REDIRECT_SETUP;
-                }
-
-                userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
-                userAccountService.saveUserAccount(userAccount);
-
-                model.addAttribute("appUser", appUserService.createAppUser(userAccount));
-
-                userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
-                userAccountService.saveUserAccount(userAccount);
-
+                return REDIRECT_SETUP;
+            }
+        } else {
+            if (currentUser.isAuthenticated()) {
                 return REDIRECT_HOME;
+            } else {
+                if (webapp) {
+                    return LOGIN_VIEW;
+                } else {
+                    String username = System.getProperty("user.name");
+                    UserAccount userAccount = userAccountService.findByUsername(username);
+                    if (userAccount == null) {
+                        return REDIRECT_SETUP;
+                    }
+
+                    UsernamePasswordToken token = new UsernamePasswordToken(userAccount.getUsername(), defaultPassword);
+                    token.setRememberMe(true);
+                    try {
+                        currentUser.login(token);
+                    } catch (AuthenticationException exception) {
+                        LOGGER.warn(
+                                String.format("Failed login attempt from user %s.", token.getUsername()),
+                                exception);
+                        model.addAttribute("errorMsg", signInErrMsg);
+                        return REDIRECT_SETUP;
+                    }
+
+                    userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
+                    userAccountService.saveUserAccount(userAccount);
+
+                    model.addAttribute("appUser", appUserService.createAppUser(userAccount));
+
+                    userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
+                    userAccountService.saveUserAccount(userAccount);
+
+                    return REDIRECT_HOME;
+                }
             }
         }
     }
