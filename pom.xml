@@ -123,13 +123,11 @@
     		<groupId>org.springframework.boot</groupId>
     		<artifactId>spring-boot-starter-test</artifactId>
     	</dependency>
-
 		<dependency>
 			<groupId>edu.pitt.dbmi</groupId>
 			<artifactId>ccd-job-queue</artifactId>
 			<version>0.1.0</version>
 		</dependency>
-
     </dependencies>
 	
     <build>
