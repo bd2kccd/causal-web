@@ -93,16 +93,15 @@ public class UserRegistrationController implements ViewPath {
         if (userAccountService.findByUsername(username) == null) {
             try {
                 userService.registerNewUser(userRegistration, workspace, request.getRequestURL().toString());
+                String msg = "Thank you for registering."
+                        + "Check your email to verify and activate your account.";
+                redirectAttributes.addFlashAttribute("successMsg", msg);
             } catch (Exception exception) {
                 LOGGER.warn(
                         String.format("Unable to register new user account for %s.", username),
                         exception);
                 redirectAttributes.addFlashAttribute("errorMsg", String.format("Unable to create account for '%s'.", username));
             }
-
-            String msg = "Thank you for registering."
-                    + "Check your email to verify and activate your account.";
-            redirectAttributes.addFlashAttribute("successMsg", msg);
         } else {
             redirectAttributes.addFlashAttribute("errorMsg", String.format("Username '%s' is already taken.", username));
         }
