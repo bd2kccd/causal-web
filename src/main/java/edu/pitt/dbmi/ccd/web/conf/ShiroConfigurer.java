@@ -86,8 +86,10 @@ public class ShiroConfigurer {
         filterChainDefinitionMap.put("/home", "authc");
         filterChainDefinitionMap.put("/algorithm/**", "authc");
         filterChainDefinitionMap.put("/data/**", "authc");
-        filterChainDefinitionMap.put("/user/**", "authc");
+        filterChainDefinitionMap.put("/user/profile", "authc");
+        filterChainDefinitionMap.put("/user/account", "authc");
         filterChainDefinitionMap.put("/user/registration", "anon");
+        filterChainDefinitionMap.put("/feedback", "authc");
         factoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
 
         return factoryBean;
