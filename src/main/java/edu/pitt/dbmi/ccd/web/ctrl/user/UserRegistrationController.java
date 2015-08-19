@@ -91,17 +91,23 @@ public class UserRegistrationController implements ViewPath {
             final HttpServletRequest request) {
         String username = userRegistration.getUsername();
         if (userAccountService.findByUsername(username) == null) {
-            try {
-                userService.registerNewUser(userRegistration, workspace, request.getRequestURL().toString());
-                String msg = "Thank you for registering."
-                        + "Check your email to verify and activate your account.";
-                redirectAttributes.addFlashAttribute("successMsg", msg);
-            } catch (Exception exception) {
-                LOGGER.warn(
-                        String.format("Unable to register new user account for %s.", username),
-                        exception);
-                redirectAttributes.addFlashAttribute("errorMsg", String.format("Unable to create account for '%s'.", username));
+            String email = userRegistration.getEmail();
+            if (userAccountService.findUserAccountByEmail(email) == null) {
+                try {
+                    userService.registerNewUser(userRegistration, workspace, request.getRequestURL().toString());
+                    String msg = "Thank you for registering."
+                            + "Check your email to verify and activate your account.";
+                    redirectAttributes.addFlashAttribute("successMsg", msg);
+                } catch (Exception exception) {
+                    LOGGER.warn(
+                            String.format("Unable to register new user account for %s.", username),
+                            exception);
+                    redirectAttributes.addFlashAttribute("errorMsg", String.format("Unable to create account for '%s'.", username));
+                }
+            } else {
+                redirectAttributes.addFlashAttribute("errorMsg", String.format("This email '%s' has already been registered.", email));
             }
+
         } else {
             redirectAttributes.addFlashAttribute("errorMsg", String.format("Username '%s' is already taken.", username));
         }
