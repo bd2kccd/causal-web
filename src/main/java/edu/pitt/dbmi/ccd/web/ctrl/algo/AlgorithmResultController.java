@@ -25,12 +25,15 @@ import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.FileInfo;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
+import edu.pitt.dbmi.ccd.web.service.cloud.CloudDataService;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +45,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -64,6 +68,13 @@ public class AlgorithmResultController implements ViewPath {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmResultController.class);
 
+    private final CloudDataService cloudDataService;
+
+    @Autowired(required = true)
+    public AlgorithmResultController(CloudDataService cloudDataService) {
+        this.cloudDataService = cloudDataService;
+    }
+
     @RequestMapping(method = RequestMethod.GET)
     public String showRunResultsView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         List<FileInfo> listing = new LinkedList<>();
@@ -71,17 +82,23 @@ public class AlgorithmResultController implements ViewPath {
             List<Path> list = FileInfos.listDirectory(Paths.get(appUser.getResultDirectory()), false);
             List<Path> files = list.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
 
-            List<BasicFileInfo> result = FileInfos.listBasicPathInfo(files);
-            result.forEach(info -> {
+            List<BasicFileInfo> results = FileInfos.listBasicPathInfo(files);
+            results.forEach(result -> {
                 FileInfo resultFile = new FileInfo();
-                resultFile.setCreationDate(FilePrint.fileTimestamp(info.getCreationTime()));
-                resultFile.setFileName(info.getFilename());
-                resultFile.setSize(FilePrint.humanReadableSize(info.getSize(), true));
+                resultFile.setCreationDate(FilePrint.fileTimestamp(result.getCreationTime()));
+                resultFile.setFileName(result.getFilename());
+                resultFile.setSize(FilePrint.humanReadableSize(result.getSize(), true));
                 listing.add(resultFile);
             });
         } catch (IOException exception) {
             LOGGER.error(exception.getMessage());
         }
+
+        listing.addAll(cloudDataService.getUserResultFiles(appUser.getUsername()));
+
+        // sort
+        FileInfo[] infoArray = listing.toArray(new FileInfo[listing.size()]);
+        Arrays.sort(infoArray, Collections.reverseOrder((e1, e2) -> Long.signum(e1.getRawCreationDate() - e2.getRawCreationDate())));
 
         model.addAttribute("itemList", listing);
 

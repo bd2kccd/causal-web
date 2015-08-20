@@ -18,6 +18,8 @@
  */
 package edu.pitt.dbmi.ccd.web.service.cloud;
 
+import edu.pitt.dbmi.ccd.web.model.FileInfo;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -29,5 +31,7 @@ import java.util.Set;
 public interface CloudDataService {
 
     public Set<String> getDataMd5Hash(String username);
+
+    public List<FileInfo> getUserResultFiles(String username);
 
 }

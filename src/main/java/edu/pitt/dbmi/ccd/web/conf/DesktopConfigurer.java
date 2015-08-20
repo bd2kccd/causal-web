@@ -52,8 +52,9 @@ public class DesktopConfigurer {
     @Bean
     public CloudDataService cloudDataService(
             @Value("${ccd.data.usr.hash.uri:http://localhost:9000/ccd-ws/data/usr}") String userDataHashUri,
+            @Value("${ccd.results.usr.uri:http://localhost:8080/ccd-ws/algorithm/results/usr}") String userResultsUri,
             @Value("${ccd.rest.appId:1}") String appId) {
-        return new DesktopCloudDataService(userDataHashUri, appId);
+        return new DesktopCloudDataService(userDataHashUri, userResultsUri, appId);
     }
 
 }

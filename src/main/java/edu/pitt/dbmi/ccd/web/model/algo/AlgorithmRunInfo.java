@@ -32,6 +32,8 @@ public abstract class AlgorithmRunInfo {
 
     protected String jvmOptions;
 
+    protected Boolean runOnPsc;
+
     public AlgorithmRunInfo() {
     }
 
@@ -57,6 +59,14 @@ public abstract class AlgorithmRunInfo {
 
     public void setJvmOptions(String jvmOptions) {
         this.jvmOptions = jvmOptions;
+    }
+
+    public Boolean getRunOnPsc() {
+        return runOnPsc;
+    }
+
+    public void setRunOnPsc(Boolean runOnPsc) {
+        this.runOnPsc = runOnPsc;
     }
 
 }

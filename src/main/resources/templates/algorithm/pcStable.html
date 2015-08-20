@@ -155,6 +155,15 @@
                                                     </table>
                                                 </div>
                                             </div>
+                                            <div class="panel-footer">
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label for="runOnPsc" class="control-label">
+                                                            <input type="checkbox" id="runOnPsc" name="runOnPsc" ng-model="runOnPsc" th:attr="ng-init='psc=' + *{runOnPsc}" th:field="*{runOnPsc}" /> Run on PSC
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                         <button type="submit" class="btn btn-success btn-lg btn-block nextBtn">Run Algorithm!</button>
                                     </div>

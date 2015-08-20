@@ -35,13 +35,25 @@ public class FileInfo {
 
     private String creationDate;
 
+    private long rawCreationDate;
+
+    private boolean onCloud;
+
+    public FileInfo(String fileName, String filePath, String size, String creationDate, long rawCreationDate, boolean onCloud) {
+        this.fileName = fileName;
+        this.filePath = filePath;
+        this.size = size;
+        this.creationDate = creationDate;
+        this.rawCreationDate = rawCreationDate;
+        this.onCloud = onCloud;
+    }
+
     public FileInfo() {
+        this(null, null, null);
     }
 
     public FileInfo(String fileName, String size, String creationDate) {
-        this.fileName = fileName;
-        this.size = size;
-        this.creationDate = creationDate;
+        this(fileName, null, size, creationDate, 0, false);
     }
 
     public String getFileName() {
@@ -74,6 +86,22 @@ public class FileInfo {
 
     public void setCreationDate(String creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public long getRawCreationDate() {
+        return rawCreationDate;
+    }
+
+    public void setRawCreationDate(long rawCreationDate) {
+        this.rawCreationDate = rawCreationDate;
+    }
+
+    public boolean isOnCloud() {
+        return onCloud;
+    }
+
+    public void setOnCloud(boolean onCloud) {
+        this.onCloud = onCloud;
     }
 
 }

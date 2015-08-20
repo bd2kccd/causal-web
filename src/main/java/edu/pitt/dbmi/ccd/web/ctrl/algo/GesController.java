@@ -84,6 +84,7 @@ public class GesController extends AbstractAlgorithmController implements ViewPa
         info.setDepth(3);
         info.setVerbose(Boolean.TRUE);
         info.setJvmOptions("");
+        info.setRunOnPsc(Boolean.FALSE);
 
         Map<String, String> map = directoryFileListing(appUser.getDataDirectory(), appUser.getUsername());
         if (map.isEmpty()) {

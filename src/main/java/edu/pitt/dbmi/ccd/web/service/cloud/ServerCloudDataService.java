@@ -18,7 +18,10 @@
  */
 package edu.pitt.dbmi.ccd.web.service.cloud;
 
+import edu.pitt.dbmi.ccd.web.model.FileInfo;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -34,6 +37,13 @@ public class ServerCloudDataService implements CloudDataService {
         Set<String> hashes = new HashSet<>();
 
         return hashes;
+    }
+
+    @Override
+    public List<FileInfo> getUserResultFiles(String username) {
+        List<FileInfo> list = new LinkedList<>();
+
+        return list;
     }
 
 }
