@@ -34,4 +34,6 @@ public interface CloudDataService {
 
     public List<FileInfo> getUserResultFiles(String username);
 
+    public byte[] downloadFile(String username, String fileName);
+
 }

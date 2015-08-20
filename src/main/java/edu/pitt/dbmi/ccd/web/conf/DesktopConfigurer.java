@@ -53,8 +53,9 @@ public class DesktopConfigurer {
     public CloudDataService cloudDataService(
             @Value("${ccd.data.usr.hash.uri:http://localhost:9000/ccd-ws/data/usr}") String userDataHashUri,
             @Value("${ccd.results.usr.uri:http://localhost:8080/ccd-ws/algorithm/results/usr}") String userResultsUri,
+            @Value("${ccd.results.file.usr.uri:http://localhost:9000/ccd-ws/algorithm/results/file/usr}") String userResultFileDownloadUri,
             @Value("${ccd.rest.appId:1}") String appId) {
-        return new DesktopCloudDataService(userDataHashUri, userResultsUri, appId);
+        return new DesktopCloudDataService(userDataHashUri, userResultsUri, userResultFileDownloadUri, appId);
     }
 
 }

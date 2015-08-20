@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -45,12 +47,30 @@ public class DesktopCloudDataService implements CloudDataService {
 
     private final String userResultsUri;
 
+    private final String userResultFileDownloadUri;
+
     private final String appId;
 
-    public DesktopCloudDataService(String userDataHashUri, String userResultsUri, String appId) {
+    public DesktopCloudDataService(String userDataHashUri, String userResultsUri, String userResultFileDownloadUri, String appId) {
         this.userDataHashUri = userDataHashUri;
         this.userResultsUri = userResultsUri;
+        this.userResultFileDownloadUri = userResultFileDownloadUri;
         this.appId = appId;
+    }
+
+    @Override
+    public byte[] downloadFile(String username, String fileName) {
+        String uri = String.format("%s/%s?appId=%s&fileName=%s", userResultFileDownloadUri, username, appId, fileName);
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<ByteArrayResource> response = restTemplate.getForEntity(uri, ByteArrayResource.class);
+
+        byte[] data = null;
+        if (response.getStatusCode() == HttpStatus.OK) {
+            ByteArrayResource byteArrayResource = response.getBody();
+            data = byteArrayResource.getByteArray();
+        }
+
+        return data;
     }
 
     @Override

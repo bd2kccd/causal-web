@@ -27,7 +27,12 @@ import edu.pitt.dbmi.ccd.web.model.FileInfo;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
 import edu.pitt.dbmi.ccd.web.service.cloud.CloudDataService;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -103,6 +108,43 @@ public class AlgorithmResultController implements ViewPath {
         model.addAttribute("itemList", listing);
 
         return ALGORITHM_RESULTS_VIEW;
+    }
+
+    @RequestMapping(value = "download/cloud", method = RequestMethod.GET)
+    public void downloadResultFileFromCloud(
+            @RequestParam(value = "file") final String filename,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final HttpServletRequest request,
+            final HttpServletResponse response) {
+        response.setContentType(MediaType.TEXT_PLAIN_VALUE);
+
+        String headerKey = "Content-Disposition";
+        String headerValue = String.format("attachment; filename=\"%s\"", filename);
+        response.setHeader(headerKey, headerValue);
+
+        byte[] data = cloudDataService.downloadFile(appUser.getUsername(), filename);
+
+        try (ReadableByteChannel inputChannel = Channels.newChannel(new ByteArrayInputStream(data));
+                WritableByteChannel outputChannel = Channels.newChannel(response.getOutputStream())) {
+            final ByteBuffer buffer = ByteBuffer.allocateDirect(16 * 1024);
+            while (inputChannel.read(buffer) != -1) {
+                // prepare the buffer to be drained
+                buffer.flip();
+                // write to the channel, may block
+                outputChannel.write(buffer);
+                // If partial transfer, shift remainder down
+                // If buffer is empty, same as doing clear()
+                buffer.compact();
+            }
+            // EOF will leave buffer in fill state
+            buffer.flip();
+            // make sure the buffer is fully drained.
+            while (buffer.hasRemaining()) {
+                outputChannel.write(buffer);
+            }
+        } catch (IOException exception) {
+            LOGGER.error(String.format("Unable to download file '%s'.", filename), exception);
+        }
     }
 
     @RequestMapping(value = "download", method = RequestMethod.GET)

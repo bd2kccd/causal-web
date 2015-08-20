@@ -33,6 +33,11 @@ import java.util.Set;
 public class ServerCloudDataService implements CloudDataService {
 
     @Override
+    public byte[] downloadFile(String username, String fileName) {
+        return null;
+    }
+
+    @Override
     public Set<String> getDataMd5Hash(String username) {
         Set<String> hashes = new HashSet<>();
 
