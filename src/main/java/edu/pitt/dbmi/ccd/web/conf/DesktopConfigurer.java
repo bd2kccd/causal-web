@@ -18,8 +18,6 @@
  */
 package edu.pitt.dbmi.ccd.web.conf;
 
-import edu.pitt.dbmi.ccd.web.service.cloud.CloudDataService;
-import edu.pitt.dbmi.ccd.web.service.cloud.DesktopCloudDataService;
 import edu.pitt.dbmi.ccd.web.service.mail.DesktopMailService;
 import edu.pitt.dbmi.ccd.web.service.mail.MailService;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,15 +45,6 @@ public class DesktopConfigurer {
             @Value("${ccd.mail.feedback.uri:http://localhost:9000/ccd-ws/mail/feedback}") String feedbackUri,
             @Value("${ccd.rest.appId:1}") String appId) {
         return new DesktopMailService(feedbackUri, appId);
-    }
-
-    @Bean
-    public CloudDataService cloudDataService(
-            @Value("${ccd.data.usr.hash.uri:http://localhost:9000/ccd-ws/data/usr}") String userDataHashUri,
-            @Value("${ccd.results.usr.uri:http://localhost:8080/ccd-ws/algorithm/results/usr}") String userResultsUri,
-            @Value("${ccd.results.file.usr.uri:http://localhost:9000/ccd-ws/algorithm/results/file/usr}") String userResultFileDownloadUri,
-            @Value("${ccd.rest.appId:1}") String appId) {
-        return new DesktopCloudDataService(userDataHashUri, userResultsUri, userResultFileDownloadUri, appId);
     }
 
 }

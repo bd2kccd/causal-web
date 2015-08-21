@@ -25,7 +25,7 @@
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
-                        Please check the <a href="algorithmResults.html" th:href="@{/algorithm/results}">Run Result</a> page for results.
+                        Please check the <a href="algorithmResults.html" th:href="${appUser.webUser} ? @{/algorithm/results} : @{/cloud/algorithm/results}">Run Result</a> page for results.
                     </div>
                 </div>
                 <footer th:replace="fragments/footer :: footer">

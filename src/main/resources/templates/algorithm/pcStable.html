@@ -155,7 +155,7 @@
                                                     </table>
                                                 </div>
                                             </div>
-                                            <div class="panel-footer">
+                                            <div th:if="${appUser.webUser} == false" class="panel-footer">
                                                 <div class="form-group">
                                                     <div class="checkbox">
                                                         <label for="runOnPsc" class="control-label">

@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.service;
 
+import edu.pitt.dbmi.ccd.web.service.cloud.CloudDataService;
 import edu.pitt.dbmi.ccd.commons.file.FilePrint;
 import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
@@ -32,7 +33,6 @@ import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.model.AttributeValue;
 import edu.pitt.dbmi.ccd.web.model.data.DataListItem;
 import edu.pitt.dbmi.ccd.web.model.data.DataSummary;
-import edu.pitt.dbmi.ccd.web.service.cloud.CloudDataService;
 import edu.pitt.dbmi.ccd.web.util.MessageDigestHash;
 import java.io.IOException;
 import java.nio.file.Files;

@@ -70,7 +70,7 @@
                                 </ul>
                             </li>
                             <li>
-                                <a href="../algoRunResults.html" th:href="@{/algorithm/results}"><i class="fa fa-edit fa-fw"></i> Run Results</a>
+                                <a href="../algoRunResults.html" th:href="${appUser.webUser} ? @{/algorithm/results} : @{/cloud/algorithm/results}"><i class="fa fa-edit fa-fw"></i> Run Results</a>
                             </li>
                             <li>
                                 <a href="../feedback.html" th:href="@{/feedback}"><i class="fa fa-comment fa-fw"></i> Feedback</a>

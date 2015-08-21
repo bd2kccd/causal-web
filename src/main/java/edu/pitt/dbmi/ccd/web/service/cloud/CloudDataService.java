@@ -18,22 +18,57 @@
  */
 package edu.pitt.dbmi.ccd.web.service.cloud;
 
-import edu.pitt.dbmi.ccd.web.model.FileInfo;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 /**
  *
- * Aug 17, 2015 11:11:41 AM
+ * Aug 21, 2015 9:36:34 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public interface CloudDataService {
+@Service
+public class CloudDataService {
 
-    public Set<String> getDataMd5Hash(String username);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CloudDataService.class);
 
-    public List<FileInfo> getUserResultFiles(String username);
+    private final Boolean webapp;
 
-    public byte[] downloadFile(String username, String fileName);
+    private final String userDataHashUri;
+
+    private final String appId;
+
+    @Autowired(required = true)
+    public CloudDataService(
+            Boolean webapp,
+            @Value("${ccd.data.usr.hash.uri:http://localhost:8080/ccd-ws/data/usr}") String userDataHashUri,
+            @Value("${ccd.rest.appId:1}") String appId) {
+        this.webapp = webapp;
+        this.userDataHashUri = userDataHashUri;
+        this.appId = appId;
+    }
+
+    public Set<String> getDataMd5Hash(String username) {
+        Set<String> hashes = new HashSet<>();
+
+        if (!webapp) {
+            try {
+                RestTemplate restTemplate = new RestTemplate();
+                Set<String> set = restTemplate.getForObject(String.format("%s/%s?appId=%s", userDataHashUri, username, appId), Set.class);
+                hashes.addAll(set);
+            } catch (RestClientException exception) {
+                LOGGER.error(exception.getMessage());
+            }
+        }
+
+        return hashes;
+    }
 
 }

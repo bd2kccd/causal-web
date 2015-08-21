@@ -19,46 +19,54 @@
 package edu.pitt.dbmi.ccd.web.service.cloud;
 
 import edu.pitt.dbmi.ccd.commons.file.FilePrint;
-import edu.pitt.dbmi.ccd.web.model.FileInfo;
-import java.util.HashSet;
+import edu.pitt.dbmi.ccd.web.model.ResultFileInfo;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 /**
  *
- * Aug 17, 2015 11:12:19 AM
+ * Aug 21, 2015 9:45:12 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class DesktopCloudDataService implements CloudDataService {
+@Profile("desktop")
+@Service
+public class CloudResultFileService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DesktopCloudDataService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CloudResultFileService.class);
 
-    private final String userDataHashUri;
+    private final Boolean webapp;
+
+    private final String appId;
 
     private final String userResultsUri;
 
     private final String userResultFileDownloadUri;
 
-    private final String appId;
-
-    public DesktopCloudDataService(String userDataHashUri, String userResultsUri, String userResultFileDownloadUri, String appId) {
-        this.userDataHashUri = userDataHashUri;
+    @Autowired(required = true)
+    public CloudResultFileService(
+            Boolean webapp,
+            @Value("${ccd.rest.appId:1}") String appId,
+            @Value("${ccd.results.usr.uri:http://localhost:8080/ccd-ws/algorithm/results/usr}") String userResultsUri,
+            @Value("${ccd.results.file.usr.uri:http://localhost:8080/ccd-ws/algorithm/results/file/usr}") String userResultFileDownloadUri) {
+        this.webapp = webapp;
+        this.appId = appId;
         this.userResultsUri = userResultsUri;
         this.userResultFileDownloadUri = userResultFileDownloadUri;
-        this.appId = appId;
     }
 
-    @Override
     public byte[] downloadFile(String username, String fileName) {
         String uri = String.format("%s/%s?appId=%s&fileName=%s", userResultFileDownloadUri, username, appId, fileName);
         RestTemplate restTemplate = new RestTemplate();
@@ -73,24 +81,8 @@ public class DesktopCloudDataService implements CloudDataService {
         return data;
     }
 
-    @Override
-    public Set<String> getDataMd5Hash(String username) {
-        Set<String> hashes = new HashSet<>();
-
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-            Set<String> set = restTemplate.getForObject(String.format("%s/%s?appId=%s", userDataHashUri, username, appId), Set.class);
-            hashes.addAll(set);
-        } catch (RestClientException exception) {
-            LOGGER.error(exception.getMessage());
-        }
-
-        return hashes;
-    }
-
-    @Override
-    public List<FileInfo> getUserResultFiles(String username) {
-        List<FileInfo> list = new LinkedList<>();
+    public List<ResultFileInfo> getUserResultFiles(String username) {
+        List<ResultFileInfo> list = new LinkedList<>();
 
         String[] keys = {"fileName", "size", "creationDate"};
 
@@ -104,9 +96,13 @@ public class DesktopCloudDataService implements CloudDataService {
                 Integer size = (Integer) map.get(keys[1]);
                 Long creationTime = (Long) map.get(keys[2]);
 
-                FileInfo info = new FileInfo(filename, size.toString(), FilePrint.fileTimestamp(creationTime));
+                ResultFileInfo info = new ResultFileInfo();
+                info.setFileName(filename);
+                info.setSize(size.toString());
+                info.setCreationDate(FilePrint.fileTimestamp(creationTime));
                 info.setRawCreationDate(creationTime);
                 info.setOnCloud(true);
+
                 list.add(info);
             });
         } catch (RestClientException exception) {
