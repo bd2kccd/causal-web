@@ -47,24 +47,24 @@ public class CloudResultFileService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CloudResultFileService.class);
 
-    private final Boolean webapp;
-
     private final String appId;
 
     private final String userResultsUri;
 
     private final String userResultFileDownloadUri;
 
+    private final String userResultFileDeleteUri;
+
     @Autowired(required = true)
     public CloudResultFileService(
-            Boolean webapp,
             @Value("${ccd.rest.appId:1}") String appId,
             @Value("${ccd.results.usr.uri:http://localhost:8080/ccd-ws/algorithm/results/usr}") String userResultsUri,
-            @Value("${ccd.results.file.usr.uri:http://localhost:8080/ccd-ws/algorithm/results/file/usr}") String userResultFileDownloadUri) {
-        this.webapp = webapp;
+            @Value("${ccd.results.file.usr.uri:http://localhost:8080/ccd-ws/algorithm/results/file/usr}") String userResultFileDownloadUri,
+            @Value("${ccd.results.file.delete.usr.uri:http://localhost:8080/ccd-ws/algorithm/results/file/delete/usr}") String userResultFileDeleteUri) {
         this.appId = appId;
         this.userResultsUri = userResultsUri;
         this.userResultFileDownloadUri = userResultFileDownloadUri;
+        this.userResultFileDeleteUri = userResultFileDeleteUri;
     }
 
     public byte[] downloadFile(String username, String fileName) {
@@ -79,6 +79,12 @@ public class CloudResultFileService {
         }
 
         return data;
+    }
+
+    public void deleteFile(String username, String fileName) {
+        String uri = String.format("%s/%s?appId=%s&fileName=%s", userResultFileDeleteUri, username, appId, fileName);
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.delete(uri);
     }
 
     public List<ResultFileInfo> getUserResultFiles(String username) {
@@ -98,7 +104,7 @@ public class CloudResultFileService {
 
                 ResultFileInfo info = new ResultFileInfo();
                 info.setFileName(filename);
-                info.setSize(size.toString());
+                info.setSize(FilePrint.humanReadableSize(size, true));
                 info.setCreationDate(FilePrint.fileTimestamp(creationTime));
                 info.setRawCreationDate(creationTime);
                 info.setOnCloud(true);

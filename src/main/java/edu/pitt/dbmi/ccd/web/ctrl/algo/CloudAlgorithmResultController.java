@@ -121,6 +121,15 @@ public class CloudAlgorithmResultController {
         return ALGORITHM_RESULTS_VIEW;
     }
 
+    @RequestMapping(value = "delete", method = RequestMethod.GET)
+    public String deleteResultFile(
+            @RequestParam(value = "file") final String filename,
+            @ModelAttribute("appUser") final AppUser appUser) {
+        cloudResultFileService.deleteFile(appUser.getUsername(), filename);
+
+        return "redirect:/cloud/algorithm/results";
+    }
+
     @RequestMapping(value = "download", method = RequestMethod.GET)
     public void downloadResultFileFromCloud(
             @RequestParam(value = "file") final String filename,
