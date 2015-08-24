@@ -54,7 +54,7 @@ public class AlgorithmService {
     @Autowired(required = true)
     public AlgorithmService(
             @Value("${ccd.rest.appId:1}") String appId,
-            @Value("${ccd.job.algorithm.uri:http://localhost:9000/ccd-ws/job/submit/usr}") String userAlgorithmJobUri) {
+            @Value("${ccd.job.algorithm.uri:http://localhost:9000/ccd-ws/job/algorithm}") String userAlgorithmJobUri) {
         this.appId = appId;
         this.userAlgorithmJobUri = userAlgorithmJobUri;
     }
@@ -66,7 +66,7 @@ public class AlgorithmService {
         jobRequest.setAlgoParams(algoParams);
         jobRequest.setDataset(dataset);
 
-        String uri = String.format("%s/%s?appId=%s", userAlgorithmJobUri, username, appId);
+        String uri = String.format("%s/submit?usr=%s&appId=%s", userAlgorithmJobUri, username, appId);
         RestTemplate restTemplate = new RestTemplate();
         try {
             restTemplate.postForEntity(uri, jobRequest, null);
