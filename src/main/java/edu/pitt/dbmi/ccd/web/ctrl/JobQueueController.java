@@ -27,7 +27,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -44,7 +42,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
-import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
@@ -76,18 +73,22 @@ public class JobQueueController implements ViewController {
 	private final UserAccountService userAccountService;
 
 	private final String remoteServerUrl;
+	
+	private final String appId;
 
 	/**
 	 * @param jobQueueInfoService
 	 * @param userAccountService
 	 * @param remoteServerUrl
+	 * @param appId;
 	 */
 	@Autowired(required = true)
 	public JobQueueController(JobQueueInfoService jobQueueInfoService, UserAccountService userAccountService,
-			@Value("${ccd.remote.server:http://localhost:9000/ccd-ws}") String remoteServerUrl) {
+			@Value("${ccd.remote.server:http://localhost:9000/ccd-ws}") String remoteServerUrl, @Value("${ccd.remote.server.appId:1}") String appId) {
 		this.jobQueueInfoService = jobQueueInfoService;
 		this.userAccountService = userAccountService;
 		this.remoteServerUrl = remoteServerUrl;
+		this.appId = appId;
 	}
 
 	@RequestMapping(method = RequestMethod.GET)
@@ -105,6 +106,9 @@ public class JobQueueController implements ViewController {
 
 		// Remote Job Queue
 		String userRemoteServerUrl = remoteServerUrl + "/" + appUser.getUsername() + "/jobQueue";
+		// Add appId parameter
+		userRemoteServerUrl += "?appId=" + appId;
+		
 		List<AlgorithmJob> remoteListItems = new ArrayList<AlgorithmJob>();
 
 		/*RestTemplate restTemplate = new RestTemplate();
@@ -140,6 +144,8 @@ public class JobQueueController implements ViewController {
 					throws IOException {
 
 		String remoteRemoveUrl = remoteServerUrl + "/" + appUser.getUsername() + "/jobQueue/remove/" + id;
+		// Add appId parameter
+		remoteRemoveUrl += "?appId=" + appId;
 		URL url = new URL(remoteRemoveUrl);
 		// HttpsURLConnection
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
