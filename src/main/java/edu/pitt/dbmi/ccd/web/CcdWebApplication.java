@@ -19,6 +19,7 @@
 package edu.pitt.dbmi.ccd.web;
 
 import edu.pitt.dbmi.ccd.db.CCDDatabaseApplication;
+import edu.pitt.dbmi.ccd.queue.CCDJobQueueApplication;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
@@ -44,7 +45,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
  */
 @SpringBootApplication
 @EnableAsync
-@Import(CCDDatabaseApplication.class)
+@Import({CCDDatabaseApplication.class, CCDJobQueueApplication.class})
 @PropertySource("classpath:ccd.properties")
 public class CcdWebApplication extends SpringBootServletInitializer {
 

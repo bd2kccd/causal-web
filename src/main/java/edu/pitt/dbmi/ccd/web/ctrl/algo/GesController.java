@@ -27,9 +27,7 @@ import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.algo.GesRunInfo;
 import edu.pitt.dbmi.ccd.web.service.AlgorithmService;
 import edu.pitt.dbmi.ccd.web.service.DataService;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
+import edu.pitt.dbmi.ccd.web.service.cloud.dto.JobRequest;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -108,65 +106,33 @@ public class GesController extends AbstractAlgorithmController implements ViewPa
             @ModelAttribute("algoInfo") final GesRunInfo info,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
+        List<String> algoOptions = new LinkedList<>();
+        algoOptions.add("--penalty-discount");
+        algoOptions.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));
+
+        algoOptions.add("--depth");
+        algoOptions.add(String.valueOf(info.getDepth().intValue()));
+
+        if (info.getVerbose()) {
+            algoOptions.add("--verbose");
+        }
+
+        String[] jvmOptions = null;
+        String jvmOpts = info.getJvmOptions().trim();
+        if (jvmOpts.length() > 0) {
+            jvmOptions = jvmOpts.split("\\s+");
+        }
+
+        JobRequest jobRequest = new JobRequest();
+        jobRequest.setAlgorName("ges");
+        jobRequest.setJvmOptions(jvmOptions);
+        jobRequest.setAlgoParams(algoOptions.toArray(new String[algoOptions.size()]));
+        jobRequest.setDataset(info.getDataset());
+
         if (info.getRunOnPsc()) {
-            List<String> algoOptions = new LinkedList<>();
-            algoOptions.add("--penalty-discount");
-            algoOptions.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));
-
-            algoOptions.add("--depth");
-            algoOptions.add(String.valueOf(info.getDepth().intValue()));
-
-            if (info.getVerbose()) {
-                algoOptions.add("--verbose");
-            }
-
-            String[] jvmOptions = null;
-            String jvmOpts = info.getJvmOptions().trim();
-            if (jvmOpts.length() > 0) {
-                jvmOptions = jvmOpts.split("\\s+");
-            }
-
-            algorithmService.runRemotely("ges", info.getDataset(), algoOptions.toArray(new String[algoOptions.size()]), jvmOptions, appUser.getUsername());
+            algorithmService.runRemotely(jobRequest, appUser);
         } else {
-            List<String> commands = new LinkedList<>();
-            commands.add("java");
-
-            String jvmOptions = info.getJvmOptions().trim();
-            if (jvmOptions.length() > 0) {
-                commands.addAll(Arrays.asList(jvmOptions.split("\\s+")));
-            }
-
-            Path classPath = Paths.get(appUser.getLibDirectory(), algorithmJar);
-            commands.add("-cp");
-            commands.add(classPath.toString());
-            commands.add(ges);
-
-            Path dataset = Paths.get(appUser.getDataDirectory(), info.getDataset());
-            commands.add("--data");
-            commands.add(dataset.toString());
-
-            commands.add("--delimiter");
-            commands.add(getFileDelimiter(appUser.getDataDirectory(), info.getDataset()));
-
-            commands.add("--penalty-discount");
-            commands.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));
-
-            commands.add("--depth");
-            commands.add(String.valueOf(info.getDepth().intValue()));
-
-            if (info.getVerbose()) {
-                commands.add("--verbose");
-            }
-
-            String fileName = String.format("ges_%s_%d", info.getDataset(), System.currentTimeMillis());
-            commands.add("--out-filename");
-            commands.add(fileName);
-
-            try {
-                algorithmService.runAlgorithm(commands, fileName, appUser.getTmpDirectory(), appUser.getResultDirectory());
-            } catch (Exception exception) {
-                LOGGER.error("Unable to run GES.", exception);
-            }
+            algorithmService.runLocally(ges, algorithmJar, jobRequest, appUser);
         }
 
         model.addAttribute("title", "GES is Running");

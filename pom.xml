@@ -90,6 +90,11 @@
 
         <dependency>
             <groupId>edu.pitt.dbmi</groupId>
+            <artifactId>ccd-job-queue</artifactId>
+            <version>0.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.pitt.dbmi</groupId>
             <artifactId>ccd-mail</artifactId>
             <version>0.1.0</version>
             <exclusions>

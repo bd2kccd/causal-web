@@ -18,20 +18,23 @@
  */
 package edu.pitt.dbmi.ccd.web.service;
 
+import edu.pitt.dbmi.ccd.db.entity.JobQueueInfo;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.JobQueueInfoService;
+import edu.pitt.dbmi.ccd.db.service.UserAccountService;
+import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.cloud.dto.JobRequest;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -47,26 +50,28 @@ public class AlgorithmService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmService.class);
 
+    private final UserAccountService userAccountService;
+
+    private final JobQueueInfoService jobQueueInfoService;
+
     private final String appId;
 
     private final String userAlgorithmJobUri;
 
     @Autowired(required = true)
     public AlgorithmService(
+            UserAccountService userAccountService,
+            JobQueueInfoService jobQueueInfoService,
             @Value("${ccd.rest.appId:1}") String appId,
             @Value("${ccd.job.algorithm.uri:http://localhost:9000/ccd-ws/job/algorithm}") String userAlgorithmJobUri) {
+        this.userAccountService = userAccountService;
+        this.jobQueueInfoService = jobQueueInfoService;
         this.appId = appId;
         this.userAlgorithmJobUri = userAlgorithmJobUri;
     }
 
-    public void runRemotely(String algorName, String dataset, String[] algoParams, String[] jvmOptions, String username) {
-        JobRequest jobRequest = new JobRequest();
-        jobRequest.setAlgorName(algorName);
-        jobRequest.setJvmOptions(jvmOptions);
-        jobRequest.setAlgoParams(algoParams);
-        jobRequest.setDataset(dataset);
-
-        String uri = String.format("%s/submit?usr=%s&appId=%s", userAlgorithmJobUri, username, appId);
+    public void runRemotely(JobRequest jobRequest, AppUser appUser) {
+        String uri = String.format("%s/submit?usr=%s&appId=%s", userAlgorithmJobUri, appUser.getUsername(), appId);
         RestTemplate restTemplate = new RestTemplate();
         try {
             restTemplate.postForEntity(uri, jobRequest, null);
@@ -75,43 +80,59 @@ public class AlgorithmService {
         }
     }
 
-    @Async
-    public Future<Void> runAlgorithm(List<String> commands, String fileName, String tmpDirectory, String outputDirectory) {
-        commands.add("--out");
-        commands.add(tmpDirectory);
+    public void runLocally(String algorithm, String algorithmJar, JobRequest jobRequest, AppUser appUser) {
+        String userDataDir = appUser.getDataDirectory();
+        String userTempDir = appUser.getTmpDirectory();
+        String userOutputDir = appUser.getResultDirectory();
+        String userLibDir = appUser.getLibDirectory();
 
-        fileName = String.format("%s.txt", fileName);
-        String errorFileName = String.format("error_%s", fileName);
-        Path error = Paths.get(tmpDirectory, errorFileName);
-        Path errorDest = Paths.get(outputDirectory, errorFileName);
-        Path src = Paths.get(tmpDirectory, fileName);
-        Path dest = Paths.get(outputDirectory, fileName);
+        String algoName = jobRequest.getAlgorName();
+        String dataset = jobRequest.getDataset();
 
-        StringBuilder sb = new StringBuilder();
-        commands.forEach(cmd -> {
-            sb.append(cmd);
-            sb.append(" ");
-        });
-        LOGGER.info("Algorithm command: " + sb.toString());
+        List<String> commands = new LinkedList<>();
+        commands.add("java");
 
-        try {
-            ProcessBuilder pb = new ProcessBuilder(commands);
-            pb.redirectError(error.toFile());
-            Process process = pb.start();
-            process.waitFor();
-
-            if (process.exitValue() == 0) {
-                Files.move(src, dest, StandardCopyOption.REPLACE_EXISTING);
-                Files.deleteIfExists(error);
-            } else {
-                Files.deleteIfExists(src);
-                Files.move(error, errorDest, StandardCopyOption.REPLACE_EXISTING);
-            }
-        } catch (IOException | InterruptedException exception) {
-            LOGGER.error("Algorithm did not run successfully.", exception);
+        String[] jvmOptions = jobRequest.getJvmOptions();
+        if (jvmOptions != null) {
+            commands.addAll(Arrays.asList(jvmOptions));
         }
 
-        return new AsyncResult<>(null);
+        Path classPath = Paths.get(userLibDir, algorithmJar);
+        commands.add("-cp");
+        commands.add(classPath.toString());
+
+        commands.add(algorithm);
+
+        Path datasetPath = Paths.get(userDataDir, dataset);
+        commands.add("--data");
+        commands.add(datasetPath.toString());
+
+        commands.addAll(Arrays.asList(jobRequest.getAlgoParams()));
+
+        String fileName = String.format("%s_%s_%d", algoName, dataset, System.currentTimeMillis());
+        commands.add("--out-filename");
+        commands.add(fileName);
+
+        StringBuilder buf = new StringBuilder();
+        commands.forEach(cmd -> {
+            buf.append(cmd);
+            buf.append(";");
+        });
+        buf.deleteCharAt(buf.length() - 1);
+
+        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+        JobQueueInfo jobQueueInfo = new JobQueueInfo();
+        jobQueueInfo.setAddedTime(new Date(System.currentTimeMillis()));
+        jobQueueInfo.setAlgorName(algoName);
+        jobQueueInfo.setCommands(buf.toString());
+        jobQueueInfo.setFileName(fileName);
+        jobQueueInfo.setOutputDirectory(userOutputDir);
+        jobQueueInfo.setStatus(0);
+        jobQueueInfo.setTmpDirectory(userTempDir);
+        jobQueueInfo.setUserAccounts(Collections.singleton(userAccount));
+
+        jobQueueInfo = jobQueueInfoService.saveJobIntoQueue(jobQueueInfo);
+        LOGGER.info("Add Job into Queue: " + jobQueueInfo.getId());
     }
 
 }
