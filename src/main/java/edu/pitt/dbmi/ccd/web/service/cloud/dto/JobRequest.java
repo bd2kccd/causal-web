@@ -16,25 +16,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.model.algo;
+
+package edu.pitt.dbmi.ccd.web.service.cloud.dto;
 
 /**
  *
- * Apr 4, 2015 8:01:48 AM
+ * Aug 23, 2015 5:39:12 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public abstract class AlgorithmRunInfo {
+public class JobRequest {
+    
+    private String algorName;
+    
+    private String dataset;
+    
+    private String[] command;
 
-    protected String dataset;
+    public JobRequest() {
+    }
 
-    protected boolean verbose;
+    public String getAlgorName() {
+        return algorName;
+    }
 
-    protected String jvmOptions;
-
-    protected boolean runOnPsc;
-
-    public AlgorithmRunInfo() {
+    public void setAlgorName(String algorName) {
+        this.algorName = algorName;
     }
 
     public String getDataset() {
@@ -45,28 +52,12 @@ public abstract class AlgorithmRunInfo {
         this.dataset = dataset;
     }
 
-    public Boolean getVerbose() {
-        return verbose;
+    public String[] getCommand() {
+        return command;
     }
 
-    public void setVerbose(Boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    public String getJvmOptions() {
-        return jvmOptions;
-    }
-
-    public void setJvmOptions(String jvmOptions) {
-        this.jvmOptions = jvmOptions;
-    }
-
-    public Boolean getRunOnPsc() {
-        return runOnPsc;
-    }
-
-    public void setRunOnPsc(Boolean runOnPsc) {
-        this.runOnPsc = runOnPsc;
+    public void setCommand(String[] command) {
+        this.command = command;
     }
 
 }

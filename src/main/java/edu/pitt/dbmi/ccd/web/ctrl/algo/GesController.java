@@ -109,43 +109,57 @@ public class GesController extends AbstractAlgorithmController implements ViewPa
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
         List<String> commands = new LinkedList<>();
-        commands.add("java");
+        if (info.getRunOnPsc()) {
+            commands.add("--penalty-discount");
+            commands.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));
 
-        String jvmOptions = info.getJvmOptions().trim();
-        if (jvmOptions.length() > 0) {
-            commands.addAll(Arrays.asList(jvmOptions.split("\\s+")));
-        }
+            commands.add("--depth");
+            commands.add(String.valueOf(info.getDepth().intValue()));
 
-        Path classPath = Paths.get(appUser.getLibDirectory(), algorithmJar);
-        commands.add("-cp");
-        commands.add(classPath.toString());
-        commands.add(ges);
+            if (info.getVerbose()) {
+                commands.add("--verbose");
+            }
 
-        Path dataset = Paths.get(appUser.getDataDirectory(), info.getDataset());
-        commands.add("--data");
-        commands.add(dataset.toString());
+            algorithmService.runRemotely("ges", info.getDataset(), commands, appUser.getUsername());
+        } else {
+            commands.add("java");
 
-        commands.add("--delimiter");
-        commands.add(getFileDelimiter(appUser.getDataDirectory(), info.getDataset()));
+            String jvmOptions = info.getJvmOptions().trim();
+            if (jvmOptions.length() > 0) {
+                commands.addAll(Arrays.asList(jvmOptions.split("\\s+")));
+            }
 
-        commands.add("--penalty-discount");
-        commands.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));
+            Path classPath = Paths.get(appUser.getLibDirectory(), algorithmJar);
+            commands.add("-cp");
+            commands.add(classPath.toString());
+            commands.add(ges);
 
-        commands.add("--depth");
-        commands.add(String.valueOf(info.getDepth().intValue()));
+            Path dataset = Paths.get(appUser.getDataDirectory(), info.getDataset());
+            commands.add("--data");
+            commands.add(dataset.toString());
 
-        if (info.getVerbose()) {
-            commands.add("--verbose");
-        }
+            commands.add("--delimiter");
+            commands.add(getFileDelimiter(appUser.getDataDirectory(), info.getDataset()));
 
-        String fileName = String.format("ges_%s_%d", info.getDataset(), System.currentTimeMillis());
-        commands.add("--out-filename");
-        commands.add(fileName);
+            commands.add("--penalty-discount");
+            commands.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));
 
-        try {
-            algorithmService.runAlgorithm(commands, fileName, appUser.getTmpDirectory(), appUser.getResultDirectory());
-        } catch (Exception exception) {
-            LOGGER.error("Unable to run GES.", exception);
+            commands.add("--depth");
+            commands.add(String.valueOf(info.getDepth().intValue()));
+
+            if (info.getVerbose()) {
+                commands.add("--verbose");
+            }
+
+            String fileName = String.format("ges_%s_%d", info.getDataset(), System.currentTimeMillis());
+            commands.add("--out-filename");
+            commands.add(fileName);
+
+            try {
+                algorithmService.runAlgorithm(commands, fileName, appUser.getTmpDirectory(), appUser.getResultDirectory());
+            } catch (Exception exception) {
+                LOGGER.error("Unable to run GES.", exception);
+            }
         }
 
         model.addAttribute("title", "GES is Running");

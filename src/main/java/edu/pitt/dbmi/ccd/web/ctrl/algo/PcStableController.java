@@ -109,43 +109,57 @@ public class PcStableController extends AbstractAlgorithmController implements V
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
         List<String> commands = new LinkedList<>();
-        commands.add("java");
+        if (info.getRunOnPsc()) {
+            commands.add("--alpha");
+            commands.add(String.valueOf(info.getAlpha().doubleValue()));
 
-        String jvmOptions = info.getJvmOptions().trim();
-        if (jvmOptions.length() > 0) {
-            commands.addAll(Arrays.asList(jvmOptions.split("\\s+")));
-        }
+            commands.add("--depth");
+            commands.add(String.valueOf(info.getDepth().intValue()));
 
-        Path classPath = Paths.get(appUser.getLibDirectory(), algorithmJar);
-        commands.add("-cp");
-        commands.add(classPath.toString());
-        commands.add(pcStable);
+            if (info.getVerbose()) {
+                commands.add("--verbose");
+            }
 
-        Path dataset = Paths.get(appUser.getDataDirectory(), info.getDataset());
-        commands.add("--data");
-        commands.add(dataset.toString());
+            algorithmService.runRemotely("pcstable", info.getDataset(), commands, appUser.getUsername());
+        } else {
+            commands.add("java");
 
-        commands.add("--delimiter");
-        commands.add(getFileDelimiter(appUser.getDataDirectory(), info.getDataset()));
+            String jvmOptions = info.getJvmOptions().trim();
+            if (jvmOptions.length() > 0) {
+                commands.addAll(Arrays.asList(jvmOptions.split("\\s+")));
+            }
 
-        commands.add("--alpha");
-        commands.add(String.valueOf(info.getAlpha().doubleValue()));
+            Path classPath = Paths.get(appUser.getLibDirectory(), algorithmJar);
+            commands.add("-cp");
+            commands.add(classPath.toString());
+            commands.add(pcStable);
 
-        commands.add("--depth");
-        commands.add(String.valueOf(info.getDepth().intValue()));
+            Path dataset = Paths.get(appUser.getDataDirectory(), info.getDataset());
+            commands.add("--data");
+            commands.add(dataset.toString());
 
-        if (info.getVerbose()) {
-            commands.add("--verbose");
-        }
+            commands.add("--delimiter");
+            commands.add(getFileDelimiter(appUser.getDataDirectory(), info.getDataset()));
 
-        String fileName = String.format("pc-stable_%s_%d", info.getDataset(), System.currentTimeMillis());
-        commands.add("--out-filename");
-        commands.add(fileName);
+            commands.add("--alpha");
+            commands.add(String.valueOf(info.getAlpha().doubleValue()));
 
-        try {
-            algorithmService.runAlgorithm(commands, fileName, appUser.getTmpDirectory(), appUser.getResultDirectory());
-        } catch (Exception exception) {
-            LOGGER.error("Unable to run PC-Stable.", exception);
+            commands.add("--depth");
+            commands.add(String.valueOf(info.getDepth().intValue()));
+
+            if (info.getVerbose()) {
+                commands.add("--verbose");
+            }
+
+            String fileName = String.format("pc-stable_%s_%d", info.getDataset(), System.currentTimeMillis());
+            commands.add("--out-filename");
+            commands.add(fileName);
+
+            try {
+                algorithmService.runAlgorithm(commands, fileName, appUser.getTmpDirectory(), appUser.getResultDirectory());
+            } catch (Exception exception) {
+                LOGGER.error("Unable to run PC-Stable.", exception);
+            }
         }
 
         model.addAttribute("title", "PC-Stable is Running");

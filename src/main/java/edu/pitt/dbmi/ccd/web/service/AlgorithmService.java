@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.service;
 
+import edu.pitt.dbmi.ccd.web.service.cloud.dto.JobRequest;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,9 +28,13 @@ import java.util.List;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 /**
  *
@@ -42,7 +47,31 @@ public class AlgorithmService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmService.class);
 
-    public AlgorithmService() {
+    private final String appId;
+
+    private final String userAlgorithmJobUri;
+
+    @Autowired(required = true)
+    public AlgorithmService(
+            @Value("${ccd.rest.appId:1}") String appId,
+            @Value("${ccd.job.algorithm.uri:http://localhost:9000/ccd-ws/job/submit/usr}") String userAlgorithmJobUri) {
+        this.appId = appId;
+        this.userAlgorithmJobUri = userAlgorithmJobUri;
+    }
+
+    public void runRemotely(String algorName, String dataset, List<String> commands, String username) {
+        JobRequest jobRequest = new JobRequest();
+        jobRequest.setAlgorName(algorName);
+        jobRequest.setCommand(commands.toArray(new String[commands.size()]));
+        jobRequest.setDataset(dataset);
+
+        String uri = String.format("%s/%s?appId=%s", userAlgorithmJobUri, username, appId);
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            restTemplate.postForEntity(uri, jobRequest, null);
+        } catch (RestClientException exception) {
+            LOGGER.error(exception.getMessage());
+        }
     }
 
     @Async
