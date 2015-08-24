@@ -108,20 +108,27 @@ public class PcStableController extends AbstractAlgorithmController implements V
             @ModelAttribute("algoInfo") final PcStableRunInfo info,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        List<String> commands = new LinkedList<>();
         if (info.getRunOnPsc()) {
-            commands.add("--alpha");
-            commands.add(String.valueOf(info.getAlpha().doubleValue()));
+            List<String> algoOptions = new LinkedList<>();
+            algoOptions.add("--alpha");
+            algoOptions.add(String.valueOf(info.getAlpha().doubleValue()));
 
-            commands.add("--depth");
-            commands.add(String.valueOf(info.getDepth().intValue()));
+            algoOptions.add("--depth");
+            algoOptions.add(String.valueOf(info.getDepth().intValue()));
 
             if (info.getVerbose()) {
-                commands.add("--verbose");
+                algoOptions.add("--verbose");
             }
 
-            algorithmService.runRemotely("pcstable", info.getDataset(), commands, appUser.getUsername());
+            String[] jvmOptions = null;
+            String jvmOpts = info.getJvmOptions().trim();
+            if (jvmOpts.length() > 0) {
+                jvmOptions = jvmOpts.split("\\s+");
+            }
+
+            algorithmService.runRemotely("pcstable", info.getDataset(), algoOptions.toArray(new String[algoOptions.size()]), jvmOptions, appUser.getUsername());
         } else {
+            List<String> commands = new LinkedList<>();
             commands.add("java");
 
             String jvmOptions = info.getJvmOptions().trim();

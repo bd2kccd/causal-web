@@ -16,8 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-
 package edu.pitt.dbmi.ccd.web.service.cloud.dto;
+
+import javax.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  *
@@ -26,12 +28,20 @@ package edu.pitt.dbmi.ccd.web.service.cloud.dto;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class JobRequest {
-    
+
+    @NotNull
+    @NotEmpty
     private String algorName;
-    
+
+    @NotNull
+    @NotEmpty
     private String dataset;
-    
-    private String[] command;
+
+    private String[] jvmOptions;
+
+    @NotNull
+    @NotEmpty
+    private String[] algoParams;
 
     public JobRequest() {
     }
@@ -52,12 +62,20 @@ public class JobRequest {
         this.dataset = dataset;
     }
 
-    public String[] getCommand() {
-        return command;
+    public String[] getJvmOptions() {
+        return jvmOptions;
     }
 
-    public void setCommand(String[] command) {
-        this.command = command;
+    public void setJvmOptions(String[] jvmOptions) {
+        this.jvmOptions = jvmOptions;
+    }
+
+    public String[] getAlgoParams() {
+        return algoParams;
+    }
+
+    public void setAlgoParams(String[] algoParams) {
+        this.algoParams = algoParams;
     }
 
 }

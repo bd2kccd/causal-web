@@ -110,17 +110,24 @@ public class GesController extends AbstractAlgorithmController implements ViewPa
             final Model model) {
         List<String> commands = new LinkedList<>();
         if (info.getRunOnPsc()) {
+            List<String> algoOptions = new LinkedList<>();
             commands.add("--penalty-discount");
-            commands.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));
+            algoOptions.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));
 
-            commands.add("--depth");
-            commands.add(String.valueOf(info.getDepth().intValue()));
+            algoOptions.add("--depth");
+            algoOptions.add(String.valueOf(info.getDepth().intValue()));
 
             if (info.getVerbose()) {
-                commands.add("--verbose");
+                algoOptions.add("--verbose");
             }
 
-            algorithmService.runRemotely("ges", info.getDataset(), commands, appUser.getUsername());
+            String[] jvmOptions = null;
+            String jvmOpts = info.getJvmOptions().trim();
+            if (jvmOpts.length() > 0) {
+                jvmOptions = jvmOpts.split("\\s+");
+            }
+
+            algorithmService.runRemotely("ges", info.getDataset(), algoOptions.toArray(new String[algoOptions.size()]), jvmOptions, appUser.getUsername());
         } else {
             commands.add("java");
 

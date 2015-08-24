@@ -59,10 +59,11 @@ public class AlgorithmService {
         this.userAlgorithmJobUri = userAlgorithmJobUri;
     }
 
-    public void runRemotely(String algorName, String dataset, List<String> commands, String username) {
+    public void runRemotely(String algorName, String dataset, String[] algoParams, String[] jvmOptions, String username) {
         JobRequest jobRequest = new JobRequest();
         jobRequest.setAlgorName(algorName);
-        jobRequest.setCommand(commands.toArray(new String[commands.size()]));
+        jobRequest.setJvmOptions(jvmOptions);
+        jobRequest.setAlgoParams(algoParams);
         jobRequest.setDataset(dataset);
 
         String uri = String.format("%s/%s?appId=%s", userAlgorithmJobUri, username, appId);
