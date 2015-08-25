@@ -25,7 +25,7 @@ $(document).ready(function () {
     $('#login').validate({
         rules: {
             username: {
-                minlength: 4,
+                minlength: 3,
                 nowhitespace: true,
                 required: true
             },
@@ -59,7 +59,7 @@ $(document).ready(function () {
     $('#registration').validate({
         rules: {
             username: {
-                minlength: 4,
+                minlength: 3,
                 nowhitespace: true,
                 required: true
             },
