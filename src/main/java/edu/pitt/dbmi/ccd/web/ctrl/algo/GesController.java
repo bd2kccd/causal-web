@@ -135,9 +135,7 @@ public class GesController extends AbstractAlgorithmController implements ViewPa
             algorithmService.runLocally(ges, algorithmJar, jobRequest, appUser);
         }
 
-        model.addAttribute("title", "GES is Running");
-
-        return ALGO_RUN_CONFIRM_VIEW;
+        return REDIRECT_JOB_QUEUE;
     }
 
 }
