@@ -350,9 +350,9 @@ public class DataService {
         dataFile.setDataFileInfo(dataFileInfo);
         dataFileService.saveDataFile(dataFile);
 
-        fileInfo.add(new AttributeValue("Row:", String.valueOf(dataFileInfo.getNumOfRows())));
-        fileInfo.add(new AttributeValue("Column:", String.valueOf(dataFileInfo.getNumOfColumns())));
-        fileInfo.add(new AttributeValue("MD5:", dataFileInfo.getMd5checkSum()));
+        fileInfo.add(new AttributeValue("Row(s):", String.valueOf(dataFileInfo.getNumOfRows())));
+        fileInfo.add(new AttributeValue("Column(s):", String.valueOf(dataFileInfo.getNumOfColumns())));
+        fileInfo.add(new AttributeValue("File Checksum:", dataFileInfo.getMd5checkSum()));
 //        fileInfo.add(new AttributeValue("Missing Value:", dataFileInfo.getMissingValue() ? "Yes" : "No"));
 
         return fileInfo;

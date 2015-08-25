@@ -32,7 +32,7 @@
                             <div class="stepwizard-row setup-panel">
                                 <div class="stepwizard-step">
                                     <button id="step1btn" class="btn btn-primary btn-circle" onclick="window.location.href='#step1'">1</button>
-                                    <p>Choose Dataset</p>
+                                    <p>Select Dataset</p>
                                 </div>
                                 <div class="stepwizard-step">
                                     <button id="step2btn" class="btn btn-default btn-circle" onclick="window.location.href='#step2'" disabled="disabled">2</button>
@@ -52,7 +52,7 @@
                             <div class="row setup-content" id="step1">
                                 <div class="col-xs-12">
                                     <div class="col-md-12">
-                                        <h3>Step 1: Choose Your Dataset</h3>
+                                        <h3>Step 1: Select Dataset</h3>
                                         <div class="panel panel-primary">
                                             <div class="panel-heading">
                                                 <h3 class="panel-title">Dataset</h3>
@@ -80,7 +80,7 @@
                             <div class="row setup-content" id="step2">
                                 <div class="col-xs-12">
                                     <div class="col-md-12">
-                                        <h3> Step 2: Parameters</h3>
+                                        <h3> Step 2: Set Parameters</h3>
                                         <div class="panel panel-primary">
                                             <div class="panel-heading">
                                                 <h3 class="panel-title">Algorithm Parameters</h3>
@@ -110,7 +110,7 @@
                                             </div>
                                             <div class="panel-body" style="display: none;">
                                                 <div class="form-group">
-                                                    <label for="jvmOptions" class="control-label">JVM Options</label>
+                                                    <label for="jvmOptions" class="control-label">Advanced Options (JVM)</label>
                                                     <input type="text" id="jvmOptions" name="jvmOptions" class="form-control" placeholder="example: -Xmx1024M" ng-model="jvmOptions" th:attr="ng-init='jvmOptions=' + *{jvmOptions}" th:field="*{jvmOptions}" />
                                                 </div>
                                             </div>
@@ -122,7 +122,7 @@
                             <div class="row setup-content" id="step3">
                                 <div class="col-xs-12">
                                     <div class="col-md-12">
-                                        <h3> Step 3: Run the Algorithm</h3>
+                                        <h3> Step 3: Run Algorithm</h3>
                                         <div class="panel panel-primary">
                                             <div class="panel-heading">
                                                 <h3 class="panel-title">Summary</h3>
@@ -148,7 +148,7 @@
                                                                 <td ng-bind="verbose"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-2">JVM Options:</td>
+                                                                <td class="col-md-2">Advanced Options:</td>
                                                                 <td ng-bind="jvmOptions"></td>
                                                             </tr>
                                                         </tbody>
