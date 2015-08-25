@@ -58,21 +58,24 @@ public class AlgorithmService {
 
     private final String userAlgorithmJobUri;
 
+    private final RestTemplate restTemplate;
+
     @Autowired(required = true)
     public AlgorithmService(
             UserAccountService userAccountService,
             JobQueueInfoService jobQueueInfoService,
             @Value("${ccd.rest.appId:1}") String appId,
-            @Value("${ccd.job.algorithm.uri:http://localhost:9000/ccd-ws/job/algorithm}") String userAlgorithmJobUri) {
+            @Value("${ccd.job.algorithm.uri:http://localhost:9000/ccd-ws/job/algorithm}") String userAlgorithmJobUri,
+            RestTemplate restTemplate) {
         this.userAccountService = userAccountService;
         this.jobQueueInfoService = jobQueueInfoService;
         this.appId = appId;
         this.userAlgorithmJobUri = userAlgorithmJobUri;
+        this.restTemplate = restTemplate;
     }
 
     public void runRemotely(JobRequest jobRequest, AppUser appUser) {
         String uri = String.format("%s/submit?usr=%s&appId=%s", userAlgorithmJobUri, appUser.getUsername(), appId);
-        RestTemplate restTemplate = new RestTemplate();
         try {
             restTemplate.postForEntity(uri, jobRequest, null);
         } catch (RestClientException exception) {

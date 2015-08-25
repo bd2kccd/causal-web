@@ -67,16 +67,20 @@ public class JobQueueController implements ViewPath {
 
     private final String appId;
 
+    private final RestTemplate restTemplate;
+
     @Autowired(required = true)
     public JobQueueController(
             JobQueueInfoService jobQueueInfoService,
             UserAccountService userAccountService,
             @Value("${ccd.job.algorithm.uri:http://localhost:9000/ccd-ws/job/algorithm}") String userAlgorithmJobUri,
-            @Value("${ccd.rest.appId:1}") String appId) {
+            @Value("${ccd.rest.appId:1}") String appId,
+            RestTemplate restTemplate) {
         this.jobQueueInfoService = jobQueueInfoService;
         this.userAccountService = userAccountService;
         this.userAlgorithmJobUri = userAlgorithmJobUri;
         this.appId = appId;
+        this.restTemplate = restTemplate;
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -95,7 +99,6 @@ public class JobQueueController implements ViewPath {
 
         List<AlgorithmJob> remoteListItems = new ArrayList<>();
         String uri = String.format("%s?usr=%s&appId=%s", userAlgorithmJobUri, appUser.getUsername(), appId);
-        RestTemplate restTemplate = new RestTemplate();
         try {
             ResponseEntity<List> responseEntity = restTemplate.getForEntity(uri, List.class);
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
@@ -135,7 +138,6 @@ public class JobQueueController implements ViewPath {
             @ModelAttribute("appUser") AppUser appUser,
             Model model) {
         String uri = String.format("%s/remove/%d?usr=%s&appId=%s", userAlgorithmJobUri, id, appUser.getUsername(), appId);
-        RestTemplate restTemplate = new RestTemplate();
         try {
             restTemplate.delete(uri);
         } catch (RestClientException exception) {

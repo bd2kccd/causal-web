@@ -41,6 +41,8 @@ public class CloudDataService {
 
     private final Boolean webapp;
 
+    private final RestTemplate restTemplate;
+
     private final String userDataHashUri;
 
     private final String appId;
@@ -48,9 +50,11 @@ public class CloudDataService {
     @Autowired(required = true)
     public CloudDataService(
             Boolean webapp,
+            RestTemplate restTemplate,
             @Value("${ccd.data.usr.hash.uri:http://localhost:8080/ccd-ws/data/usr}") String userDataHashUri,
             @Value("${ccd.rest.appId:1}") String appId) {
         this.webapp = webapp;
+        this.restTemplate = restTemplate;
         this.userDataHashUri = userDataHashUri;
         this.appId = appId;
     }
@@ -60,7 +64,6 @@ public class CloudDataService {
 
         if (!webapp) {
             try {
-                RestTemplate restTemplate = new RestTemplate();
                 Set<String> set = restTemplate.getForObject(String.format("%s/%s?appId=%s", userDataHashUri, username, appId), Set.class);
                 hashes.addAll(set);
             } catch (RestClientException exception) {

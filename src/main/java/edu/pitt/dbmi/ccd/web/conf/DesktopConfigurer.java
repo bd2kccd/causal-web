@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.web.client.RestTemplate;
 
 /**
  *
@@ -43,8 +44,9 @@ public class DesktopConfigurer {
     @Bean
     public MailService mailService(
             @Value("${ccd.mail.feedback.uri:http://localhost:9000/ccd-ws/mail/feedback}") String feedbackUri,
-            @Value("${ccd.rest.appId:1}") String appId) {
-        return new DesktopMailService(feedbackUri, appId);
+            @Value("${ccd.rest.appId:1}") String appId,
+            RestTemplate restTemplate) {
+        return new DesktopMailService(feedbackUri, appId, restTemplate);
     }
 
 }

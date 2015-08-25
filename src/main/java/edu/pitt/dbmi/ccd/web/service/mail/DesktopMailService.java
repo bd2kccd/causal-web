@@ -37,9 +37,12 @@ public class DesktopMailService implements MailService {
 
     private final String appId;
 
-    public DesktopMailService(String feedbackUri, String appId) {
+    private final RestTemplate restTemplate;
+
+    public DesktopMailService(String feedbackUri, String appId, RestTemplate restTemplate) {
         this.feedbackUri = feedbackUri;
         this.appId = appId;
+        this.restTemplate = restTemplate;
     }
 
     @Override

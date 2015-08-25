@@ -55,21 +55,24 @@ public class CloudResultFileService {
 
     private final String userResultFileDeleteUri;
 
+    private final RestTemplate restTemplate;
+
     @Autowired(required = true)
     public CloudResultFileService(
             @Value("${ccd.rest.appId:1}") String appId,
             @Value("${ccd.results.usr.uri:http://localhost:8080/ccd-ws/algorithm/results/usr}") String userResultsUri,
             @Value("${ccd.results.file.usr.uri:http://localhost:8080/ccd-ws/algorithm/results/file/usr}") String userResultFileDownloadUri,
-            @Value("${ccd.results.file.delete.usr.uri:http://localhost:8080/ccd-ws/algorithm/results/file/delete/usr}") String userResultFileDeleteUri) {
+            @Value("${ccd.results.file.delete.usr.uri:http://localhost:8080/ccd-ws/algorithm/results/file/delete/usr}") String userResultFileDeleteUri,
+            RestTemplate restTemplate) {
         this.appId = appId;
         this.userResultsUri = userResultsUri;
         this.userResultFileDownloadUri = userResultFileDownloadUri;
         this.userResultFileDeleteUri = userResultFileDeleteUri;
+        this.restTemplate = restTemplate;
     }
 
     public byte[] downloadFile(String username, String fileName) {
         String uri = String.format("%s/%s?appId=%s&fileName=%s", userResultFileDownloadUri, username, appId, fileName);
-        RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<ByteArrayResource> response = restTemplate.getForEntity(uri, ByteArrayResource.class);
 
         byte[] data = null;
@@ -83,7 +86,6 @@ public class CloudResultFileService {
 
     public void deleteFile(String username, String fileName) {
         String uri = String.format("%s/%s?appId=%s&fileName=%s", userResultFileDeleteUri, username, appId, fileName);
-        RestTemplate restTemplate = new RestTemplate();
         restTemplate.delete(uri);
     }
 
@@ -93,7 +95,6 @@ public class CloudResultFileService {
         String[] keys = {"fileName", "size", "creationDate"};
 
         try {
-            RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<List> entity = restTemplate.getForEntity(String.format("%s/%s?appId=%s", userResultsUri, username, appId), List.class);
             List response = entity.getBody();
             response.forEach(i -> {
