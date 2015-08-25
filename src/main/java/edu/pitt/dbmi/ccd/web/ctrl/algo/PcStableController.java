@@ -136,9 +136,7 @@ public class PcStableController extends AbstractAlgorithmController implements V
             algorithmService.runLocally(pcStable, algorithmJar, jobRequest, appUser);
         }
 
-        model.addAttribute("title", "PC-Stable is Running");
-
-        return ALGO_RUN_CONFIRM_VIEW;
+        return REDIRECT_JOB_QUEUE;
     }
 
 }
