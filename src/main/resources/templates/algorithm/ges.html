@@ -159,7 +159,13 @@
                                                 <div class="form-group">
                                                     <div class="checkbox">
                                                         <label for="runOnPsc" class="control-label">
-                                                            <input type="checkbox" id="runOnPsc" name="runOnPsc" ng-model="runOnPsc" th:attr="ng-init='psc=' + *{runOnPsc}" th:field="*{runOnPsc}" /> Run on PSC
+	                                                        <div th:if="${appUser.webServiceOnline}">
+	                                                            <input type="checkbox" id="runOnPsc" name="runOnPsc" ng-model="runOnPsc" th:attr="ng-init='psc=' + *{runOnPsc}" th:field="*{runOnPsc}" />
+	                                                        </div>
+	                                                        <div th:if="${appUser.webServiceOnline} == false">
+	                                                            <input type="checkbox" id="runOnPsc" name="runOnPsc" ng-model="runOnPsc" th:attr="ng-init='psc=' + *{runOnPsc}" th:field="*{runOnPsc}" disabled="disabled" />
+	                                                        </div>
+                                                             Run on <i class="fa fa-cloud" th:style="${appUser.webServiceOnline} ? 'color:green;' : 'color:red;'"></i> PSC <span th:text="'(' + (${appUser.webServiceOnline} ? 'Online' : 'Offline') + ' - Last Updated: ' + ${appUser.lastTimeWebServiceMonitored} + ')'"> Offline</span>
                                                         </label>
                                                     </div>
                                                 </div>

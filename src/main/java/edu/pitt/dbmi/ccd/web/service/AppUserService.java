@@ -18,9 +18,11 @@
  */
 package edu.pitt.dbmi.ccd.web.service;
 
+import edu.pitt.dbmi.ccd.commons.file.FilePrint;
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.service.cloud.CloudService;
 import edu.pitt.dbmi.ccd.web.util.FileUtility;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -52,6 +54,8 @@ public class AppUserService {
     final String libFolder;
 
     final String tmpFolder;
+    
+    private final CloudService cloudService;
 
     @Autowired(required = true)
     public AppUserService(
@@ -59,12 +63,14 @@ public class AppUserService {
             @Value("${ccd.data.folder:data}") String dataFolder,
             @Value("${ccd.result.folder:result}") String resultFolder,
             @Value("${ccd.lib.folder:lib}") String libFolder,
-            @Value("${ccd.tmp.folder:tmp}") String tmpFolder) {
+            @Value("${ccd.tmp.folder:tmp}") String tmpFolder,
+            CloudService cloudService) {
         this.webapp = webapp;
         this.dataFolder = dataFolder;
         this.resultFolder = resultFolder;
         this.libFolder = libFolder;
         this.tmpFolder = tmpFolder;
+        this.cloudService = cloudService;
     }
 
     public AppUser createAppUser(final UserAccount userAccount) {
@@ -99,6 +105,11 @@ public class AppUserService {
         appUser.setLibDirectory(libDir.toString());
         appUser.setResultDirectory(resultDir.toString());
         appUser.setTmpDirectory(tmpDir.toString());
+        
+        if(!webapp){
+        	appUser.setWebServiceOnline(cloudService.isWebServiceOnline());
+        	appUser.setLastTimeWebServiceMonitored(FilePrint.fileTimestamp(System.currentTimeMillis()));
+        }
 
         return appUser;
     }

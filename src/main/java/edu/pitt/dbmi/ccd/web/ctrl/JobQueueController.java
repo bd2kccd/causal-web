@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl;
 
+import edu.pitt.dbmi.ccd.commons.file.FilePrint;
 import edu.pitt.dbmi.ccd.db.entity.JobQueueInfo;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.JobQueueInfoService;
@@ -25,6 +26,9 @@ import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.queue.model.AlgorithmJob;
 import edu.pitt.dbmi.ccd.queue.util.JobQueueUtility;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.service.cloud.CloudService;
+import scala.annotation.meta.setter;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -62,6 +66,8 @@ public class JobQueueController implements ViewPath {
     private final JobQueueInfoService jobQueueInfoService;
 
     private final UserAccountService userAccountService;
+    
+    private final CloudService cloudService;
 
     private final String userAlgorithmJobUri;
 
@@ -73,11 +79,13 @@ public class JobQueueController implements ViewPath {
     public JobQueueController(
             JobQueueInfoService jobQueueInfoService,
             UserAccountService userAccountService,
+            CloudService cloudService,
             @Value("${ccd.job.algorithm.uri:http://localhost:9000/ccd-ws/job/algorithm}") String userAlgorithmJobUri,
             @Value("${ccd.rest.appId:1}") String appId,
             RestTemplate restTemplate) {
         this.jobQueueInfoService = jobQueueInfoService;
         this.userAccountService = userAccountService;
+        this.cloudService = cloudService;
         this.userAlgorithmJobUri = userAlgorithmJobUri;
         this.appId = appId;
         this.restTemplate = restTemplate;
@@ -98,26 +106,36 @@ public class JobQueueController implements ViewPath {
         model.addAttribute("jobList", listItems);
 
         List<AlgorithmJob> remoteListItems = new ArrayList<>();
-        String uri = String.format("%s?usr=%s&appId=%s", userAlgorithmJobUri, appUser.getUsername(), appId);
-        try {
-            ResponseEntity<List> responseEntity = restTemplate.getForEntity(uri, List.class);
-            if (responseEntity.getStatusCode() == HttpStatus.OK) {
-                String[] keys = {"id", "algorName", "fileName", "status", "addedTime"};
-                List response = responseEntity.getBody();
-                response.forEach(i -> {
-                    Map map = (Map) i;
-                    long id = (Integer) map.get(keys[0]);
-                    String algorName = (String) map.get(keys[1]);
-                    String fileName = (String) map.get(keys[2]);
-                    String status = (String) map.get(keys[3]);
-                    String addedTime = (String) map.get(keys[4]);
-                    remoteListItems.add(new AlgorithmJob(id, algorName, fileName, status, addedTime));
-                });
+        
+        //Check whether or not the web service is up
+        if(!appUser.getWebUser()){            
+        	appUser.setWebServiceOnline(false);
+            String uri = String.format("%s?usr=%s&appId=%s", userAlgorithmJobUri, appUser.getUsername(), appId);
+            try {
+            	if(cloudService.isWebServiceOnline()){
+            		appUser.setWebServiceOnline(true);
+            	}
+                ResponseEntity<List> responseEntity = restTemplate.getForEntity(uri, List.class);
+                if (responseEntity.getStatusCode() == HttpStatus.OK) {
+                    String[] keys = {"id", "algorName", "fileName", "status", "addedTime"};
+                    List response = responseEntity.getBody();
+                    response.forEach(i -> {
+                        Map map = (Map) i;
+                        long id = (Integer) map.get(keys[0]);
+                        String algorName = (String) map.get(keys[1]);
+                        String fileName = (String) map.get(keys[2]);
+                        String status = (String) map.get(keys[3]);
+                        String addedTime = (String) map.get(keys[4]);
+                        remoteListItems.add(new AlgorithmJob(id, algorName, fileName, status, addedTime));
+                    });
+                }
+            } catch (RestClientException exception) {
+                LOGGER.error(exception.getMessage());
             }
-        } catch (RestClientException exception) {
-            LOGGER.error(exception.getMessage());
+            appUser.setLastTimeWebServiceMonitored(FilePrint.fileTimestamp(System.currentTimeMillis()));
+            model.addAttribute("appUser", appUser);
         }
-
+        
         model.addAttribute("remoteJobList", remoteListItems);
 
         return JOB_QUEUE;

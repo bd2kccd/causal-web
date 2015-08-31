@@ -18,9 +18,12 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.data;
 
+import edu.pitt.dbmi.ccd.commons.file.FilePrint;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.DataService;
+import edu.pitt.dbmi.ccd.web.service.cloud.CloudService;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -51,13 +54,25 @@ public class DataManagementController implements ViewPath {
 
     private final DataService dataService;
 
+    private final CloudService cloudService;
+
     @Autowired(required = true)
-    public DataManagementController(DataService dataService) {
+    public DataManagementController(DataService dataService, CloudService cloudService) {
         this.dataService = dataService;
+        this.cloudService = cloudService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
     public String showDatasetView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+    	if(!appUser.getWebUser()){
+    		appUser.setWebServiceOnline(false);
+    		if(cloudService.isWebServiceOnline()){
+        		appUser.setWebServiceOnline(true);
+        	}
+    		appUser.setLastTimeWebServiceMonitored(FilePrint.fileTimestamp(System.currentTimeMillis()));
+            model.addAttribute("appUser", appUser);
+    	}
+    	
         model.addAttribute("itemList", dataService.createListItem(appUser.getUsername(), appUser.getDataDirectory()));
 
         return DATASET_VIEW;

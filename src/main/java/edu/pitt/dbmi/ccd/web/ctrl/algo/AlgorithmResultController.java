@@ -25,6 +25,8 @@ import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.ResultFileInfo;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
+import edu.pitt.dbmi.ccd.web.service.cloud.CloudService;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -69,13 +71,25 @@ public class AlgorithmResultController implements ViewPath {
 
     private final Boolean webapp;
 
+    private final CloudService cloudService;
+
     @Autowired(required = true)
-    public AlgorithmResultController(Boolean webapp) {
+    public AlgorithmResultController(Boolean webapp, CloudService cloudService) {
         this.webapp = webapp;
+        this.cloudService = cloudService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
     public String showRunResultsView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+    	if(!appUser.getWebUser()){
+    		appUser.setWebServiceOnline(false);
+    		if(cloudService.isWebServiceOnline()){
+        		appUser.setWebServiceOnline(true);
+        	}
+    		appUser.setLastTimeWebServiceMonitored(FilePrint.fileTimestamp(System.currentTimeMillis()));
+            model.addAttribute("appUser", appUser);
+    	}
+    	
         try {
             List<Path> list = FileInfos.listDirectory(Paths.get(appUser.getResultDirectory()), false);
             List<Path> files = list.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());

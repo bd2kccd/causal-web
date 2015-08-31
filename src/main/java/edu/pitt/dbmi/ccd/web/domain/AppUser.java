@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Scope;
  * May 18, 2015 9:32:20 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @author Chirayu (Kong) Wongchokprasitti (chw20@pitt.edu)
  */
 @Scope("session")
 public class AppUser {
@@ -46,6 +47,10 @@ public class AppUser {
     private String lastLogin;
 
     private boolean webUser;
+    
+    private boolean webServiceOnline;
+    
+    private String lastTimeWebServiceMonitored;
 
     public AppUser() {
     }
@@ -121,5 +126,21 @@ public class AppUser {
     public void setWebUser(boolean webUser) {
         this.webUser = webUser;
     }
+
+	public boolean isWebServiceOnline() {
+		return webServiceOnline;
+	}
+
+	public void setWebServiceOnline(boolean webServiceOnline) {
+		this.webServiceOnline = webServiceOnline;
+	}
+
+	public String getLastTimeWebServiceMonitored() {
+		return lastTimeWebServiceMonitored;
+	}
+
+	public void setLastTimeWebServiceMonitored(String lastTimeWebServiceMonitored) {
+		this.lastTimeWebServiceMonitored = lastTimeWebServiceMonitored;
+	}
 
 }
