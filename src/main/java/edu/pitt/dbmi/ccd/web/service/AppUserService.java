@@ -56,10 +56,10 @@ public class AppUserService {
     @Autowired(required = true)
     public AppUserService(
             Boolean webapp,
-            @Value("${ccd.data.folder:data}") String dataFolder,
-            @Value("${ccd.result.folder:result}") String resultFolder,
-            @Value("${ccd.lib.folder:lib}") String libFolder,
-            @Value("${ccd.tmp.folder:tmp}") String tmpFolder) {
+            @Value("${ccd.folder.data:data}") String dataFolder,
+            @Value("${ccd.folder.result:result}") String resultFolder,
+            @Value("${ccd.folder.lib:lib}") String libFolder,
+            @Value("${ccd.folder.tmp:tmp}") String tmpFolder) {
         this.webapp = webapp;
         this.dataFolder = dataFolder;
         this.resultFolder = resultFolder;
