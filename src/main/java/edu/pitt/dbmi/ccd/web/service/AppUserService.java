@@ -57,7 +57,7 @@ public class AppUserService {
     public AppUserService(
             Boolean webapp,
             @Value("${ccd.folder.data:data}") String dataFolder,
-            @Value("${ccd.folder.result:result}") String resultFolder,
+            @Value("${ccd.folder.results:results}") String resultFolder,
             @Value("${ccd.folder.lib:lib}") String libFolder,
             @Value("${ccd.folder.tmp:tmp}") String tmpFolder) {
         this.webapp = webapp;
