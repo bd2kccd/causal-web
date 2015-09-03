@@ -51,10 +51,10 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr th:each="item : ${itemList}" th:class="${#strings.startsWith(item.fileName,'error')} ? 'danger'">
+                                            <tr th:each="item : ${itemList}" th:class="${item.error} ? 'danger'">
                                                 <td>
-                                                    <a href="#" th:if="${#strings.startsWith(item.fileName,'error')}" data-toggle="modal" data-target="#errorModal" th:attr="data-href=${item.onCloud} ? @{/cloud/algorithm/results/error(file=${item.fileName})} : @{/algorithm/results/error(file=${item.fileName})}" th:text="${item.fileName}"></a>
-                                                    <a href="#" th:unless="${#strings.startsWith(item.fileName,'error')}" th:href="${item.onCloud} ? @{/cloud/algorithm/results/plot(file=${item.fileName})} : @{/algorithm/results/plot(file=${item.fileName})}" th:text="${item.fileName}"></a>
+                                                    <a href="#" th:if="${item.error}" data-toggle="modal" data-target="#errorModal" th:attr="data-href=${item.onCloud} ? @{/cloud/algorithm/results/error(file=${item.fileName})} : @{/algorithm/results/error(file=${item.fileName})}" th:text="${item.fileName}"></a>
+                                                    <a href="#" th:unless="${item.error}" th:href="${item.onCloud} ? @{/cloud/algorithm/results/plot(file=${item.fileName})} : @{/algorithm/results/plot(file=${item.fileName})}" th:text="${item.fileName}"></a>
                                                 </td>
                                                 <td th:text="${item.creationDate}"></td>
                                                 <td th:text="${item.size}"></td>

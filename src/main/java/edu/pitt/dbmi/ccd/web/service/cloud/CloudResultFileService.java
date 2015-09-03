@@ -109,6 +109,7 @@ public class CloudResultFileService {
                 info.setCreationDate(FilePrint.fileTimestamp(creationTime));
                 info.setRawCreationDate(creationTime);
                 info.setOnCloud(true);
+                info.setError(filename.startsWith("error"));
 
                 list.add(info);
             });

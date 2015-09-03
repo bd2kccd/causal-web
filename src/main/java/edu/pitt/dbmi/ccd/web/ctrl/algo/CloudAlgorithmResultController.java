@@ -98,11 +98,15 @@ public class CloudAlgorithmResultController {
             List<BasicFileInfo> results = FileInfos.listBasicPathInfo(files);
             int index = 0;
             for (BasicFileInfo result : results) {
+                String fileName = result.getFilename();
+
                 ResultFileInfo fileInfo = new ResultFileInfo();
                 fileInfo.setCreationDate(FilePrint.fileTimestamp(result.getCreationTime()));
                 fileInfo.setFileName(result.getFilename());
                 fileInfo.setSize(FilePrint.humanReadableSize(result.getSize(), true));
                 fileInfo.setRawCreationDate(result.getCreationTime());
+                fileInfo.setError(fileName.startsWith("error"));
+
                 fileInfos[index++] = fileInfo;
             }
 

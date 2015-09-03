@@ -34,21 +34,25 @@ public class ResultFileInfo implements Comparable<ResultFileInfo> {
 
     private long rawCreationDate;
 
+    private boolean error;
+
     private boolean onCloud;
 
-    public ResultFileInfo(String fileName, String size, String creationDate, long rawCreationDate, boolean onCloud) {
+    public ResultFileInfo(String fileName, String size, String creationDate, long rawCreationDate, boolean error, boolean onCloud) {
         this.fileName = fileName;
         this.size = size;
         this.creationDate = creationDate;
         this.rawCreationDate = rawCreationDate;
+        this.error = error;
         this.onCloud = onCloud;
     }
 
-    public ResultFileInfo(String fileName, String size, String creationDate, long rawCreationDate) {
+    public ResultFileInfo(String fileName, String size, String creationDate, long rawCreationDate, boolean error) {
         this.fileName = fileName;
         this.size = size;
         this.creationDate = creationDate;
         this.rawCreationDate = rawCreationDate;
+        this.error = error;
     }
 
     public ResultFileInfo() {
@@ -89,6 +93,14 @@ public class ResultFileInfo implements Comparable<ResultFileInfo> {
 
     public void setRawCreationDate(long rawCreationDate) {
         this.rawCreationDate = rawCreationDate;
+    }
+
+    public boolean isError() {
+        return error;
+    }
+
+    public void setError(boolean error) {
+        this.error = error;
     }
 
     public boolean isOnCloud() {
