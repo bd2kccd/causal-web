@@ -21,12 +21,10 @@ package edu.pitt.dbmi.ccd.web.ctrl.algo;
 import edu.pitt.dbmi.ccd.commons.file.FilePrint;
 import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.ALGORITHM_RESULTS_VIEW;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.ALGORITHM_RESULT_ERROR_VIEW;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.D3_GRAPH_VIEW;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.PLOT_VIEW;
+import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.ResultFileInfo;
+import edu.pitt.dbmi.ccd.web.model.SelectedFiles;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
 import edu.pitt.dbmi.ccd.web.service.cloud.CloudResultFileService;
 import java.io.BufferedReader;
@@ -74,7 +72,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @Controller
 @SessionAttributes("appUser")
 @RequestMapping(value = "cloud/algorithm/results")
-public class CloudAlgorithmResultController {
+public class CloudAlgorithmResultController implements ViewPath {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CloudAlgorithmResultController.class);
 
@@ -83,6 +81,38 @@ public class CloudAlgorithmResultController {
     @Autowired(required = true)
     public CloudAlgorithmResultController(CloudResultFileService cloudResultFileService) {
         this.cloudResultFileService = cloudResultFileService;
+    }
+
+    @RequestMapping(method = RequestMethod.POST)
+    public String runResultAction(
+            final SelectedFiles selectedFiles,
+            @RequestParam(value = "action") final String action,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        List<String> fileNames = selectedFiles.getFiles();
+        switch (action) {
+            case "delete":
+                List<String> filesOnCloud = new LinkedList<>();
+                fileNames.forEach(fileName -> {
+                    Path file = Paths.get(appUser.getResultDirectory(), fileName);
+                    if (Files.exists(file)) {
+                        try {
+                            Files.deleteIfExists(file);
+                        } catch (IOException exception) {
+                            LOGGER.error(exception.getMessage());
+                        }
+                    } else {
+                        filesOnCloud.add(fileName);
+                    }
+                });
+                String username = appUser.getUsername();
+                filesOnCloud.forEach(fileName -> {
+                    cloudResultFileService.deleteFile(username, fileName);
+                });
+                break;
+        }
+
+        return "redirect:/cloud/algorithm/results";
     }
 
     @RequestMapping(method = RequestMethod.GET)

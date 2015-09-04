@@ -24,6 +24,7 @@ import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.ResultFileInfo;
+import edu.pitt.dbmi.ccd.web.model.SelectedFiles;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -72,6 +73,29 @@ public class AlgorithmResultController implements ViewPath {
     @Autowired(required = true)
     public AlgorithmResultController(Boolean webapp) {
         this.webapp = webapp;
+    }
+
+    @RequestMapping(method = RequestMethod.POST)
+    public String runResultAction(
+            final SelectedFiles selectedFiles,
+            @RequestParam(value = "action") final String action,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        List<String> fileNames = selectedFiles.getFiles();
+        switch (action) {
+            case "delete":
+                fileNames.forEach(fileName -> {
+                    Path file = Paths.get(appUser.getResultDirectory(), fileName);
+                    try {
+                        Files.deleteIfExists(file);
+                    } catch (IOException exception) {
+                        LOGGER.error(exception.getMessage());
+                    }
+                });
+                break;
+        }
+
+        return REDIRECT_ALGORITHM_RESULTS;
     }
 
     @RequestMapping(method = RequestMethod.GET)
