@@ -1,8 +1,8 @@
 $(document).ready(function () {
-    $("[data-toggle=tooltip]").tooltip();
+    $('[data-toggle=tooltip]').tooltip();
 
-    $("#selecctall").change(function () {
-        $(".checkResult").not("[disabled]").prop('checked', $(this).prop("checked"));
+    $('#selecctall').change(function () {
+        $('.checkResult').not('[disabled]').prop('checked', $(this).prop('checked'));
     });
 });
 
@@ -17,5 +17,6 @@ $('#errorModal').on('show.bs.modal', function (e) {
 $('.btn-ok').click(function () {
     var url = $('#resultAction').attr('action') + '?action=' + $('.btn-ok').attr('href');
     $('#resultAction').attr('action', url);
+    $('.btn-ok').removeAttr('href');
     $('form').submit();
 });
