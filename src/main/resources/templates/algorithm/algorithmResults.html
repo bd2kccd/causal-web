@@ -40,7 +40,7 @@
                                 <div class="container-fluid">
                                     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-3">
                                         <div class="btn-group">
-                                            <button type="button" class="btn btn-danger navbar-btn" data-title="Delete" data-toggle="modal" data-target="#confirm-delete">
+                                            <button id="delete_btn" type="button" class="btn btn-danger navbar-btn">
                                                 <span class="glyphicon glyphicon-trash"></span> Delete
                                             </button>
                                         </div>
@@ -103,7 +103,7 @@
                         <h4 class="modal-title" id="Heading">Delete Result</h4>
                     </div>
                     <div class="modal-body">
-                        <div class="alert alert-danger"><span class="glyphicon glyphicon-warning-sign"></span> Are you sure you want to delete the result file(s)?</div>
+                        <div class="alert alert-danger alert_delete"><span class="glyphicon glyphicon-warning-sign"></span> Are you sure you want to delete the result file(s)?</div>
                     </div>
                     <div class="modal-footer ">
                         <a class="btn btn-danger btn-ok"><span class="glyphicon glyphicon-ok-sign"></span> Yes</a>
@@ -123,6 +123,21 @@
                     </div>
                     <div class="modal-body">
                         <iframe class="embed-responsive-item" id="errorModalFrame" marginwidth="0" marginheight="0" scrolling="yes"></iframe>
+                    </div>
+                    <div class="modal-footer ">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="errorSelection" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Make a Selection" aria-hidden="true">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Error: No Selection</h4>
+                    </div>
+                    <div class="modal-body">
+                        Please make a selection.
                     </div>
                     <div class="modal-footer ">
                         <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>

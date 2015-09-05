@@ -6,6 +6,14 @@ $(document).ready(function () {
     });
 });
 
+$('#delete_btn').click(function () {
+    if ($('input.checkResult:checkbox:checked').length == 0) {
+        $('#errorSelection').modal('show');
+    } else {
+        $('#confirm-delete').modal('show');
+    }
+});
+
 $('#confirm-delete').on('show.bs.modal', function (e) {
     $('.btn-ok').attr('href', 'delete');
 });
