@@ -18,9 +18,13 @@ $('#compare_btn').click(function () {
     if ($('input.checkResult:checkbox:checked').length === 0) {
         $('#errorSelection').modal('show');
     } else {
-        var url = $('#resultAction').attr('action') + '/compare';
-        $('#resultAction').attr('action', url);
-        $('form').submit();
+        if ($('input.checkResult:checkbox:checked[value*=error]').length === 0) {
+            var url = $('#resultAction').attr('action') + '/compare';
+            $('#resultAction').attr('action', url);
+            $('form').submit();
+        } else {
+            $('#selectErrorFile').modal('show');
+        }
     }
 });
 

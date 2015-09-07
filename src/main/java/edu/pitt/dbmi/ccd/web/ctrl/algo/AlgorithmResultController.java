@@ -70,8 +70,10 @@ public class AlgorithmResultController implements ViewPath {
             final SelectedFiles selectedFiles,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
+        List<String> fileNames = selectedFiles.getFiles();
+
         SimpleGraphComparison simpleGraphComparison = new SimpleGraphComparison();
-        simpleGraphComparison.compare(resultFileService.compareResultFile(selectedFiles.getFiles(), appUser));
+        simpleGraphComparison.compare(resultFileService.compareResultFile(fileNames, appUser));
 
         Set<String> distinctEdges = simpleGraphComparison.getDistinctEdges();
         Set<String> edgesInAll = simpleGraphComparison.getEdgesInAll();
@@ -88,6 +90,7 @@ public class AlgorithmResultController implements ViewPath {
             results.add(rc);
         }
 
+        model.addAttribute("fileNameList", fileNames);
         model.addAttribute("itemList", results);
 
         return ALGORITHM_COMPARE_VIEW;
