@@ -7,7 +7,7 @@ $(document).ready(function () {
 });
 
 $('#delete_btn').click(function () {
-    if ($('input.checkResult:checkbox:checked').length == 0) {
+    if ($('input.checkResult:checkbox:checked').length === 0) {
         $('#errorSelection').modal('show');
     } else {
         $('#confirm-delete').modal('show');
@@ -15,10 +15,10 @@ $('#delete_btn').click(function () {
 });
 
 $('#compare_btn').click(function () {
-    if ($('input.checkResult:checkbox:checked').length == 0) {
+    if ($('input.checkResult:checkbox:checked').length === 0) {
         $('#errorSelection').modal('show');
     } else {
-        var url = $('#resultAction').attr('action') + '?action=compare';
+        var url = $('#resultAction').attr('action') + '/compare';
         $('#resultAction').attr('action', url);
         $('form').submit();
     }

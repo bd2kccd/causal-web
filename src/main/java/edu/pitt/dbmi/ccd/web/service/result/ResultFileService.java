@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.service.result;
 
+import edu.pitt.dbmi.ccd.commons.graph.SimpleGraph;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.ResultFileInfo;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
@@ -45,5 +46,7 @@ public interface ResultFileService {
     public List<String> getErrorMessages(String fileName, boolean remote, AppUser appUser);
 
     public void deleteResultFile(List<String> fileNames, AppUser appUser);
+
+    public List<SimpleGraph> compareResultFile(List<String> fileNames, AppUser appUser);
 
 }

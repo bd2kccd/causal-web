@@ -18,6 +18,8 @@
  */
 package edu.pitt.dbmi.ccd.web.service.result;
 
+import edu.pitt.dbmi.ccd.commons.graph.SimpleGraph;
+import edu.pitt.dbmi.ccd.commons.graph.SimpleGraphUtil;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.ResultFileInfo;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
@@ -137,6 +139,24 @@ public class ServerResultFileService extends AbstractResultFileService implement
                 LOGGER.error(exception.getMessage());
             }
         });
+    }
+
+    @Override
+    public List<SimpleGraph> compareResultFile(List<String> fileNames, AppUser appUser) {
+        List<SimpleGraph> graphs = new LinkedList<>();
+
+        fileNames.forEach(fileName -> {
+            Path file = Paths.get(appUser.getResultDirectory(), fileName);
+            if (Files.exists(file)) {
+                try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
+                    graphs.add(SimpleGraphUtil.readInSimpleGraph(reader));
+                } catch (IOException exception) {
+                    LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
+                }
+            }
+        });
+
+        return graphs;
     }
 
 }
