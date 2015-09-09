@@ -35,22 +35,19 @@ function displaySize(size) {
     return '<strong>' + selectedSize + selectedUnit + '</strong> ';
 }
 
+//Web Service Uploading
+var ws_endpoint = 'http://localhost:9000/ccd-ws/data/upload/chunk';
 var r = new Resumable({
-    target: 'http://localhost:9000/ccd-ws/data/upload/chunk',//'upload/chunk',
+    target: ws_endpoint,
     chunkSize: 1 * 1024 * 1024,
     simultaneousUploads: 4
 });
 
 $(document).ready(function () {
-    var dropZone = $('.resumable-drop');
-    var dropZoneBrowse = $('.resumable-browse');
-
     // Resumable.js isn't supported, fall back on a different method
     if (!r.support) {
         $('.resumable-error').show();
     } else {
-        r.assignBrowse(dropZoneBrowse);
-        r.assignDrop(dropZone);
         r.on('filesAdded', function (files) {
             var output = [];
             for (var i = 0; i < files.length; i++) {
@@ -101,9 +98,15 @@ $(document).ready(function () {
             $('.progress-bar').html(Math.floor(r.progress() * 100) + '%');
             $('.progress-bar').css({width: Math.floor(r.progress() * 100) + '%'});
         });
+        
     }
     
 });
+
+function uploadDataToRemoteServer(file){
+	//alert(file);
+	r.addFile(file);
+}
 
 $('#dataExample').on('show.bs.modal', function (event) {
     var link = $(event.relatedTarget);

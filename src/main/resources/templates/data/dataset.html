@@ -36,7 +36,7 @@
                             <div class="panel-heading">
 	                            <div th:if="${appUser.webUser} == false">
 		                            <i class="fa fa-cloud" th:style="${appUser.webServiceOnline} ? 'color:green;' : 'color:red;'"></i>
-	                            	<span th:text="'PSC is (' + (${appUser.webServiceOnline} ? 'Online' : 'Offline') + ' - Last Updated: ' + ${appUser.lastTimeWebServiceMonitored} + ')'"> PSC</span>
+	                            	<span th:text="'PSC (' + (${appUser.webServiceOnline} ? 'Online' : 'Offline') + ' - Last Updated: ' + ${appUser.lastTimeWebServiceMonitored} + ')'"> PSC</span>
 	                            </div>
                             </div>
                             <div class="panel-body">
@@ -67,6 +67,11 @@
                                                     <p th:if="${item.onCloud}" data-placement="top" data-toggle="tooltip" title="On PSC">
                                                         <button class="btn btn-info btn-xs"><span class="glyphicon glyphicon-cloud"></span></button>
                                                     </p>
+                                                    
+                                                    <p th:if="${item.onCloud} == false" data-placement="top" data-toggle="tooltip" title="Upload to PSC">
+                                                        <button class="btn btn-info btn-xs" th:onclick="'javascript:uploadDataToRemoteServer(this.id);'" th:id="${appUser.dataDirectory} + '/' + ${item.fileName}"><span class="glyphicon glyphicon-cloud-upload"></span></button>
+                                                    </p>
+
                                                 </td>
                                                 <td>
                                                     <p data-placement="top" data-toggle="tooltip" title="Summarize Data" th:title="${item.delimiter} ? 'Review Summary' : 'Data Summarization Required'">
@@ -82,6 +87,24 @@
                                                 </td>
                                             </tr>
                                         </tbody>
+                                        
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="4">
+                                                    <div class="resumable-progress">
+                                                        <div class="progress progress-striped progress-container"><div class="bar progress-bar"></div></div>
+                                                        <span class="progress-text" style="white-space: nowrap"></span>
+                                                        <div class="progress-pause" style="white-space: nowrap">
+                                                            <a href="#" onclick="r.upload();
+                                                                    return(false);" class="progress-resume-link"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></a>
+                                                            <a href="#" onclick="r.pause();
+                                                                    return(false);" class="progress-pause-link"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></a>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                                                                
                                     </table>
                                 </div>
                             </div>
@@ -137,6 +160,8 @@
         <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
         <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.js}"></script>
+        <script src="../../static/vendors/resumable-js/resumable.js" th:src="@{/vendors/resumable-js/resumable.js}"></script>
         <script src="../../static/js/dataset.js" th:src="@{/js/dataset.js}"></script>
+        <script src="../../static/js/dataRemoteUpload.js" th:src="@{/js/dataRemoteUpload.js}"></script>
     </body>
 </html>

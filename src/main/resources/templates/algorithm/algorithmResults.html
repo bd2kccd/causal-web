@@ -39,7 +39,7 @@
                             <div class="panel-heading">
 	                            <div th:if="${appUser.webUser} == false">
 		                            <i class="fa fa-cloud" th:style="${appUser.webServiceOnline} ? 'color:green;' : 'color:red;'"></i>
-	                            	<span th:text="'PSC is (' + (${appUser.webServiceOnline} ? 'Online' : 'Offline') + ' - Last Updated: ' + ${appUser.lastTimeWebServiceMonitored} + ')'"> PSC</span>
+	                            	<span th:text="'PSC (' + (${appUser.webServiceOnline} ? 'Online' : 'Offline') + ' - Last Updated: ' + ${appUser.lastTimeWebServiceMonitored} + ')'"> PSC</span>
 	                            </div>
                             </div>
                             <div class="panel-body">

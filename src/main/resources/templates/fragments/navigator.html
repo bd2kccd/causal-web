@@ -30,11 +30,25 @@
                 	<li th:if="${appUser.webUser} == false" th:title="(${appUser.webServiceOnline} ? 'Online' : 'Offline') + ' - Last Updated: ' + ${appUser.lastTimeWebServiceMonitored}">
 						<i class="fa fa-cloud" th:style="${appUser.webServiceOnline} ? 'color:green;' : 'color:red;'"></i> PSC
                 	</li>
+                	
+                	<li class="dropdown">
+                		<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                            <i class="fa fa-bell"></i>  <span class="badge">14</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><span class="pull-left badge">3</span>&nbsp;CCD News</li>
+							<li><span class="pull-left badge">1</span>&nbsp;Local Job Running</li>
+							<li><span class="pull-left badge">7</span>&nbsp;PSC Jobs Running</li>
+							<li><span class="pull-left badge">1</span>&nbsp;Local Job Finished</li>
+							<li><span class="pull-left badge">2</span>&nbsp;PSC Jobs Finished</li>
+                        </ul>
+                	</li>
+                	
                     <li class="dropdown">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                            <i class="fa fa-user fa-fw"></i>  <i class="fa fa-caret-down"></i>
+                            <i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu">
+                        <ul class="dropdown-menu">
                             <li>
                                 <a href="/user/profile" th:href="@{/user/profile}"><i class="fa fa-user fa-fw"></i> User Profile</a>
                             </li>
