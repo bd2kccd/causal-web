@@ -24,7 +24,9 @@ import edu.pitt.dbmi.ccd.commons.graph.SimpleGraphUtil;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.ResultFileInfo;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
+import edu.pitt.dbmi.ccd.web.model.result.ResultComparison;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -36,6 +38,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -98,7 +101,7 @@ public class DesktopResultFileService extends AbstractResultFileService implemen
         List<ResultFileInfo> resultFileInfos = new LinkedList<>();
         try {
             List<ResultFileInfo> results = new LinkedList<>();
-            results.addAll(getUserLocalResultFiles(appUser));
+            results.addAll(getUserLocalResultFiles(appUser.getAlgoResultDir()));
             results.addAll(getUserRemoteResultFiles(appUser));
 
             ResultFileInfo[] fileInfos = results.toArray(new ResultFileInfo[results.size()]);
@@ -162,10 +165,10 @@ public class DesktopResultFileService extends AbstractResultFileService implemen
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(cloudData), Charset.defaultCharset()))) {
                 extractParameters(reader, parameters);
             } catch (IOException exception) {
-
+                LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
             }
         } else {
-            Path file = Paths.get(appUser.getResultDirectory(), fileName);
+            Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
             try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
                 extractParameters(reader, parameters);
             } catch (IOException exception) {
@@ -188,7 +191,7 @@ public class DesktopResultFileService extends AbstractResultFileService implemen
                 LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
             }
         } else {
-            Path file = Paths.get(appUser.getResultDirectory(), fileName);
+            Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
             try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
                 extractNodes(reader, nodes);
             } catch (IOException exception) {
@@ -211,7 +214,7 @@ public class DesktopResultFileService extends AbstractResultFileService implemen
                 LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
             }
         } else {
-            Path file = Paths.get(appUser.getResultDirectory(), fileName);
+            Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
             try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
                 readInErrorMessage(reader, errorMsg);
             } catch (IOException exception) {
@@ -226,7 +229,7 @@ public class DesktopResultFileService extends AbstractResultFileService implemen
     public void deleteResultFile(List<String> fileNames, AppUser appUser) {
         List<String> remoteFileNames = new LinkedList<>();
         fileNames.forEach(fileName -> {
-            Path file = Paths.get(appUser.getResultDirectory(), fileName);
+            Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
             if (Files.exists(file)) {
                 try {
                     Files.deleteIfExists(file);
@@ -242,36 +245,6 @@ public class DesktopResultFileService extends AbstractResultFileService implemen
         remoteFileNames.forEach(fileName -> {
             restTemplate.delete(preUrl + fileName);
         });
-    }
-
-    @Override
-    public List<SimpleGraph> compareResultFile(List<String> fileNames, AppUser appUser) {
-        List<SimpleGraph> graphs = new LinkedList<>();
-
-        List<String> remoteFileNames = new LinkedList<>();
-        fileNames.forEach(fileName -> {
-            Path file = Paths.get(appUser.getResultDirectory(), fileName);
-            if (Files.exists(file)) {
-                try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
-                    graphs.add(SimpleGraphUtil.readInSimpleGraph(reader));
-                } catch (IOException exception) {
-                    LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
-                }
-            } else {
-                remoteFileNames.add(fileName);
-            }
-        });
-
-        remoteFileNames.forEach(fileName -> {
-            byte[] cloudData = downloadRemoteFile(appUser.getUsername(), fileName);
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(cloudData), Charset.defaultCharset()))) {
-                graphs.add(SimpleGraphUtil.readInSimpleGraph(reader));
-            } catch (IOException exception) {
-                LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
-            }
-        });
-
-        return graphs;
     }
 
     private List<ResultFileInfo> getUserRemoteResultFiles(AppUser appUser) {
@@ -302,6 +275,46 @@ public class DesktopResultFileService extends AbstractResultFileService implemen
         }
 
         return list;
+    }
+
+    @Override
+    public List<SimpleGraph> compareResultFile(List<String> fileNames, AppUser appUser) {
+        List<SimpleGraph> graphs = new LinkedList<>();
+
+        List<String> remoteFileNames = new LinkedList<>();
+        fileNames.forEach(fileName -> {
+            Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
+            if (Files.exists(file)) {
+                try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
+                    graphs.add(SimpleGraphUtil.readInSimpleGraph(reader));
+                } catch (IOException exception) {
+                    LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
+                }
+            } else {
+                remoteFileNames.add(fileName);
+            }
+        });
+
+        remoteFileNames.forEach(fileName -> {
+            byte[] cloudData = downloadRemoteFile(appUser.getUsername(), fileName);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(cloudData), Charset.defaultCharset()))) {
+                graphs.add(SimpleGraphUtil.readInSimpleGraph(reader));
+            } catch (IOException exception) {
+                LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
+            }
+        });
+
+        return graphs;
+    }
+
+    @Override
+    public void writeResultComparison(ResultComparison resultComparison, String fileNameOut, AppUser appUser) {
+        Path file = Paths.get(appUser.getResultComparisonDir(), fileNameOut);
+        try (BufferedWriter writer = Files.newBufferedWriter(file, StandardOpenOption.CREATE)) {
+            writeResultComparison(writer, resultComparison);
+        } catch (IOException exception) {
+            LOGGER.error(String.format("Unable to write file '%s'.", fileNameOut), exception);
+        }
     }
 
     private byte[] downloadRemoteFile(String username, String fileName) {

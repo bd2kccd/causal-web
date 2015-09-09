@@ -24,7 +24,10 @@ import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.ResultFileInfo;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
+import edu.pitt.dbmi.ccd.web.model.result.ResultComparison;
+import edu.pitt.dbmi.ccd.web.model.result.ResultComparisonData;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -53,16 +56,16 @@ public abstract class AbstractResultFileService {
         String headerValue = String.format("attachment; filename=\"%s\"", fileName);
         response.setHeader(headerKey, headerValue);
 
-        Path file = Paths.get(appUser.getResultDirectory(), fileName);
+        Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
         response.setContentLength((int) Files.size(file));
 
         Files.copy(file, response.getOutputStream());
     }
 
-    protected List<ResultFileInfo> getUserLocalResultFiles(AppUser appUser) throws IOException {
+    protected List<ResultFileInfo> getUserLocalResultFiles(String directory) throws IOException {
         List<ResultFileInfo> fileInfos = new LinkedList<>();
 
-        List<Path> list = FileInfos.listDirectory(Paths.get(appUser.getResultDirectory()), false);
+        List<Path> list = FileInfos.listDirectory(Paths.get(directory), false);
         List<Path> files = list.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
 
         List<BasicFileInfo> results = FileInfos.listBasicPathInfo(files);
@@ -120,6 +123,25 @@ public abstract class AbstractResultFileService {
     protected void readInErrorMessage(BufferedReader reader, List<String> errorMsg) throws IOException {
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
             errorMsg.add(line);
+        }
+    }
+
+    protected void writeResultComparison(BufferedWriter writer, ResultComparison resultComparison) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        List<String> fileNames = resultComparison.getFileNames();
+        fileNames.forEach(fileName -> {
+            sb.append(fileName);
+            sb.append("\t");
+        });
+        writer.write(sb.toString().trim());
+        writer.write("\n");
+
+        List<ResultComparisonData> comparisonData = resultComparison.getComparisonData();
+        for (ResultComparisonData comparison : comparisonData) {
+            writer.write(String.format("%s\t%s\t%s\n",
+                    comparison.getEdge(),
+                    comparison.isInAll() ? "1" : "0",
+                    comparison.isSimilarEndPoint() ? "1" : "0"));
         }
     }
 

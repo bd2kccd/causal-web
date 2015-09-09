@@ -16,15 +16,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.model;
+package edu.pitt.dbmi.ccd.web.model.result;
 
 /**
  *
- * Sep 7, 2015 11:57:55 AM
+ * Sep 8, 2015 2:47:45 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class ResultComparison {
+public class ResultComparisonData {
 
     private int countIndex;
 
@@ -34,10 +34,15 @@ public class ResultComparison {
 
     private boolean similarEndPoint;
 
-    public ResultComparison() {
+    public ResultComparisonData() {
     }
 
-    public ResultComparison(String edge) {
+    @Override
+    public String toString() {
+        return "ResultComparisonData{" + "countIndex=" + countIndex + ", edge=" + edge + ", inAll=" + inAll + ", similarEndPoint=" + similarEndPoint + '}';
+    }
+
+    public ResultComparisonData(String edge) {
         this.edge = edge;
     }
 

@@ -72,13 +72,17 @@ public class AppUserService {
         String workspace = person.getWorkspace();
         String username = userAccount.getUsername();
 
+        // base directories
         Path dataDir = Paths.get(workspace, username, dataFolder);
         Path resultDir = Paths.get(workspace, username, resultFolder);
         Path libDir = Paths.get(workspace, libFolder);
         Path tmpDir = Paths.get(workspace, username, tmpFolder);
 
+        Path algoResultDir = Paths.get(workspace, username, resultFolder, "algorithm");
+        Path resultComparisonDir = Paths.get(workspace, username, resultFolder, "comparison");
+
         // create user directories
-        Path[] directories = {dataDir, resultDir, tmpDir, libDir};
+        Path[] directories = {dataDir, resultDir, tmpDir, libDir, algoResultDir, resultComparisonDir};
         for (Path directory : directories) {
             if (Files.notExists(directory)) {
                 try {
@@ -99,6 +103,8 @@ public class AppUserService {
         appUser.setLibDirectory(libDir.toString());
         appUser.setResultDirectory(resultDir.toString());
         appUser.setTmpDirectory(tmpDir.toString());
+        appUser.setAlgoResultDir(algoResultDir.toString());
+        appUser.setResultComparisonDir(resultComparisonDir.toString());
 
         return appUser;
     }

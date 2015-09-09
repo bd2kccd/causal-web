@@ -45,6 +45,10 @@ public class AppUser {
 
     private String lastLogin;
 
+    private String algoResultDir;
+
+    private String resultComparisonDir;
+
     private boolean webUser;
 
     public AppUser() {
@@ -114,7 +118,23 @@ public class AppUser {
         this.lastLogin = lastLogin;
     }
 
-    public boolean getWebUser() {
+    public String getAlgoResultDir() {
+        return algoResultDir;
+    }
+
+    public void setAlgoResultDir(String algoResultDir) {
+        this.algoResultDir = algoResultDir;
+    }
+
+    public String getResultComparisonDir() {
+        return resultComparisonDir;
+    }
+
+    public void setResultComparisonDir(String resultComparisonDir) {
+        this.resultComparisonDir = resultComparisonDir;
+    }
+
+    public boolean isWebUser() {
         return webUser;
     }
 

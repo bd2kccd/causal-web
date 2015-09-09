@@ -86,7 +86,7 @@ public class AlgorithmService {
     public void runLocally(String algorithm, String algorithmJar, JobRequest jobRequest, AppUser appUser) {
         String userDataDir = appUser.getDataDirectory();
         String userTempDir = appUser.getTmpDirectory();
-        String userOutputDir = appUser.getResultDirectory();
+        String userOutputDir = appUser.getAlgoResultDir();
         String userLibDir = appUser.getLibDirectory();
 
         String algoName = jobRequest.getAlgorName();

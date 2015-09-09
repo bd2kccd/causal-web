@@ -21,10 +21,10 @@ package edu.pitt.dbmi.ccd.web.ctrl.algo;
 import edu.pitt.dbmi.ccd.commons.graph.SimpleGraphComparison;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.model.ResultComparison;
 import edu.pitt.dbmi.ccd.web.model.SelectedFiles;
+import edu.pitt.dbmi.ccd.web.model.result.ResultComparison;
+import edu.pitt.dbmi.ccd.web.model.result.ResultComparisonData;
 import edu.pitt.dbmi.ccd.web.service.result.ResultFileService;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
@@ -60,11 +60,6 @@ public class AlgorithmResultController implements ViewPath {
         this.resultFileService = resultFileService;
     }
 
-    @RequestMapping(value = "compare", method = RequestMethod.GET)
-    public String compareResultFile() {
-        return REDIRECT_ALGORITHM_RESULTS;
-    }
-
     @RequestMapping(value = "compare", method = RequestMethod.POST)
     public String compareResultFile(
             final SelectedFiles selectedFiles,
@@ -79,21 +74,25 @@ public class AlgorithmResultController implements ViewPath {
         Set<String> edgesInAll = simpleGraphComparison.getEdgesInAll();
         Set<String> sameEndPoints = simpleGraphComparison.getSameEndPoints();
 
-        List<ResultComparison> results = new LinkedList<>();
+        String fileName = "result_comparison_" + System.currentTimeMillis() + ".txt";
+
+        ResultComparison resultComparison = new ResultComparison(fileName);
+        resultComparison.getFileNames().addAll(fileNames);
+
+        List<ResultComparisonData> comparisonResults = resultComparison.getComparisonData();
         int countIndex = 0;
         for (String edge : distinctEdges) {
-            ResultComparison rc = new ResultComparison(edge);
+            ResultComparisonData rc = new ResultComparisonData(edge);
             rc.setInAll(edgesInAll.contains(edge));
             rc.setSimilarEndPoint(sameEndPoints.contains(edge));
             rc.setCountIndex(++countIndex);
 
-            results.add(rc);
+            comparisonResults.add(rc);
         }
 
-        model.addAttribute("fileNameList", fileNames);
-        model.addAttribute("itemList", results);
+        resultFileService.writeResultComparison(resultComparison, fileName, appUser);
 
-        return ALGORITHM_COMPARE_VIEW;
+        return REDIRECT_ALGO_RESULT_COMPARE_VIEW;
     }
 
     @RequestMapping(value = "delete", method = RequestMethod.POST)

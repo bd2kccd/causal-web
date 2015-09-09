@@ -23,12 +23,15 @@ import edu.pitt.dbmi.ccd.commons.graph.SimpleGraphUtil;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.ResultFileInfo;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
+import edu.pitt.dbmi.ccd.web.model.result.ResultComparison;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -56,18 +59,19 @@ public class ServerResultFileService extends AbstractResultFileService implement
 
     @Override
     public List<ResultFileInfo> getUserResultFiles(AppUser appUser) {
+        List<ResultFileInfo> results = new LinkedList<>();
         try {
-            List<ResultFileInfo> results = getUserLocalResultFiles(appUser);
-            ResultFileInfo[] fileInfos = results.toArray(new ResultFileInfo[results.size()]);
+            List<ResultFileInfo> fileInfos = getUserLocalResultFiles(appUser.getAlgoResultDir());
+            ResultFileInfo[] array = fileInfos.toArray(new ResultFileInfo[fileInfos.size()]);
 
-            Arrays.sort(fileInfos, Collections.reverseOrder());  // sort
+            Arrays.sort(array, Collections.reverseOrder());  // sort
 
-            return Arrays.asList(fileInfos);
+            results.addAll(Arrays.asList(array));
         } catch (IOException exception) {
             LOGGER.error(exception.getMessage());
-
-            return Collections.emptyList();
         }
+
+        return results;
     }
 
     @Override
@@ -86,7 +90,7 @@ public class ServerResultFileService extends AbstractResultFileService implement
         Map<String, String> parameters = new TreeMap<>();
 
         if (!remote) {
-            Path file = Paths.get(appUser.getResultDirectory(), fileName);
+            Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
             try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
                 extractParameters(reader, parameters);
             } catch (IOException exception) {
@@ -102,7 +106,7 @@ public class ServerResultFileService extends AbstractResultFileService implement
         List<Node> nodes = new LinkedList<>();
 
         if (!remote) {
-            Path file = Paths.get(appUser.getResultDirectory(), fileName);
+            Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
             try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
                 extractNodes(reader, nodes);
             } catch (IOException exception) {
@@ -118,7 +122,7 @@ public class ServerResultFileService extends AbstractResultFileService implement
         List<String> errorMsg = new LinkedList<>();
 
         if (!remote) {
-            Path file = Paths.get(appUser.getResultDirectory(), fileName);
+            Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
             try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
                 readInErrorMessage(reader, errorMsg);
             } catch (IOException exception) {
@@ -132,7 +136,7 @@ public class ServerResultFileService extends AbstractResultFileService implement
     @Override
     public void deleteResultFile(List<String> fileNames, AppUser appUser) {
         fileNames.forEach(fileName -> {
-            Path file = Paths.get(appUser.getResultDirectory(), fileName);
+            Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
             try {
                 Files.deleteIfExists(file);
             } catch (IOException exception) {
@@ -146,7 +150,7 @@ public class ServerResultFileService extends AbstractResultFileService implement
         List<SimpleGraph> graphs = new LinkedList<>();
 
         fileNames.forEach(fileName -> {
-            Path file = Paths.get(appUser.getResultDirectory(), fileName);
+            Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
             if (Files.exists(file)) {
                 try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
                     graphs.add(SimpleGraphUtil.readInSimpleGraph(reader));
@@ -157,6 +161,16 @@ public class ServerResultFileService extends AbstractResultFileService implement
         });
 
         return graphs;
+    }
+
+    @Override
+    public void writeResultComparison(ResultComparison resultComparison, String fileNameOut, AppUser appUser) {
+        Path file = Paths.get(appUser.getResultComparisonDir(), fileNameOut);
+        try (BufferedWriter writer = Files.newBufferedWriter(file, StandardOpenOption.CREATE)) {
+            writeResultComparison(writer, resultComparison);
+        } catch (IOException exception) {
+            LOGGER.error(String.format("Unable to write file '%s'.", fileNameOut), exception);
+        }
     }
 
 }

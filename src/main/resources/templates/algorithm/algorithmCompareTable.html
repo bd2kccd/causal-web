@@ -36,9 +36,20 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="panel panel-default">
-                            <div class="panel-heading">Comparing Result Files</div>
+                            <div class="panel-heading clearfix">
+                                <div class="pull-left">
+                                    Comparing Result Files
+                                </div>
+                                <div class="pull-right">
+                                    <div class="btn-group">
+                                        <a href="#" th:href="@{/algorithm/result/comparison/download(file=${item.fileName},remote=${item.remote})}" class="btn btn-success btn-xs">
+                                            <span class="glyphicon glyphicon-download"></span> Download
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="panel-body">
-                                <p th:each="fileName : ${fileNameList}" th:text="${fileName}"></p>
+                                <p th:each="fileName : ${item.fileNames}" th:text="${fileName}"></p>
                             </div>
                             <table class="table table-striped table-hover table-condensed">
                                 <thead>
@@ -50,7 +61,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr th:each="item : ${itemList}">
+                                    <tr th:each="item : ${item.comparisonData}">
                                         <td th:text="${item.countIndex}"></td>
                                         <td th:text="${item.edge}"></td>
                                         <td><span th:class="${item.inAll} ? 'glyphicon glyphicon-ok' : ''"></span></td>
@@ -75,5 +86,15 @@
         <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
         <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.js}"></script>
+        <script>
+            $('#download_btn').click(function () {
+                var str = 'files=';
+                $('p.fileNames').each(function () {
+                    str += $(this).text() + ',';
+                });
+                str = str.substring(0, str.length - 1);
+                alert(str);
+            });
+        </script>
     </body>
 </html>
