@@ -36,7 +36,7 @@ function displaySize(size) {
 }
 
 var r = new Resumable({
-    target: 'http://localhost:9000/ccd-ws/data/upload/chunk',//'upload/chunk',
+    target: 'upload/chunk',//'http://manojlaptop:8080/ccd-ws/kvb2/data/upload/chunk', //'http://localhost:9000/ccd-ws/chw20/data/upload/chunk?appId=',//
     chunkSize: 1 * 1024 * 1024,
     simultaneousUploads: 4
 });

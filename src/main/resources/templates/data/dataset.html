@@ -12,6 +12,7 @@
         <link rel="stylesheet" href="../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{/vendors/font-awesome/css/font-awesome.min.css}" />
         <link rel="stylesheet" href="../../static/vendors/sb-admin-2/css/sb-admin-2.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.css}" />
         <link rel="stylesheet" href="../../static/css/styles.css" th:href="@{/css/styles.css}" />
+        <link rel="stylesheet" href="../../static/css/dataUpload.css" th:href="@{/css/dataUpload.css}" />
         <style>
             iframe {
                 width: 100%;
@@ -69,7 +70,7 @@
                                                     </p>
                                                     
                                                     <p th:if="${item.onCloud} == false" data-placement="top" data-toggle="tooltip" title="Upload to PSC">
-                                                        <button class="btn btn-info btn-xs" th:onclick="'javascript:uploadDataToRemoteServer(this.id);'" th:id="${appUser.dataDirectory} + '/' + ${item.fileName}"><span class="glyphicon glyphicon-cloud-upload"></span></button>
+                                                        <button class="btn btn-info btn-xs" th:onclick="'javascript:uploadDataToRemoteServer(this,\'' + ${item.fileName} + '\');'"><span class="glyphicon glyphicon-cloud-upload"></span></button>
                                                     </p>
 
                                                 </td>
@@ -88,23 +89,6 @@
                                             </tr>
                                         </tbody>
                                         
-                                        <tfoot>
-                                            <tr>
-                                                <td colspan="4">
-                                                    <div class="resumable-progress">
-                                                        <div class="progress progress-striped progress-container"><div class="bar progress-bar"></div></div>
-                                                        <span class="progress-text" style="white-space: nowrap"></span>
-                                                        <div class="progress-pause" style="white-space: nowrap">
-                                                            <a href="#" onclick="r.upload();
-                                                                    return(false);" class="progress-resume-link"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></a>
-                                                            <a href="#" onclick="r.pause();
-                                                                    return(false);" class="progress-pause-link"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></a>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </tfoot>
-                                                                                
                                     </table>
                                 </div>
                             </div>

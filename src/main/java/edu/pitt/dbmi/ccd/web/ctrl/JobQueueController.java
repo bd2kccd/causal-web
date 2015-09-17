@@ -27,7 +27,6 @@ import edu.pitt.dbmi.ccd.queue.model.AlgorithmJob;
 import edu.pitt.dbmi.ccd.queue.util.JobQueueUtility;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.cloud.CloudService;
-import scala.annotation.meta.setter;
 
 import java.util.ArrayList;
 import java.util.Collections;

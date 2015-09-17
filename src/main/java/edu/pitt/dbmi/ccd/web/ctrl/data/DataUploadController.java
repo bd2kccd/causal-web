@@ -23,12 +23,21 @@ import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.data.ResumableChunk;
 import edu.pitt.dbmi.ccd.web.service.BigDataFileManagerService;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Enumeration;
+
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -55,12 +64,30 @@ public class DataUploadController implements ViewPath {
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public String showDataUploadView() {
+    public String showDataUploadView(final Model model, 
+    		@Value("${ccd.data.upload.uri:http://localhost:9000/ccd-ws/chw20/data/upload/chunk?appId=}") String ws_endpoint,
+    		@Value("${ccd.rest.appId:1}") String appId,
+    		@ModelAttribute("appUser") AppUser appUser) {
+    	model.addAttribute("ws_endpoint", String.format(ws_endpoint, appUser.getUsername(), appId));
         return DATA_UPLOAD_VIEW;
     }
 
     @RequestMapping(value = "chunk", method = RequestMethod.GET)
-    public void checkChunkExistence(HttpServletResponse response, ResumableChunk chunk, @ModelAttribute("appUser") AppUser appUser) throws IOException {
+    public void checkChunkExistence(HttpServletRequest request,
+    		HttpServletResponse response, ResumableChunk chunk, @ModelAttribute("appUser") AppUser appUser) throws IOException {
+
+    	Enumeration<?> header = request.getHeaderNames();
+    	while(header.hasMoreElements()){
+    		String headerName = header.nextElement().toString();
+			System.out.println("GET header: " + headerName + " : " + request.getHeader(headerName));
+    	}
+    	
+    	Enumeration<?> param = request.getParameterNames();
+    	while(param.hasMoreElements()){
+    		String paramName = param.nextElement().toString();
+			System.out.println("GET param: " + paramName + " : " + request.getParameter(paramName));
+    	}
+    	
         if (fileManager.chunkExists(chunk.getResumableIdentifier(), chunk.getResumableChunkNumber(), chunk.getResumableChunkSize(), appUser.getDataDirectory())) {
             response.setStatus(200); // do not upload chunk again
         } else {
@@ -69,8 +96,22 @@ public class DataUploadController implements ViewPath {
     }
 
     @RequestMapping(value = "chunk", method = RequestMethod.POST)
-    public void processChunkUpload(HttpServletResponse response, ResumableChunk chunk, @ModelAttribute("appUser") AppUser appUser) throws IOException {
-        if (!fileManager.isSupported(chunk.getResumableFilename())) {
+    public void processChunkUpload(HttpServletRequest request,
+    		HttpServletResponse response, ResumableChunk chunk, @ModelAttribute("appUser") AppUser appUser) throws IOException {
+
+    	Enumeration<?> header = request.getHeaderNames();
+    	while(header.hasMoreElements()){
+    		String headerName = header.nextElement().toString();
+			System.out.println("POST header: " + headerName + " : " + request.getHeader(headerName));
+    	}
+    	
+    	Enumeration<?> param = request.getParameterNames();
+    	while(param.hasMoreElements()){
+    		String paramName = param.nextElement().toString();
+			System.out.println("POST param: " + paramName + " : " + request.getParameter(paramName));
+    	}
+    	
+    	if (!fileManager.isSupported(chunk.getResumableFilename())) {
             response.setStatus(501); // cancel the whole upload
             return;
         }

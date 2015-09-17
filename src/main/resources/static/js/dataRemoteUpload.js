@@ -35,20 +35,24 @@ function displaySize(size) {
     return '<strong>' + selectedSize + selectedUnit + '</strong> ';
 }
 
-//Web Service Uploading
-var ws_endpoint = 'http://localhost:9000/ccd-ws/data/upload/chunk';
-var r = new Resumable({
-    target: ws_endpoint,
-    chunkSize: 1 * 1024 * 1024,
-    simultaneousUploads: 4
+var ws_endpoint = $('#ws_endpoint').val();
+var rRemote = new Resumable({
+    target: ws_endpoint,//'http://localhost:9000/ccd-ws/chw20/data/upload/chunk?appId=',
+    chunkSize: 1 * 128 * 1024,
+    simultaneousUploads: 32
 });
 
-$(document).ready(function () {
+$(document).ready(function () {	
+    var dropZone = $('.remote-resumable-drop');
+    var dropZoneBrowse = $('.remote-resumable-browse');
+
     // Resumable.js isn't supported, fall back on a different method
-    if (!r.support) {
-        $('.resumable-error').show();
+    if (!rRemote.support) {
+        $('.remote-resumable-error').show();
     } else {
-        r.on('filesAdded', function (files) {
+        rRemote.assignBrowse(dropZoneBrowse);
+        rRemote.assignDrop(dropZone);
+        rRemote.on('filesAdded', function (files) {
             var output = [];
             for (var i = 0; i < files.length; i++) {
                 var file = files[i];
@@ -60,53 +64,47 @@ $(document).ready(function () {
                 output.push(info);
             }
             // Show progress bar
-            $('.resumable-progress, .resumable-list').show();
+            $('.remote-resumable-progress, .remote-resumable-list').show();
             // Show pause and cancel, hide resume
-            $('.resumable-progress .progress-resume-link').hide();
-            $('.resumable-progress .progress-pause-link').show();
-            $('.resumable-progress .progress-cancel-link').show();
-            $('.file-info > tbody:last').append(output.join(''));
-            r.upload();
+            $('.remote-resumable-progress .remote-progress-resume-link').hide();
+            $('.remote-resumable-progress .remote-progress-pause-link').show();
+            $('.remote-resumable-progress .remote-progress-cancel-link').show();
+            $('.remote-file-info > tbody:last').append(output.join(''));
+            rRemote.upload();
         });
-        r.on('cancel', function () {
-            $('.resumable-progress .progress-pause-link').hide();
-            $('.resumable-progress .progress-resume-link').hide();
+        rRemote.on('cancel', function () {
+            $('.remote-resumable-progress .remote-progress-pause-link').hide();
+            $('.remote-resumable-progress .remote-progress-resume-link').hide();
         });
-        r.on('pause', function () {
-            $('.resumable-progress .progress-pause-link').hide();
-            $('.resumable-progress .progress-resume-link').show();
+        rRemote.on('pause', function () {
+            $('.remote-resumable-progress .remote-progress-pause-link').hide();
+            $('.remote-resumable-progress .remote-progress-resume-link').show();
         });
-        r.on('progress', function () {
+        rRemote.on('progress', function () {
             // Show resume, hide pause
-            $('.resumable-progress .progress-resume-link').hide();
-            $('.resumable-progress .progress-pause-link').show();
+            $('.remote-resumable-progress .remote-progress-resume-link').hide();
+            $('.remote-resumable-progress .remote-progress-pause-link').show();
         });
-        r.on('complete', function () {
+        rRemote.on('complete', function () {
             // Hide pause/resume and cancel when the upload has completed
-            $('.progress-bar').html('(completed)');
-            $('.resumable-progress .progress-resume-link, .resumable-progress .progress-pause-link, .resumable-progress .progress-cancel-link').hide();
+            $('.remote-progress-bar').html('(completed)');
+            $('.remote-resumable-progress .remote-progress-resume-link, .remote-resumable-progress .remote-progress-pause-link, .remote-resumable-progress .remote-progress-cancel-link').hide();
         });
-        r.on('fileSuccess', function (file, message) {
+        rRemote.on('fileSuccess', function (file, message) {
             $('.md5-' + file.uniqueIdentifier).html(message);
         });
-        r.on('fileError', function (file, message) {
+        rRemote.on('fileError', function (file, message) {
             // Reflect that the file upload has resulted in error
-            $('.resumable-file-' + file.uniqueIdentifier + ' .resumable-file-progress').html('(file could not be uploaded: ' + message + ')');
+            $('.resumable-file-' + file.uniqueIdentifier + ' .remote-resumable-file-progress').html('(file could not be uploaded: ' + message + ')');
         });
-        r.on('fileProgress', function (file) {
+        rRemote.on('fileProgress', function (file) {
             // Handle progress for both the file and the overall upload
-            $('.progress-bar').html(Math.floor(r.progress() * 100) + '%');
-            $('.progress-bar').css({width: Math.floor(r.progress() * 100) + '%'});
+            $('.remote-progress-bar').html(Math.floor(rRemote.progress() * 100) + '%');
+            $('.remote-progress-bar').css({width: Math.floor(rRemote.progress() * 100) + '%'});
         });
-        
     }
     
 });
-
-function uploadDataToRemoteServer(file){
-	//alert(file);
-	r.addFile(file);
-}
 
 $('#dataExample').on('show.bs.modal', function (event) {
     var link = $(event.relatedTarget);
@@ -117,3 +115,51 @@ $('#dataExample').on('show.bs.modal', function (event) {
     modal.find('.modal-title').text(title + ' Dataset');
     modal.find('#dataExampleFrame').attr('src', 'example?type=' + type);
 });
+
+var poolSize = 128;
+
+function uploadChunk(chunkNumber, totalChunkNumber, fileName){
+	//POST chunk
+	$.post("data/remoteUpload/chunk?resumableChunkNumber=" + chunkNumber + "&fileName=" + fileName, function(data, status){
+		//alert(status);
+	}).always(function(){
+		chunkNumber = chunkNumber + poolSize;
+		//alert(chunkNumber);
+		if(chunkNumber <= totalChunkNumber){
+			chunkExists(chunkNumber, totalChunkNumber, fileName);
+		}
+	});
+	
+}
+
+function chunkExists(chunkNumber, totalChunkNumber, fileName){
+	//GET chunk
+	$.get("data/remoteUpload/chunk?resumableChunkNumber=" + chunkNumber + "&fileName=" + fileName, function(data, status){
+		//alert(status);
+	}).done(function(){
+		//The chunk is already there -- check another chunk
+		chunkNumber = chunkNumber + poolSize;
+		//alert(chunkNumber);
+		if(chunkNumber <= totalChunkNumber){
+			chunkExists(chunkNumber, totalChunkNumber, fileName);
+		}
+	}).fail(function(){
+		//404 Chunk Not Found -- upload the chunk
+		uploadChunk(chunkNumber, totalChunkNumber, fileName);
+	});
+	
+}
+
+function uploadDataToRemoteServer(btn, fileName){
+	$(btn).hide();
+	$.get("data/remoteUpload?fileName=" + fileName, function(data){
+		//alert(data);
+		/*var minSize = poolSize;
+		if(minSize > data){
+			minSize = data;
+		}
+		for(var i=1;i<=minSize;i++){
+			chunkExists(i, data, fileName);
+		}*/	
+	});
+}
