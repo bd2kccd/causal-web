@@ -69,7 +69,7 @@ public interface ViewPath {
     public static final String REDIRECT_ALGORITHM_RESULTS = "redirect:/algorithm/results";
 
     public static final String ALGO_RESULT_COMPARE_VIEW = "algorithm/algoResultComparison";
-    public static final String REDIRECT_ALGO_RESULT_COMPARE_VIEW = "redirect:/algorithm/result/comparison";
+    public static final String REDIRECT_ALGO_RESULT_COMPARE_VIEW = "redirect:/algorithm/results/comparison";
     public static final String ALGO_RESULT_COMPARISON_TABLE_VIEW = "algorithm/algorithmCompareTable";
 
     public static final String ALGORITHM_RESULT_ERROR_VIEW = "algorithm/resultError";

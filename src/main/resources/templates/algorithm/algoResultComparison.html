@@ -35,7 +35,7 @@
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
-                        <form id="resultAction" method="POST" th:action="@{/algorithm/result/comparison}" role="form">
+                        <form id="resultAction" method="POST" th:action="@{/algorithm/results/comparison}" role="form">
                             <nav class="navbar navbar-default">
                                 <div class="container-fluid">
                                     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-3">
@@ -67,16 +67,16 @@
                                                 <input type="checkbox" class="checkResult" name="files" th:value="${item.fileName}" />
                                             </td>
                                             <td>
-                                                <a href="#" th:href="@{/algorithm/result/comparison/table(file=${item.fileName},remote=${item.onCloud})}" th:text="${item.fileName}"></a>
+                                                <a href="#" th:href="@{/algorithm/results/comparison/table(file=${item.fileName},remote=${item.onCloud})}" th:text="${item.fileName}"></a>
                                             </td>
                                             <td th:text="${item.creationDate}"></td>
                                             <td th:text="${item.size}"></td>
                                             <td th:if="${appUser.webUser} == false">
                                                 <p th:if="${item.onCloud}" data-placement="top" data-toggle="tooltip" title="On PSC">
-                                                    <button class="btn btn-info btn-xs"><span class="glyphicon glyphicon-cloud"></span></button>
+                                                    <button type="button" class="btn btn-info btn-xs"><span class="glyphicon glyphicon-cloud"></span></button>
                                                 </p>
                                             </td>
-                                            <td><p data-placement="top" data-toggle="tooltip" title="Save"><a href="#" th:href="@{/algorithm/result/comparison/download(file=${item.fileName},remote=${item.onCloud})}" class="btn btn-success btn-xs"><span class="glyphicon glyphicon-save"></span></a></p></td>
+                                            <td><p data-placement="top" data-toggle="tooltip" title="Save"><a href="#" th:href="@{/algorithm/results/comparison/download(file=${item.fileName},remote=${item.onCloud})}" class="btn btn-success btn-xs"><span class="glyphicon glyphicon-save"></span></a></p></td>
                                         </tr>
                                     </tbody>
                                 </table>

@@ -16,20 +16,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.service.result;
+package edu.pitt.dbmi.ccd.web.service.result.algorithm;
 
 import edu.pitt.dbmi.ccd.commons.file.FilePrint;
-import edu.pitt.dbmi.ccd.commons.graph.SimpleGraph;
-import edu.pitt.dbmi.ccd.commons.graph.SimpleGraphUtil;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.dto.response.FileInfoResponse;
 import edu.pitt.dbmi.ccd.web.model.ResultFileInfo;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
-import edu.pitt.dbmi.ccd.web.model.result.ResultComparison;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -38,7 +36,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -53,56 +50,56 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  *
- * Sep 5, 2015 8:11:42 PM
+ * Sep 15, 2015 12:16:38 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @Profile("desktop")
 @Service
-public class DesktopResultFileService extends AbstractResultFileService implements ResultFileService {
+public class DesktopAlgorithmResultService extends AbstractAlgorithmResultService implements AlgorithmResultService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DesktopResultFileService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DesktopAlgorithmResultService.class);
+
+    private final String resultUrl;
+
+    private final String algorithPath;
 
     private final String appId;
-
-    private final String userResultsUri;
-
-    private final String userResultFileDownloadUri;
-
-    private final String userResultFileDeleteUri;
 
     private final RestTemplate restTemplate;
 
     @Autowired(required = true)
-    public DesktopResultFileService(
-            @Value("${ccd.rest.appId:1}") String appId,
-            @Value("${ccd.results.usr.uri:http://localhost:8080/ccd-ws/algorithm/results/usr}") String userResultsUri,
-            @Value("${ccd.results.file.usr.uri:http://localhost:8080/ccd-ws/algorithm/results/file/usr}") String userResultFileDownloadUri,
-            @Value("${ccd.results.file.delete.usr.uri:http://localhost:8080/ccd-ws/algorithm/results/file/delete/usr}") String userResultFileDeleteUri,
+    public DesktopAlgorithmResultService(
+            @Value("${ccd.rest.url.result}") String resultUrl,
+            @Value("${ccd.rest.path.result.algorithm:/algorithm}") String algorithPath,
+            @Value("${ccd.rest.appId}") String appId,
             RestTemplate restTemplate) {
+        this.resultUrl = resultUrl;
+        this.algorithPath = algorithPath;
         this.appId = appId;
-        this.userResultsUri = userResultsUri;
-        this.userResultFileDownloadUri = userResultFileDownloadUri;
-        this.userResultFileDeleteUri = userResultFileDeleteUri;
         this.restTemplate = restTemplate;
     }
 
     @Override
-    public List<ResultFileInfo> getUserResultFiles(final AppUser appUser) {
+    public List<ResultFileInfo> listResultFileInfo(final AppUser appUser) {
         List<ResultFileInfo> resultFileInfos = new LinkedList<>();
         try {
             List<ResultFileInfo> results = new LinkedList<>();
-            results.addAll(getUserLocalResultFiles(appUser.getAlgoResultDir()));
-            results.addAll(getUserRemoteResultFiles(appUser));
+            results.addAll(listLocalResultFileInfo(appUser.getAlgoResultDir()));
+            results.addAll(listRemoteResultFileInfo(appUser.getUsername()));
 
             ResultFileInfo[] fileInfos = results.toArray(new ResultFileInfo[results.size()]);
 
@@ -114,6 +111,79 @@ public class DesktopResultFileService extends AbstractResultFileService implemen
         }
 
         return resultFileInfos;
+    }
+
+    @Override
+    public void deleteResultFile(List<String> fileNames, AppUser appUser) {
+        List<String> remoteFileNames = new LinkedList<>();
+        fileNames.forEach(fileName -> {
+            Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
+            if (Files.exists(file)) {
+                try {
+                    Files.deleteIfExists(file);
+                } catch (IOException exception) {
+                    LOGGER.error(exception.getMessage());
+                }
+            } else {
+                remoteFileNames.add(fileName);
+            }
+        });
+
+        if (!remoteFileNames.isEmpty()) {
+            try {
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
+                HttpEntity<?> entity = new HttpEntity<>(remoteFileNames, headers);
+
+                URI url = UriComponentsBuilder.fromHttpUrl(this.resultUrl + this.algorithPath)
+                        .queryParam("usr", appUser.getUsername())
+                        .queryParam("appId", this.appId)
+                        .build().toUri();
+
+                restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class);
+            } catch (RestClientException exception) {
+                LOGGER.error(exception.getMessage());
+            }
+        }
+    }
+
+    private List<ResultFileInfo> listRemoteResultFileInfo(String username) {
+        List<ResultFileInfo> list = new LinkedList<>();
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+
+            URI url = UriComponentsBuilder.fromHttpUrl(this.resultUrl + this.algorithPath)
+                    .queryParam("usr", username)
+                    .queryParam("appId", this.appId)
+                    .build().toUri();
+
+            ResponseEntity<FileInfoResponse[]> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, FileInfoResponse[].class);
+            if (responseEntity.getStatusCode() == HttpStatus.OK) {
+                FileInfoResponse[] responseList = responseEntity.getBody();
+                for (FileInfoResponse response : responseList) {
+                    String fileName = response.getFileName();
+                    Long size = response.getSize();
+                    Long creationDate = response.getCreationDate();
+
+                    ResultFileInfo info = new ResultFileInfo();
+                    info.setFileName(fileName);
+                    info.setSize(FilePrint.humanReadableSize(size, true));
+                    info.setCreationDate(FilePrint.fileTimestamp(creationDate));
+                    info.setRawCreationDate(creationDate);
+                    info.setOnCloud(true);
+                    info.setError(fileName.startsWith("error"));
+
+                    list.add(info);
+                }
+            }
+        } catch (RestClientException exception) {
+            LOGGER.error(exception.getMessage());
+        }
+
+        return list;
     }
 
     @Override
@@ -154,6 +224,31 @@ public class DesktopResultFileService extends AbstractResultFileService implemen
                 LOGGER.error(String.format("Unable to download file '%s'.", fileName), exception);
             }
         }
+    }
+
+    private byte[] downloadRemoteFile(String username, String fileName) {
+        byte[] data = null;
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Accept", MediaType.TEXT_PLAIN_VALUE);
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+
+            URI url = UriComponentsBuilder.fromHttpUrl(this.resultUrl + this.algorithPath + "/" + fileName + "/")
+                    .queryParam("usr", username)
+                    .queryParam("appId", this.appId)
+                    .build().toUri();
+
+            ResponseEntity<ByteArrayResource> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, ByteArrayResource.class);
+            if (responseEntity.getStatusCode() == HttpStatus.OK) {
+                ByteArrayResource byteArrayResource = responseEntity.getBody();
+                data = byteArrayResource.getByteArray();
+            }
+        } catch (RestClientException exception) {
+            LOGGER.error(exception.getMessage());
+        }
+
+        return data;
     }
 
     @Override
@@ -223,111 +318,6 @@ public class DesktopResultFileService extends AbstractResultFileService implemen
         }
 
         return errorMsg;
-    }
-
-    @Override
-    public void deleteResultFile(List<String> fileNames, AppUser appUser) {
-        List<String> remoteFileNames = new LinkedList<>();
-        fileNames.forEach(fileName -> {
-            Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
-            if (Files.exists(file)) {
-                try {
-                    Files.deleteIfExists(file);
-                } catch (IOException exception) {
-                    LOGGER.error(exception.getMessage());
-                }
-            } else {
-                remoteFileNames.add(fileName);
-            }
-        });
-
-        String preUrl = String.format("%s/%s?appId=%s&fileName=", userResultFileDeleteUri, appUser.getUsername(), appId);
-        remoteFileNames.forEach(fileName -> {
-            restTemplate.delete(preUrl + fileName);
-        });
-    }
-
-    private List<ResultFileInfo> getUserRemoteResultFiles(AppUser appUser) {
-        List<ResultFileInfo> list = new LinkedList<>();
-
-        String[] keys = {"fileName", "size", "creationDate"};
-        try {
-            ResponseEntity<List> entity = restTemplate.getForEntity(String.format("%s/%s?appId=%s", userResultsUri, appUser.getUsername(), appId), List.class);
-            List response = entity.getBody();
-            response.forEach(i -> {
-                Map map = (Map) i;
-                String filename = (String) map.get(keys[0]);
-                Integer size = (Integer) map.get(keys[1]);
-                Long creationTime = (Long) map.get(keys[2]);
-
-                ResultFileInfo info = new ResultFileInfo();
-                info.setFileName(filename);
-                info.setSize(FilePrint.humanReadableSize(size, true));
-                info.setCreationDate(FilePrint.fileTimestamp(creationTime));
-                info.setRawCreationDate(creationTime);
-                info.setOnCloud(true);
-                info.setError(filename.startsWith("error"));
-
-                list.add(info);
-            });
-        } catch (RestClientException exception) {
-            LOGGER.error(exception.getMessage());
-        }
-
-        return list;
-    }
-
-    @Override
-    public List<SimpleGraph> compareResultFile(List<String> fileNames, AppUser appUser) {
-        List<SimpleGraph> graphs = new LinkedList<>();
-
-        List<String> remoteFileNames = new LinkedList<>();
-        fileNames.forEach(fileName -> {
-            Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
-            if (Files.exists(file)) {
-                try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
-                    graphs.add(SimpleGraphUtil.readInSimpleGraph(reader));
-                } catch (IOException exception) {
-                    LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
-                }
-            } else {
-                remoteFileNames.add(fileName);
-            }
-        });
-
-        remoteFileNames.forEach(fileName -> {
-            byte[] cloudData = downloadRemoteFile(appUser.getUsername(), fileName);
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(cloudData), Charset.defaultCharset()))) {
-                graphs.add(SimpleGraphUtil.readInSimpleGraph(reader));
-            } catch (IOException exception) {
-                LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
-            }
-        });
-
-        return graphs;
-    }
-
-    @Override
-    public void writeResultComparison(ResultComparison resultComparison, String fileNameOut, AppUser appUser) {
-        Path file = Paths.get(appUser.getResultComparisonDir(), fileNameOut);
-        try (BufferedWriter writer = Files.newBufferedWriter(file, StandardOpenOption.CREATE)) {
-            writeResultComparison(writer, resultComparison);
-        } catch (IOException exception) {
-            LOGGER.error(String.format("Unable to write file '%s'.", fileNameOut), exception);
-        }
-    }
-
-    private byte[] downloadRemoteFile(String username, String fileName) {
-        String uri = String.format("%s/%s?appId=%s&fileName=%s", userResultFileDownloadUri, username, appId, fileName);
-        ResponseEntity<ByteArrayResource> response = restTemplate.getForEntity(uri, ByteArrayResource.class);
-
-        byte[] data = null;
-        if (response.getStatusCode() == HttpStatus.OK) {
-            ByteArrayResource byteArrayResource = response.getBody();
-            data = byteArrayResource.getByteArray();
-        }
-
-        return data;
     }
 
 }

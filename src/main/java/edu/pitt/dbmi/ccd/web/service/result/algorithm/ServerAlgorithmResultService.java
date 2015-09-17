@@ -16,22 +16,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.service.result;
+package edu.pitt.dbmi.ccd.web.service.result.algorithm;
 
-import edu.pitt.dbmi.ccd.commons.graph.SimpleGraph;
-import edu.pitt.dbmi.ccd.commons.graph.SimpleGraphUtil;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.ResultFileInfo;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
-import edu.pitt.dbmi.ccd.web.model.result.ResultComparison;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -47,21 +42,22 @@ import org.springframework.stereotype.Service;
 
 /**
  *
- * Sep 5, 2015 8:40:22 PM
+ * Sep 15, 2015 12:18:31 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @Profile("server")
 @Service
-public class ServerResultFileService extends AbstractResultFileService implements ResultFileService {
+public class ServerAlgorithmResultService extends AbstractAlgorithmResultService implements AlgorithmResultService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServerResultFileService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServerAlgorithmResultService.class);
 
     @Override
-    public List<ResultFileInfo> getUserResultFiles(AppUser appUser) {
+    public List<ResultFileInfo> listResultFileInfo(AppUser appUser) {
         List<ResultFileInfo> results = new LinkedList<>();
+
         try {
-            List<ResultFileInfo> fileInfos = getUserLocalResultFiles(appUser.getAlgoResultDir());
+            List<ResultFileInfo> fileInfos = listLocalResultFileInfo(appUser.getAlgoResultDir());
             ResultFileInfo[] array = fileInfos.toArray(new ResultFileInfo[fileInfos.size()]);
 
             Arrays.sort(array, Collections.reverseOrder());  // sort
@@ -72,6 +68,18 @@ public class ServerResultFileService extends AbstractResultFileService implement
         }
 
         return results;
+    }
+
+    @Override
+    public void deleteResultFile(List<String> fileNames, AppUser appUser) {
+        fileNames.forEach(fileName -> {
+            Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
+            try {
+                Files.deleteIfExists(file);
+            } catch (IOException exception) {
+                LOGGER.error(exception.getMessage());
+            }
+        });
     }
 
     @Override
@@ -131,46 +139,6 @@ public class ServerResultFileService extends AbstractResultFileService implement
         }
 
         return errorMsg;
-    }
-
-    @Override
-    public void deleteResultFile(List<String> fileNames, AppUser appUser) {
-        fileNames.forEach(fileName -> {
-            Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
-            try {
-                Files.deleteIfExists(file);
-            } catch (IOException exception) {
-                LOGGER.error(exception.getMessage());
-            }
-        });
-    }
-
-    @Override
-    public List<SimpleGraph> compareResultFile(List<String> fileNames, AppUser appUser) {
-        List<SimpleGraph> graphs = new LinkedList<>();
-
-        fileNames.forEach(fileName -> {
-            Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
-            if (Files.exists(file)) {
-                try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
-                    graphs.add(SimpleGraphUtil.readInSimpleGraph(reader));
-                } catch (IOException exception) {
-                    LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
-                }
-            }
-        });
-
-        return graphs;
-    }
-
-    @Override
-    public void writeResultComparison(ResultComparison resultComparison, String fileNameOut, AppUser appUser) {
-        Path file = Paths.get(appUser.getResultComparisonDir(), fileNameOut);
-        try (BufferedWriter writer = Files.newBufferedWriter(file, StandardOpenOption.CREATE)) {
-            writeResultComparison(writer, resultComparison);
-        } catch (IOException exception) {
-            LOGGER.error(String.format("Unable to write file '%s'.", fileNameOut), exception);
-        }
     }
 
 }

@@ -16,25 +16,52 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.conf;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
+package edu.pitt.dbmi.ccd.web.dto.response;
 
 /**
  *
- * Aug 5, 2015 9:08:28 PM
+ * Sep 15, 2015 1:01:51 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-@Profile("desktop")
-@Configuration
-public class DesktopConfigurer {
+public class FileInfoResponse {
 
-    @Bean
-    public Boolean webapp() {
-        return Boolean.FALSE;
+    private String fileName;
+
+    private Long size;
+
+    private Long creationDate;
+
+    public FileInfoResponse() {
+    }
+
+    @Override
+    public String toString() {
+        return "FileInfoResponse{" + "fileName=" + fileName + ", size=" + size + ", creationDate=" + creationDate + '}';
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public Long getSize() {
+        return size;
+    }
+
+    public void setSize(Long size) {
+        this.size = size;
+    }
+
+    public Long getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Long creationDate) {
+        this.creationDate = creationDate;
     }
 
 }

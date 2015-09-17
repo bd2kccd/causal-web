@@ -19,7 +19,7 @@ $('#compare_btn').click(function () {
         $('#errorSelection').modal('show');
     } else {
         if ($('input.checkResult:checkbox:checked[value*=error]').length === 0) {
-            var url = $('#resultAction').attr('action') + '/compare';
+            var url = $('#resultAction').attr('action') + '/comparison';
             $('#resultAction').attr('action', url);
             $('form').submit();
         } else {

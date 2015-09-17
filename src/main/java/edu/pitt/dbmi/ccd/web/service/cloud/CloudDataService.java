@@ -18,15 +18,23 @@
  */
 package edu.pitt.dbmi.ccd.web.service.cloud;
 
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  *
@@ -43,7 +51,7 @@ public class CloudDataService {
 
     private final RestTemplate restTemplate;
 
-    private final String userDataHashUri;
+    private final String dataRestUrl;
 
     private final String appId;
 
@@ -51,11 +59,11 @@ public class CloudDataService {
     public CloudDataService(
             Boolean webapp,
             RestTemplate restTemplate,
-            @Value("${ccd.data.usr.hash.uri:http://localhost:8080/ccd-ws/data/usr}") String userDataHashUri,
+            @Value("${ccd.rest.url.data:http://localhost:9000/ccd-ws/data}") String dataRestUrl,
             @Value("${ccd.rest.appId:1}") String appId) {
         this.webapp = webapp;
         this.restTemplate = restTemplate;
-        this.userDataHashUri = userDataHashUri;
+        this.dataRestUrl = dataRestUrl;
         this.appId = appId;
     }
 
@@ -63,9 +71,19 @@ public class CloudDataService {
         Set<String> hashes = new HashSet<>();
 
         if (!webapp) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
+
+            URI url = UriComponentsBuilder.fromHttpUrl(dataRestUrl + "/hash")
+                    .queryParam("usr", username)
+                    .queryParam("appId", this.appId)
+                    .build().toUri();
             try {
-                Set<String> set = restTemplate.getForObject(String.format("%s/%s?appId=%s", userDataHashUri, username, appId), Set.class);
-                hashes.addAll(set);
+                HttpEntity<?> entity = new HttpEntity<>(headers);
+                ResponseEntity<Set> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, Set.class);
+                if (responseEntity.getStatusCode() == HttpStatus.OK) {
+                    hashes.addAll(responseEntity.getBody());
+                }
             } catch (RestClientException exception) {
                 LOGGER.error(exception.getMessage());
             }

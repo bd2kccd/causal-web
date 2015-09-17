@@ -25,15 +25,20 @@ import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.queue.model.AlgorithmJob;
 import edu.pitt.dbmi.ccd.queue.util.JobQueueUtility;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -44,6 +49,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  *
@@ -63,7 +69,7 @@ public class JobQueueController implements ViewPath {
 
     private final UserAccountService userAccountService;
 
-    private final String userAlgorithmJobUri;
+    private final String algorithmQueueUrl;
 
     private final String appId;
 
@@ -73,12 +79,12 @@ public class JobQueueController implements ViewPath {
     public JobQueueController(
             JobQueueInfoService jobQueueInfoService,
             UserAccountService userAccountService,
-            @Value("${ccd.job.algorithm.uri:http://localhost:9000/ccd-ws/job/algorithm}") String userAlgorithmJobUri,
+            @Value("${ccd.rest.url.queue.algorithm:http://localhost:9000/ccd-ws/queue/algorithm}") String algorithmQueueUrl,
             @Value("${ccd.rest.appId:1}") String appId,
             RestTemplate restTemplate) {
         this.jobQueueInfoService = jobQueueInfoService;
         this.userAccountService = userAccountService;
-        this.userAlgorithmJobUri = userAlgorithmJobUri;
+        this.algorithmQueueUrl = algorithmQueueUrl;
         this.appId = appId;
         this.restTemplate = restTemplate;
     }
@@ -88,7 +94,6 @@ public class JobQueueController implements ViewPath {
             @ModelAttribute("appUser") AppUser appUser,
             Model model) {
         List<AlgorithmJob> listItems = new ArrayList<>();
-
         UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
         List<JobQueueInfo> listJobs = jobQueueInfoService.findByUserAccounts(Collections.singleton(userAccount));
         listJobs.forEach(job -> {
@@ -98,21 +103,20 @@ public class JobQueueController implements ViewPath {
         model.addAttribute("jobList", listItems);
 
         List<AlgorithmJob> remoteListItems = new ArrayList<>();
-        String uri = String.format("%s?usr=%s&appId=%s", userAlgorithmJobUri, appUser.getUsername(), appId);
         try {
-            ResponseEntity<List> responseEntity = restTemplate.getForEntity(uri, List.class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+
+            URI url = UriComponentsBuilder.fromHttpUrl(this.algorithmQueueUrl)
+                    .queryParam("usr", appUser.getUsername())
+                    .queryParam("appId", this.appId)
+                    .build().toUri();
+
+            ResponseEntity<AlgorithmJob[]> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, AlgorithmJob[].class);
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
-                String[] keys = {"id", "algorName", "fileName", "status", "addedTime"};
-                List response = responseEntity.getBody();
-                response.forEach(i -> {
-                    Map map = (Map) i;
-                    long id = (Integer) map.get(keys[0]);
-                    String algorName = (String) map.get(keys[1]);
-                    String fileName = (String) map.get(keys[2]);
-                    String status = (String) map.get(keys[3]);
-                    String addedTime = (String) map.get(keys[4]);
-                    remoteListItems.add(new AlgorithmJob(id, algorName, fileName, status, addedTime));
-                });
+                AlgorithmJob[] algorithmJobs = responseEntity.getBody();
+                remoteListItems.addAll(Arrays.asList(algorithmJobs));
             }
         } catch (RestClientException exception) {
             LOGGER.error(exception.getMessage());
@@ -137,9 +141,17 @@ public class JobQueueController implements ViewPath {
             @PathVariable Long id,
             @ModelAttribute("appUser") AppUser appUser,
             Model model) {
-        String uri = String.format("%s/remove/%d?usr=%s&appId=%s", userAlgorithmJobUri, id, appUser.getUsername(), appId);
         try {
-            restTemplate.delete(uri);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+
+            URI url = UriComponentsBuilder.fromHttpUrl(this.algorithmQueueUrl + "/" + id)
+                    .queryParam("usr", appUser.getUsername())
+                    .queryParam("appId", this.appId)
+                    .build().toUri();
+
+            restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class);
         } catch (RestClientException exception) {
             LOGGER.error(exception.getMessage());
         }

@@ -26,6 +26,7 @@ import edu.pitt.dbmi.ccd.web.model.ResultFileInfo;
 import edu.pitt.dbmi.ccd.web.model.result.ResultComparison;
 import edu.pitt.dbmi.ccd.web.model.result.ResultComparisonData;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -72,10 +73,10 @@ public abstract class AbstractResultComparisonService {
         }
     }
 
-    protected List<ResultFileInfo> getUserLocalResultComparisonFiles(AppUser appUser) throws IOException {
+    protected List<ResultFileInfo> listLocalResultFileInfo(String directory) throws IOException {
         List<ResultFileInfo> fileInfos = new LinkedList<>();
 
-        List<Path> list = FileInfos.listDirectory(Paths.get(appUser.getResultComparisonDir()), false);
+        List<Path> list = FileInfos.listDirectory(Paths.get(directory), false);
         List<Path> files = list.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
 
         List<BasicFileInfo> results = FileInfos.listBasicPathInfo(files);
@@ -101,6 +102,25 @@ public abstract class AbstractResultComparisonService {
             response.setContentLength((int) Files.size(file));
 
             Files.copy(file, response.getOutputStream());
+        }
+    }
+
+    protected void writeResultComparison(BufferedWriter writer, ResultComparison resultComparison) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        List<String> fileNames = resultComparison.getFileNames();
+        fileNames.forEach(fileName -> {
+            sb.append(fileName);
+            sb.append("\t");
+        });
+        writer.write(sb.toString().trim());
+        writer.write("\n");
+
+        List<ResultComparisonData> comparisonData = resultComparison.getComparisonData();
+        for (ResultComparisonData comparison : comparisonData) {
+            writer.write(String.format("%s\t%s\t%s\n",
+                    comparison.getEdge(),
+                    comparison.isInAll() ? "1" : "0",
+                    comparison.isSimilarEndPoint() ? "1" : "0"));
         }
     }
 

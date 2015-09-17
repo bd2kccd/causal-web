@@ -18,10 +18,15 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
+import edu.pitt.dbmi.ccd.commons.graph.SimpleGraphComparison;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.SelectedFiles;
+import edu.pitt.dbmi.ccd.web.model.result.ResultComparison;
+import edu.pitt.dbmi.ccd.web.model.result.ResultComparisonData;
 import edu.pitt.dbmi.ccd.web.service.result.compare.ResultComparisonService;
+import java.util.List;
+import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +46,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
  */
 @Controller
 @SessionAttributes("appUser")
-@RequestMapping(value = "algorithm/result/comparison")
+@RequestMapping(value = "algorithm/results/comparison")
 public class AlgorithmResultComparisonController implements ViewPath {
 
     private final ResultComparisonService resultComparisonService;
@@ -53,7 +58,7 @@ public class AlgorithmResultComparisonController implements ViewPath {
 
     @RequestMapping(method = RequestMethod.GET)
     public String showRunResultsView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        model.addAttribute("itemList", resultComparisonService.getUserResultComparisonFiles(appUser));
+        model.addAttribute("itemList", resultComparisonService.list(appUser));
 
         return ALGO_RESULT_COMPARE_VIEW;
     }
@@ -69,6 +74,15 @@ public class AlgorithmResultComparisonController implements ViewPath {
         return ALGO_RESULT_COMPARISON_TABLE_VIEW;
     }
 
+    @RequestMapping(value = "delete", method = RequestMethod.POST)
+    public String deleteResultFile(
+            final SelectedFiles selectedFiles,
+            @ModelAttribute("appUser") final AppUser appUser) {
+        resultComparisonService.delete(selectedFiles.getFiles(), appUser);
+
+        return REDIRECT_ALGO_RESULT_COMPARE_VIEW;
+    }
+
     @RequestMapping(value = "download", method = RequestMethod.GET)
     public void downloadResultFile(
             @RequestParam(value = "file") final String fileName,
@@ -76,14 +90,41 @@ public class AlgorithmResultComparisonController implements ViewPath {
             @ModelAttribute("appUser") final AppUser appUser,
             final HttpServletRequest request,
             final HttpServletResponse response) {
-        resultComparisonService.downloadResultComparisonFile(fileName, remote, appUser, request, response);
+        resultComparisonService.download(fileName, remote, appUser, request, response);
     }
 
-    @RequestMapping(value = "delete", method = RequestMethod.POST)
-    public String deleteResultFile(
+    @RequestMapping(method = RequestMethod.POST)
+    public String compareResultFile(
             final SelectedFiles selectedFiles,
-            @ModelAttribute("appUser") final AppUser appUser) {
-        resultComparisonService.deleteResultComparisonFile(selectedFiles.getFiles(), appUser);
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        List<String> fileNames = selectedFiles.getFiles();
+        if (!fileNames.isEmpty()) {
+            SimpleGraphComparison simpleGraphComparison = new SimpleGraphComparison();
+            simpleGraphComparison.compare(resultComparisonService.compareResultFile(fileNames, appUser));
+
+            Set<String> distinctEdges = simpleGraphComparison.getDistinctEdges();
+            Set<String> edgesInAll = simpleGraphComparison.getEdgesInAll();
+            Set<String> sameEndPoints = simpleGraphComparison.getSameEndPoints();
+
+            String fileName = "result_comparison_" + System.currentTimeMillis() + ".txt";
+
+            ResultComparison resultComparison = new ResultComparison(fileName);
+            resultComparison.getFileNames().addAll(fileNames);
+
+            List<ResultComparisonData> comparisonResults = resultComparison.getComparisonData();
+            int countIndex = 0;
+            for (String edge : distinctEdges) {
+                ResultComparisonData rc = new ResultComparisonData(edge);
+                rc.setInAll(edgesInAll.contains(edge));
+                rc.setSimilarEndPoint(sameEndPoints.contains(edge));
+                rc.setCountIndex(++countIndex);
+
+                comparisonResults.add(rc);
+            }
+
+            resultComparisonService.writeResultComparison(resultComparison, fileName, appUser);
+        }
 
         return REDIRECT_ALGO_RESULT_COMPARE_VIEW;
     }

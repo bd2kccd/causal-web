@@ -21,6 +21,10 @@ package edu.pitt.dbmi.ccd.web.service.mail;
 import javax.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -29,6 +33,8 @@ import org.springframework.web.client.RestTemplate;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
+@Profile("desktop")
+@Service
 public class DesktopMailService implements MailService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DesktopMailService.class);
@@ -39,7 +45,11 @@ public class DesktopMailService implements MailService {
 
     private final RestTemplate restTemplate;
 
-    public DesktopMailService(String feedbackUri, String appId, RestTemplate restTemplate) {
+    @Autowired(required = true)
+    public DesktopMailService(
+            @Value("${ccd.rest.url.mail.feedback}") String feedbackUri,
+            @Value("${ccd.rest.appId}") String appId,
+            RestTemplate restTemplate) {
         this.feedbackUri = feedbackUri;
         this.appId = appId;
         this.restTemplate = restTemplate;
@@ -52,8 +62,12 @@ public class DesktopMailService implements MailService {
 
     @Override
     public void sendFeedback(String email, String feedback) throws MessagingException {
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.postForEntity(feedbackUri, new FeedbackRequest(email, feedback, appId), String.class);
+        String uri = feedbackUri + "?appId=" + appId;
+        if (email == null) {
+            restTemplate.postForEntity(uri, new FeedbackRequest(feedback), String.class);
+        } else {
+            restTemplate.postForEntity(uri, new FeedbackRequest(email, feedback), String.class);
+        }
     }
 
     private class FeedbackRequest {
@@ -62,15 +76,16 @@ public class DesktopMailService implements MailService {
 
         private String feedback;
 
-        private String appId;
-
         public FeedbackRequest() {
         }
 
-        public FeedbackRequest(String email, String feedback, String appId) {
+        public FeedbackRequest(String email, String feedback) {
             this.email = email;
             this.feedback = feedback;
-            this.appId = appId;
+        }
+
+        public FeedbackRequest(String feedback) {
+            this.feedback = feedback;
         }
 
         public String getEmail() {
@@ -89,13 +104,6 @@ public class DesktopMailService implements MailService {
             this.feedback = feedback;
         }
 
-        public String getAppId() {
-            return appId;
-        }
-
-        public void setAppId(String appId) {
-            this.appId = appId;
-        }
     }
 
 }

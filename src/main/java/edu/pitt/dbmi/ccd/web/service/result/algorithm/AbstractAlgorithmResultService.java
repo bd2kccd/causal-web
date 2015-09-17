@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.service.result;
+package edu.pitt.dbmi.ccd.web.service.result.algorithm;
 
 import edu.pitt.dbmi.ccd.commons.file.FilePrint;
 import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
@@ -43,11 +43,11 @@ import org.springframework.http.MediaType;
 
 /**
  *
- * Sep 6, 2015 12:10:33 PM
+ * Sep 15, 2015 12:14:00 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public abstract class AbstractResultFileService {
+public class AbstractAlgorithmResultService {
 
     protected void downloadLocalResultFile(String fileName, AppUser appUser, HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType(MediaType.TEXT_PLAIN_VALUE);
@@ -62,7 +62,7 @@ public abstract class AbstractResultFileService {
         Files.copy(file, response.getOutputStream());
     }
 
-    protected List<ResultFileInfo> getUserLocalResultFiles(String directory) throws IOException {
+    protected List<ResultFileInfo> listLocalResultFileInfo(String directory) throws IOException {
         List<ResultFileInfo> fileInfos = new LinkedList<>();
 
         List<Path> list = FileInfos.listDirectory(Paths.get(directory), false);

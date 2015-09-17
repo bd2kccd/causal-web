@@ -18,15 +18,19 @@
  */
 package edu.pitt.dbmi.ccd.web.service.result.compare;
 
+import edu.pitt.dbmi.ccd.commons.graph.SimpleGraph;
+import edu.pitt.dbmi.ccd.commons.graph.SimpleGraphUtil;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.ResultFileInfo;
 import edu.pitt.dbmi.ccd.web.model.result.ResultComparison;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -52,11 +56,11 @@ public class ServerResultComparisonService extends AbstractResultComparisonServi
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerResultComparisonService.class);
 
     @Override
-    public List<ResultFileInfo> getUserResultComparisonFiles(AppUser appUser) {
+    public List<ResultFileInfo> list(AppUser appUser) {
         List<ResultFileInfo> results = new LinkedList<>();
 
         try {
-            List<ResultFileInfo> fileInfos = getUserLocalResultComparisonFiles(appUser);
+            List<ResultFileInfo> fileInfos = listLocalResultFileInfo(appUser.getResultComparisonDir());
             ResultFileInfo[] array = fileInfos.toArray(new ResultFileInfo[fileInfos.size()]);
 
             Arrays.sort(array, Collections.reverseOrder());  // sort
@@ -67,6 +71,35 @@ public class ServerResultComparisonService extends AbstractResultComparisonServi
         }
 
         return results;
+    }
+
+    @Override
+    public void delete(List<String> fileNames, AppUser appUser) {
+        fileNames.forEach(fileName -> {
+            Path file = Paths.get(appUser.getResultComparisonDir(), fileName);
+            try {
+                Files.deleteIfExists(file);
+            } catch (IOException exception) {
+                LOGGER.error(exception.getMessage());
+            }
+        });
+    }
+
+    @Override
+    public void download(String fileName, boolean remote, AppUser appUser, HttpServletRequest request, HttpServletResponse response) {
+        if (!remote) {
+            response.setContentType(MediaType.TEXT_PLAIN_VALUE);
+
+            String headerKey = "Content-Disposition";
+            String headerValue = String.format("attachment; filename=\"%s\"", fileName);
+            response.setHeader(headerKey, headerValue);
+
+            try {
+                downloadLocalResultFile(fileName, appUser, request, response);
+            } catch (IOException exception) {
+                LOGGER.error(String.format("Unable to download file '%s'.", fileName), exception);
+            }
+        }
     }
 
     @Override
@@ -86,32 +119,31 @@ public class ServerResultComparisonService extends AbstractResultComparisonServi
     }
 
     @Override
-    public void downloadResultComparisonFile(String fileName, boolean remote, AppUser appUser, HttpServletRequest request, HttpServletResponse response) {
-        if (!remote) {
-            response.setContentType(MediaType.TEXT_PLAIN_VALUE);
+    public List<SimpleGraph> compareResultFile(List<String> fileNames, AppUser appUser) {
+        List<SimpleGraph> graphs = new LinkedList<>();
 
-            String headerKey = "Content-Disposition";
-            String headerValue = String.format("attachment; filename=\"%s\"", fileName);
-            response.setHeader(headerKey, headerValue);
-
-            try {
-                downloadLocalResultFile(fileName, appUser, request, response);
-            } catch (IOException exception) {
-                LOGGER.error(String.format("Unable to download file '%s'.", fileName), exception);
+        fileNames.forEach(fileName -> {
+            Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
+            if (Files.exists(file)) {
+                try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
+                    graphs.add(SimpleGraphUtil.readInSimpleGraph(reader));
+                } catch (IOException exception) {
+                    LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
+                }
             }
-        }
+        });
+
+        return graphs;
     }
 
     @Override
-    public void deleteResultComparisonFile(List<String> fileNames, AppUser appUser) {
-        fileNames.forEach(fileName -> {
-            Path file = Paths.get(appUser.getResultComparisonDir(), fileName);
-            try {
-                Files.deleteIfExists(file);
-            } catch (IOException exception) {
-                LOGGER.error(exception.getMessage());
-            }
-        });
+    public void writeResultComparison(ResultComparison resultComparison, String fileNameOut, AppUser appUser) {
+        Path file = Paths.get(appUser.getResultComparisonDir(), fileNameOut);
+        try (BufferedWriter writer = Files.newBufferedWriter(file, StandardOpenOption.CREATE)) {
+            writeResultComparison(writer, resultComparison);
+        } catch (IOException exception) {
+            LOGGER.error(String.format("Unable to write file '%s'.", fileNameOut), exception);
+        }
     }
 
 }

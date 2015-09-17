@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.service.result.compare;
 
+import edu.pitt.dbmi.ccd.commons.graph.SimpleGraph;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.ResultFileInfo;
 import edu.pitt.dbmi.ccd.web.model.result.ResultComparison;
@@ -33,12 +34,16 @@ import javax.servlet.http.HttpServletResponse;
  */
 public interface ResultComparisonService {
 
-    public List<ResultFileInfo> getUserResultComparisonFiles(AppUser appUser);
+    public List<ResultFileInfo> list(AppUser appUser);
 
     public ResultComparison readInResultComparisonFile(String fileName, boolean remote, AppUser appUser);
 
-    public void downloadResultComparisonFile(String fileName, boolean remote, AppUser appUser, HttpServletRequest request, HttpServletResponse response);
+    public void download(String fileName, boolean remote, AppUser appUser, HttpServletRequest request, HttpServletResponse response);
 
-    public void deleteResultComparisonFile(List<String> fileNames, AppUser appUser);
+    public void delete(List<String> fileNames, AppUser appUser);
+
+    public List<SimpleGraph> compareResultFile(List<String> fileNames, AppUser appUser);
+
+    public void writeResultComparison(ResultComparison resultComparison, String fileNameOut, AppUser appUser);
 
 }

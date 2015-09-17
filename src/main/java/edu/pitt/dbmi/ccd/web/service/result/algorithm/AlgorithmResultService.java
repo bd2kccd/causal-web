@@ -16,13 +16,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.service.result;
+package edu.pitt.dbmi.ccd.web.service.result.algorithm;
 
-import edu.pitt.dbmi.ccd.commons.graph.SimpleGraph;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.ResultFileInfo;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
-import edu.pitt.dbmi.ccd.web.model.result.ResultComparison;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
@@ -30,13 +28,15 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  *
- * Sep 5, 2015 8:08:41 PM
+ * Sep 15, 2015 12:17:45 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public interface ResultFileService {
+public interface AlgorithmResultService {
 
-    public List<ResultFileInfo> getUserResultFiles(AppUser appUser);
+    public List<ResultFileInfo> listResultFileInfo(AppUser appUser);
+
+    public void deleteResultFile(List<String> fileNames, AppUser appUser);
 
     public void downloadResultFile(String fileName, boolean remote, AppUser appUser, HttpServletRequest request, HttpServletResponse response);
 
@@ -45,11 +45,5 @@ public interface ResultFileService {
     public List<Node> getGraphNodes(String fileName, boolean remote, AppUser appUser);
 
     public List<String> getErrorMessages(String fileName, boolean remote, AppUser appUser);
-
-    public void deleteResultFile(List<String> fileNames, AppUser appUser);
-
-    public List<SimpleGraph> compareResultFile(List<String> fileNames, AppUser appUser);
-
-    public void writeResultComparison(ResultComparison resultComparison, String fileNameOut, AppUser appUser);
 
 }

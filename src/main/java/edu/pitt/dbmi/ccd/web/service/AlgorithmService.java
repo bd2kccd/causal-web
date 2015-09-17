@@ -24,6 +24,7 @@ import edu.pitt.dbmi.ccd.db.service.JobQueueInfoService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.cloud.dto.JobRequest;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -35,9 +36,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  *
@@ -56,7 +62,7 @@ public class AlgorithmService {
 
     private final String appId;
 
-    private final String userAlgorithmJobUri;
+    private final String algorithmQueueUrl;
 
     private final RestTemplate restTemplate;
 
@@ -65,19 +71,27 @@ public class AlgorithmService {
             UserAccountService userAccountService,
             JobQueueInfoService jobQueueInfoService,
             @Value("${ccd.rest.appId:1}") String appId,
-            @Value("${ccd.job.algorithm.uri:http://localhost:9000/ccd-ws/job/algorithm}") String userAlgorithmJobUri,
+            @Value("${ccd.rest.url.queue.algorithm:http://localhost:9000/ccd-ws/queue/algorithm}") String algorithmQueueUrl,
             RestTemplate restTemplate) {
         this.userAccountService = userAccountService;
         this.jobQueueInfoService = jobQueueInfoService;
         this.appId = appId;
-        this.userAlgorithmJobUri = userAlgorithmJobUri;
+        this.algorithmQueueUrl = algorithmQueueUrl;
         this.restTemplate = restTemplate;
     }
 
     public void runRemotely(JobRequest jobRequest, AppUser appUser) {
-        String uri = String.format("%s/submit?usr=%s&appId=%s", userAlgorithmJobUri, appUser.getUsername(), appId);
         try {
-            restTemplate.postForEntity(uri, jobRequest, null);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
+            HttpEntity<?> entity = new HttpEntity<>(jobRequest, headers);
+
+            URI url = UriComponentsBuilder.fromHttpUrl(this.algorithmQueueUrl + "/submit")
+                    .queryParam("usr", appUser.getUsername())
+                    .queryParam("appId", this.appId)
+                    .build().toUri();
+
+            restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
         } catch (RestClientException exception) {
             LOGGER.error(exception.getMessage());
         }
