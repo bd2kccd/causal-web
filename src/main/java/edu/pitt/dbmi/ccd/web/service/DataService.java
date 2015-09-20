@@ -18,12 +18,12 @@
  */
 package edu.pitt.dbmi.ccd.web.service;
 
-import edu.pitt.dbmi.ccd.web.service.cloud.CloudDataService;
 import edu.pitt.dbmi.ccd.commons.file.FilePrint;
 import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
 import edu.pitt.dbmi.ccd.db.entity.DataFile;
 import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
+import edu.pitt.dbmi.ccd.db.entity.FileDelimiter;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.entity.VariableType;
 import edu.pitt.dbmi.ccd.db.service.DataFileService;
@@ -33,6 +33,7 @@ import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.model.AttributeValue;
 import edu.pitt.dbmi.ccd.web.model.data.DataListItem;
 import edu.pitt.dbmi.ccd.web.model.data.DataSummary;
+import edu.pitt.dbmi.ccd.web.service.cloud.CloudDataService;
 import edu.pitt.dbmi.ccd.web.util.MessageDigestHash;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -251,13 +252,12 @@ public class DataService {
         try {
             List<Path> list = FileInfos.listDirectory(Paths.get(dataDir), false);
             List<Path> files = list.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
+            for (Path file : files) {
+                BasicFileInfo info = FileInfos.basicPathInfo(file);
 
-            List<BasicFileInfo> result = FileInfos.listBasicPathInfo(files);
-            result.forEach(info -> {
                 String fileName = info.getFilename();
                 String creationDate = FilePrint.fileTimestamp(info.getCreationTime());
                 String size = FilePrint.humanReadableSize(info.getSize(), true);
-
                 DataListItem item = new DataListItem(fileName, creationDate, size);
 
                 DataFile dataFile = dbDataFile.get(fileName);
@@ -268,26 +268,36 @@ public class DataService {
                     dataFile.setCreationTime(new Date(info.getCreationTime()));
                     dataFile.setFileSize(info.getSize());
                     dataFile.setLastModifiedTime(new Date(info.getLastModifiedTime()));
-                    dataFile.setDataFileInfo(null);
                     dataFile.setUserAccounts(Collections.singleton(userAccount));
 
                     dataFileToSave.add(dataFile);
                 }
 
                 DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
-                if (dataFileInfo != null) {
-                    item.setDelimiter(dataFileInfo.getFileDelimiter().getName());
-                    item.setVariableType(dataFileInfo.getVariableType().getName());
-
-                    if (remoteFileHashes.contains(dataFileInfo.getMd5checkSum())) {
-                        item.setOnCloud(true);
+                if (dataFileInfo == null) {
+                    dataFileInfo = new DataFileInfo();
+                    dataFileInfo.setMd5checkSum(MessageDigestHash.computeMD5Hash(file));
+                    dataFile.setDataFileInfo(dataFileInfo);
+                } else {
+                    FileDelimiter delimiter = dataFileInfo.getFileDelimiter();
+                    if (delimiter != null) {
+                        item.setDelimiter(delimiter.getName());
                     }
+
+                    VariableType variableType = dataFileInfo.getVariableType();
+                    if (variableType != null) {
+                        item.setVariableType(variableType.getName());
+                    }
+                }
+
+                if (remoteFileHashes.contains(dataFileInfo.getMd5checkSum())) {
+                    item.setOnCloud(true);
                 }
 
                 dbDataFile.remove(fileName);
 
                 listItems.add(item);
-            });
+            }
         } catch (IOException exception) {
             LOGGER.error(exception.getMessage());
         }
@@ -314,9 +324,12 @@ public class DataService {
         DataFile dataFile = dataFileService.findByAbsolutePathAndName(absolutePath, name);
         DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
         if (dataFileInfo != null) {
-            fileInfo.add(new AttributeValue("Row:", String.valueOf(dataFileInfo.getNumOfRows())));
-            fileInfo.add(new AttributeValue("Column:", String.valueOf(dataFileInfo.getNumOfColumns())));
-            fileInfo.add(new AttributeValue("MD5:", dataFileInfo.getMd5checkSum()));
+            Integer numOfRows = dataFileInfo.getNumOfRows();
+            Integer numOfCols = dataFileInfo.getNumOfColumns();
+            String md5CheckSum = dataFileInfo.getMd5checkSum();
+            fileInfo.add(new AttributeValue("Row:", (numOfRows == null) ? "" : numOfRows.toString()));
+            fileInfo.add(new AttributeValue("Column:", (numOfCols == null) ? "" : numOfCols.toString()));
+            fileInfo.add(new AttributeValue("MD5:", (md5CheckSum == null) ? "" : md5CheckSum));
 //            fileInfo.add(new AttributeValue("Missing Value:", dataFileInfo.getMissingValue() ? "Yes" : "No"));
         }
 
@@ -366,11 +379,19 @@ public class DataService {
         DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
         if (dataFileInfo == null) {
             dataSummary.setVariableType(variableTypeService.findByName("continuous"));
-            dataSummary.setFileDelimiter(fileDelimiterService.getFileDelimiterRepository()
-                    .findByName("tab"));
+            dataSummary.setFileDelimiter(fileDelimiterService.getFileDelimiterRepository().findByName("tab"));
         } else {
-            dataSummary.setVariableType(dataFileInfo.getVariableType());
-            dataSummary.setFileDelimiter(dataFileInfo.getFileDelimiter());
+            VariableType variableType = dataFileInfo.getVariableType();
+            if (variableType == null) {
+                variableType = variableTypeService.findByName("continuous");
+            }
+            dataSummary.setVariableType(variableType);
+
+            FileDelimiter delimiter = dataFileInfo.getFileDelimiter();
+            if (delimiter == null) {
+                delimiter = fileDelimiterService.getFileDelimiterRepository().findByName("tab");
+            }
+            dataSummary.setFileDelimiter(delimiter);
         }
 
         return dataSummary;

@@ -21,7 +21,7 @@ package edu.pitt.dbmi.ccd.web.ctrl.data;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.data.ResumableChunk;
-import edu.pitt.dbmi.ccd.web.service.BigDataFileManagerService;
+import edu.pitt.dbmi.ccd.web.service.data.DataFileManagerService;
 import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -46,10 +46,10 @@ public class DataUploadController implements ViewPath {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataUploadController.class);
 
-    private final BigDataFileManagerService fileManager;
+    private final DataFileManagerService fileManager;
 
     @Autowired(required = true)
-    public DataUploadController(BigDataFileManagerService fileManager) {
+    public DataUploadController(DataFileManagerService fileManager) {
         this.fileManager = fileManager;
     }
 
@@ -60,7 +60,7 @@ public class DataUploadController implements ViewPath {
 
     @RequestMapping(value = "chunk", method = RequestMethod.GET)
     public void checkChunkExistence(HttpServletResponse response, ResumableChunk chunk, @ModelAttribute("appUser") AppUser appUser) throws IOException {
-        if (fileManager.chunkExists(chunk.getResumableIdentifier(), chunk.getResumableChunkNumber(), chunk.getResumableChunkSize(), appUser.getDataDirectory())) {
+        if (fileManager.chunkExists(chunk, appUser)) {
             response.setStatus(200); // do not upload chunk again
         } else {
             response.setStatus(404); // chunk not on the server, upload it
@@ -69,17 +69,15 @@ public class DataUploadController implements ViewPath {
 
     @RequestMapping(value = "chunk", method = RequestMethod.POST)
     public void processChunkUpload(HttpServletResponse response, ResumableChunk chunk, @ModelAttribute("appUser") AppUser appUser) throws IOException {
-        if (!fileManager.isSupported(chunk.getResumableFilename())) {
+        if (!fileManager.isSupported(chunk)) {
             response.setStatus(501); // cancel the whole upload
             return;
         }
 
         try {
-            fileManager.storeChunk(chunk.getResumableIdentifier(), chunk.getResumableChunkNumber(), chunk.getFile().getInputStream(), appUser.getDataDirectory());
-            if (fileManager.allChunksUploaded(chunk.getResumableIdentifier(), chunk.getResumableChunkSize(), chunk.getResumableTotalSize(), chunk.getResumableTotalChunks(), appUser.getDataDirectory())) {
-                String md5 = fileManager.mergeAndDeleteWithMd5(chunk.getResumableFilename(), chunk.getResumableIdentifier(), chunk.getResumableChunkSize(), chunk.getResumableTotalSize(), chunk.getResumableTotalChunks(), appUser.getDataDirectory());
-
-                response.getWriter().println(md5);
+            fileManager.storeChunk(chunk, appUser);
+            if (fileManager.allChunksUploaded(chunk, appUser)) {
+                response.getWriter().println(fileManager.mergeDeleteSave(chunk, appUser));
             }
         } catch (IOException exception) {
             LOGGER.error(
