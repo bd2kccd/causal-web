@@ -18,7 +18,6 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
-import edu.pitt.dbmi.ccd.commons.file.FilePrint;
 import edu.pitt.dbmi.ccd.db.entity.DataFile;
 import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
 import edu.pitt.dbmi.ccd.db.entity.FileDelimiter;
@@ -28,9 +27,7 @@ import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.db.service.FileDelimiterService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.service.DataService;
-import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 /**
  *
@@ -75,20 +72,10 @@ public abstract class AbstractAlgorithmController {
         return fileDelimiter.getValue();
     }
 
-    protected Map<String, String> directoryFileListing(String baseDir, String username) {
-        Map<String, String> map = new TreeMap<>();
-
+    protected Map<String, String> directoryFileListing(String username) {
         VariableType variableType = variableTypeService.findByName("continuous");
-        List<DataFile> dataFiles = dataService.listDirectorySync(baseDir, username, variableType);
-        dataFiles.forEach(file -> {
-            String size = FilePrint.humanReadableSize(file.getFileSize(), true);
-            String name = file.getName();
-            String description = String.format("%s (%s)", name, size);
 
-            map.put(name, description);
-        });
-
-        return map;
+        return dataService.listAlgoDataset(username, variableType);
     }
 
 }

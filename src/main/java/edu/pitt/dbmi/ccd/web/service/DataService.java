@@ -46,6 +46,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,142 +88,31 @@ public class DataService {
         this.cloudDataService = cloudDataService;
     }
 
-    public List<DataFile> listDirectorySync(String dataDir, String username, VariableType variableType) {
-        if (variableType == null) {
-            return new LinkedList<>();
-        }
+    public Map<String, String> listAlgoDataset(String username, VariableType variableType) {
+        Map<String, String> map = new TreeMap<>();
 
-        List<DataFile> results = new LinkedList<>();
+        if (variableType != null) {
+            UserAccount userAccount = userAccountService.findByUsername(username);
 
-        UserAccount userAccount = userAccountService.findByUsername(username);
-
-        //get the files stored in the database
-        List<DataFile> dbDataFiles = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
-        Map<String, DataFile> dbDataFileMap = new HashMap<>();
-        dbDataFiles.forEach(file -> {
-            dbDataFileMap.put(file.getName(), file);
-        });
-
-        List<DataFile> dataFileToSave = new LinkedList<>();
-        try {
-            List<Path> localFileAndDir = FileInfos.listDirectory(Paths.get(dataDir), false);
-            List<Path> localFiles = localFileAndDir.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
-
-            List<BasicFileInfo> localFileInfos = FileInfos.listBasicPathInfo(localFiles);
-            localFileInfos.forEach(info -> {
-                String fileName = info.getFilename();
-
-                DataFile dataFile = dbDataFileMap.get(fileName);
-                if (dataFile == null) {
-                    dataFile = new DataFile();
-                    dataFile.setName(fileName);
-                    dataFile.setAbsolutePath(info.getAbsolutePath().toString());
-                    dataFile.setCreationTime(new Date(info.getCreationTime()));
-                    dataFile.setFileSize(info.getSize());
-                    dataFile.setLastModifiedTime(new Date(info.getLastModifiedTime()));
-                    dataFile.setDataFileInfo(null);
-                    dataFile.setUserAccounts(Collections.singleton(userAccount));
-
-                    dataFileToSave.add(dataFile);
-                } else {
-                    dbDataFileMap.remove(fileName);
-                }
-
+            //get the files stored in the database
+            List<DataFile> dbDataFiles = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
+            dbDataFiles.forEach(dataFile -> {
                 DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
                 if (dataFileInfo != null) {
                     VariableType varType = dataFileInfo.getVariableType();
                     if (varType != null && varType.getId().equals(variableType.getId())) {
-                        results.add(dataFile);
+                        String size = FilePrint.humanReadableSize(dataFile.getFileSize(), true);
+                        String name = dataFile.getName();
+                        String description = String.format("%s (%s)", name, size);
+
+                        map.put(name, description);
                     }
                 }
             });
-        } catch (IOException exception) {
-            LOGGER.error(exception.getMessage());
+
         }
 
-        // save all the new files found in the workspace
-        if (!dataFileToSave.isEmpty()) {
-            dataFileService.saveDataFile(dataFileToSave);
-        }
-
-        List<DataFile> dataFileToRemove = new LinkedList<>();
-        Set<String> keySet = dbDataFileMap.keySet();
-        keySet.forEach(key -> {
-            dataFileToRemove.add(dbDataFileMap.get(key));
-        });
-        if (!dataFileToRemove.isEmpty()) {
-            dataFileService.deleteDataFile(dataFileToRemove);
-        }
-
-        return results;
-    }
-
-    /**
-     * Read the retrieve the data files from the user's local directory and sync
-     * with the list in the database.
-     *
-     * @param username application username
-     * @param dataDir directory contain user's data file
-     * @return
-     */
-    public List<DataFile> listDirectorySync(String dataDir, String username) {
-        List<DataFile> results = new LinkedList<>();
-
-        UserAccount userAccount = userAccountService.findByUsername(username);
-
-        //get the files stored in the database
-        List<DataFile> dbDataFiles = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
-        Map<String, DataFile> dbDataFileMap = new HashMap<>();
-        dbDataFiles.forEach(file -> {
-            dbDataFileMap.put(file.getName(), file);
-        });
-
-        List<DataFile> dataFileToSave = new LinkedList<>();
-        try {
-            List<Path> localFileAndDir = FileInfos.listDirectory(Paths.get(dataDir), false);
-            List<Path> localFiles = localFileAndDir.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
-
-            List<BasicFileInfo> localFileInfos = FileInfos.listBasicPathInfo(localFiles);
-            localFileInfos.forEach(info -> {
-                String fileName = info.getFilename();
-
-                DataFile dataFile = dbDataFileMap.get(fileName);
-                if (dataFile == null) {
-                    dataFile = new DataFile();
-                    dataFile.setName(fileName);
-                    dataFile.setAbsolutePath(info.getAbsolutePath().toString());
-                    dataFile.setCreationTime(new Date(info.getCreationTime()));
-                    dataFile.setFileSize(info.getSize());
-                    dataFile.setLastModifiedTime(new Date(info.getLastModifiedTime()));
-                    dataFile.setDataFileInfo(null);
-                    dataFile.setUserAccounts(Collections.singleton(userAccount));
-
-                    dataFileToSave.add(dataFile);
-                } else {
-                    dbDataFileMap.remove(fileName);
-                }
-
-                results.add(dataFile);
-            });
-        } catch (IOException exception) {
-            LOGGER.error(exception.getMessage());
-        }
-
-        // save all the new files found in the workspace
-        if (!dataFileToSave.isEmpty()) {
-            dataFileService.saveDataFile(dataFileToSave);
-        }
-
-        List<DataFile> dataFileToRemove = new LinkedList<>();
-        Set<String> keySet = dbDataFileMap.keySet();
-        keySet.forEach(key -> {
-            dataFileToRemove.add(dbDataFileMap.get(key));
-        });
-        if (!dataFileToRemove.isEmpty()) {
-            dataFileService.deleteDataFile(dataFileToRemove);
-        }
-
-        return results;
+        return map;
     }
 
     public List<DataListItem> createListItem(String username, String dataDir, VariableType variableType) {
@@ -329,9 +219,9 @@ public class DataService {
             Integer numOfRows = dataFileInfo.getNumOfRows();
             Integer numOfCols = dataFileInfo.getNumOfColumns();
             String md5CheckSum = dataFileInfo.getMd5checkSum();
-            fileInfo.add(new AttributeValue("Row:", (numOfRows == null) ? "" : numOfRows.toString()));
-            fileInfo.add(new AttributeValue("Column:", (numOfCols == null) ? "" : numOfCols.toString()));
-            fileInfo.add(new AttributeValue("MD5:", (md5CheckSum == null) ? "" : md5CheckSum));
+            fileInfo.add(new AttributeValue("Row(s):", (numOfRows == null) ? "" : numOfRows.toString()));
+            fileInfo.add(new AttributeValue("Column(s):", (numOfCols == null) ? "" : numOfCols.toString()));
+            fileInfo.add(new AttributeValue("MD5 Checksum:", (md5CheckSum == null) ? "" : md5CheckSum));
 //            fileInfo.add(new AttributeValue("Missing Value:", dataFileInfo.getMissingValue() ? "Yes" : "No"));
         }
 
@@ -367,7 +257,7 @@ public class DataService {
 
         fileInfo.add(new AttributeValue("Row(s):", String.valueOf(dataFileInfo.getNumOfRows())));
         fileInfo.add(new AttributeValue("Column(s):", String.valueOf(dataFileInfo.getNumOfColumns())));
-        fileInfo.add(new AttributeValue("File Checksum:", dataFileInfo.getMd5checkSum()));
+        fileInfo.add(new AttributeValue("MD5 Checksum:", dataFileInfo.getMd5checkSum()));
 //        fileInfo.add(new AttributeValue("Missing Value:", dataFileInfo.getMissingValue() ? "Yes" : "No"));
 
         return fileInfo;
