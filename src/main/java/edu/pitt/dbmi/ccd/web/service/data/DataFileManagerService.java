@@ -27,7 +27,6 @@ import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.data.ResumableChunk;
-import edu.pitt.dbmi.ccd.web.util.MessageDigestHash;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -132,7 +131,7 @@ public class DataFileManagerService {
             }
         }
 
-        String md5checkSum = saveDataFile(directory, fileName, appUser.getUsername());
+        String md5checkSum = saveDataFile(newFile, appUser.getUsername());
         try {
             deleteNonEmptyDir(Paths.get(directory, identifier));
         } catch (IOException exception) {
@@ -142,23 +141,28 @@ public class DataFileManagerService {
         return md5checkSum;
     }
 
-    private String saveDataFile(String directory, String fileName, String username) throws IOException {
-        Path file = Paths.get(directory, fileName);
-
+    private String saveDataFile(Path file, String username) throws IOException {
         UserAccount userAccount = userAccountService.findByUsername(username);
+
         BasicFileInfo fileInfo = FileInfos.basicPathInfo(file);
+        String directory = fileInfo.getAbsolutePath().toString();
+        String fileName = fileInfo.getFilename();
+        long size = fileInfo.getSize();
+        long creationTime = fileInfo.getCreationTime();
+        long lastModifiedTime = fileInfo.getLastModifiedTime();
+
         DataFile dataFile = dataFileService.findByAbsolutePathAndName(directory, fileName);
         if (dataFile == null) {
             dataFile = new DataFile();
+            dataFile.setUserAccounts(Collections.singleton(userAccount));
         }
         dataFile.setName(fileName);
-        dataFile.setAbsolutePath(fileInfo.getAbsolutePath().toString());
-        dataFile.setCreationTime(new Date(fileInfo.getCreationTime()));
-        dataFile.setFileSize(fileInfo.getSize());
-        dataFile.setLastModifiedTime(new Date(fileInfo.getLastModifiedTime()));
-        dataFile.setUserAccounts(Collections.singleton(userAccount));
+        dataFile.setAbsolutePath(directory);
+        dataFile.setCreationTime(new Date(creationTime));
+        dataFile.setFileSize(size);
+        dataFile.setLastModifiedTime(new Date(lastModifiedTime));
 
-        String md5checkSum = MessageDigestHash.computeMD5Hash(file);
+        String md5checkSum = edu.pitt.dbmi.ccd.commons.file.MessageDigestHash.computeMD5Hash(file);
         DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
         if (dataFileInfo == null) {
             dataFileInfo = new DataFileInfo();
