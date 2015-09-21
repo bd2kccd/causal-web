@@ -278,6 +278,8 @@ public class DataService {
                     dataFileInfo = new DataFileInfo();
                     dataFileInfo.setMd5checkSum(MessageDigestHash.computeMD5Hash(file));
                     dataFile.setDataFileInfo(dataFileInfo);
+
+                    dataFileToSave.add(dataFile);
                 } else {
                     FileDelimiter delimiter = dataFileInfo.getFileDelimiter();
                     if (delimiter != null) {
