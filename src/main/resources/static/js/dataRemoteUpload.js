@@ -104,6 +104,22 @@ $(document).ready(function () {
         });
     }
     
+    //Show existing on-process uploading file progress
+    $('.btn-psc-upload').each(function(){
+    	console.log($(this).attr('data-filename'));
+    	var fileName = $(this).attr('data-filename');
+    	$.post("data/remoteUpload/queue?fileName=" + fileName, function(data){
+    		if(data == true){
+    			$(this).hide();
+    			$.get("data/remoteUpload?fileName=" + fileName, function(data){
+    				var totalChunkNum = data;
+    				var progressTextMessage = $(this).parent();
+    				checkFileUploadProgress(progressTextMessage, fileName, totalChunkNum);
+    			});
+    		}
+    	});
+    });
+    
 });
 
 $('#dataExample').on('show.bs.modal', function (event) {
@@ -116,36 +132,32 @@ $('#dataExample').on('show.bs.modal', function (event) {
     modal.find('#dataExampleFrame').attr('src', 'example?type=' + type);
 });
 
-var poolSize = 128;
-
-function uploadChunk(chunkNumber, totalChunkNumber, fileName){
-	//POST chunk
-	$.post("data/remoteUpload/chunk?resumableChunkNumber=" + chunkNumber + "&fileName=" + fileName, function(data, status){
-		//alert(status);
-	}).always(function(){
-		chunkNumber = chunkNumber + poolSize;
-		//alert(chunkNumber);
-		if(chunkNumber <= totalChunkNumber){
-			chunkExists(chunkNumber, totalChunkNumber, fileName);
+function checkFileUploadProgress(progressTextMessage, fileName, totalChunkNum){
+	$.post("data/remoteUpload?fileName=" + fileName, function(data){
+		if(jQuery.type(data) == "number"){
+			
+			var pullingDelay = 500;
+			var progressMessage;
+			if(data == 0){
+				progressMessage = "Queued";
+			}else{
+				progressMessage = "" + (Math.floor((data / totalChunkNum) * 10000)/100).toFixed(2) + "%";
+				
+			}
+			console.log(fileName + " : " + progressMessage);
+			$(progressTextMessage).html(progressMessage);
+			
+			if(data < totalChunkNum){
+				window.setTimeout(
+						checkFileUploadProgress(progressTextMessage, fileName, totalChunkNum)	
+						, pullingDelay);
+			}else if(data == totalChunkNum){
+				
+			}
+			
+		}else{
+			
 		}
-	});
-	
-}
-
-function chunkExists(chunkNumber, totalChunkNumber, fileName){
-	//GET chunk
-	$.get("data/remoteUpload/chunk?resumableChunkNumber=" + chunkNumber + "&fileName=" + fileName, function(data, status){
-		//alert(status);
-	}).done(function(){
-		//The chunk is already there -- check another chunk
-		chunkNumber = chunkNumber + poolSize;
-		//alert(chunkNumber);
-		if(chunkNumber <= totalChunkNumber){
-			chunkExists(chunkNumber, totalChunkNumber, fileName);
-		}
-	}).fail(function(){
-		//404 Chunk Not Found -- upload the chunk
-		uploadChunk(chunkNumber, totalChunkNumber, fileName);
 	});
 	
 }
@@ -153,13 +165,8 @@ function chunkExists(chunkNumber, totalChunkNumber, fileName){
 function uploadDataToRemoteServer(btn, fileName){
 	$(btn).hide();
 	$.get("data/remoteUpload?fileName=" + fileName, function(data){
-		//alert(data);
-		/*var minSize = poolSize;
-		if(minSize > data){
-			minSize = data;
-		}
-		for(var i=1;i<=minSize;i++){
-			chunkExists(i, data, fileName);
-		}*/	
+		var totalChunkNum = data;
+		var progressTextMessage = $(btn).parent();
+		checkFileUploadProgress(progressTextMessage, fileName, totalChunkNum);
 	});
 }

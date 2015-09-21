@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -44,6 +45,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,23 +81,29 @@ public class DataRemoteUploadController {
 	
     private final String appId;
 
-    private final RestTemplate restTemplate;
-    
-    private final CloseableHttpClient httpClient;
-    
     private final ExecutorService fileUploadExecutor;
+    
+    private final HashMap<String,HashSet<Integer>> fileUploadProgressMap;
 
 	@Autowired(required = true)
 	public DataRemoteUploadController(
 			@Value("${ccd.data.upload.uri:http://localhost:9000/ccd-ws/%s/data/upload/chunk?appId=%s}") String userDataRemoteUploadUri,
 			@Value("${ccd.rest.appId:1}") String appId, 
-			@Value("${ccd.data.upload.simultaneousFileUploads:1}") final int simultaneousFileUploads,
-			RestTemplate restTemplate){
+			@Value("${ccd.data.upload.simultaneousFileUploads:1}") final int simultaneousFileUploads){
 		this.userDataRemoteUploadUri = userDataRemoteUploadUri;
 		this.appId = appId;
-		this.restTemplate = restTemplate;
-		this.httpClient = HttpClients.createDefault();
 		this.fileUploadExecutor = Executors.newFixedThreadPool(simultaneousFileUploads);
+		this.fileUploadProgressMap = new HashMap<>();
+	}
+
+	@RequestMapping(value = "queue", method = RequestMethod.POST)
+	public ResponseEntity<Boolean> checkExistingUploadingFileInQueue(
+			@RequestParam("fileName") String fileName){
+		Boolean fileInQueue = false;
+		if(fileUploadProgressMap.get(fileName) != null){
+			fileInQueue = true;
+		}
+		return new ResponseEntity<>(fileInQueue, HttpStatus.OK);
 	}
 	
 	@RequestMapping(method = RequestMethod.GET)
@@ -112,126 +120,35 @@ public class DataRemoteUploadController {
 		long resumableTotalSize = attrs.size();
 		int resumableTotalChunks = ((int) (resumableTotalSize/sizeThreshold)) + 
 				(((int)resumableTotalSize)%sizeThreshold == 0?0:1);
-		
-		//FileUpload Executor
-		FileUploadRunnable fileUploadRunnable = new FileUploadRunnable(
-				fileName, sizeThreshold, appUser.getDataDirectory(), simultaneousChunkUploads, 
-				userDataRemoteUploadUri, appUser.getUsername(), appId);
-		fileUploadExecutor.execute(fileUploadRunnable);
+
+		//If an uploading file not already in the queue, put it there
+		if(fileUploadProgressMap.get(fileName) == null){
+			fileUploadProgressMap.put(fileName, new HashSet<Integer>());
+			LOGGER.info("Uploading #chunk: " + resumableTotalChunks + " of " + fileName);
+			
+			//FileUpload Executor
+			FileUploadRunnable fileUploadRunnable = new FileUploadRunnable(
+					fileName, sizeThreshold, appUser.getDataDirectory(), simultaneousChunkUploads, 
+					userDataRemoteUploadUri, appUser.getUsername(), appId, fileUploadProgressMap);
+			fileUploadExecutor.execute(fileUploadRunnable);
+		}
 		
 		return new ResponseEntity<>(resumableTotalChunks, HttpStatus.OK);
 	}
 	
-	@RequestMapping(value = "chunk", method = RequestMethod.GET)
-	public ResponseEntity<?> checkChunkExistence(
-			@RequestParam("resumableChunkNumber") int resumableChunkNumber,
-			@RequestParam("fileName") String fileName,
-			@Value("${ccd.data.upload.sizeThreshold:10240}") int sizeThreshold,
-			@ModelAttribute("appUser") AppUser appUser) throws IOException {
+	@RequestMapping(method = RequestMethod.POST)
+	public ResponseEntity<Integer> checkProgressFileUpload(
+			@RequestParam("fileName") String fileName){
 		
-    	Path dataFilePath = Paths.get(appUser.getDataDirectory(), fileName);
-		byte[] allBytes = Files.readAllBytes(dataFilePath);
-		BasicFileAttributes attrs = Files.readAttributes(dataFilePath, BasicFileAttributes.class);
-		long resumableTotalSize = attrs.size();
-		int resumableCurrentChunkSize = Math.min(sizeThreshold, (int) (resumableTotalSize - (resumableChunkNumber-1)*sizeThreshold));
-		byte[] chunk = new byte[resumableCurrentChunkSize];
-		System.arraycopy(allBytes, (resumableChunkNumber-1)*sizeThreshold, chunk, 0, resumableCurrentChunkSize);
-
-		//Identifier = file size(byte) - file name with file extension but no dot
-		String resumableIdentifier = String.valueOf(resumableTotalSize) + "-" + fileName.replace(".", "");
-
-		int resumableTotalChunks = ((int) (resumableTotalSize/sizeThreshold)) + (((int)resumableTotalSize)%sizeThreshold == 0?0:1);
+		Integer chunkNumTransfered = null;
 		
-		String fileContentType = Files.probeContentType(dataFilePath);
-		if(fileContentType == null){
-			fileContentType = "text/plain";
+		HashSet<Integer> chunkSet = fileUploadProgressMap.get(fileName);
+		if(chunkSet != null){
+			chunkNumTransfered = new Integer(chunkSet.size());
 		}
 		
-		Map<String, String> urlVariables = new HashMap<>();
-		urlVariables.put("resumableIdentifier", resumableIdentifier);
-		urlVariables.put("resumableCurrentChunkSize", String.valueOf(resumableCurrentChunkSize));
-		urlVariables.put("resumableFilename", fileName);
-		urlVariables.put("resumableType", fileContentType);
-		urlVariables.put("resumableRelativePath", fileName);
-		urlVariables.put("resumableChunkSize", String.valueOf(sizeThreshold));
-		urlVariables.put("resumableChunkNumber", String.valueOf(resumableChunkNumber));
-		urlVariables.put("resumableTotalChunks", String.valueOf(resumableTotalChunks));
-		urlVariables.put("resumableTotalSize", String.valueOf(resumableTotalSize));
-		
-		List<String> params = new ArrayList<String>();
-		urlVariables.forEach((key,value) -> {
-			params.add(key + "=" + value);
-		});
-		
-		//Send GET to remote server
-		ResponseEntity<String> response = null;
-		String uri = String.format(userDataRemoteUploadUri, appUser.getUsername(), appId);
-		uri = uri + "&" + StringUtils.join(params, "&");
-		
-        try {
-        	response = restTemplate.getForEntity(uri, String.class, urlVariables);
-        } catch (RestClientException exception) {
-            LOGGER.error(exception.getMessage());
-        }
-		
-        if(response != null && response.getStatusCode() != null){
-        	System.out.println("response.getStatusCode().value(): " + response.getStatusCode().value());
-        }
-        
-		return response;
-	}
-	
-	@RequestMapping(value = "chunk", method = RequestMethod.POST)
-    public HttpEntity processChunkUpload(
-    		@RequestParam("resumableChunkNumber") int resumableChunkNumber,
-    		@RequestParam("fileName") String fileName,
-			@Value("${ccd.data.upload.sizeThreshold:10240}") int sizeThreshold,
-			@ModelAttribute("appUser") AppUser appUser) throws IOException {
-		
-    	Path dataFilePath = Paths.get(appUser.getDataDirectory(), fileName);
-		BasicFileAttributes attrs = Files.readAttributes(dataFilePath, BasicFileAttributes.class);
-		long resumableTotalSize = attrs.size();
-		int resumableCurrentChunkSize = Math.min(sizeThreshold, (int) (resumableTotalSize - (resumableChunkNumber-1)*sizeThreshold));
-		byte[] allBytes = Files.readAllBytes(dataFilePath);
-		byte[] chunk = new byte[resumableCurrentChunkSize];
-		System.arraycopy(allBytes, (resumableChunkNumber-1)*sizeThreshold, chunk, 0, resumableCurrentChunkSize);
-
-		//Identifier = file size(byte) - file name with file extension but no dot
-		String resumableIdentifier = String.valueOf(resumableTotalSize) + "-" + fileName.replace(".", "");
-
-		int resumableTotalChunks = ((int) (resumableTotalSize/sizeThreshold)) + (((int)resumableTotalSize)%sizeThreshold == 0?0:1);
-		
-		String fileContentType = Files.probeContentType(dataFilePath);
-		if(fileContentType == null){
-			fileContentType = "text/plain";
-		}
-		
-		String uri = String.format(userDataRemoteUploadUri, appUser.getUsername(), appId);
-        
-        HttpPost httpPost = new HttpPost(uri);
-        
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        builder.addTextBody("resumableIdentifier", resumableIdentifier);
-        builder.addTextBody("resumableCurrentChunkSize", String.valueOf(resumableCurrentChunkSize));
-        builder.addTextBody("resumableFilename", fileName);
-        builder.addTextBody("resumableType", fileContentType);
-        builder.addTextBody("resumableRelativePath", fileName);
-        builder.addTextBody("resumableChunkSize", String.valueOf(sizeThreshold));
-        builder.addTextBody("resumableChunkNumber", String.valueOf(resumableChunkNumber));
-        builder.addTextBody("resumableTotalChunks", String.valueOf(resumableTotalChunks));
-        builder.addTextBody("resumableTotalSize", String.valueOf(resumableTotalSize));
-		
-        builder.addBinaryBody("file", chunk, ContentType.APPLICATION_OCTET_STREAM, "blob");
-        
-        HttpEntity multipart = builder.build();
-        
-        httpPost.setEntity(multipart);
-        
-        CloseableHttpResponse response = httpClient.execute(httpPost);
-        HttpEntity responseEntity = response.getEntity();
-        
-		return responseEntity;
-	}
+		return new ResponseEntity<>(chunkNumTransfered, HttpStatus.OK);
+	}	
     		
 }
 
@@ -245,9 +162,11 @@ class FileUploadRunnable implements Runnable {
 	private final String userDataRemoteUploadUri;
 	private final String username;
 	private final String appId;
+	private final HashMap<String,HashSet<Integer>> fileUploadProgressMap;
 	
 	public FileUploadRunnable(String fileName, int sizeThreshold, String dataDirectory, int simultaneousChunkUploads, 
-			String userDataRemoteUploadUri, String username, String appId) throws IOException{
+			String userDataRemoteUploadUri, String username, String appId, 
+			HashMap<String,HashSet<Integer>> fileUploadProgressMap) throws IOException{
 		this.fileName = fileName;
 		this.sizeThreshold = sizeThreshold;
 		this.dataDirectory = dataDirectory;
@@ -255,11 +174,13 @@ class FileUploadRunnable implements Runnable {
 		Path dataFilePath = Paths.get(dataDirectory, fileName);	
 		BasicFileAttributes attrs = Files.readAttributes(dataFilePath, BasicFileAttributes.class);
 		long resumableTotalSize = attrs.size();
-		this.resumableTotalChunks = ((int) (resumableTotalSize/sizeThreshold)) + (((int)resumableTotalSize)%sizeThreshold == 0?0:1);
+		this.resumableTotalChunks = ((int) (resumableTotalSize/sizeThreshold)) + 
+				(((int)resumableTotalSize)%sizeThreshold == 0?0:1);
 		this.chunkUploadExecutor = Executors.newFixedThreadPool(simultaneousChunkUploads);
 		this.userDataRemoteUploadUri = userDataRemoteUploadUri;
 		this.username = username;
 		this.appId = appId;
+		this.fileUploadProgressMap = fileUploadProgressMap;
 	}
 	
 	@Override
@@ -277,7 +198,9 @@ class FileUploadRunnable implements Runnable {
 			try {
 				
 				if(chunk.get().intValue() > 0){//Notify back to user about which chunk is done
-					
+					HashSet<Integer> chunkSet = fileUploadProgressMap.get(fileName);
+					chunkSet.add(new Integer(chunk.get().intValue()));
+					fileUploadProgressMap.put(fileName, chunkSet);
 				}else if(chunk.get().intValue() < 0){
 					int resumableChunkNumber = -1*chunk.get().intValue();
 					Callable<Integer> chunkUploadCallable = new ChunkUploadCallable(resumableChunkNumber, 
@@ -366,8 +289,12 @@ class ChunkUploadCallable implements Callable<Integer> {
 		HttpGet httpGet = new HttpGet(uri);
 		CloseableHttpClient httpClient = HttpClients.createMinimal();		
 		CloseableHttpResponse response = httpClient.execute(httpGet);
+		HttpEntity entity = response.getEntity();
 		
 		int statusCode = response.getStatusLine().getStatusCode();
+		
+		EntityUtils.consume(entity);
+		response.close();
 		
 		if(statusCode == 404){//Chunk Not Found, upload then
 			
@@ -397,7 +324,9 @@ class ChunkUploadCallable implements Callable<Integer> {
 	        httpPost.setEntity(multipart);
 	        
 	        response = httpClient.execute(httpPost);
-	        //response.getEntity();
+	        entity = response.getEntity();
+			EntityUtils.consume(entity);
+			response.close();
 	        
 		}else if(statusCode == 200){//Chunk is there, Do Nothing
 			
