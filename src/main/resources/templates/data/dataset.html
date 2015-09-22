@@ -70,7 +70,7 @@
                                                     </p>
                                                     
                                                     <p th:if="${item.onCloud} == false" data-placement="top" data-toggle="tooltip" title="Upload to PSC">
-                                                        <button class="btn btn-info btn-xs btn-psc-upload" th:attr="data-filename=${item.fileName}" th:onclick="'javascript:uploadDataToRemoteServer(this,\'' + ${item.fileName} + '\');'"><span class="glyphicon glyphicon-cloud-upload"></span></button>
+                                                        <button th:id="'btn-' + ${item.fileName}" class="btn btn-info btn-xs btn-psc-upload" th:attr="data-filename=${item.fileName}"><span class="glyphicon glyphicon-cloud-upload"></span></button>
                                                     </p>
 
                                                 </td>
@@ -146,6 +146,6 @@
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.js}"></script>
         <script src="../../static/vendors/resumable-js/resumable.js" th:src="@{/vendors/resumable-js/resumable.js}"></script>
         <script src="../../static/js/dataset.js" th:src="@{/js/dataset.js}"></script>
-        <script src="../../static/js/dataRemoteUpload.js" th:src="@{/js/dataRemoteUpload.js}"></script>
+        <script src="../../static/js/dataRemoteRestUpload.js" th:src="@{/js/dataRemoteRestUpload.js}"></script>
     </body>
 </html>

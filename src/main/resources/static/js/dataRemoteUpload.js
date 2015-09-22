@@ -104,22 +104,6 @@ $(document).ready(function () {
         });
     }
     
-    //Show existing on-process uploading file progress
-    $('.btn-psc-upload').each(function(){
-    	console.log($(this).attr('data-filename'));
-    	var fileName = $(this).attr('data-filename');
-    	$.post("data/remoteUpload/queue?fileName=" + fileName, function(data){
-    		if(data == true){
-    			$(this).hide();
-    			$.get("data/remoteUpload?fileName=" + fileName, function(data){
-    				var totalChunkNum = data;
-    				var progressTextMessage = $(this).parent();
-    				checkFileUploadProgress(progressTextMessage, fileName, totalChunkNum);
-    			});
-    		}
-    	});
-    });
-    
 });
 
 $('#dataExample').on('show.bs.modal', function (event) {
@@ -131,42 +115,3 @@ $('#dataExample').on('show.bs.modal', function (event) {
     modal.find('.modal-title').text(title + ' Dataset');
     modal.find('#dataExampleFrame').attr('src', 'example?type=' + type);
 });
-
-function checkFileUploadProgress(progressTextMessage, fileName, totalChunkNum){
-	$.post("data/remoteUpload?fileName=" + fileName, function(data){
-		if(jQuery.type(data) == "number"){
-			
-			var pullingDelay = 500;
-			var progressMessage;
-			if(data == 0){
-				progressMessage = "Queued";
-			}else{
-				progressMessage = "" + (Math.floor((data / totalChunkNum) * 10000)/100).toFixed(2) + "%";
-				
-			}
-			console.log(fileName + " : " + progressMessage);
-			$(progressTextMessage).html(progressMessage);
-			
-			if(data < totalChunkNum){
-				window.setTimeout(
-						checkFileUploadProgress(progressTextMessage, fileName, totalChunkNum)	
-						, pullingDelay);
-			}else if(data == totalChunkNum){
-				
-			}
-			
-		}else{
-			
-		}
-	});
-	
-}
-
-function uploadDataToRemoteServer(btn, fileName){
-	$(btn).hide();
-	$.get("data/remoteUpload?fileName=" + fileName, function(data){
-		var totalChunkNum = data;
-		var progressTextMessage = $(btn).parent();
-		checkFileUploadProgress(progressTextMessage, fileName, totalChunkNum);
-	});
-}
