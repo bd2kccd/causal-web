@@ -137,8 +137,7 @@ public class DataService {
             dbDataFile.put(file.getName(), file);
         });
 
-        List<DataFile> dataFileToSave = new LinkedList<>();
-        List<DataFile> dataFileToRemove = new LinkedList<>();
+        Map<String, DataFile> localDataFile = new HashMap<>();
         try {
             List<Path> list = FileInfos.listDirectory(Paths.get(dataDir), false);
             List<Path> files = list.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
@@ -160,7 +159,7 @@ public class DataService {
                     dataFile.setLastModifiedTime(new Date(info.getLastModifiedTime()));
                     dataFile.setUserAccounts(Collections.singleton(userAccount));
 
-                    dataFileToSave.add(dataFile);
+                    localDataFile.put(fileName, dataFile);
                 }
 
                 DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
@@ -169,7 +168,7 @@ public class DataService {
                     dataFileInfo.setMd5checkSum(MessageDigestHash.computeMD5Hash(file));
                     dataFile.setDataFileInfo(dataFileInfo);
 
-                    dataFileToSave.add(dataFile);
+                    localDataFile.put(fileName, dataFile);
                 } else {
                     FileDelimiter delimiter = dataFileInfo.getFileDelimiter();
                     if (delimiter != null) {
@@ -194,17 +193,23 @@ public class DataService {
             LOGGER.error(exception.getMessage());
         }
 
-        Set<String> keySet = dbDataFile.keySet();
-        keySet.forEach(key -> {
-            dataFileToRemove.add(dbDataFile.get(key));
-        });
-        if (!dataFileToRemove.isEmpty()) {
-            dataFileService.deleteDataFile(dataFileToRemove);
+        if (!dbDataFile.isEmpty()) {
+            List<DataFile> list = new LinkedList<>();
+            Set<String> keySet = dbDataFile.keySet();
+            keySet.forEach(key -> {
+                list.add(dbDataFile.get(key));
+            });
+            dataFileService.deleteDataFile(list);
         }
 
         // save all the new files found in the workspace
-        if (!dataFileToSave.isEmpty()) {
-            dataFileService.saveDataFile(dataFileToSave);
+        if (!localDataFile.isEmpty()) {
+            List<DataFile> list = new LinkedList<>();
+            Set<String> keySet = localDataFile.keySet();
+            keySet.forEach(key -> {
+                list.add(localDataFile.get(key));
+            });
+            dataFileService.saveDataFile(list);
         }
 
         return listItems;
