@@ -19,10 +19,13 @@
 package edu.pitt.dbmi.ccd.web.ctrl;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.LOGIN;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
+import edu.pitt.dbmi.ccd.web.service.result.algorithm.AlgorithmResultService;
+import java.util.Collections;
 import java.util.Date;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -61,13 +64,23 @@ public class ApplicationController implements ViewPath {
 
     private final UserAccountService userAccountService;
 
+    private final DataFileService dataFileService;
+
+    private final AlgorithmResultService algorithmResultService;
+
     private final AppUserService appUserService;
 
     private final boolean webapp;
 
     @Autowired(required = true)
-    public ApplicationController(UserAccountService userAccountService, AppUserService appUserService, boolean webapp) {
+    public ApplicationController(
+            UserAccountService userAccountService,
+            DataFileService dataFileService,
+            AlgorithmResultService algorithmResultService,
+            AppUserService appUserService, boolean webapp) {
         this.userAccountService = userAccountService;
+        this.dataFileService = dataFileService;
+        this.algorithmResultService = algorithmResultService;
         this.appUserService = appUserService;
         this.webapp = webapp;
     }
@@ -160,6 +173,10 @@ public class ApplicationController implements ViewPath {
 
     @RequestMapping(value = HOME, method = RequestMethod.GET)
     public String goHome(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+        model.addAttribute("numOfDataset", dataFileService.findByUserAccounts(Collections.singleton(userAccount)).size());
+        model.addAttribute("numOfResults", algorithmResultService.listResultFileInfo(appUser).size());
+
         return HOME_VIEW;
     }
 
