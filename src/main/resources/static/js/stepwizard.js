@@ -4,10 +4,10 @@ $(document).ready(function () {
     var nextBtn = $('.nextBtn');
 
     wizard.hide();
-    
+
     navList.click(function (e) {
         e.preventDefault();
-        var str = $(this).attr('onclick').replace("window.location.href='", "").replace("'", "");
+        var str = $(this).attr('onclick').replace("window.location.href = '", "").replace("'", "");
         var $target = $(str);
         var $item = $(this);
 
@@ -19,7 +19,7 @@ $(document).ready(function () {
             $target.find('input:eq(0)').focus();
         }
     });
-    
+
     nextBtn.click(function () {
         var curStep = $(this).closest(".setup-content");
         var curStepBtn = curStep.attr("id") + 'btn';
