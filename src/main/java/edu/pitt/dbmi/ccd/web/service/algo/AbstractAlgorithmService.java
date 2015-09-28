@@ -16,15 +16,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.service;
+package edu.pitt.dbmi.ccd.web.service.algo;
 
+import edu.pitt.dbmi.ccd.db.entity.DataFile;
+import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
+import edu.pitt.dbmi.ccd.db.entity.FileDelimiter;
 import edu.pitt.dbmi.ccd.db.entity.JobQueueInfo;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.entity.VariableType;
+import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.db.service.JobQueueInfoService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
+import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.service.DataService;
 import edu.pitt.dbmi.ccd.web.service.cloud.dto.JobRequest;
-import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -32,72 +38,58 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  *
- * Apr 16, 2015 11:41:02 AM
+ * Sep 26, 2015 7:56:24 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-@Service
-public class AlgorithmService {
+public abstract class AbstractAlgorithmService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAlgorithmService.class);
+
+    protected final DataService dataService;
+
+    protected final DataFileService dataFileService;
+
+    protected final VariableTypeService variableTypeService;
 
     private final UserAccountService userAccountService;
 
     private final JobQueueInfoService jobQueueInfoService;
 
-    private final String appId;
-
-    private final String algorithmQueueUrl;
-
-    private final RestTemplate restTemplate;
-
-    @Autowired(required = true)
-    public AlgorithmService(
+    public AbstractAlgorithmService(
+            DataService dataService,
+            DataFileService dataFileService,
+            VariableTypeService variableTypeService,
             UserAccountService userAccountService,
-            JobQueueInfoService jobQueueInfoService,
-            @Value("${ccd.rest.appId:1}") String appId,
-            @Value("${ccd.rest.url.queue.algorithm:http://localhost:9000/ccd-ws/queue/algorithm}") String algorithmQueueUrl,
-            RestTemplate restTemplate) {
+            JobQueueInfoService jobQueueInfoService) {
+        this.dataService = dataService;
+        this.dataFileService = dataFileService;
+        this.variableTypeService = variableTypeService;
         this.userAccountService = userAccountService;
         this.jobQueueInfoService = jobQueueInfoService;
-        this.appId = appId;
-        this.algorithmQueueUrl = algorithmQueueUrl;
-        this.restTemplate = restTemplate;
     }
 
-    public void runRemotely(JobRequest jobRequest, AppUser appUser) {
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-            HttpEntity<?> entity = new HttpEntity<>(jobRequest, headers);
+    protected Map<String, String> getUserDataFile(String username) {
+        VariableType variableType = variableTypeService.findByName("continuous");
 
-            URI url = UriComponentsBuilder.fromHttpUrl(this.algorithmQueueUrl + "/submit")
-                    .queryParam("usr", appUser.getUsername())
-                    .queryParam("appId", this.appId)
-                    .build().toUri();
-
-            restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-        } catch (RestClientException exception) {
-            LOGGER.error(exception.getMessage());
-        }
+        return dataService.listAlgoDataset(username, variableType);
     }
 
-    public void runLocally(String algorithm, String algorithmJar, JobRequest jobRequest, AppUser appUser) {
+    protected String getFileDelimiter(String baseDir, String name) {
+        DataFile dataFile = dataFileService.findByAbsolutePathAndName(baseDir, name);
+        DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
+        FileDelimiter fileDelimiter = dataFileInfo.getFileDelimiter();
+
+        return fileDelimiter.getValue();
+    }
+
+    protected Long addToLocalQueue(String algorithm, String algorithmJar, JobRequest jobRequest, AppUser appUser) {
         String userDataDir = appUser.getDataDirectory();
         String userTempDir = appUser.getTmpDirectory();
         String userOutputDir = appUser.getAlgoResultDir();
@@ -137,11 +129,14 @@ public class AlgorithmService {
         });
         buf.deleteCharAt(buf.length() - 1);
 
+        String cmd = buf.toString();
+        LOGGER.info(cmd);
+
         UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
         JobQueueInfo jobQueueInfo = new JobQueueInfo();
         jobQueueInfo.setAddedTime(new Date(System.currentTimeMillis()));
         jobQueueInfo.setAlgorName(algoName);
-        jobQueueInfo.setCommands(buf.toString());
+        jobQueueInfo.setCommands(cmd);
         jobQueueInfo.setFileName(fileName);
         jobQueueInfo.setOutputDirectory(userOutputDir);
         jobQueueInfo.setStatus(0);
@@ -149,7 +144,8 @@ public class AlgorithmService {
         jobQueueInfo.setUserAccounts(Collections.singleton(userAccount));
 
         jobQueueInfo = jobQueueInfoService.saveJobIntoQueue(jobQueueInfo);
-        LOGGER.info("Add Job into Queue: " + jobQueueInfo.getId());
+
+        return jobQueueInfo.getId();
     }
 
 }

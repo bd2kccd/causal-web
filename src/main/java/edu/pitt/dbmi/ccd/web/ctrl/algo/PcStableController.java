@@ -18,15 +18,10 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
-import edu.pitt.dbmi.ccd.db.service.DataFileInfoService;
-import edu.pitt.dbmi.ccd.db.service.DataFileService;
-import edu.pitt.dbmi.ccd.db.service.FileDelimiterService;
-import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.algo.PcStableRunInfo;
-import edu.pitt.dbmi.ccd.web.service.AlgorithmService;
-import edu.pitt.dbmi.ccd.web.service.DataService;
+import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmService;
 import edu.pitt.dbmi.ccd.web.service.cloud.dto.JobRequest;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,26 +47,22 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @Controller
 @SessionAttributes("appUser")
 @RequestMapping(value = "/algorithm/pcStable")
-public class PcStableController extends AbstractAlgorithmController implements ViewPath {
+public class PcStableController implements ViewPath {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PcStableController.class);
 
     private final String pcStable;
 
+    protected final String algorithmJar;
+
     private final AlgorithmService algorithmService;
 
     @Autowired(required = true)
     public PcStableController(
-            @Value("${ccd.algorithm.pcstable:edu.pitt.dbmi.ccd.algorithm.tetrad.PcStableApp}") String pcStable,
-            AlgorithmService algorithmService,
-            @Value("${ccd.algorithm.jar:ccd-algorithm.jar}") String algorithmJar,
-            VariableTypeService variableTypeService,
-            FileDelimiterService fileDelimiterService,
-            DataFileService dataFileService,
-            DataFileInfoService dataFileInfoService,
-            DataService dataService) {
-        super(algorithmJar, variableTypeService, fileDelimiterService, dataFileService, dataFileInfoService, dataService);
+            @Value("${ccd.algorithm.pcstable}") String pcStable,
+            @Value("${ccd.algorithm.jar}") String algorithmJar, AlgorithmService algorithmService) {
         this.pcStable = pcStable;
+        this.algorithmJar = algorithmJar;
         this.algorithmService = algorithmService;
     }
 
@@ -84,7 +75,7 @@ public class PcStableController extends AbstractAlgorithmController implements V
         info.setJvmOptions("");
         info.setRunOnPsc(Boolean.FALSE);
 
-        Map<String, String> map = directoryFileListing(appUser.getUsername());
+        Map<String, String> map = algorithmService.getUserRunnableData(appUser.getUsername());
         if (map.isEmpty()) {
             info.setDataset("");
         } else {
@@ -107,15 +98,15 @@ public class PcStableController extends AbstractAlgorithmController implements V
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
 
-        List<String> algoOptions = new LinkedList<>();
-        algoOptions.add("--alpha");
-        algoOptions.add(String.valueOf(info.getAlpha().doubleValue()));
+        List<String> params = new LinkedList<>();
+        params.add("--alpha");
+        params.add(String.valueOf(info.getAlpha().doubleValue()));
 
-        algoOptions.add("--depth");
-        algoOptions.add(String.valueOf(info.getDepth().intValue()));
+        params.add("--depth");
+        params.add(String.valueOf(info.getDepth().intValue()));
 
         if (info.getVerbose()) {
-            algoOptions.add("--verbose");
+            params.add("--verbose");
         }
 
         String[] jvmOptions = null;
@@ -127,7 +118,7 @@ public class PcStableController extends AbstractAlgorithmController implements V
         JobRequest jobRequest = new JobRequest();
         jobRequest.setAlgorName("pcstable");
         jobRequest.setJvmOptions(jvmOptions);
-        jobRequest.setAlgoParams(algoOptions.toArray(new String[algoOptions.size()]));
+        jobRequest.setAlgoParams(params.toArray(new String[params.size()]));
         jobRequest.setDataset(info.getDataset());
 
         if (info.getRunOnPsc()) {

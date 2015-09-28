@@ -18,15 +18,10 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
-import edu.pitt.dbmi.ccd.db.service.DataFileInfoService;
-import edu.pitt.dbmi.ccd.db.service.DataFileService;
-import edu.pitt.dbmi.ccd.db.service.FileDelimiterService;
-import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.algo.GesRunInfo;
-import edu.pitt.dbmi.ccd.web.service.AlgorithmService;
-import edu.pitt.dbmi.ccd.web.service.DataService;
+import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmService;
 import edu.pitt.dbmi.ccd.web.service.cloud.dto.JobRequest;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,26 +47,23 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @Controller
 @SessionAttributes("appUser")
 @RequestMapping(value = "/algorithm/ges")
-public class GesController extends AbstractAlgorithmController implements ViewPath {
+public class GesController implements ViewPath {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GesController.class);
 
     private final String ges;
 
+    protected final String algorithmJar;
+
     private final AlgorithmService algorithmService;
 
     @Autowired(required = true)
     public GesController(
-            @Value("${ccd.algorithm.ges:edu.pitt.dbmi.ccd.algorithm.tetrad.FastGesApp}") String ges,
-            AlgorithmService algorithmService,
-            @Value("${ccd.algorithm.jar:ccd-algorithm.jar}") String algorithmJar,
-            VariableTypeService variableTypeService,
-            FileDelimiterService fileDelimiterService,
-            DataFileService dataFileService,
-            DataFileInfoService dataFileInfoService,
-            DataService dataService) {
-        super(algorithmJar, variableTypeService, fileDelimiterService, dataFileService, dataFileInfoService, dataService);
+            @Value("${ccd.algorithm.ges}") String ges,
+            @Value("${ccd.algorithm.jar}") String algorithmJar,
+            AlgorithmService algorithmService) {
         this.ges = ges;
+        this.algorithmJar = algorithmJar;
         this.algorithmService = algorithmService;
     }
 
@@ -84,7 +76,7 @@ public class GesController extends AbstractAlgorithmController implements ViewPa
         info.setJvmOptions("");
         info.setRunOnPsc(Boolean.FALSE);
 
-        Map<String, String> map = directoryFileListing(appUser.getUsername());
+        Map<String, String> map = algorithmService.getUserRunnableData(appUser.getUsername());
         if (map.isEmpty()) {
             info.setDataset("");
         } else {
@@ -102,19 +94,19 @@ public class GesController extends AbstractAlgorithmController implements ViewPa
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public String runPcStable(
+    public String runGes(
             @ModelAttribute("algoInfo") final GesRunInfo info,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        List<String> algoOptions = new LinkedList<>();
-        algoOptions.add("--penalty-discount");
-        algoOptions.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));
+        List<String> params = new LinkedList<>();
+        params.add("--penalty-discount");
+        params.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));
 
-        algoOptions.add("--depth");
-        algoOptions.add(String.valueOf(info.getDepth().intValue()));
+        params.add("--depth");
+        params.add(String.valueOf(info.getDepth().intValue()));
 
         if (info.getVerbose()) {
-            algoOptions.add("--verbose");
+            params.add("--verbose");
         }
 
         String[] jvmOptions = null;
@@ -126,7 +118,7 @@ public class GesController extends AbstractAlgorithmController implements ViewPa
         JobRequest jobRequest = new JobRequest();
         jobRequest.setAlgorName("ges");
         jobRequest.setJvmOptions(jvmOptions);
-        jobRequest.setAlgoParams(algoOptions.toArray(new String[algoOptions.size()]));
+        jobRequest.setAlgoParams(params.toArray(new String[params.size()]));
         jobRequest.setDataset(info.getDataset());
 
         if (info.getRunOnPsc()) {

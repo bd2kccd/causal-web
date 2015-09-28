@@ -87,12 +87,12 @@ public class DesktopJobQueueService extends AbstractJobQueueService implements J
             headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
             HttpEntity<?> entity = new HttpEntity<>(headers);
 
-            URI url = UriComponentsBuilder.fromHttpUrl(this.jobQueueUrl)
+            URI uri = UriComponentsBuilder.fromHttpUrl(this.jobQueueUrl)
                     .queryParam("usr", username)
                     .queryParam("appId", this.appId)
                     .build().toUri();
 
-            ResponseEntity<AlgorithmJob[]> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, AlgorithmJob[].class);
+            ResponseEntity<AlgorithmJob[]> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, entity, AlgorithmJob[].class);
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 AlgorithmJob[] jobs = responseEntity.getBody();
                 algorithmJobs.addAll(Arrays.stream(jobs).collect(Collectors.toList()));
@@ -116,12 +116,12 @@ public class DesktopJobQueueService extends AbstractJobQueueService implements J
             headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
             HttpEntity<?> entity = new HttpEntity<>(headers);
 
-            URI url = UriComponentsBuilder.fromHttpUrl(this.jobQueueUrl)
+            URI uri = UriComponentsBuilder.fromHttpUrl(this.jobQueueUrl)
                     .pathSegment(id.toString())
                     .queryParam("usr", username)
                     .queryParam("appId", this.appId)
                     .build().toUri();
-            restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class);
+            restTemplate.exchange(uri, HttpMethod.DELETE, entity, String.class);
         } catch (RestClientException exception) {
             LOGGER.error(exception.getMessage());
         }
