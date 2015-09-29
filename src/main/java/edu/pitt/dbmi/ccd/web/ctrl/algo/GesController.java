@@ -70,7 +70,7 @@ public class GesController implements ViewPath {
     @RequestMapping(method = RequestMethod.GET)
     public String showGesView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         GesRunInfo info = new GesRunInfo();
-        info.setPenaltyDiscount(2.0);
+        info.setPenaltyDiscount(4.0);
         info.setDepth(3);
         info.setVerbose(Boolean.TRUE);
         info.setJvmOptions("");
