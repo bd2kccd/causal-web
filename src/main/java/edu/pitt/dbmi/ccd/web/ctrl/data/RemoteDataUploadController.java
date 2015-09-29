@@ -96,6 +96,11 @@ public class RemoteDataUploadController {
         this.restTemplate.getMessageConverters().add(converter);
     }
 
+    @RequestMapping(value = "list", method = RequestMethod.GET)
+    public ResponseEntity<?> getJobsInQueue() {
+        return ResponseEntity.ok(fileUploadMap.keySet());
+    }
+
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> uploadStatus(
             @RequestParam("fileName") String fileName,

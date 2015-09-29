@@ -20,7 +20,7 @@
             }
         </style>
     </head>
-    <body>
+    <body th:attr="onload='getDownloadProgress(\'' + @{/data/upload/remote} + '\')'">
         <div id="wrapper">
             <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0" th:replace="fragments/navigator :: nav">
             </nav>
@@ -59,8 +59,8 @@
                                             <p th:if="${item.onCloud}" data-placement="top" data-toggle="tooltip" title="On PSC">
                                                 <button class="btn btn-info btn-xs"><span class="glyphicon glyphicon-cloud"></span></button>
                                             </p>
-                                            <p th:unless="${item.onCloud}" data-placement="top" data-toggle="tooltip" title="On PSC">
-                                                <button class="btn btn-success btn-xs" th:onclick="'javascript:startUpload(this,\'' + ${item.fileName} + '\',\'' + @{/data/upload/remote} + '\');'"><span class="glyphicon glyphicon-upload"></span></button>
+                                            <p th:unless="${item.onCloud}" data-placement="top" data-toggle="tooltip">
+                                                <button th:id="${item.fileName}" class="btn btn-success btn-xs" th:onclick="'javascript:startUpload(this,\'' + ${item.fileName} + '\',\'' + @{/data/upload/remote} + '\');'"><span class="glyphicon glyphicon-upload"></span></button>
                                             </p>
                                         </td>
                                         <td>
