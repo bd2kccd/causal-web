@@ -12,5 +12,5 @@ $('#fileInfo').on('show.bs.modal', function (event) {
 
     var modal = $(this);
     modal.find('.modal-title').text(filename);
-    modal.find('#fileInfoFrame').attr('src', 'fs/fileInfo?file=' + filename);
+    modal.find('#fileInfoFrame').attr('src', 'data/fileInfo?file=' + filename);
 });

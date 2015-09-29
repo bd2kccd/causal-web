@@ -88,6 +88,31 @@ public class DataService {
         this.cloudDataService = cloudDataService;
     }
 
+    public List<AttributeValue> getFileInfo(final String dir, final String fileName) {
+        List<AttributeValue> list = new LinkedList<>();
+
+        Path file = Paths.get(dir, fileName);
+        try {
+            BasicFileInfo info = FileInfos.basicPathInfo(file);
+            list.add(new AttributeValue("Size:", FilePrint.humanReadableSize(info.getSize(), true)));
+            list.add(new AttributeValue("Creation Time:", FilePrint.fileTimestamp(info.getCreationTime())));
+            list.add(new AttributeValue("Last Access Time:", FilePrint.fileTimestamp(info.getLastAccessTime())));
+            list.add(new AttributeValue("Last Modified Time:", FilePrint.fileTimestamp(info.getLastModifiedTime())));
+        } catch (IOException exception) {
+            LOGGER.error(exception.getMessage());
+        }
+
+        DataFile dataFile = dataFileService.findByAbsolutePathAndName(dir, fileName);
+        if (dataFile != null) {
+            DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
+            if (dataFileInfo != null) {
+                list.add(new AttributeValue("MD5:", dataFileInfo.getMd5checkSum()));
+            }
+        }
+
+        return list;
+    }
+
     public Map<String, String> listAlgoDataset(String username, VariableType variableType) {
         Map<String, String> map = new TreeMap<>();
 

@@ -84,8 +84,18 @@ public class DataManagementController implements ViewPath {
     }
 
     @RequestMapping(value = "/example", method = RequestMethod.GET)
-    public String getFileFInfo(@RequestParam(value = "type") String type) {
+    public String getExampleFileFInfo(@RequestParam(value = "type") String type) {
         return "data/example/" + type;
+    }
+
+    @RequestMapping(value = FILE_INFO, method = RequestMethod.GET)
+    public String getFileFInfo(
+            @RequestParam(value = "file") final String fileName,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) throws IOException {
+        model.addAttribute("basicInfo", dataService.getFileInfo(appUser.getDataDirectory(), fileName));
+
+        return FILE_INFO_VIEW;
     }
 
 }
