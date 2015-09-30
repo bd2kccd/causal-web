@@ -257,10 +257,12 @@ public class DesktopAlgorithmResultService extends AbstractAlgorithmResultServic
 
         if (remote) {
             byte[] cloudData = downloadRemoteFile(appUser.getUsername(), fileName);
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(cloudData), Charset.defaultCharset()))) {
-                extractParameters(reader, parameters);
-            } catch (IOException exception) {
-                LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
+            if (cloudData != null) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(cloudData), Charset.defaultCharset()))) {
+                    extractParameters(reader, parameters);
+                } catch (IOException exception) {
+                    LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
+                }
             }
         } else {
             Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
@@ -280,10 +282,12 @@ public class DesktopAlgorithmResultService extends AbstractAlgorithmResultServic
 
         if (remote) {
             byte[] cloudData = downloadRemoteFile(appUser.getUsername(), fileName);
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(cloudData), Charset.defaultCharset()))) {
-                extractNodes(reader, nodes);
-            } catch (IOException exception) {
-                LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
+            if (cloudData != null) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(cloudData), Charset.defaultCharset()))) {
+                    extractNodes(reader, nodes);
+                } catch (IOException exception) {
+                    LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
+                }
             }
         } else {
             Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
@@ -303,10 +307,14 @@ public class DesktopAlgorithmResultService extends AbstractAlgorithmResultServic
 
         if (remote) {
             byte[] cloudData = downloadRemoteFile(appUser.getUsername(), fileName);
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(cloudData), Charset.defaultCharset()))) {
-                readInErrorMessage(reader, errorMsg);
-            } catch (IOException exception) {
-                LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
+            if (cloudData == null) {
+                errorMsg.add("Unable to download file from server.");
+            } else {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(cloudData), Charset.defaultCharset()))) {
+                    readInErrorMessage(reader, errorMsg);
+                } catch (IOException exception) {
+                    LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
+                }
             }
         } else {
             Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
