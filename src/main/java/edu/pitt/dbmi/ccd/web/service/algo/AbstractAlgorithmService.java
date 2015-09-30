@@ -75,6 +75,12 @@ public abstract class AbstractAlgorithmService {
         this.jobQueueInfoService = jobQueueInfoService;
     }
 
+    protected Map<String, String> getUserDataFile(String prefix, String username) {
+        VariableType variableType = variableTypeService.findByName("continuous");
+
+        return dataService.listAlgoDataset(prefix, username, variableType);
+    }
+
     protected Map<String, String> getUserDataFile(String username) {
         VariableType variableType = variableTypeService.findByName("continuous");
 
@@ -112,13 +118,19 @@ public abstract class AbstractAlgorithmService {
 
         commands.add(algorithm);
 
-        Path datasetPath = Paths.get(userDataDir, dataset);
-        commands.add("--data");
+        Path datasetPath;
+        if (dataset == null) {
+            commands.add("--data-dir");
+            datasetPath = Paths.get(userDataDir);
+        } else {
+            datasetPath = Paths.get(userDataDir, dataset);
+            commands.add("--data");
+        }
         commands.add(datasetPath.toString());
 
         commands.addAll(Arrays.asList(jobRequest.getAlgoParams()));
 
-        String fileName = String.format("%s_%s_%d", algoName, dataset, System.currentTimeMillis());
+        String fileName = String.format("%s_%s_%d", algoName, (dataset == null) ? "multi" : dataset, System.currentTimeMillis());
         commands.add("--out-filename");
         commands.add(fileName);
 

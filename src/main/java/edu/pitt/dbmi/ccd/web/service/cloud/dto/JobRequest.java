@@ -33,8 +33,6 @@ public class JobRequest {
     @NotEmpty
     private String algorName;
 
-    @NotNull
-    @NotEmpty
     private String dataset;
 
     private String[] jvmOptions;

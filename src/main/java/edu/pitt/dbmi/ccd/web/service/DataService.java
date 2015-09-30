@@ -47,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,6 +113,51 @@ public class DataService {
         }
 
         return list;
+    }
+
+    public Map<String, String> listAlgoDataset(String prefix, String username, VariableType variableType) {
+        Map<String, String> map = new TreeMap<>();
+
+        if (variableType != null) {
+            UserAccount userAccount = userAccountService.findByUsername(username);
+
+            Pattern p = Pattern.compile(prefix);
+
+            //get the files stored in the database
+            Map<String, CombinedFileInfo> combinedFiles = new HashMap<>();
+            List<DataFile> dbDataFiles = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
+            dbDataFiles.forEach(dataFile -> {
+                DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
+                if (dataFileInfo != null) {
+                    VariableType varType = dataFileInfo.getVariableType();
+                    if (varType != null && varType.getId().equals(variableType.getId())) {
+                        String name = dataFile.getName();
+                        Matcher m = p.matcher(name);
+                        if (m.find()) {
+                            String fileName = m.group(0);
+                            long size = dataFile.getFileSize();
+                            CombinedFileInfo info = combinedFiles.get(fileName);
+                            if (info == null) {
+                                combinedFiles.put(fileName, new CombinedFileInfo(size, 1));
+                            } else {
+                                info.count++;
+                                info.size += size;
+                            }
+                        }
+                    }
+                }
+            });
+
+            Set<String> keySet = combinedFiles.keySet();
+            keySet.forEach(key -> {
+                CombinedFileInfo info = combinedFiles.get(key);
+                String size = FilePrint.humanReadableSize(info.size, true);
+                String description = String.format("%s (count: %d, total size: %s)", key, info.count, size);
+                map.put(key, description);
+            });
+        }
+
+        return map;
     }
 
     public Map<String, String> listAlgoDataset(String username, VariableType variableType) {
@@ -329,6 +376,18 @@ public class DataService {
 
     public FileDelimiterService getFileDelimiterService() {
         return fileDelimiterService;
+    }
+
+    private class CombinedFileInfo {
+
+        long size;
+        int count;
+
+        public CombinedFileInfo(long size, int count) {
+            this.size = size;
+            this.count = count;
+        }
+
     }
 
 }

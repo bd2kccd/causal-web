@@ -69,4 +69,9 @@ public class ServerAlgorithmService extends AbstractAlgorithmService implements 
         return getUserDataFile(username);
     }
 
+    @Override
+    public Map<String, String> getUserRunnableData(String prefix, String username) {
+        return getUserDataFile(prefix, username);
+    }
+
 }

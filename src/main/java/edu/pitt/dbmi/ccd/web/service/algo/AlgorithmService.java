@@ -32,6 +32,8 @@ public interface AlgorithmService {
 
     public Map<String, String> getUserRunnableData(String username);
 
+    public Map<String, String> getUserRunnableData(String prefix, String username);
+
     public void runRemotely(JobRequest jobRequest, AppUser appUser);
 
     public void runLocally(String algorithm, String algorithmJar, JobRequest jobRequest, AppUser appUser);
