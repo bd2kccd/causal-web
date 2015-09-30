@@ -24,7 +24,7 @@ import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.DataService;
-import edu.pitt.dbmi.ccd.web.service.cloud.dto.JobRequest;
+import edu.pitt.dbmi.ccd.web.service.cloud.dto.AlgorithmJobRequest;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,13 +55,13 @@ public class ServerAlgorithmService extends AbstractAlgorithmService implements 
     }
 
     @Override
-    public void runRemotely(JobRequest jobRequest, AppUser appUser) {
+    public void runRemotely(AlgorithmJobRequest jobRequest, AppUser appUser) {
         throw new UnsupportedOperationException("Not supported in server mode.");
     }
 
     @Override
-    public void runLocally(String algorithm, String algorithmJar, JobRequest jobRequest, AppUser appUser) {
-        LOGGER.info(String.format("Add Job into Queue: %d.", addToLocalQueue(algorithm, algorithmJar, jobRequest, appUser)));
+    public void runLocally(String algorithmJar, AlgorithmJobRequest jobRequest, AppUser appUser) {
+        LOGGER.info(String.format("Add Job into Queue: %d.", addToLocalQueue(algorithmJar, jobRequest, appUser)));
     }
 
     @Override

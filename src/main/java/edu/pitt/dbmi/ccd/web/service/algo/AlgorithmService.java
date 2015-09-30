@@ -19,7 +19,7 @@
 package edu.pitt.dbmi.ccd.web.service.algo;
 
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.service.cloud.dto.JobRequest;
+import edu.pitt.dbmi.ccd.web.service.cloud.dto.AlgorithmJobRequest;
 import java.util.Map;
 
 /**
@@ -34,8 +34,8 @@ public interface AlgorithmService {
 
     public Map<String, String> getUserRunnableData(String prefix, String username);
 
-    public void runRemotely(JobRequest jobRequest, AppUser appUser);
+    public void runRemotely(AlgorithmJobRequest jobRequest, AppUser appUser);
 
-    public void runLocally(String algorithm, String algorithmJar, JobRequest jobRequest, AppUser appUser);
+    public void runLocally(String algorithmJar, AlgorithmJobRequest jobRequest, AppUser appUser);
 
 }

@@ -30,7 +30,7 @@ import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.DataService;
-import edu.pitt.dbmi.ccd.web.service.cloud.dto.JobRequest;
+import edu.pitt.dbmi.ccd.web.service.cloud.dto.AlgorithmJobRequest;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -95,19 +95,21 @@ public abstract class AbstractAlgorithmService {
         return fileDelimiter.getValue();
     }
 
-    protected Long addToLocalQueue(String algorithm, String algorithmJar, JobRequest jobRequest, AppUser appUser) {
+    protected Long addToLocalQueue(String algorithmJar, AlgorithmJobRequest jobRequest, AppUser appUser) {
         String userDataDir = appUser.getDataDirectory();
         String userTempDir = appUser.getTmpDirectory();
         String userOutputDir = appUser.getAlgoResultDir();
         String userLibDir = appUser.getLibDirectory();
 
-        String algoName = jobRequest.getAlgorName();
+        String algorithmName = jobRequest.getAlgorithmName();
+        String algorithm = jobRequest.getAlgorithm();
         String dataset = jobRequest.getDataset();
+        String[] jvmOptions = jobRequest.getJvmOptions();
+        String[] parameters = jobRequest.getParameters();
 
         List<String> commands = new LinkedList<>();
         commands.add("java");
 
-        String[] jvmOptions = jobRequest.getJvmOptions();
         if (jvmOptions != null) {
             commands.addAll(Arrays.asList(jvmOptions));
         }
@@ -128,9 +130,9 @@ public abstract class AbstractAlgorithmService {
         }
         commands.add(datasetPath.toString());
 
-        commands.addAll(Arrays.asList(jobRequest.getAlgoParams()));
+        commands.addAll(Arrays.asList(parameters));
 
-        String fileName = String.format("%s_%s_%d", algoName, (dataset == null) ? "multi" : dataset, System.currentTimeMillis());
+        String fileName = String.format("%s_%s_%d", algorithmName, (dataset == null) ? "multi" : dataset, System.currentTimeMillis());
         commands.add("--out-filename");
         commands.add(fileName);
 
@@ -147,7 +149,7 @@ public abstract class AbstractAlgorithmService {
         UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
         JobQueueInfo jobQueueInfo = new JobQueueInfo();
         jobQueueInfo.setAddedTime(new Date(System.currentTimeMillis()));
-        jobQueueInfo.setAlgorName(algoName);
+        jobQueueInfo.setAlgorName(algorithmName);
         jobQueueInfo.setCommands(cmd);
         jobQueueInfo.setFileName(fileName);
         jobQueueInfo.setOutputDirectory(userOutputDir);

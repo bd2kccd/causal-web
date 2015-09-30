@@ -22,7 +22,7 @@ import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.model.algo.PcStableRunInfo;
 import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmService;
-import edu.pitt.dbmi.ccd.web.service.cloud.dto.JobRequest;
+import edu.pitt.dbmi.ccd.web.service.cloud.dto.AlgorithmJobRequest;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -115,16 +115,17 @@ public class PcStableController implements ViewPath {
             jvmOptions = jvmOpts.split("\\s+");
         }
 
-        JobRequest jobRequest = new JobRequest();
-        jobRequest.setAlgorName("pcstable");
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest();
+        jobRequest.setAlgorithmName("pcStable");
+        jobRequest.setAlgorithm(pcStable);
         jobRequest.setJvmOptions(jvmOptions);
-        jobRequest.setAlgoParams(params.toArray(new String[params.size()]));
+        jobRequest.setParameters(params.toArray(new String[params.size()]));
         jobRequest.setDataset(info.getDataset());
 
         if (info.getRunOnPsc()) {
             algorithmService.runRemotely(jobRequest, appUser);
         } else {
-            algorithmService.runLocally(pcStable, algorithmJar, jobRequest, appUser);
+            algorithmService.runLocally(algorithmJar, jobRequest, appUser);
         }
 
         return REDIRECT_JOB_QUEUE;

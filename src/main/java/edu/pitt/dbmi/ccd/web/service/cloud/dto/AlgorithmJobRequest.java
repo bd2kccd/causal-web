@@ -27,11 +27,15 @@ import org.hibernate.validator.constraints.NotEmpty;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class JobRequest {
+public class AlgorithmJobRequest {
 
     @NotNull
     @NotEmpty
-    private String algorName;
+    private String algorithmName;
+
+    @NotNull
+    @NotEmpty
+    private String algorithm;
 
     private String dataset;
 
@@ -39,17 +43,25 @@ public class JobRequest {
 
     @NotNull
     @NotEmpty
-    private String[] algoParams;
+    private String[] parameters;
 
-    public JobRequest() {
+    public AlgorithmJobRequest() {
     }
 
-    public String getAlgorName() {
-        return algorName;
+    public String getAlgorithmName() {
+        return algorithmName;
     }
 
-    public void setAlgorName(String algorName) {
-        this.algorName = algorName;
+    public void setAlgorithmName(String algorithmName) {
+        this.algorithmName = algorithmName;
+    }
+
+    public String getAlgorithm() {
+        return algorithm;
+    }
+
+    public void setAlgorithm(String algorithm) {
+        this.algorithm = algorithm;
     }
 
     public String getDataset() {
@@ -68,12 +80,12 @@ public class JobRequest {
         this.jvmOptions = jvmOptions;
     }
 
-    public String[] getAlgoParams() {
-        return algoParams;
+    public String[] getParameters() {
+        return parameters;
     }
 
-    public void setAlgoParams(String[] algoParams) {
-        this.algoParams = algoParams;
+    public void setParameters(String[] parameters) {
+        this.parameters = parameters;
     }
 
 }
