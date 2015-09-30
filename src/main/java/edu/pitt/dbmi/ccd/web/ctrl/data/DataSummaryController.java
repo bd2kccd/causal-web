@@ -89,7 +89,7 @@ public class DataSummaryController implements ViewPath {
         model.addAttribute("variableTypes", variableTypeService.findAll());
         model.addAttribute("fileDelimiters", fileDelimiterService.findAll());
 
-        return DATA_SUMMARY_VIEW;
+        return REDIRECT_DATA;
     }
 
     @RequestMapping(method = RequestMethod.GET)
