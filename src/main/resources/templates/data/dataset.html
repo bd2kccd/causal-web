@@ -20,7 +20,7 @@
             }
         </style>
     </head>
-    <body th:attr="onload='getDownloadProgress(\'' + @{/data/upload/remote} + '\')'">
+    <body th:attr="onload=${appUser.webUser} ? 'doNothing()' : 'getDownloadProgress(\'' + @{/data/upload/remote} + '\')'">
         <div id="wrapper">
             <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0" th:replace="fragments/navigator :: nav">
             </nav>

@@ -1,3 +1,6 @@
+function doNothing() {
+}
+
 function getDownloadProgress(url) {
     var listUrl = url + '/list';
     $.get(listUrl, function (list) {
