@@ -17,9 +17,8 @@ $(document).ready(function () {
             },
             depth: {
                 required: true,
-                digits: true,
-                min: 0,
-                max: 5
+                number: true,
+                min: -1
             }
         },
         messages: {

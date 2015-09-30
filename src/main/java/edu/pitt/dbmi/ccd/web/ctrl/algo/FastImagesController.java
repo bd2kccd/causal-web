@@ -67,7 +67,7 @@ public class FastImagesController implements ViewPath {
     public String showGesView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         GesRunInfo info = new GesRunInfo();
         info.setPenaltyDiscount(2.0);
-        info.setDepth(3);
+        info.setDepth(-1);
         info.setVerbose(Boolean.TRUE);
         info.setJvmOptions("");
         info.setRunOnPsc(Boolean.FALSE);

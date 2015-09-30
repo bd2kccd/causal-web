@@ -91,7 +91,7 @@
                                                     <input type="number" id="penaltyDiscount" name="penaltyDiscount" maxlength="10" class="form-control" placeholder="Penalty Discount" ng-model="penaltyDiscount" th:attr="ng-init='penaltyDiscount=' + *{penaltyDiscount}" th:field="*{penaltyDiscount}" required="required" />
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="depth" class="control-label">Search Depth (0-5)</label>
+                                                    <label for="depth" class="control-label">Search Depth (minium value: -1)</label>
                                                     <input type="number" id="depth" name="depth" maxlength="10" class="form-control" placeholder="Depth" ng-model="depth" th:attr="ng-init='depth=' + *{depth}" th:field="*{depth}" required="required" />
                                                 </div>
                                                 <div class="form-group">
@@ -187,7 +187,7 @@
         <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.js}"></script>
         <script src="../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
-        <script src="../../static/js/gesValidate.js" th:src="@{/js/pcstableValidate.js}"></script>
+        <script src="../../static/js/gesValidate.js" th:src="@{/js/gesValidate.js}"></script>
         <script src="../../static/js/stepwizard.js" th:src="@{/js/stepwizard.js}"></script>
         <script src="../../static/js/algorithm.js" th:src="@{/js/algorithm.js}"></script>
     </body>
