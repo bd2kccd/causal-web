@@ -93,6 +93,7 @@ public class UserProfileController implements ViewPath {
         UserInfo userInfo = new UserInfo();
         userInfo.setEmail(person.getEmail());
         userInfo.setFirstName(person.getFirstName());
+        userInfo.setMiddleName(person.getMiddleName());
         userInfo.setLastName(person.getLastName());
 
         UserWorkspace userWorkspace = new UserWorkspace();
@@ -200,6 +201,7 @@ public class UserProfileController implements ViewPath {
         Person person = userAccount.getPerson();
         person.setEmail(userInfo.getEmail());
         person.setFirstName(userInfo.getFirstName());
+        person.setMiddleName(userInfo.getMiddleName());
         person.setLastName(userInfo.getLastName());
 
         userAccount = userAccountService.saveUserAccount(userAccount);

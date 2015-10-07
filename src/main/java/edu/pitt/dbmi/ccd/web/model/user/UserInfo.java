@@ -28,6 +28,8 @@ public class UserInfo {
 
     private String firstName;
 
+    private String middleName;
+
     private String lastName;
 
     private String email;
@@ -35,22 +37,31 @@ public class UserInfo {
     public UserInfo() {
     }
 
-    public UserInfo(String firstName, String lastName, String email) {
+    public UserInfo(String firstName, String middleName, String lastName, String email) {
         this.firstName = firstName;
+        this.middleName = middleName;
         this.lastName = lastName;
         this.email = email;
     }
 
     public String getFirstName() {
-        return firstName;
+        return (firstName == null) ? firstName : firstName.trim();
     }
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
 
+    public String getMiddleName() {
+        return (middleName == null) ? middleName : middleName.trim();
+    }
+
+    public void setMiddleName(String middleName) {
+        this.middleName = middleName;
+    }
+
     public String getLastName() {
-        return lastName;
+        return (lastName == null) ? lastName : lastName.trim();
     }
 
     public void setLastName(String lastName) {
@@ -58,7 +69,7 @@ public class UserInfo {
     }
 
     public String getEmail() {
-        return email;
+        return (email == null) ? email : email.trim();
     }
 
     public void setEmail(String email) {
