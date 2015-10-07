@@ -29,6 +29,7 @@ import edu.pitt.dbmi.ccd.web.service.UserService;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.shiro.SecurityUtils;
@@ -117,15 +118,14 @@ public class UserRegistrationController implements ViewPath {
 
     @RequestMapping(value = "activate", method = RequestMethod.GET)
     public String activateWebUser(
-            @RequestParam(value = "user", required = true) final String user,
-            @RequestParam(value = "key", required = true) final String activationKey,
+            @RequestParam(value = "account", required = true) final String account,
             final Model model) {
-        UserAccount userAccount = userAccountService.findByUsernameAndActivationKey(user, activationKey);
-        if (userAccount == null) {
+        String accountId = new String(Base64.getUrlDecoder().decode(account));
+        UserAccount userAccount = userAccountService.findByAccountId(accountId);
+        if (userAccount == null || userAccount.getActive()) {
             throw new UserActivationException();
         } else {
             userAccount.setActive(Boolean.TRUE);
-            userAccount.setActivationKey(null);
             userAccountService.saveUserAccount(userAccount);
 
             model.addAttribute("username", userAccount.getUsername());
