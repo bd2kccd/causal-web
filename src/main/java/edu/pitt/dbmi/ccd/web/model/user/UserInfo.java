@@ -45,7 +45,7 @@ public class UserInfo {
     }
 
     public String getFirstName() {
-        return (firstName == null) ? firstName : firstName.trim();
+        return firstName;
     }
 
     public void setFirstName(String firstName) {
@@ -53,7 +53,7 @@ public class UserInfo {
     }
 
     public String getMiddleName() {
-        return (middleName == null) ? middleName : middleName.trim();
+        return middleName;
     }
 
     public void setMiddleName(String middleName) {
@@ -61,7 +61,7 @@ public class UserInfo {
     }
 
     public String getLastName() {
-        return (lastName == null) ? lastName : lastName.trim();
+        return lastName;
     }
 
     public void setLastName(String lastName) {
@@ -69,7 +69,7 @@ public class UserInfo {
     }
 
     public String getEmail() {
-        return (email == null) ? email : email.trim();
+        return email;
     }
 
     public void setEmail(String email) {

@@ -59,7 +59,6 @@ public class ApplicationConfigurer extends WebMvcConfigurerAdapter {
             };
             container.addErrorPages(errorPages);
             container.setContextPath("/ccd");
-            container.setSessionTimeout(-1);
         };
     }
 
