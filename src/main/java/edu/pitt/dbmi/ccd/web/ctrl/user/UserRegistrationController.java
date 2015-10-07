@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.user;
 
+import edu.pitt.dbmi.ccd.commons.security.WebSecurityDSA;
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
@@ -29,6 +30,7 @@ import edu.pitt.dbmi.ccd.web.service.UserService;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.KeyPair;
 import java.util.Base64;
 import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
@@ -168,13 +170,25 @@ public class UserRegistrationController implements ViewPath {
             return SETUP_VIEW;
         }
 
+        KeyPair keyPair = WebSecurityDSA.generateKeyPair();
+        String publicKey = WebSecurityDSA.getBase64EncodedPublicKey(keyPair);
+        String privateKey = WebSecurityDSA.getBase64EncodedPrivateKey(keyPair);
+
+        String username = System.getProperty("user.name");
+        String password = passwordService.encryptPassword(defaultPassword);
+        Boolean active = Boolean.TRUE;
+        Date createdDate = new Date(System.currentTimeMillis());
+        Date lastLoginDate = new Date(System.currentTimeMillis());
+
         UserAccount userAccount = new UserAccount();
-        userAccount.setActive(true);
-        userAccount.setPassword(passwordService.encryptPassword(defaultPassword));
-        userAccount.setCreatedDate(new Date(System.currentTimeMillis()));
-        userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
-        userAccount.setUsername(System.getProperty("user.name"));
+        userAccount.setActive(active);
+        userAccount.setPassword(password);
+        userAccount.setCreatedDate(createdDate);
+        userAccount.setLastLoginDate(lastLoginDate);
+        userAccount.setUsername(username);
         userAccount.setPerson(person);
+        userAccount.setPrivateKey(privateKey);
+        userAccount.setPublicKey(publicKey);
 
         try {
             userAccount = userAccountService.saveUserAccount(userAccount);
