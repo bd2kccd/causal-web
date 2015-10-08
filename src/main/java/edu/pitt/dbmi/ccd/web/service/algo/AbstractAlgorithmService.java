@@ -36,6 +36,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -124,15 +125,20 @@ public abstract class AbstractAlgorithmService {
         if (dataset == null) {
             commands.add("--data-dir");
             datasetPath = Paths.get(userDataDir);
+            commands.add(datasetPath.toString());
         } else {
-            datasetPath = Paths.get(userDataDir, dataset);
-            commands.add("--data");
-        }
-        commands.add(datasetPath.toString());
+        	String[] aDataset = dataset.split(",");
+        	for(int i=0;i<aDataset.length;i++){
+        		datasetPath = Paths.get(userDataDir, aDataset[i]);
+                commands.add("--data");
+                commands.add(datasetPath.toString());
+        	}
+            
+        }       
 
         commands.addAll(Arrays.asList(parameters));
 
-        String fileName = String.format("%s_%s_%d", algorithmName, (dataset == null) ? "multi" : dataset, System.currentTimeMillis());
+        String fileName = String.format("%s_%s_%d", algorithmName, (dataset.split(",").length > 1) ? "multi" : dataset, System.currentTimeMillis());
         commands.add("--out-filename");
         commands.add(fileName);
 

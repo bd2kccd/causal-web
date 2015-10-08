@@ -13,4 +13,21 @@ $(document).on('click', '.panel-heading span.clickable', function (e) {
 
 $(document).ready(function () {
     $("#continuous").prop("disabled", true);
+    if($('.dataset-multiple')){
+    	$('.dataset-multiple').multiselect({
+    		includeSelectAllOption: true,
+            enableFiltering: true,
+            onChange: function(option, checked){
+            	var selectedDatasets = '';
+            	$('.dataset-multiple option:selected').each(function(){
+            		if(selectedDatasets != ''){
+            			selectedDatasets += ',';
+            		}
+            		selectedDatasets += $(this).val();
+            		$('#dataset-summary').text(selectedDatasets);
+            		$('#dataset').val(selectedDatasets);
+            	});
+            }
+        });
+    }
 });
