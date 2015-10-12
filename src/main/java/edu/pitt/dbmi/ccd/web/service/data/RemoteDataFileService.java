@@ -78,34 +78,39 @@ public class RemoteDataFileService {
     public Set<String> retrieveDataFileMD5Hash(String username) {
         Set<String> hashes = new HashSet<>();
 
-        if (!webapp) {
-            UserAccount userAccount = userAccountService.findByUsername(username);
-            String accountId = userAccount.getAccountId();
-            String privateKey = userAccount.getPrivateKey();
+        if (webapp) {
+            return hashes;
+        }
 
-            try {
-                URI uri = UriComponentsBuilder.fromHttpUrl(dataRestUrl)
-                        .pathSegment("file").pathSegment("hash")
-                        .build().toUri();
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        String accountId = userAccount.getAccountId();
+        if (accountId == null) {
+            return hashes;
+        }
 
-                HttpHeaders headers = new HttpHeaders();
-                headers.set("appId", appId);
-                headers.set("accountId", accountId);
+        String privateKey = userAccount.getPrivateKey();
+        try {
+            URI uri = UriComponentsBuilder.fromHttpUrl(this.dataRestUrl)
+                    .pathSegment("file").pathSegment("hash")
+                    .build().toUri();
 
-                String signature = WebSecurityDSA.createSignature(uri.toString(), headers.toSingleValueMap(), privateKey);
-                headers.set("signature", signature);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("appId", this.appId);
+            headers.set("accountId", accountId);
 
-                headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-                headers.setDate(System.currentTimeMillis());
+            String signature = WebSecurityDSA.createSignature(uri.toString(), headers.toSingleValueMap(), privateKey);
+            headers.set("signature", signature);
 
-                HttpEntity<?> entity = new HttpEntity<>(headers);
-                ResponseEntity<Set> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, entity, Set.class);
-                if (responseEntity.getStatusCode() == HttpStatus.OK) {
-                    hashes.addAll(responseEntity.getBody());
-                }
-            } catch (RestClientException exception) {
-                LOGGER.error(exception.getMessage());
+            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            headers.setDate(System.currentTimeMillis());
+
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+            ResponseEntity<Set> responseEntity = this.restTemplate.exchange(uri, HttpMethod.GET, entity, Set.class);
+            if (responseEntity.getStatusCode() == HttpStatus.OK) {
+                hashes.addAll(responseEntity.getBody());
             }
+        } catch (RestClientException exception) {
+            LOGGER.error(exception.getMessage());
         }
 
         return hashes;

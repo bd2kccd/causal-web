@@ -19,6 +19,9 @@
 package edu.pitt.dbmi.ccd.web.service.result.algorithm;
 
 import edu.pitt.dbmi.ccd.commons.file.FilePrint;
+import edu.pitt.dbmi.ccd.commons.security.WebSecurityDSA;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.dto.response.FileInfoResponse;
 import edu.pitt.dbmi.ccd.web.model.ResultFileInfo;
@@ -81,16 +84,19 @@ public class DesktopAlgorithmResultService extends AbstractAlgorithmResultServic
 
     private final RestTemplate restTemplate;
 
+    private final UserAccountService userAccountService;
+
     @Autowired(required = true)
     public DesktopAlgorithmResultService(
             @Value("${ccd.rest.url.result}") String resultUrl,
-            @Value("${ccd.rest.path.result.algorithm:/algorithm}") String algorithPath,
             @Value("${ccd.rest.appId}") String appId,
-            RestTemplate restTemplate) {
+            RestTemplate restTemplate,
+            UserAccountService userAccountService) {
         this.resultUrl = resultUrl;
-        this.algorithPath = algorithPath;
+        this.algorithPath = "algorithm";
         this.appId = appId;
         this.restTemplate = restTemplate;
+        this.userAccountService = userAccountService;
     }
 
     @Override
@@ -150,17 +156,30 @@ public class DesktopAlgorithmResultService extends AbstractAlgorithmResultServic
     private List<ResultFileInfo> listRemoteResultFileInfo(String username) {
         List<ResultFileInfo> list = new LinkedList<>();
 
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-            HttpEntity<?> entity = new HttpEntity<>(headers);
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        String accountId = userAccount.getAccountId();
+        if (accountId == null) {
+            return list;
+        }
 
-            URI url = UriComponentsBuilder.fromHttpUrl(this.resultUrl + this.algorithPath)
-                    .queryParam("usr", username)
-                    .queryParam("appId", this.appId)
+        String privateKey = userAccount.getPrivateKey();
+        try {
+            URI uri = UriComponentsBuilder.fromHttpUrl(this.resultUrl)
+                    .pathSegment(this.algorithPath)
                     .build().toUri();
 
-            ResponseEntity<FileInfoResponse[]> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, FileInfoResponse[].class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("appId", this.appId);
+            headers.set("accountId", accountId);
+
+            String signature = WebSecurityDSA.createSignature(uri.toString(), headers.toSingleValueMap(), privateKey);
+            headers.set("signature", signature);
+
+            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            headers.setDate(System.currentTimeMillis());
+
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+            ResponseEntity<FileInfoResponse[]> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, entity, FileInfoResponse[].class);
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 FileInfoResponse[] responseList = responseEntity.getBody();
                 for (FileInfoResponse response : responseList) {
