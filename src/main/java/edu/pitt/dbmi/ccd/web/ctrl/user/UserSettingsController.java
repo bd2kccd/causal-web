@@ -18,14 +18,23 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.user;
 
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
+import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.model.user.UserLogin;
+import edu.pitt.dbmi.ccd.web.service.user.settings.UserSettingsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  *
@@ -38,14 +47,53 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @RequestMapping(value = "user/settings")
 public class UserSettingsController implements ViewPath {
 
+    private final UserSettingsService userSettingsService;
+
+    private final UserAccountService userAccountService;
+
+    @Autowired(required = true)
+    public UserSettingsController(UserSettingsService userSettingsService, UserAccountService userAccountService) {
+        this.userSettingsService = userSettingsService;
+        this.userAccountService = userAccountService;
+    }
+
     @InitBinder
     public void initBinder(WebDataBinder binder) {
-        binder.registerCustomEditor(String.class, new StringTrimmerEditor(false));
+        binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public String showUserSettings() {
+    public String showUserSettings(
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+        String accountId = userAccount.getAccountId();
+        if (accountId == null) {
+            model.addAttribute("userLogin", new UserLogin());
+        } else {
+            model.addAttribute("accountId", accountId);
+        }
+
         return USER_SETTINGS_VIEW;
+    }
+
+    @RequestMapping(value = "account/remove", method = RequestMethod.GET)
+    public String removeWebAccount(@ModelAttribute("appUser") final AppUser appUser) {
+        userSettingsService.deleteWebAcount(appUser.getUsername());
+
+        return REDIRECT_USER_SETTINGS;
+    }
+
+    @RequestMapping(value = "account", method = RequestMethod.POST)
+    public String addWebAccount(
+            @ModelAttribute("userLogin") final UserLogin userLogin,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final RedirectAttributes redirectAttributes) {
+        if (!userSettingsService.addWebAccount(userLogin.getUsr(), userLogin.getPwd(), appUser.getUsername())) {
+            redirectAttributes.addFlashAttribute("userLoginErr", "Unable to add web account.");
+        }
+
+        return REDIRECT_USER_SETTINGS;
     }
 
 }

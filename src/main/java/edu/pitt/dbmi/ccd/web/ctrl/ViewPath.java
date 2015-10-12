@@ -48,7 +48,8 @@ public interface ViewPath {
     public static final String USER_PROFILE_VIEW = "user/userProfile";
     public static final String REDIRECT_USER_PROFILE = "redirect:/user/profile";
 
-    public static final String USER_SETTINGS_VIEW = "user/userSettings";
+    public static final String USER_SETTINGS_VIEW = "user/settings/userSettings";
+    public static final String REDIRECT_USER_SETTINGS = "redirect:/user/settings";
 
     public static final String DATA_SUMMARY = "dataSummary";
     public static final String DATA_SUMMARY_VIEW = "data/dataSummary";

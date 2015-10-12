@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <title>CCD User Settings: Add CCD Web Account</title>
+        <meta name="description" content="" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="../../../../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{/vendors/bootstrap/css/bootstrap.min.css}" />
+        <link rel="stylesheet" href="../../../../static/vendors/bootstrap/css/bootstrap-theme.min.css" th:href="@{/vendors/bootstrap/css/bootstrap-theme.min.css}" />
+        <link rel="stylesheet" href="../../../../static/vendors/metisMenu/metisMenu.min.css" th:href="@{/vendors/metisMenu/metisMenu.min.css}" />
+        <link rel="stylesheet" href="../../../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{/vendors/font-awesome/css/font-awesome.min.css}" />
+        <link rel="stylesheet" href="../../../../static/vendors/sb-admin-2/css/sb-admin-2.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.css}" />
+        <link rel="stylesheet" href="../../../../static/css/styles.css" th:href="@{/css/styles.css}" />
+    </head>
+    <body>
+        <div class="row">
+            <div class="col-lg-12" id="web_account">
+                <table th:if="${accountId}" class="table table-condensed">
+                    <thead>
+                        <tr>
+                            <th>Web Account</th>
+                            <th>
+                                <div class="pull-right">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-default" id="remove_account" data-title="Remove Account" data-toggle="modal" data-target="#confirm_remove_account">
+                                            <span class="glyphicon glyphicon-remove"></span> Remove Account
+                                        </button>
+                                    </div>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="2">Account ID:&nbsp;<span>d7536c29-eb77-4244-a4b0-ca9dc405f14a</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div th:unless="${accountId}" class="panel panel-default">
+                    <div class="panel-heading"><h4>Add CCD Web Account</h4></div>
+                    <div class="panel-body">
+                        <div th:if="${userLoginErr}" class="alert alert-danger"><strong th:text="${userLoginErr}"></strong></div>
+                        <form method="post" action="" th:action="@{/user/settings/account}" th:object="${userLogin}" role="form">
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span> 
+                                    <input class="form-control" placeholder="Username" name="usr" type="text" autofocus="autofocus" th:field="*{usr}" required="required" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+                                    <input class="form-control" placeholder="Password" name="pwd" type="password" th:field="*{pwd}" required="required" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <input type="submit" class="btn btn-lg btn-block btn-default" value="Submit" />
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="confirm_remove_account" tabindex="-1" role="dialog" aria-labelledby="delete" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                        <h4 class="modal-title" id="Heading">Remove Web Account</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger"><span class="glyphicon glyphicon-warning-sign"></span> Are you sure you want to account?</div>
+                    </div>
+                    <div class="modal-footer">
+                        <a class="btn-ok" href="user/account/remove" th:href="@{/user/settings/account/remove}"><button type="button" class="btn btn-danger" ><span class="glyphicon glyphicon-ok-sign"></span> Yes</button></a>
+                        <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> No</button>
+                    </div>
+                </div>
+                <!-- /.modal-content --> 
+            </div>
+            <!-- /.modal-dialog --> 
+        </div>
+        <script src="../../../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
+        <script src="../../../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
+        <script src="../../../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
+        <script src="../../../../static/vendors/sb-admin-2/js/sb-admin-2.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.js}"></script>
+    </body>
+</html>
