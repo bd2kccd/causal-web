@@ -34,7 +34,7 @@ import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.model.AttributeValue;
 import edu.pitt.dbmi.ccd.web.model.data.DataListItem;
 import edu.pitt.dbmi.ccd.web.model.data.DataSummary;
-import edu.pitt.dbmi.ccd.web.service.cloud.CloudDataService;
+import edu.pitt.dbmi.ccd.web.service.data.RemoteDataFileService;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -74,7 +74,7 @@ public class DataService {
 
     private final UserAccountService userAccountService;
 
-    private final CloudDataService cloudDataService;
+    private final RemoteDataFileService remoteDataFileService;
 
     @Autowired(required = true)
     public DataService(
@@ -82,12 +82,12 @@ public class DataService {
             VariableTypeService variableTypeService,
             FileDelimiterService fileDelimiterService,
             UserAccountService userAccountService,
-            CloudDataService cloudDataService) {
+            RemoteDataFileService remoteDataFileService) {
         this.dataFileService = dataFileService;
         this.variableTypeService = variableTypeService;
         this.fileDelimiterService = fileDelimiterService;
         this.userAccountService = userAccountService;
-        this.cloudDataService = cloudDataService;
+        this.remoteDataFileService = remoteDataFileService;
     }
 
     public List<AttributeValue> getFileInfo(final String dir, final String fileName) {
@@ -199,7 +199,7 @@ public class DataService {
     public List<DataListItem> createListItem(String username, String dataDir) {
         List<DataListItem> listItems = new LinkedList<>();
 
-        Set<String> remoteFileHashes = cloudDataService.getDataMd5Hash(username);
+        Set<String> remoteFileHashes = remoteDataFileService.retrieveDataFileMD5Hash(username);
 
         UserAccount userAccount = userAccountService.findByUsername(username);
 
