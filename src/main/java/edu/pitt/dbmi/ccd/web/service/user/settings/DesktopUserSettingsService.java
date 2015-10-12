@@ -76,6 +76,7 @@ public class DesktopUserSettingsService implements UserSettingsService {
         this.userAccountService = userAccountService;
     }
 
+    @Override
     public boolean deleteWebAcount(String username) {
         boolean success = false;
 
