@@ -88,21 +88,20 @@ public class RemoteDataFileService {
             return hashes;
         }
 
-        String privateKey = userAccount.getPrivateKey();
         try {
             URI uri = UriComponentsBuilder.fromHttpUrl(this.dataRestUrl)
-                    .pathSegment("file").pathSegment("hash")
+                    .pathSegment("file")
+                    .pathSegment("hash")
                     .build().toUri();
 
+            String signature = WebSecurityDSA.createSignature(uri.toString(), userAccount.getPrivateKey());
+
             HttpHeaders headers = new HttpHeaders();
-            headers.set("appId", this.appId);
-            headers.set("accountId", accountId);
-
-            String signature = WebSecurityDSA.createSignature(uri.toString(), headers.toSingleValueMap(), privateKey);
-            headers.set("signature", signature);
-
             headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
             headers.setDate(System.currentTimeMillis());
+            headers.set("appId", this.appId);
+            headers.set("accountId", accountId);
+            headers.set("signature", signature);
 
             HttpEntity<?> entity = new HttpEntity<>(headers);
             ResponseEntity<Set> responseEntity = this.restTemplate.exchange(uri, HttpMethod.GET, entity, Set.class);

@@ -76,6 +76,8 @@ public class DesktopAlgorithmResultService extends AbstractAlgorithmResultServic
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DesktopAlgorithmResultService.class);
 
+    private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
+
     private final String resultUrl;
 
     private final String algorithPath;
@@ -162,21 +164,19 @@ public class DesktopAlgorithmResultService extends AbstractAlgorithmResultServic
             return list;
         }
 
-        String privateKey = userAccount.getPrivateKey();
         try {
             URI uri = UriComponentsBuilder.fromHttpUrl(this.resultUrl)
                     .pathSegment(this.algorithPath)
                     .build().toUri();
 
+            String signature = WebSecurityDSA.createSignature(uri.toString(), userAccount.getPrivateKey());
+
             HttpHeaders headers = new HttpHeaders();
-            headers.set("appId", this.appId);
-            headers.set("accountId", accountId);
-
-            String signature = WebSecurityDSA.createSignature(uri.toString(), headers.toSingleValueMap(), privateKey);
-            headers.set("signature", signature);
-
             headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
             headers.setDate(System.currentTimeMillis());
+            headers.set("appId", this.appId);
+            headers.set("accountId", accountId);
+            headers.set("signature", signature);
 
             HttpEntity<?> entity = new HttpEntity<>(headers);
             ResponseEntity<FileInfoResponse[]> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, entity, FileInfoResponse[].class);
@@ -246,19 +246,32 @@ public class DesktopAlgorithmResultService extends AbstractAlgorithmResultServic
     }
 
     private byte[] downloadRemoteFile(String username, String fileName) {
-        byte[] data = null;
+        byte[] data = EMPTY_BYTE_ARRAY;
+
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        String accountId = userAccount.getAccountId();
+        if (accountId == null) {
+            return data;
+        }
 
         try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Accept", MediaType.TEXT_PLAIN_VALUE);
-            HttpEntity<?> entity = new HttpEntity<>(headers);
-
-            URI url = UriComponentsBuilder.fromHttpUrl(this.resultUrl + this.algorithPath + "/" + fileName + "/")
-                    .queryParam("usr", username)
-                    .queryParam("appId", this.appId)
+            URI uri = UriComponentsBuilder.fromHttpUrl(this.resultUrl)
+                    .pathSegment(this.algorithPath)
+                    .pathSegment(fileName)
                     .build().toUri();
 
-            ResponseEntity<ByteArrayResource> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, ByteArrayResource.class);
+            String signature = WebSecurityDSA.createSignature(uri.toString(), userAccount.getPrivateKey());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setAccept(Collections.singletonList(MediaType.TEXT_PLAIN));
+            headers.setDate(System.currentTimeMillis());
+            headers.set("appId", this.appId);
+            headers.set("accountId", accountId);
+            headers.set("signature", signature);
+
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<ByteArrayResource> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, entity, ByteArrayResource.class);
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 ByteArrayResource byteArrayResource = responseEntity.getBody();
                 data = byteArrayResource.getByteArray();
