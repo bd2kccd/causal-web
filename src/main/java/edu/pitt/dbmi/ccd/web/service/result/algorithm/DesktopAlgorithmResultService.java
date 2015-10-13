@@ -140,19 +140,29 @@ public class DesktopAlgorithmResultService extends AbstractAlgorithmResultServic
         });
 
         if (!remoteFileNames.isEmpty()) {
-            try {
-                HttpHeaders headers = new HttpHeaders();
-                headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-                HttpEntity<?> entity = new HttpEntity<>(remoteFileNames, headers);
+            UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+            String accountId = userAccount.getAccountId();
+            if (accountId != null) {
+                try {
+                    URI uri = UriComponentsBuilder.fromHttpUrl(this.resultUrl)
+                            .pathSegment(this.algorithPath)
+                            .build().toUri();
 
-                URI url = UriComponentsBuilder.fromHttpUrl(this.resultUrl + this.algorithPath)
-                        .queryParam("usr", appUser.getUsername())
-                        .queryParam("appId", this.appId)
-                        .build().toUri();
+                    String signature = WebSecurityDSA.createSignature(uri.toString(), userAccount.getPrivateKey());
 
-                restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class);
-            } catch (RestClientException exception) {
-                LOGGER.error(exception.getMessage());
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                    headers.setDate(System.currentTimeMillis());
+                    headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
+                    headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(accountId.getBytes()));
+                    headers.set(HEADER_SIGNATURE, signature);
+
+                    HttpEntity<?> entity = new HttpEntity<>(remoteFileNames, headers);
+
+                    restTemplate.exchange(uri, HttpMethod.DELETE, entity, String.class);
+                } catch (RestClientException exception) {
+                    LOGGER.error(exception.getMessage());
+                }
             }
         }
     }
