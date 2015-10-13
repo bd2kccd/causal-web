@@ -26,6 +26,7 @@ import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.dto.response.FileInfoResponse;
 import edu.pitt.dbmi.ccd.web.model.ResultFileInfo;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
+import edu.pitt.dbmi.ccd.web.service.RestRequestService;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -40,6 +41,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -72,7 +74,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 @Profile("desktop")
 @Service
-public class DesktopAlgorithmResultService extends AbstractAlgorithmResultService implements AlgorithmResultService {
+public class DesktopAlgorithmResultService extends AbstractAlgorithmResultService implements AlgorithmResultService, RestRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DesktopAlgorithmResultService.class);
 
@@ -166,7 +168,7 @@ public class DesktopAlgorithmResultService extends AbstractAlgorithmResultServic
 
         try {
             URI uri = UriComponentsBuilder.fromHttpUrl(this.resultUrl)
-                    .pathSegment(this.algorithPath)
+                    .pathSegment(this.algorithPath, "list")
                     .build().toUri();
 
             String signature = WebSecurityDSA.createSignature(uri.toString(), userAccount.getPrivateKey());
@@ -174,9 +176,9 @@ public class DesktopAlgorithmResultService extends AbstractAlgorithmResultServic
             HttpHeaders headers = new HttpHeaders();
             headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
             headers.setDate(System.currentTimeMillis());
-            headers.set("appId", this.appId);
-            headers.set("accountId", accountId);
-            headers.set("signature", signature);
+            headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
+            headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(accountId.getBytes()));
+            headers.set(HEADER_SIGNATURE, signature);
 
             HttpEntity<?> entity = new HttpEntity<>(headers);
             ResponseEntity<FileInfoResponse[]> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, entity, FileInfoResponse[].class);
@@ -257,7 +259,7 @@ public class DesktopAlgorithmResultService extends AbstractAlgorithmResultServic
         try {
             URI uri = UriComponentsBuilder.fromHttpUrl(this.resultUrl)
                     .pathSegment(this.algorithPath)
-                    .pathSegment(fileName)
+                    .queryParam("fileName", fileName)
                     .build().toUri();
 
             String signature = WebSecurityDSA.createSignature(uri.toString(), userAccount.getPrivateKey());
@@ -265,11 +267,11 @@ public class DesktopAlgorithmResultService extends AbstractAlgorithmResultServic
             HttpHeaders headers = new HttpHeaders();
             headers.setAccept(Collections.singletonList(MediaType.TEXT_PLAIN));
             headers.setDate(System.currentTimeMillis());
-            headers.set("appId", this.appId);
-            headers.set("accountId", accountId);
-            headers.set("signature", signature);
+            headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
+            headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(accountId.getBytes()));
+            headers.set(HEADER_SIGNATURE, signature);
 
-            HttpEntity<?> entity = new HttpEntity<>(headers);
+            HttpEntity entity = new HttpEntity(headers);
 
             ResponseEntity<ByteArrayResource> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, entity, ByteArrayResource.class);
             if (responseEntity.getStatusCode() == HttpStatus.OK) {

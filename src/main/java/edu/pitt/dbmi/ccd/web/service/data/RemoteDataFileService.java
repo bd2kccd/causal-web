@@ -21,7 +21,9 @@ package edu.pitt.dbmi.ccd.web.service.data;
 import edu.pitt.dbmi.ccd.commons.security.WebSecurityDSA;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
+import edu.pitt.dbmi.ccd.web.service.RestRequestService;
 import java.net.URI;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -47,7 +49,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @Service
-public class RemoteDataFileService {
+public class RemoteDataFileService implements RestRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteDataFileService.class);
 
@@ -90,8 +92,7 @@ public class RemoteDataFileService {
 
         try {
             URI uri = UriComponentsBuilder.fromHttpUrl(this.dataRestUrl)
-                    .pathSegment("file")
-                    .pathSegment("hash")
+                    .pathSegment("file", "hash")
                     .build().toUri();
 
             String signature = WebSecurityDSA.createSignature(uri.toString(), userAccount.getPrivateKey());
@@ -99,9 +100,9 @@ public class RemoteDataFileService {
             HttpHeaders headers = new HttpHeaders();
             headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
             headers.setDate(System.currentTimeMillis());
-            headers.set("appId", this.appId);
-            headers.set("accountId", accountId);
-            headers.set("signature", signature);
+            headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
+            headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(accountId.getBytes()));
+            headers.set(HEADER_SIGNATURE, signature);
 
             HttpEntity<?> entity = new HttpEntity<>(headers);
             ResponseEntity<Set> responseEntity = this.restTemplate.exchange(uri, HttpMethod.GET, entity, Set.class);

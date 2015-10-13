@@ -20,6 +20,7 @@ package edu.pitt.dbmi.ccd.web.service.user.settings;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
+import edu.pitt.dbmi.ccd.web.service.RestRequestService;
 import java.net.URI;
 import java.util.Base64;
 import org.slf4j.Logger;
@@ -46,15 +47,9 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 @Profile("desktop")
 @Service
-public class DesktopUserSettingsService implements UserSettingsService {
+public class DesktopUserSettingsService implements UserSettingsService, RestRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DesktopUserSettingsService.class);
-
-    public static final String HEADER_AUTH = "Authorization";
-    public static final String HEADER_APP_ID = "appId";
-    public static final String HEADER_TIMESTAMP = "timestamp";
-    public static final String HEADER_KEY = "key";
-    public static final String HEADER_SIGNATURE = "signature";
 
     private final String userAccountUrl;
 
@@ -105,7 +100,7 @@ public class DesktopUserSettingsService implements UserSettingsService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.add(HEADER_AUTH, "Basic " + base64Creds);
-            headers.add(HEADER_APP_ID, appId);
+            headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
 
             HttpEntity<WebAccountRequest> entity = new HttpEntity<>(new WebAccountRequest(publicKey), headers);
 
