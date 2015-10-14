@@ -58,9 +58,9 @@ public abstract class AbstractAlgorithmService {
 
     protected final VariableTypeService variableTypeService;
 
-    private final UserAccountService userAccountService;
+    protected final UserAccountService userAccountService;
 
-    private final JobQueueInfoService jobQueueInfoService;
+    protected final JobQueueInfoService jobQueueInfoService;
 
     public AbstractAlgorithmService(
             DataService dataService,
