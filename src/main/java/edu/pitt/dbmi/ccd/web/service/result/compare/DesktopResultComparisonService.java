@@ -308,7 +308,7 @@ public class DesktopResultComparisonService extends AbstractResultComparisonServ
             ResponseEntity<ByteArrayResource> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, entity, ByteArrayResource.class);
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 ByteArrayResource byteArrayResource = responseEntity.getBody();
-                data = byteArrayResource.getByteArray();
+                data = (byteArrayResource == null) ? EMPTY_BYTE_ARRAY : byteArrayResource.getByteArray();
             }
         } catch (RestClientException exception) {
             LOGGER.error(exception.getMessage());
@@ -346,7 +346,7 @@ public class DesktopResultComparisonService extends AbstractResultComparisonServ
             ResponseEntity<ByteArrayResource> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, entity, ByteArrayResource.class);
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 ByteArrayResource byteArrayResource = responseEntity.getBody();
-                data = byteArrayResource.getByteArray();
+                data = (byteArrayResource == null) ? EMPTY_BYTE_ARRAY : byteArrayResource.getByteArray();
             }
         } catch (RestClientException exception) {
             LOGGER.error(exception.getMessage());
