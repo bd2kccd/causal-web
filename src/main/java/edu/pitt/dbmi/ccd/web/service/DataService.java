@@ -36,9 +36,9 @@ import edu.pitt.dbmi.ccd.web.model.data.DataListItem;
 import edu.pitt.dbmi.ccd.web.model.data.DataSummary;
 import edu.pitt.dbmi.ccd.web.service.data.RemoteDataFileService;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -202,23 +202,24 @@ public class DataService {
         Set<String> remoteFileHashes = remoteDataFileService.retrieveDataFileMD5Hash(username);
 
         UserAccount userAccount = userAccountService.findByUsername(username);
-
         List<DataFile> dataFiles = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
         Map<String, DataFile> dbDataFile = new HashMap<>();
         dataFiles.forEach(file -> {
             dbDataFile.put(file.getName(), file);
         });
 
-        Map<String, DataFile> localDataFile = new HashMap<>();
+        Map<String, DataFile> saveFiles = new HashMap<>();
         try {
-            List<Path> list = FileInfos.listDirectory(Paths.get(dataDir), false);
-            List<Path> files = list.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
-            for (Path file : files) {
-                BasicFileInfo info = FileInfos.basicPathInfo(file);
-
+            List<Path> localFiles = FileInfos.listDirectory(Paths.get(dataDir), false);
+            BasicFileInfo[] localFileInfos = FileInfos.listBasicPathInfo(localFiles).toArray(new BasicFileInfo[0]);
+            Arrays.sort(localFileInfos, (info1, info2) -> {
+                return Long.signum(info2.getCreationTime() - info1.getCreationTime());  // sort in descendent order
+            });
+            for (BasicFileInfo info : localFileInfos) {
                 String fileName = info.getFilename();
                 String creationDate = FilePrint.fileTimestamp(info.getCreationTime());
                 String size = FilePrint.humanReadableSize(info.getSize(), true);
+
                 DataListItem item = new DataListItem(fileName, creationDate, size);
 
                 DataFile dataFile = dbDataFile.get(fileName);
@@ -231,33 +232,37 @@ public class DataService {
                     dataFile.setLastModifiedTime(new Date(info.getLastModifiedTime()));
                     dataFile.setUserAccounts(Collections.singleton(userAccount));
 
-                    localDataFile.put(fileName, dataFile);
-                }
-
-                DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
-                if (dataFileInfo == null) {
-                    dataFileInfo = new DataFileInfo();
-                    dataFileInfo.setMd5checkSum(MessageDigestHash.computeMD5Hash(file));
+                    DataFileInfo dataFileInfo = new DataFileInfo();
+                    dataFileInfo.setMd5checkSum(MessageDigestHash.computeMD5Hash(Paths.get(dataFile.getAbsolutePath(), dataFile.getName())));
                     dataFile.setDataFileInfo(dataFileInfo);
 
-                    localDataFile.put(fileName, dataFile);
+                    saveFiles.put(fileName, dataFile);
                 } else {
-                    FileDelimiter delimiter = dataFileInfo.getFileDelimiter();
-                    if (delimiter != null) {
-                        item.setDelimiter(delimiter.getName());
+                    DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
+                    if (dataFileInfo == null) {
+                        dataFileInfo = new DataFileInfo();
+                        dataFileInfo.setMd5checkSum(MessageDigestHash.computeMD5Hash(Paths.get(dataFile.getAbsolutePath(), dataFile.getName())));
+                        dataFile.setDataFileInfo(dataFileInfo);
+
+                        saveFiles.put(fileName, dataFile);
+                    } else {
+                        FileDelimiter delimiter = dataFileInfo.getFileDelimiter();
+                        if (delimiter != null) {
+                            item.setDelimiter(delimiter.getName());
+                        }
+
+                        VariableType variableType = dataFileInfo.getVariableType();
+                        if (variableType != null) {
+                            item.setVariableType(variableType.getName());
+                        }
+
+                        dbDataFile.remove(fileName);
                     }
 
-                    VariableType variableType = dataFileInfo.getVariableType();
-                    if (variableType != null) {
-                        item.setVariableType(variableType.getName());
+                    if (remoteFileHashes.contains(dataFileInfo.getMd5checkSum())) {
+                        item.setOnCloud(true);
                     }
                 }
-
-                if (remoteFileHashes.contains(dataFileInfo.getMd5checkSum())) {
-                    item.setOnCloud(true);
-                }
-
-                dbDataFile.remove(fileName);
 
                 listItems.add(item);
             }
@@ -275,11 +280,11 @@ public class DataService {
         }
 
         // save all the new files found in the workspace
-        if (!localDataFile.isEmpty()) {
+        if (!saveFiles.isEmpty()) {
             List<DataFile> list = new LinkedList<>();
-            Set<String> keySet = localDataFile.keySet();
+            Set<String> keySet = saveFiles.keySet();
             keySet.forEach(key -> {
-                list.add(localDataFile.get(key));
+                list.add(saveFiles.get(key));
             });
             dataFileService.saveDataFile(list);
         }
