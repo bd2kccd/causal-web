@@ -18,13 +18,21 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.data;
 
+import edu.pitt.dbmi.ccd.commons.security.WebSecurityDSA;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import static edu.pitt.dbmi.ccd.web.service.RestRequestService.HEADER_ACCOUNT_ID;
+import static edu.pitt.dbmi.ccd.web.service.RestRequestService.HEADER_APP_ID;
+import static edu.pitt.dbmi.ccd.web.service.RestRequestService.HEADER_SIGNATURE;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -72,28 +80,28 @@ public class RemoteDataUploadController {
 
     private final String dataUrl;
 
-    private final int simultaneousUpload;
-
     private final Map<String, ChunkUpload> fileUploadMap;
 
     private final ExecutorService executorService;
 
     private final RestTemplate restTemplate;
 
+    private final UserAccountService userAccountService;
+
     @Autowired(required = true)
     public RemoteDataUploadController(
             @Value("${ccd.rest.appId:1}") String appId,
             @Value("${ccd.rest.url.data:http://localhost:9000/ccd-ws/data}") String dataUrl,
-            @Value("${ccd.data.upload.simultaneousFileUploads:1}") int simultaneousUpload) {
+            @Value("${ccd.data.upload.simultaneousFileUploads:1}") int simultaneousUpload,
+            UserAccountService userAccountService) {
         this.appId = appId;
-        this.dataUrl = dataUrl + "/chunk";
-        this.simultaneousUpload = simultaneousUpload;
+        this.dataUrl = dataUrl;
+        this.userAccountService = userAccountService;
         this.fileUploadMap = new HashMap<>();
         this.executorService = Executors.newFixedThreadPool(simultaneousUpload);
         this.restTemplate = new RestTemplate();
 
-        FormHttpMessageConverter converter = new FormHttpMessageConverter();
-        this.restTemplate.getMessageConverters().add(converter);
+        this.restTemplate.getMessageConverters().add(new FormHttpMessageConverter());
     }
 
     @RequestMapping(value = "list", method = RequestMethod.GET)
@@ -119,8 +127,12 @@ public class RemoteDataUploadController {
             @ModelAttribute("appUser") AppUser appUser) {
         Path file = Paths.get(appUser.getDataDirectory(), fileName);
         if (Files.exists(file)) {
-            long chunkSize = 1024 * 1024;
-            ChunkUpload chunkUpload = new ChunkUpload(file, chunkSize, appUser.getUsername(), appId, dataUrl, restTemplate);
+            UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+            String accountId = userAccount.getAccountId();
+            String privateKey = userAccount.getPrivateKey();
+
+            long chunkSize = 512 * 1024;
+            ChunkUpload chunkUpload = new ChunkUpload(file, chunkSize, appId, accountId, privateKey, dataUrl, restTemplate);
             fileUploadMap.put(fileName, chunkUpload);
             executorService.execute(chunkUpload);
             return ResponseEntity.ok().build();
@@ -135,22 +147,25 @@ public class RemoteDataUploadController {
 
         private final long chunkSize;
 
-        private final String username;
-
         private final String appId;
 
-        private final String restUrl;
+        private final String accountId;
+
+        private final String privateKey;
+
+        private final String dataUrl;
 
         private final RestTemplate restTemplate;
 
         private double progress;
 
-        public ChunkUpload(Path file, long chunkSize, String username, String appId, String restUrl, RestTemplate restTemplate) {
+        public ChunkUpload(Path file, long chunkSize, String appId, String accountId, String privateKey, String dataUrl, RestTemplate restTemplate) {
             this.file = file;
             this.chunkSize = chunkSize;
-            this.username = username;
             this.appId = appId;
-            this.restUrl = restUrl;
+            this.accountId = accountId;
+            this.privateKey = privateKey;
+            this.dataUrl = dataUrl;
             this.restTemplate = restTemplate;
         }
 
@@ -158,8 +173,8 @@ public class RemoteDataUploadController {
         public void run() {
             progress = 0;
             try {
-                String fileName = file.getFileName().toString();
-                long fileSize = Files.size(file);
+                String fileName = this.file.getFileName().toString();
+                long fileSize = Files.size(this.file);
                 long maxOffset = Math.max(Math.round(fileSize / this.chunkSize), 1);
                 long resumableChunkSize = this.chunkSize;
                 long resumableTotalSize = fileSize;
@@ -168,7 +183,7 @@ public class RemoteDataUploadController {
                 String resumableIdentifier = String.format("%d-%s", fileSize, fileName.replaceAll("/[^0-9a-zA-Z_-]/img", ""));
                 String resumableFilename = fileName;
                 String resumableRelativePath = fileName;
-                String resumableType = Files.probeContentType(file);
+                String resumableType = Files.probeContentType(this.file);
 
                 try (BufferedInputStream inputStream = new BufferedInputStream(Files.newInputStream(file))) {
                     for (long offset = 0; offset < maxOffset; offset++) {
@@ -182,19 +197,25 @@ public class RemoteDataUploadController {
 
                         HttpStatus httpStatus;
                         try {
-                            URI url = UriComponentsBuilder.fromHttpUrl(this.restUrl)
-                                    .queryParam("usr", this.username)
-                                    .queryParam("appId", this.appId)
+                            URI uri = UriComponentsBuilder.fromHttpUrl(this.dataUrl)
+                                    .pathSegment("chunk")
                                     .queryParam("resumableIdentifier", resumableIdentifier)
                                     .queryParam("resumableChunkNumber", Long.toString(resumableChunkNumber))
                                     .queryParam("resumableChunkSize", Long.toString(resumableChunkSize))
                                     .build().toUri();
 
-                            HttpHeaders headers = new HttpHeaders();
-                            headers.setContentType(MediaType.APPLICATION_JSON);
+                            String signature = WebSecurityDSA.createSignature(uri.toString(), this.privateKey);
 
-                            restTemplate.getForEntity(url, String.class);
-                            httpStatus = HttpStatus.OK;
+                            HttpHeaders headers = new HttpHeaders();
+                            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                            headers.setDate(System.currentTimeMillis());
+                            headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
+                            headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(this.accountId.getBytes()));
+                            headers.set(HEADER_SIGNATURE, signature);
+
+                            HttpEntity<Map<String, String>> entity = new HttpEntity(headers);
+                            ResponseEntity<String> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
+                            httpStatus = responseEntity.getStatusCode();
                         } catch (HttpClientErrorException exception) {
                             httpStatus = exception.getStatusCode();
                         }
@@ -223,15 +244,25 @@ public class RemoteDataUploadController {
                             valueMap.add("resumableTotalSize", resumableTotalSize);
                             valueMap.add("resumableType", resumableType);
 
-                            HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(valueMap);
-
-                            URI url = UriComponentsBuilder.fromHttpUrl(this.restUrl)
-                                    .queryParam("usr", this.username)
-                                    .queryParam("appId", this.appId)
+                            URI uri = UriComponentsBuilder.fromHttpUrl(this.dataUrl)
+                                    .pathSegment("chunk")
                                     .build().toUri();
+
+                            String signature = WebSecurityDSA.createSignature(uri.toString(), this.privateKey);
+
+                            HttpHeaders headers = new HttpHeaders();
+                            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                            headers.setDate(System.currentTimeMillis());
+                            headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
+                            headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(this.accountId.getBytes()));
+                            headers.set(HEADER_SIGNATURE, signature);
+
+                            HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(valueMap, headers);
                             try {
-                                restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-                                progress = (offset + 1.0) / maxOffset;
+                                ResponseEntity<String> responseEntity = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+                                if (responseEntity.getStatusCode() == HttpStatus.OK) {
+                                    progress = (offset + 1.0) / maxOffset;
+                                }
                             } catch (HttpClientErrorException exception) {
                                 exception.printStackTrace(System.err);
                             }
