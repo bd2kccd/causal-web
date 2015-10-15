@@ -258,10 +258,10 @@ public class DataService {
 
                         dbDataFile.remove(fileName);
                     }
+                }
 
-                    if (remoteFileHashes.contains(dataFileInfo.getMd5checkSum())) {
-                        item.setOnCloud(true);
-                    }
+                if (remoteFileHashes.contains(dataFile.getDataFileInfo().getMd5checkSum())) {
+                    item.setOnCloud(true);
                 }
 
                 listItems.add(item);
