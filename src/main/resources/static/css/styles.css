@@ -55,3 +55,7 @@ a:link {
     text-decoration: none;
 }
 
+.fitted {
+    width: 1px;
+    white-space: nowrap;
+}
