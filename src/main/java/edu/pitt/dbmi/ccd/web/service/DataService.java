@@ -36,8 +36,10 @@ import edu.pitt.dbmi.ccd.web.model.data.DataListItem;
 import edu.pitt.dbmi.ccd.web.model.data.DataSummary;
 import edu.pitt.dbmi.ccd.web.service.data.RemoteDataFileService;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -196,12 +198,10 @@ public class DataService {
                 .collect(Collectors.toList());
     }
 
-    public List<DataListItem> createListItem(String username, String dataDir) {
-        List<DataListItem> listItems = new LinkedList<>();
-
-        Set<String> remoteFileHashes = remoteDataFileService.retrieveDataFileMD5Hash(username);
-
+    public void refreshLocalFileDatabase(String username, String dataDir) {
         UserAccount userAccount = userAccountService.findByUsername(username);
+
+        // get all the user's dataset from the database
         List<DataFile> dataFiles = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
         Map<String, DataFile> dbDataFile = new HashMap<>();
         dataFiles.forEach(file -> {
@@ -211,61 +211,51 @@ public class DataService {
         Map<String, DataFile> saveFiles = new HashMap<>();
         try {
             List<Path> localFiles = FileInfos.listDirectory(Paths.get(dataDir), false);
-            BasicFileInfo[] localFileInfos = FileInfos.listBasicPathInfo(localFiles).toArray(new BasicFileInfo[0]);
-            Arrays.sort(localFileInfos, (info1, info2) -> {
-                return Long.signum(info2.getCreationTime() - info1.getCreationTime());  // sort in descendent order
-            });
-            for (BasicFileInfo info : localFileInfos) {
-                String fileName = info.getFilename();
-                String creationDate = FilePrint.fileTimestamp(info.getCreationTime());
-                String size = FilePrint.humanReadableSize(info.getSize(), true);
-
-                DataListItem item = new DataListItem(fileName, creationDate, size);
+            localFiles.forEach(localFile -> {
+                String fileName = localFile.getFileName().toString();
 
                 DataFile dataFile = dbDataFile.get(fileName);
                 if (dataFile == null) {
-                    dataFile = new DataFile();
-                    dataFile.setName(fileName);
-                    dataFile.setAbsolutePath(info.getAbsolutePath().toString());
-                    dataFile.setCreationTime(new Date(info.getCreationTime()));
-                    dataFile.setFileSize(info.getSize());
-                    dataFile.setLastModifiedTime(new Date(info.getLastModifiedTime()));
-                    dataFile.setUserAccounts(Collections.singleton(userAccount));
+                    try {
+                        BasicFileAttributes attrs = Files.readAttributes(localFile, BasicFileAttributes.class);
+                        long creationTime = attrs.creationTime().toMillis();
+                        long lastModifiedTime = attrs.lastModifiedTime().toMillis();
+                        long fileSize = attrs.size();
 
-                    DataFileInfo dataFileInfo = new DataFileInfo();
-                    dataFileInfo.setMd5checkSum(MessageDigestHash.computeMD5Hash(Paths.get(dataFile.getAbsolutePath(), dataFile.getName())));
-                    dataFile.setDataFileInfo(dataFileInfo);
+                        dataFile = new DataFile();
+                        dataFile.setName(fileName);
+                        dataFile.setAbsolutePath(localFile.getParent().toRealPath().toString());
+                        dataFile.setCreationTime(new Date(creationTime));
+                        dataFile.setFileSize(fileSize);
+                        dataFile.setLastModifiedTime(new Date(lastModifiedTime));
+                        dataFile.setUserAccounts(Collections.singleton(userAccount));
 
-                    saveFiles.put(fileName, dataFile);
-                } else {
-                    DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
-                    if (dataFileInfo == null) {
-                        dataFileInfo = new DataFileInfo();
+                        DataFileInfo dataFileInfo = new DataFileInfo();
                         dataFileInfo.setMd5checkSum(MessageDigestHash.computeMD5Hash(Paths.get(dataFile.getAbsolutePath(), dataFile.getName())));
                         dataFile.setDataFileInfo(dataFileInfo);
 
                         saveFiles.put(fileName, dataFile);
+                    } catch (IOException exception) {
+                        LOGGER.error(exception.getMessage());
+                    }
+                } else {
+                    DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
+                    if (dataFileInfo == null) {
+                        try {
+                            dataFileInfo = new DataFileInfo();
+                            dataFileInfo.setMd5checkSum(MessageDigestHash.computeMD5Hash(localFile));
+                            dataFile.setDataFileInfo(dataFileInfo);
+
+                            saveFiles.put(fileName, dataFile);
+                            dbDataFile.remove(fileName);
+                        } catch (IOException exception) {
+                            LOGGER.error(exception.getMessage());
+                        }
                     } else {
-                        FileDelimiter delimiter = dataFileInfo.getFileDelimiter();
-                        if (delimiter != null) {
-                            item.setDelimiter(delimiter.getName());
-                        }
-
-                        VariableType variableType = dataFileInfo.getVariableType();
-                        if (variableType != null) {
-                            item.setVariableType(variableType.getName());
-                        }
-
                         dbDataFile.remove(fileName);
                     }
                 }
-
-                if (remoteFileHashes.contains(dataFile.getDataFileInfo().getMd5checkSum())) {
-                    item.setOnCloud(true);
-                }
-
-                listItems.add(item);
-            }
+            });
         } catch (IOException exception) {
             LOGGER.error(exception.getMessage());
         }
@@ -287,6 +277,45 @@ public class DataService {
                 list.add(saveFiles.get(key));
             });
             dataFileService.saveDataFile(list);
+        }
+    }
+
+    public List<DataListItem> createListItem(String username, String dataDir) {
+        List<DataListItem> listItems = new LinkedList<>();
+
+        refreshLocalFileDatabase(username, dataDir);
+
+        Set<String> remoteFileHashes = remoteDataFileService.retrieveDataFileMD5Hash(username);
+
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        List<DataFile> dataFileList = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
+        DataFile[] dataFiles = dataFileList.toArray(new DataFile[dataFileList.size()]);
+        Arrays.sort(dataFiles, (dataFile1, dataFile2) -> {
+            return dataFile2.getCreationTime().compareTo(dataFile1.getCreationTime());
+        });
+        for (DataFile dataFile : dataFiles) {
+            DataListItem item = new DataListItem();
+            item.setFileName(dataFile.getName());
+            item.setCreationDate(FilePrint.fileTimestamp(dataFile.getCreationTime().getTime()));
+            item.setSize(FilePrint.humanReadableSize(dataFile.getFileSize(), true));
+
+            DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
+
+            FileDelimiter delimiter = dataFileInfo.getFileDelimiter();
+            if (delimiter != null) {
+                item.setDelimiter(delimiter.getName());
+            }
+
+            VariableType variableType = dataFileInfo.getVariableType();
+            if (variableType != null) {
+                item.setVariableType(variableType.getName());
+            }
+
+            if (remoteFileHashes.contains(dataFileInfo.getMd5checkSum())) {
+                item.setOnCloud(true);
+            }
+
+            listItems.add(item);
         }
 
         return listItems;
