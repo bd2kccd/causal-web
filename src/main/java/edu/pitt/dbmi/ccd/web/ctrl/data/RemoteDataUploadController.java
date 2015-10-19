@@ -369,7 +369,6 @@ public class RemoteDataUploadController {
                     } catch (InterruptedException exception) {
                         LOGGER.error(exception.getMessage());
                     }
-                    System.out.printf("DONE!  %s has been uploaded.", fileName);
                 } catch (IOException exception) {
                     LOGGER.error(exception.getMessage());
                 }
