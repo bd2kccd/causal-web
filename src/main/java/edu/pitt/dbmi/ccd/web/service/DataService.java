@@ -34,6 +34,7 @@ import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.model.AttributeValue;
 import edu.pitt.dbmi.ccd.web.model.data.DataListItem;
 import edu.pitt.dbmi.ccd.web.model.data.DataSummary;
+import edu.pitt.dbmi.ccd.web.model.data.DatasetItem;
 import edu.pitt.dbmi.ccd.web.service.data.RemoteDataFileService;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -280,6 +281,35 @@ public class DataService {
         }
     }
 
+    public List<DatasetItem> createDatasetList(String username, String dataDir) {
+        List<DatasetItem> dataItems = new LinkedList<>();
+
+        refreshLocalFileDatabase(username, dataDir);
+
+        Set<String> remoteFileHashes = remoteDataFileService.retrieveDataFileMD5Hash(username);
+
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        List<DataFile> dataFileList = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
+        DataFile[] dataFiles = dataFileList.toArray(new DataFile[dataFileList.size()]);
+        Arrays.sort(dataFiles, (dataFile1, dataFile2) -> {
+            return dataFile2.getCreationTime().compareTo(dataFile1.getCreationTime());
+        });
+        for (DataFile dataFile : dataFiles) {
+            DatasetItem dataItem = new DatasetItem();
+            dataItem.setFileName(dataFile.getName());
+            dataItem.setFileSize(FilePrint.humanReadableSize(dataFile.getFileSize(), true));
+            dataItem.setId(dataFile.getId().toString());
+
+            DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
+            dataItem.setRemote(remoteFileHashes.contains(dataFileInfo.getMd5checkSum()));
+            dataItem.setSummarized(dataFileInfo.getFileDelimiter() != null);
+
+            dataItems.add(dataItem);
+        }
+
+        return dataItems;
+    }
+
     public List<DataListItem> createListItem(String username, String dataDir) {
         List<DataListItem> listItems = new LinkedList<>();
 
@@ -311,9 +341,7 @@ public class DataService {
                 item.setVariableType(variableType.getName());
             }
 
-            if (remoteFileHashes.contains(dataFileInfo.getMd5checkSum())) {
-                item.setOnCloud(true);
-            }
+            item.setOnCloud(remoteFileHashes.contains(dataFileInfo.getMd5checkSum()));
 
             listItems.add(item);
         }

@@ -22,6 +22,7 @@ import edu.pitt.dbmi.ccd.commons.security.WebSecurityDSA;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.dto.request.DatasetUploadRequest;
 import static edu.pitt.dbmi.ccd.web.service.RestRequestService.HEADER_ACCOUNT_ID;
 import static edu.pitt.dbmi.ccd.web.service.RestRequestService.HEADER_APP_ID;
 import static edu.pitt.dbmi.ccd.web.service.RestRequestService.HEADER_SIGNATURE;
@@ -53,6 +54,7 @@ import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -109,11 +111,11 @@ public class RemoteDataUploadController {
         return ResponseEntity.ok(fileUploadMap.keySet());
     }
 
-    @RequestMapping(method = RequestMethod.POST)
+    @RequestMapping(value = "status", method = RequestMethod.GET)
     public ResponseEntity<?> uploadStatus(
-            @RequestParam("fileName") String fileName,
+            @RequestParam("id") String id,
             @ModelAttribute("appUser") AppUser appUser) {
-        ChunkUpload chunkUpload = fileUploadMap.get(fileName);
+        ChunkUpload chunkUpload = fileUploadMap.get(id);
         if (chunkUpload == null) {
             return ResponseEntity.ok(100);
         } else {
@@ -121,19 +123,19 @@ public class RemoteDataUploadController {
         }
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(value = "upload", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> startUpload(
-            @RequestParam("fileName") String fileName,
+            @RequestBody DatasetUploadRequest uploadRequest,
             @ModelAttribute("appUser") AppUser appUser) {
-        Path file = Paths.get(appUser.getDataDirectory(), fileName);
+        Path file = Paths.get(appUser.getDataDirectory(), uploadRequest.getFileName());
         if (Files.exists(file)) {
             UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
             String accountId = userAccount.getAccountId();
             String privateKey = userAccount.getPrivateKey();
 
             long chunkSize = 512 * 1024;
-            ChunkUpload chunkUpload = new ChunkUpload(file, chunkSize, appId, accountId, privateKey, dataUrl, restTemplate);
-            fileUploadMap.put(fileName, chunkUpload);
+            ChunkUpload chunkUpload = new ChunkUpload(uploadRequest.getId(), file, chunkSize, appId, accountId, privateKey, dataUrl, restTemplate);
+            fileUploadMap.put(uploadRequest.getId(), chunkUpload);
             executorService.execute(chunkUpload);
             return ResponseEntity.ok().build();
         } else {
@@ -142,6 +144,8 @@ public class RemoteDataUploadController {
     }
 
     private class ChunkUpload implements Runnable {
+
+        private final String id;
 
         private final Path file;
 
@@ -159,7 +163,8 @@ public class RemoteDataUploadController {
 
         private double progress;
 
-        public ChunkUpload(Path file, long chunkSize, String appId, String accountId, String privateKey, String dataUrl, RestTemplate restTemplate) {
+        public ChunkUpload(String id, Path file, long chunkSize, String appId, String accountId, String privateKey, String dataUrl, RestTemplate restTemplate) {
+            this.id = id;
             this.file = file;
             this.chunkSize = chunkSize;
             this.appId = appId;
@@ -271,7 +276,7 @@ public class RemoteDataUploadController {
                 } catch (IOException exception) {
                     LOGGER.error(exception.getMessage());
                 }
-                fileUploadMap.remove(fileName);
+                fileUploadMap.remove(this.id);
             } catch (IOException exception) {
                 LOGGER.error(exception.getMessage());
             }

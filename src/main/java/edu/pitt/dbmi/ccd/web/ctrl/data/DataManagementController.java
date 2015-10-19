@@ -58,7 +58,7 @@ public class DataManagementController implements ViewPath {
 
     @RequestMapping(method = RequestMethod.GET)
     public String showDatasetView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        model.addAttribute("itemList", dataService.createListItem(appUser.getUsername(), appUser.getDataDirectory()));
+        model.addAttribute("itemList", dataService.createDatasetList(appUser.getUsername(), appUser.getDataDirectory()));
 
         return DATASET_VIEW;
     }
