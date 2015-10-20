@@ -107,7 +107,7 @@ public class RemoteDataUploadController {
     }
 
     @RequestMapping(value = "list", method = RequestMethod.GET)
-    public ResponseEntity<?> getJobsInQueue() {
+    public synchronized ResponseEntity<?> getJobsInQueue() {
         List<UploadStatus> status = new LinkedList<>();
 
         Set<String> keySet = fileUploadMap.keySet();
@@ -119,7 +119,7 @@ public class RemoteDataUploadController {
     }
 
     @RequestMapping(value = "cancel", method = RequestMethod.POST)
-    public ResponseEntity<?> cancelUpload(
+    public synchronized ResponseEntity<?> cancelUpload(
             String id,
             @ModelAttribute("appUser") AppUser appUser) {
         if (fileUploadMap.containsKey(id)) {
@@ -132,7 +132,7 @@ public class RemoteDataUploadController {
     }
 
     @RequestMapping(value = "status", method = RequestMethod.GET)
-    public ResponseEntity<?> getUploadStatus(
+    public synchronized ResponseEntity<?> getUploadStatus(
             @RequestParam("id") String id,
             @ModelAttribute("appUser") AppUser appUser) {
         ChunkUpload chunkUpload = fileUploadMap.get(id);
@@ -144,7 +144,7 @@ public class RemoteDataUploadController {
     }
 
     @RequestMapping(value = "pause", method = RequestMethod.POST)
-    public ResponseEntity<?> pauseUpload(
+    public synchronized ResponseEntity<?> pauseUpload(
             String id,
             @ModelAttribute("appUser") AppUser appUser) {
         ChunkUpload chunkUpload = fileUploadMap.get(id);
@@ -157,7 +157,7 @@ public class RemoteDataUploadController {
     }
 
     @RequestMapping(value = "upload", method = RequestMethod.POST)
-    public ResponseEntity<?> startUpload(
+    public synchronized ResponseEntity<?> startUpload(
             DatasetUploadRequest uploadRequest,
             @ModelAttribute("appUser") AppUser appUser) {
         String id = uploadRequest.getId();

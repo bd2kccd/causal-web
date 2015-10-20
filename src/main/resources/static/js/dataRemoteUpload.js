@@ -48,7 +48,7 @@ function checkUploadStatus(id, url, progress) {
             window.location.href = location;
         } else {
             $(progress).css('width', data + '%').attr('aria-valuenow', data);
-            $(progress).text(data + '% Complete (success)');
+            $(progress).text(data + '% Complete');
             window.setTimeout(checkUploadStatus(id, url, progress), pullingDelay);
         }
     });
