@@ -125,6 +125,7 @@ public class RemoteDataUploadController {
         if (fileUploadMap.containsKey(id)) {
             ChunkUpload chunkUpload = fileUploadMap.remove(id);
             chunkUpload.stop();
+            chunkUpload.resume();
             return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.notFound().build();
@@ -362,6 +363,27 @@ public class RemoteDataUploadController {
                                 }
                                 if (stopped) {
                                     fileUploadMap.remove(this.id);
+
+                                    URI uri = UriComponentsBuilder.fromHttpUrl(this.dataUrl)
+                                            .pathSegment("chunk", "clean")
+                                            .build().toUri();
+
+                                    String signature = WebSecurityDSA.createSignature(uri.toString(), this.privateKey);
+
+                                    HttpHeaders headers = new HttpHeaders();
+                                    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                                    headers.setDate(System.currentTimeMillis());
+                                    headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
+                                    headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(this.accountId.getBytes()));
+                                    headers.set(HEADER_SIGNATURE, signature);
+
+                                    HttpEntity<?> entity = new HttpEntity(resumableIdentifier, headers);
+                                    try {
+                                        restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+                                    } catch (HttpClientErrorException exception) {
+                                        exception.printStackTrace(System.err);
+                                    }
+
                                     break;
                                 }
                             }
