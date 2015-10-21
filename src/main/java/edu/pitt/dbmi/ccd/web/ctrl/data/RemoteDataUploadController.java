@@ -172,11 +172,15 @@ public class RemoteDataUploadController {
                 String accountId = userAccount.getAccountId();
                 String privateKey = userAccount.getPrivateKey();
 
-                long chunkSize = 512 * 1024;
-                chunkUpload = new ChunkUpload(uploadRequest.getId(), file, chunkSize, appId, accountId, privateKey, dataUrl, restTemplate);
-                fileUploadMap.put(uploadRequest.getId(), chunkUpload);
-                executorService.execute(chunkUpload);
-                return ResponseEntity.ok().build();
+                if (accountId == null || privateKey == null) {
+                    return ResponseEntity.notFound().build();
+                } else {
+                    long chunkSize = 512 * 1024;
+                    chunkUpload = new ChunkUpload(uploadRequest.getId(), file, chunkSize, appId, accountId, privateKey, dataUrl, restTemplate);
+                    fileUploadMap.put(uploadRequest.getId(), chunkUpload);
+                    executorService.execute(chunkUpload);
+                    return ResponseEntity.ok().build();
+                }
             } else {
                 return ResponseEntity.notFound().build();
             }
