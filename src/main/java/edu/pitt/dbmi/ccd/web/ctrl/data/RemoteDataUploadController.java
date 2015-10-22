@@ -176,7 +176,7 @@ public class RemoteDataUploadController {
                     return ResponseEntity.notFound().build();
                 } else {
                     long chunkSize = 512 * 1024;
-                    chunkUpload = new ChunkUpload(uploadRequest.getId(), file, chunkSize, appId, accountId, privateKey, dataUrl, restTemplate);
+                    chunkUpload = new ChunkUpload(uploadRequest.getId(), file, chunkSize, appId, appUser.getUsername(), dataUrl, restTemplate, userAccountService);
                     fileUploadMap.put(uploadRequest.getId(), chunkUpload);
                     executorService.execute(chunkUpload);
                     return ResponseEntity.ok().build();
@@ -234,13 +234,13 @@ public class RemoteDataUploadController {
 
         private final String appId;
 
-        private final String accountId;
-
-        private final String privateKey;
+        private final String username;
 
         private final String dataUrl;
 
         private final RestTemplate restTemplate;
+
+        private final UserAccountService userAccountService;
 
         private double progress;
 
@@ -248,15 +248,15 @@ public class RemoteDataUploadController {
 
         private boolean stopped;
 
-        public ChunkUpload(String id, Path file, long chunkSize, String appId, String accountId, String privateKey, String dataUrl, RestTemplate restTemplate) {
+        public ChunkUpload(String id, Path file, long chunkSize, String appId, String username, String dataUrl, RestTemplate restTemplate, UserAccountService userAccountService) {
             this.id = id;
             this.file = file;
             this.chunkSize = chunkSize;
             this.appId = appId;
-            this.accountId = accountId;
-            this.privateKey = privateKey;
+            this.username = username;
             this.dataUrl = dataUrl;
             this.restTemplate = restTemplate;
+            this.userAccountService = userAccountService;
         }
 
         @Override
@@ -280,6 +280,48 @@ public class RemoteDataUploadController {
                 try (BufferedInputStream inputStream = new BufferedInputStream(Files.newInputStream(file))) {
                     try {
                         for (long offset = 0; offset < maxOffset; offset++) {
+                            UserAccount userAccount = userAccountService.findByUsername(username);
+                            String accountId = userAccount.getAccountId();
+                            String privateKey = userAccount.getPrivateKey();
+
+                            suspended = suspended || (accountId == null || privateKey == null);
+
+                            synchronized (this) {
+                                while (suspended) {
+                                    wait();
+                                    if (accountId == null || privateKey == null) {
+                                        userAccount = userAccountService.findByUsername(username);
+                                        accountId = userAccount.getAccountId();
+                                        privateKey = userAccount.getPrivateKey();
+                                    }
+                                }
+                                if (stopped) {
+                                    fileUploadMap.remove(this.id);
+
+                                    URI uri = UriComponentsBuilder.fromHttpUrl(this.dataUrl)
+                                            .pathSegment("chunk", "clean")
+                                            .build().toUri();
+
+                                    String signature = WebSecurityDSA.createSignature(uri.toString(), privateKey);
+
+                                    HttpHeaders headers = new HttpHeaders();
+                                    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                                    headers.setDate(System.currentTimeMillis());
+                                    headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
+                                    headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(accountId.getBytes()));
+                                    headers.set(HEADER_SIGNATURE, signature);
+
+                                    HttpEntity<?> entity = new HttpEntity(resumableIdentifier, headers);
+                                    try {
+                                        restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+                                    } catch (HttpClientErrorException exception) {
+                                        exception.printStackTrace(System.err);
+                                    }
+
+                                    break;
+                                }
+                            }
+
                             long startByte = offset * this.chunkSize;
                             long endByte = Math.min(fileSize, (offset + 1) * this.chunkSize);
                             if (fileSize - endByte < this.chunkSize) {
@@ -297,13 +339,13 @@ public class RemoteDataUploadController {
                                         .queryParam("resumableChunkSize", Long.toString(resumableChunkSize))
                                         .build().toUri();
 
-                                String signature = WebSecurityDSA.createSignature(uri.toString(), this.privateKey);
+                                String signature = WebSecurityDSA.createSignature(uri.toString(), privateKey);
 
                                 HttpHeaders headers = new HttpHeaders();
                                 headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
                                 headers.setDate(System.currentTimeMillis());
                                 headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
-                                headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(this.accountId.getBytes()));
+                                headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(accountId.getBytes()));
                                 headers.set(HEADER_SIGNATURE, signature);
 
                                 HttpEntity<Map<String, String>> entity = new HttpEntity(headers);
@@ -341,13 +383,13 @@ public class RemoteDataUploadController {
                                         .pathSegment("chunk")
                                         .build().toUri();
 
-                                String signature = WebSecurityDSA.createSignature(uri.toString(), this.privateKey);
+                                String signature = WebSecurityDSA.createSignature(uri.toString(), privateKey);
 
                                 HttpHeaders headers = new HttpHeaders();
                                 headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
                                 headers.setDate(System.currentTimeMillis());
                                 headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
-                                headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(this.accountId.getBytes()));
+                                headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(accountId.getBytes()));
                                 headers.set(HEADER_SIGNATURE, signature);
 
                                 HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(valueMap, headers);
@@ -358,37 +400,6 @@ public class RemoteDataUploadController {
                                     }
                                 } catch (HttpClientErrorException exception) {
                                     exception.printStackTrace(System.err);
-                                }
-                            }
-
-                            synchronized (this) {
-                                while (suspended) {
-                                    wait();
-                                }
-                                if (stopped) {
-                                    fileUploadMap.remove(this.id);
-
-                                    URI uri = UriComponentsBuilder.fromHttpUrl(this.dataUrl)
-                                            .pathSegment("chunk", "clean")
-                                            .build().toUri();
-
-                                    String signature = WebSecurityDSA.createSignature(uri.toString(), this.privateKey);
-
-                                    HttpHeaders headers = new HttpHeaders();
-                                    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-                                    headers.setDate(System.currentTimeMillis());
-                                    headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
-                                    headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(this.accountId.getBytes()));
-                                    headers.set(HEADER_SIGNATURE, signature);
-
-                                    HttpEntity<?> entity = new HttpEntity(resumableIdentifier, headers);
-                                    try {
-                                        restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
-                                    } catch (HttpClientErrorException exception) {
-                                        exception.printStackTrace(System.err);
-                                    }
-
-                                    break;
                                 }
                             }
                         }
