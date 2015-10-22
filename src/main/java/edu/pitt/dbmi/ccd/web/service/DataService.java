@@ -184,7 +184,6 @@ public class DataService {
                     }
                 }
             });
-
         }
 
         return map;
@@ -294,6 +293,7 @@ public class DataService {
         Arrays.sort(dataFiles, (dataFile1, dataFile2) -> {
             return dataFile2.getCreationTime().compareTo(dataFile1.getCreationTime());
         });
+        boolean offline = (userAccount.getAccountId() == null);
         for (DataFile dataFile : dataFiles) {
             DatasetItem dataItem = new DatasetItem();
             dataItem.setFileName(dataFile.getName());
@@ -303,6 +303,8 @@ public class DataService {
             DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
             dataItem.setRemote(remoteFileHashes.contains(dataFileInfo.getMd5checkSum()));
             dataItem.setSummarized(dataFileInfo.getFileDelimiter() != null);
+
+            dataItem.setOffline(offline);
 
             dataItems.add(dataItem);
         }

@@ -36,15 +36,9 @@ public class DatasetItem {
 
     private boolean remote;
 
-    public DatasetItem() {
-    }
+    private boolean offline;
 
-    public DatasetItem(String id, String fileName, String fileSize, boolean summarized, boolean remote) {
-        this.id = id;
-        this.fileName = fileName;
-        this.fileSize = fileSize;
-        this.summarized = summarized;
-        this.remote = remote;
+    public DatasetItem() {
     }
 
     public String getId() {
@@ -85,6 +79,14 @@ public class DatasetItem {
 
     public void setRemote(boolean remote) {
         this.remote = remote;
+    }
+
+    public boolean isOffline() {
+        return offline;
+    }
+
+    public void setOffline(boolean offline) {
+        this.offline = offline;
     }
 
 }
