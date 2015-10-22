@@ -93,6 +93,23 @@ public class DataService {
         this.remoteDataFileService = remoteDataFileService;
     }
 
+    public String getFileDelimiter(String absolutePath, String fileName) {
+        String delimiter = null;
+
+        DataFile dataFile = dataFileService.findByAbsolutePathAndName(absolutePath, fileName);
+        if (dataFile != null) {
+            DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
+            if (dataFileInfo != null) {
+                FileDelimiter fileDelimiter = dataFileInfo.getFileDelimiter();
+                if (fileDelimiter != null) {
+                    delimiter = fileDelimiter.getValue();
+                }
+            }
+        }
+
+        return delimiter;
+    }
+
     public List<AttributeValue> getFileInfo(final String dir, final String fileName) {
         List<AttributeValue> list = new LinkedList<>();
 

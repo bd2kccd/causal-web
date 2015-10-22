@@ -18,9 +18,6 @@
  */
 package edu.pitt.dbmi.ccd.web.service.algo;
 
-import edu.pitt.dbmi.ccd.db.entity.DataFile;
-import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
-import edu.pitt.dbmi.ccd.db.entity.FileDelimiter;
 import edu.pitt.dbmi.ccd.db.entity.JobQueueInfo;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.entity.VariableType;
@@ -87,12 +84,8 @@ public abstract class AbstractAlgorithmService {
         return dataService.listAlgoDataset(username, variableType);
     }
 
-    protected String getFileDelimiter(String baseDir, String name) {
-        DataFile dataFile = dataFileService.findByAbsolutePathAndName(baseDir, name);
-        DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
-        FileDelimiter fileDelimiter = dataFileInfo.getFileDelimiter();
-
-        return fileDelimiter.getValue();
+    public String getFileDelimiter(String absolutePath, String fileName) {
+        return dataService.getFileDelimiter(absolutePath, fileName);
     }
 
     protected Long addToLocalQueue(String algorithmJar, AlgorithmJobRequest jobRequest, AppUser appUser) {
