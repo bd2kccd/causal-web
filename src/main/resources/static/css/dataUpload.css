@@ -96,3 +96,9 @@ MA 02110-1301  USA
 .is-complete .progress-pause {
     display: none;
 }
+
+.data-summarization-list {
+    display: none;
+    margin-top: 20px;
+    margin-bottom: 10px
+}

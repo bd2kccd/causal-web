@@ -62,6 +62,7 @@ $(document).ready(function () {
                         + file.uniqueIdentifier + '"></td></tr>';
                 output.push(info);
             }
+            
             // Show progress bar
             $('.resumable-progress, .resumable-list').show();
             // Show pause and cancel, hide resume
@@ -91,6 +92,50 @@ $(document).ready(function () {
         });
         r.on('fileSuccess', function (file, message) {
             $('.md5-' + file.uniqueIdentifier).html(message);
+            // Show Data Summarization Table
+            $('.data-summarization-list').show();
+            // GET REST DataSummaryRestController with filename parameter
+            $.get('rest/summary', {file: file.fileName}, function(data){
+            	//alert(data);
+            	
+            	// variableTypes
+            	var variableTypes = '';
+            	for(var i=0;i<data.variableTypes.length;i++){
+            		variableTypes = variableTypes.concat('<input type="radio" name="variableType-', file.uniqueIdentifier, '" value="', data.variableTypes[i].id ,'" required="required" ');
+            		if(data.dataSummary.variableType.id == data.variableTypes[i].id){
+            			variableTypes = variableTypes.concat('checked="checked" ');
+            		}
+            		variableTypes = variableTypes.concat('/>&nbsp;');
+            		variableTypes = variableTypes.concat('<span id="variableType-', data.variableTypes[i].id, '-', file.uniqueIdentifier, '">', data.variableTypes[i].name, '</span>&nbsp;');
+            		
+            	}
+            	//window.console&&console.log(variableTypes);
+            	
+            	//fileDelimiter
+            	var fileDelimiters = '';
+            	for(var i=0;i<data.variableTypes.length;i++){
+            		fileDelimiters = fileDelimiters.concat('<input type="radio" name="fileDelimiter-', file.uniqueIdentifier, '" value="', data.fileDelimiters[i].id ,'" required="required" ');
+            		if(data.dataSummary.fileDelimiter.id == data.fileDelimiters[i].id){
+            			fileDelimiters = fileDelimiters.concat('checked="checked" ');
+            		}
+            		fileDelimiters = fileDelimiters.concat('/>&nbsp;');
+            		fileDelimiters = fileDelimiters.concat('<span id="fileDelimiter-', data.fileDelimiters[i].id, '-', file.uniqueIdentifier, '">', data.fileDelimiters[i].name, '</span>&nbsp;');
+            		
+            	}
+            	//window.console&&console.log(fileDelimiters);
+            	
+            	var summary = '<tr id="div-summary-'.concat(file.uniqueIdentifier, '"><td id="fileName-', file.uniqueIdentifier, '">', file.fileName, '</td><td>',
+				            variableTypes,
+            				'</td><td>',
+            				fileDelimiters,
+            				'</td><td>',
+				            'N/A</td><td>',
+				            'N/A</td><td id="btn-', file.uniqueIdentifier, '">',
+				            '<button class="btn btn-primary btn-block btn-summarize" onclick="summarizeThisFile(this, \'', file.uniqueIdentifier, '\');">Summarize</button></td></tr>');
+			    $('.file-summary > tbody:last').append(summary);
+            	
+            });
+            
         });
         r.on('fileError', function (file, message) {
             // Reflect that the file upload has resulted in error
@@ -113,3 +158,77 @@ $('#dataExample').on('show.bs.modal', function (event) {
     modal.find('.modal-title').text(title + ' Dataset');
     modal.find('#dataExampleFrame').attr('src', 'example?type=' + type);
 });
+
+function summarizeThisFile(btn, id){
+	var fileName = $('td[id="fileName-' + id + '"]').text();
+	var variableTypeId = $('input[name="variableType-' + id + '"]:checked').val();
+	var variableType = $('span[id="variableType-' + variableTypeId + '-' + id + '"]').text();
+	var fileDelimiterId = $('input[name="fileDelimiter-' + id + '"]:checked').val();
+	var fileDelimiter = $('span[id="fileDelimiter-' + fileDelimiterId + '-' + id + '"]').text();
+	window.console&&console.log('fileName: ' + fileName);
+	window.console&&console.log('variableTypeId: ' + variableTypeId);
+	window.console&&console.log('variableType: ' + variableType);
+	window.console&&console.log('fileDelimiterId: ' + fileDelimiterId);
+	window.console&&console.log('fileDelimiter: ' + fileDelimiter);
+	
+	$(btn).button('loading');
+	
+	$.post('rest/summary', {file: fileName, variableType: variableType, fileDelimiter: fileDelimiter}, function(data){
+
+    	// variableTypes
+    	var variableTypes = '';
+    	for(var i=0;i<data.variableTypes.length;i++){
+    		variableTypes = variableTypes.concat('<input type="radio" name="variableType-', id, '" value="', data.variableTypes[i].id ,'" required="required" ');
+    		if(data.dataSummary.variableType.id == data.variableTypes[i].id){
+    			variableTypes = variableTypes.concat('checked="checked" ');
+    		}
+    		variableTypes = variableTypes.concat('/>&nbsp;');
+    		variableTypes = variableTypes.concat('<span id="variableType-', data.variableTypes[i].id, '-', id, '">', data.variableTypes[i].name, '</span>&nbsp;');
+    		
+    	}
+    	//window.console&&console.log(variableTypes);
+    	
+    	//fileDelimiter
+    	var fileDelimiters = '';
+    	for(var i=0;i<data.variableTypes.length;i++){
+    		fileDelimiters = fileDelimiters.concat('<input type="radio" name="fileDelimiter-', id, '" value="', data.fileDelimiters[i].id ,'" required="required" ');
+    		if(data.dataSummary.fileDelimiter.id == data.fileDelimiters[i].id){
+    			fileDelimiters = fileDelimiters.concat('checked="checked" ');
+    		}
+    		fileDelimiters = fileDelimiters.concat('/>&nbsp;');
+    		fileDelimiters = fileDelimiters.concat('<span id="fileDelimiter-', data.fileDelimiters[i].id, '-', id, '">', data.fileDelimiters[i].name, '</span>&nbsp;');
+    		
+    	}
+    	//window.console&&console.log(fileDelimiters);
+    	
+    	//dataAdditionalInfo
+    	var rows = 'N/A';
+    	var columns = 'N/A';
+    	for(var i=0;i<data.dataAdditionalInfo.length;i++){
+    		if(data.dataAdditionalInfo[i].attribute == 'Row(s):'){
+    			rows = data.dataAdditionalInfo[i].value;
+    		}
+    		if(data.dataAdditionalInfo[i].attribute == 'Column(s):'){
+    			columns = data.dataAdditionalInfo[i].value;
+    		}
+    	}
+    	
+    	//dataSummary
+    	var fileName = data.dataSummary.fileName;
+    	
+    	var dataSummary = '<td id="fileName-'.concat( id, '">', fileName, '</td><td>',
+		            variableTypes,
+    				'</td><td>',
+    				fileDelimiters,
+    				'</td><td>',
+		            rows,'</td><td>',
+		            columns,'</td><td id="btn-', id, '">',
+		            '<button class="btn btn-primary btn-block btn-summarize" onclick="summarizeThisFile(this, \'', id, '\');">Summarize</button></td>');
+
+		$('#div-summary-' + id).html(dataSummary);
+	});
+}
+
+function summarizeAll(){
+	$('.btn-summarize').click();
+}
