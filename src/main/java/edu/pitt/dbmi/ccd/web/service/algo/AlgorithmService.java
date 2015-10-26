@@ -38,4 +38,6 @@ public interface AlgorithmService {
 
     public void runLocally(String algorithmJar, AlgorithmJobRequest jobRequest, AppUser appUser);
 
+    public String getFileDelimiter(String baseDir, String name);
+
 }

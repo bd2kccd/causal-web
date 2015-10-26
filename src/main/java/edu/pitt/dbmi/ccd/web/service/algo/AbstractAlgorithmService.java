@@ -87,7 +87,7 @@ public abstract class AbstractAlgorithmService {
         return dataService.listAlgoDataset(username, variableType);
     }
 
-    protected String getFileDelimiter(String baseDir, String name) {
+    public String getFileDelimiter(String baseDir, String name) {
         DataFile dataFile = dataFileService.findByAbsolutePathAndName(baseDir, name);
         DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
         FileDelimiter fileDelimiter = dataFileInfo.getFileDelimiter();
