@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.service.data;
 
+import edu.pitt.dbmi.ccd.commons.file.MessageDigestHash;
 import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
 import edu.pitt.dbmi.ccd.db.entity.DataFile;
@@ -142,40 +143,48 @@ public class DataFileManagerService {
     }
 
     private String saveDataFile(Path file, String username) throws IOException {
-        UserAccount userAccount = userAccountService.findByUsername(username);
+        String md5checkSum = MessageDigestHash.computeMD5Hash(file);
 
         BasicFileInfo fileInfo = FileInfos.basicPathInfo(file);
-        String directory = fileInfo.getAbsolutePath().toString();
-        String fileName = fileInfo.getFilename();
-        long size = fileInfo.getSize();
-        long creationTime = fileInfo.getCreationTime();
-        long lastModifiedTime = fileInfo.getLastModifiedTime();
+        String name = fileInfo.getFilename();
+        String absolutePath = fileInfo.getAbsolutePath().toString();
+        Date creationTime = new Date(fileInfo.getCreationTime());
+        Date lastModifiedTime = new Date(fileInfo.getLastModifiedTime());
+        long fileSize = fileInfo.getSize();
 
-        DataFile dataFile = dataFileService.findByAbsolutePathAndName(directory, fileName);
-        if (dataFile == null) {
-            dataFile = new DataFile();
-            dataFile.setUserAccounts(Collections.singleton(userAccount));
+        UserAccount userAccount = userAccountService.findByUsername(username);
+
+        synchronized (dataFileService) {
+            DataFile dataFile = dataFileService.findByAbsolutePathAndName(absolutePath, name);
+            if (dataFile == null) {
+                dataFile = new DataFile();
+                dataFile.setAbsolutePath(absolutePath);
+                dataFile.setName(name);
+                dataFile.setUserAccounts(Collections.singleton(userAccount));
+            }
+            dataFile.setCreationTime(creationTime);
+            dataFile.setFileSize(fileSize);
+            dataFile.setLastModifiedTime(lastModifiedTime);
+
+            DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
+            if (dataFileInfo == null) {
+                dataFileInfo = new DataFileInfo();
+                dataFileInfo.setMd5checkSum(md5checkSum);
+
+                dataFile.setDataFileInfo(dataFileInfo);
+            } else {
+                if (!md5checkSum.equals(dataFileInfo.getMd5checkSum())) {
+                    dataFileInfo.setFileDelimiter(null);
+                    dataFileInfo.setMd5checkSum(md5checkSum);
+                    dataFileInfo.setMissingValue(null);
+                    dataFileInfo.setNumOfColumns(null);
+                    dataFileInfo.setNumOfRows(null);
+                    dataFileInfo.setVariableType(null);
+                }
+            }
+
+            dataFileService.saveDataFile(dataFile);
         }
-        dataFile.setName(fileName);
-        dataFile.setAbsolutePath(directory);
-        dataFile.setCreationTime(new Date(creationTime));
-        dataFile.setFileSize(size);
-        dataFile.setLastModifiedTime(new Date(lastModifiedTime));
-
-        String md5checkSum = edu.pitt.dbmi.ccd.commons.file.MessageDigestHash.computeMD5Hash(file);
-        DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
-        if (dataFileInfo == null) {
-            dataFileInfo = new DataFileInfo();
-        }
-        dataFileInfo.setFileDelimiter(null);
-        dataFileInfo.setMd5checkSum(md5checkSum);
-        dataFileInfo.setMissingValue(null);
-        dataFileInfo.setNumOfColumns(null);
-        dataFileInfo.setNumOfRows(null);
-        dataFileInfo.setVariableType(null);
-
-        dataFile.setDataFileInfo(dataFileInfo);
-        dataFileService.saveDataFile(dataFile);
 
         return md5checkSum;
     }
