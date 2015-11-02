@@ -69,44 +69,44 @@ http://localhost:[port]/ccd       // default port is 8080, otherwise change to s
 Add this launch4j configuarion below to the pom.xml in the build/plugins entity. 
 
 ```
-			<plugin>
-				<groupId>com.akathist.maven.plugins.launch4j</groupId>
-				<artifactId>launch4j-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>l4j-ccd-web-windows</id>
-						<phase>package</phase>
-						<goals>
-							<goal>launch4j</goal>
-						</goals>
-						<configuration>
-							<headerType>console</headerType>
-							<outfile>target/ccd-desktop-windows.exe</outfile>
-							<jar>target/ccd-web.jar</jar>
-							<errTitle>CCD</errTitle>
-							<classPath>
-								<mainClass>org.springframework.boot.loader.JarLauncher</mainClass>
-								<addDependencies>false</addDependencies>
-							</classPath>
-							<jre>
-								<minVersion>1.8.0</minVersion>
-								<maxHeapSize>4096</maxHeapSize>
-							</jre>
-							<versionInfo>
-								<fileVersion>0.5.2.0</fileVersion>
-								<txtFileVersion>0.5.2.0</txtFileVersion>
-								<fileDescription>CCD Desktop Windows
-									Application</fileDescription>
-								<copyright>University of Pittsburgh and Carnegie Mellon University</copyright>
-								<productVersion>0.5.2.0</productVersion>
-								<txtProductVersion>0.5.2.0</txtProductVersion>
-								<productName>CCD-Desktop</productName>
-								<internalName>ccd-web</internalName>
-								<originalFilename>ccd-desktop-windows-0.5.2.exe</originalFilename>
-							</versionInfo>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+<plugin>
+	<groupId>com.akathist.maven.plugins.launch4j</groupId>
+	<artifactId>launch4j-maven-plugin</artifactId>
+	<executions>
+		<execution>
+			<id>l4j-ccd-web-windows</id>
+			<phase>package</phase>
+			<goals>
+				<goal>launch4j</goal>
+			</goals>
+			<configuration>
+				<headerType>console</headerType>
+				<outfile>target/ccd-desktop-windows.exe</outfile>
+				<jar>target/ccd-web.jar</jar>
+				<errTitle>CCD</errTitle>
+				<classPath>
+					<mainClass>org.springframework.boot.loader.JarLauncher</mainClass>
+					<addDependencies>false</addDependencies>
+				</classPath>
+				<jre>
+					<minVersion>1.8.0</minVersion>
+					<maxHeapSize>4096</maxHeapSize>
+				</jre>
+				<versionInfo>
+					<fileVersion>0.5.2.0</fileVersion>
+					<txtFileVersion>0.5.2.0</txtFileVersion>
+					<fileDescription>CCD Desktop Windows
+						Application</fileDescription>
+					<copyright>University of Pittsburgh and Carnegie Mellon University</copyright>
+					<productVersion>0.5.2.0</productVersion>
+					<txtProductVersion>0.5.2.0</txtProductVersion>
+					<productName>CCD-Desktop</productName>
+					<internalName>ccd-web</internalName>
+					<originalFilename>ccd-desktop-windows-0.5.2.exe</originalFilename>
+				</versionInfo>
+			</configuration>
+		</execution>
+	</executions>
+</plugin>
 
 ```
