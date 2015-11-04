@@ -30,8 +30,6 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Base64;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,7 +47,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
@@ -78,11 +75,11 @@ public class RemoteDataUploadController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteDataUploadController.class);
 
-    private final String appId;
-
     private final String dataUrl;
 
     private final Map<String, ChunkUpload> fileUploadMap;
+
+    private final Map<String, ChunkUpload> trashFileUploadMap;
 
     private final ExecutorService executorService;
 
@@ -90,18 +87,17 @@ public class RemoteDataUploadController {
 
     private final UserAccountService userAccountService;
 
-    @Autowired(required = true)
+    @Autowired
     public RemoteDataUploadController(
-            @Value("${ccd.rest.appId:1}") String appId,
-            @Value("${ccd.rest.url.data:http://localhost:9000/ccd-ws/data}") String dataUrl,
+            @Value("${ccd.rest.url.data:http://localhost:9000/ccd-ws/api/v1.0/account/{accountId}/data/file}") String dataUrl,
             @Value("${ccd.data.upload.simultaneousFileUploads:1}") int simultaneousUpload,
             UserAccountService userAccountService) {
-        this.appId = appId;
         this.dataUrl = dataUrl;
-        this.userAccountService = userAccountService;
         this.fileUploadMap = new HashMap<>();
-        this.executorService = Executors.newFixedThreadPool(simultaneousUpload);
+        this.trashFileUploadMap = new HashMap<>();
+        this.executorService = Executors.newFixedThreadPool(simultaneousUpload);;
         this.restTemplate = new RestTemplate();
+        this.userAccountService = userAccountService;
 
         this.restTemplate.getMessageConverters().add(new FormHttpMessageConverter());
     }
@@ -115,6 +111,21 @@ public class RemoteDataUploadController {
             status.add(new UploadStatus(key, fileUploadMap.get(key).isSuspended()));
         });
 
+        if (!trashFileUploadMap.isEmpty()) {
+            List<String> keys = new LinkedList<>();
+            keySet = trashFileUploadMap.keySet();
+            keySet.forEach(key -> {
+                ChunkUpload chunkUpload = trashFileUploadMap.get(key);
+                if (chunkUpload.cleanServerUpload()) {
+                    keys.add(key);
+                }
+            });
+
+            keys.forEach(key -> {
+                trashFileUploadMap.remove(key);
+            });
+        }
+
         return ResponseEntity.ok(status);
     }
 
@@ -126,6 +137,8 @@ public class RemoteDataUploadController {
             ChunkUpload chunkUpload = fileUploadMap.remove(id);
             chunkUpload.stop();
             chunkUpload.resume();
+
+            trashFileUploadMap.put(id, chunkUpload);
             return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.notFound().build();
@@ -176,7 +189,7 @@ public class RemoteDataUploadController {
                     return ResponseEntity.notFound().build();
                 } else {
                     long chunkSize = 512 * 1024;
-                    chunkUpload = new ChunkUpload(uploadRequest.getId(), file, chunkSize, appId, appUser.getUsername(), dataUrl, restTemplate, userAccountService);
+                    chunkUpload = new ChunkUpload(uploadRequest.getId(), file, chunkSize, appUser.getUsername(), dataUrl, restTemplate, userAccountService);
                     fileUploadMap.put(uploadRequest.getId(), chunkUpload);
                     executorService.execute(chunkUpload);
                     return ResponseEntity.ok().build();
@@ -232,8 +245,6 @@ public class RemoteDataUploadController {
 
         private final long chunkSize;
 
-        private final String appId;
-
         private final String username;
 
         private final String dataUrl;
@@ -248,11 +259,12 @@ public class RemoteDataUploadController {
 
         private boolean stopped;
 
-        public ChunkUpload(String id, Path file, long chunkSize, String appId, String username, String dataUrl, RestTemplate restTemplate, UserAccountService userAccountService) {
+        private String resumableIdentifier;
+
+        public ChunkUpload(String id, Path file, long chunkSize, String username, String dataUrl, RestTemplate restTemplate, UserAccountService userAccountService) {
             this.id = id;
             this.file = file;
             this.chunkSize = chunkSize;
-            this.appId = appId;
             this.username = username;
             this.dataUrl = dataUrl;
             this.restTemplate = restTemplate;
@@ -272,7 +284,7 @@ public class RemoteDataUploadController {
                 long resumableTotalSize = fileSize;
 
                 long resumableTotalChunks = maxOffset;
-                String resumableIdentifier = String.format("%d-%s", fileSize, fileName.replaceAll("/[^0-9a-zA-Z_-]/img", ""));
+                this.resumableIdentifier = String.format("%d-%s", fileSize, fileName.replaceAll("/[^0-9a-zA-Z_-]/img", ""));
                 String resumableFilename = fileName;
                 String resumableRelativePath = fileName;
                 String resumableType = Files.probeContentType(this.file);
@@ -284,40 +296,20 @@ public class RemoteDataUploadController {
                             String accountId = userAccount.getAccountId();
                             String privateKey = userAccount.getPrivateKey();
 
-                            suspended = suspended || (accountId == null || privateKey == null);
+                            suspended = suspended || accountId == null;
 
                             synchronized (this) {
                                 while (suspended) {
                                     wait();
-                                    if (accountId == null || privateKey == null) {
+                                    if (stopped) {
+                                        break;
+                                    } else {
                                         userAccount = userAccountService.findByUsername(username);
                                         accountId = userAccount.getAccountId();
-                                        privateKey = userAccount.getPrivateKey();
+                                        suspended = suspended || accountId == null;
                                     }
                                 }
                                 if (stopped) {
-                                    fileUploadMap.remove(this.id);
-
-                                    URI uri = UriComponentsBuilder.fromHttpUrl(this.dataUrl)
-                                            .pathSegment("chunk", "clean")
-                                            .build().toUri();
-
-                                    String signature = WebSecurityDSA.createSignature(uri.toString(), privateKey);
-
-                                    HttpHeaders headers = new HttpHeaders();
-                                    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-                                    headers.setDate(System.currentTimeMillis());
-                                    headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
-                                    headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(accountId.getBytes()));
-                                    headers.set(HEADER_SIGNATURE, signature);
-
-                                    HttpEntity<?> entity = new HttpEntity(resumableIdentifier, headers);
-                                    try {
-                                        restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
-                                    } catch (HttpClientErrorException exception) {
-                                        exception.printStackTrace(System.err);
-                                    }
-
                                     break;
                                 }
                             }
@@ -333,19 +325,17 @@ public class RemoteDataUploadController {
                             HttpStatus httpStatus;
                             try {
                                 URI uri = UriComponentsBuilder.fromHttpUrl(this.dataUrl)
-                                        .pathSegment("chunk")
-                                        .queryParam("resumableIdentifier", resumableIdentifier)
+                                        .pathSegment("upload", "chunk")
+                                        .queryParam("resumableIdentifier", this.resumableIdentifier)
                                         .queryParam("resumableChunkNumber", Long.toString(resumableChunkNumber))
                                         .queryParam("resumableChunkSize", Long.toString(resumableChunkSize))
-                                        .build().toUri();
+                                        .buildAndExpand(accountId)
+                                        .toUri();
 
                                 String signature = WebSecurityDSA.createSignature(uri.toString(), privateKey);
 
                                 HttpHeaders headers = new HttpHeaders();
-                                headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-                                headers.setDate(System.currentTimeMillis());
-                                headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
-                                headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(accountId.getBytes()));
+                                headers.set(HEADER_ACCOUNT, accountId);
                                 headers.set(HEADER_SIGNATURE, signature);
 
                                 HttpEntity<Map<String, String>> entity = new HttpEntity(headers);
@@ -373,23 +363,21 @@ public class RemoteDataUploadController {
                                 valueMap.add("resumableChunkSize", chunkSize);
                                 valueMap.add("resumableCurrentChunkSize", resumableCurrentChunkSize);
                                 valueMap.add("resumableFilename", resumableFilename);
-                                valueMap.add("resumableIdentifier", resumableIdentifier);
+                                valueMap.add("resumableIdentifier", this.resumableIdentifier);
                                 valueMap.add("resumableRelativePath", resumableRelativePath);
                                 valueMap.add("resumableTotalChunks", resumableTotalChunks);
                                 valueMap.add("resumableTotalSize", resumableTotalSize);
                                 valueMap.add("resumableType", resumableType);
 
                                 URI uri = UriComponentsBuilder.fromHttpUrl(this.dataUrl)
-                                        .pathSegment("chunk")
-                                        .build().toUri();
+                                        .pathSegment("upload", "chunk")
+                                        .buildAndExpand(accountId)
+                                        .toUri();
 
                                 String signature = WebSecurityDSA.createSignature(uri.toString(), privateKey);
 
                                 HttpHeaders headers = new HttpHeaders();
-                                headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-                                headers.setDate(System.currentTimeMillis());
-                                headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
-                                headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(accountId.getBytes()));
+                                headers.set(HEADER_ACCOUNT, accountId);
                                 headers.set(HEADER_SIGNATURE, signature);
 
                                 HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(valueMap, headers);
@@ -403,6 +391,10 @@ public class RemoteDataUploadController {
                                 }
                             }
                         }
+
+                        if (stopped) {
+
+                        }
                     } catch (InterruptedException exception) {
                         LOGGER.error(exception.getMessage());
                     }
@@ -413,6 +405,37 @@ public class RemoteDataUploadController {
             } catch (IOException exception) {
                 LOGGER.error(exception.getMessage());
             }
+        }
+
+        public boolean cleanServerUpload() {
+            boolean flag = false;
+
+            UserAccount userAccount = userAccountService.findByUsername(username);
+            String accountId = userAccount.getAccountId();
+            String privateKey = userAccount.getPrivateKey();
+
+            if (accountId != null) {
+                URI uri = UriComponentsBuilder.fromHttpUrl(this.dataUrl)
+                        .pathSegment("upload", "chunk", "clean")
+                        .buildAndExpand(accountId)
+                        .toUri();
+
+                String signature = WebSecurityDSA.createSignature(uri.toString(), privateKey);
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.set(HEADER_ACCOUNT, accountId);
+                headers.set(HEADER_SIGNATURE, signature);
+
+                HttpEntity<CleanUploadRequest> entity = new HttpEntity(new CleanUploadRequest(this.resumableIdentifier), headers);
+                try {
+                    restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+                    flag = true;
+                } catch (HttpClientErrorException exception) {
+                    exception.printStackTrace(System.err);
+                }
+            }
+
+            return flag;
         }
 
         public boolean isSuspended() {
@@ -440,6 +463,19 @@ public class RemoteDataUploadController {
             return progress;
         }
 
+    }
+
+    public static class CleanUploadRequest {
+
+        private final String resumableIdentifier;
+
+        public CleanUploadRequest(String resumableIdentifier) {
+            this.resumableIdentifier = resumableIdentifier;
+        }
+
+        public String getResumableIdentifier() {
+            return resumableIdentifier;
+        }
     }
 
 }
