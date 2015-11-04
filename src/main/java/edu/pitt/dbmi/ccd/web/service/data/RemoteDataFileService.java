@@ -23,9 +23,9 @@ import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.service.RestRequestService;
 import java.net.URI;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,8 +55,6 @@ public class RemoteDataFileService implements RestRequestService {
 
     private final String dataRestUrl;
 
-    private final String appId;
-
     private final Boolean webapp;
 
     private final RestTemplate restTemplate;
@@ -65,13 +63,11 @@ public class RemoteDataFileService implements RestRequestService {
 
     @Autowired(required = true)
     public RemoteDataFileService(
-            @Value("${ccd.rest.url.data:http://localhost:9000/ccd-ws/data}") String dataRestUrl,
-            @Value("${ccd.rest.appId:1}") String appId,
+            @Value("${ccd.rest.url.data:http://localhost:9000/ccd-ws/api/v1.0/account/{accountId}/data/file}") String dataRestUrl,
             Boolean webapp,
             RestTemplate restTemplate,
             UserAccountService userAccountService) {
         this.dataRestUrl = dataRestUrl;
-        this.appId = appId;
         this.webapp = webapp;
         this.restTemplate = restTemplate;
         this.userAccountService = userAccountService;
@@ -92,28 +88,50 @@ public class RemoteDataFileService implements RestRequestService {
 
         try {
             URI uri = UriComponentsBuilder.fromHttpUrl(this.dataRestUrl)
-                    .pathSegment("file", "hash")
-                    .build().toUri();
+                    .pathSegment("hash")
+                    .buildAndExpand(accountId)
+                    .toUri();
 
             String signature = WebSecurityDSA.createSignature(uri.toString(), userAccount.getPrivateKey());
 
             HttpHeaders headers = new HttpHeaders();
             headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-            headers.setDate(System.currentTimeMillis());
-            headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
-            headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(accountId.getBytes()));
+            headers.set(HEADER_ACCOUNT, accountId);
             headers.set(HEADER_SIGNATURE, signature);
 
             HttpEntity<?> entity = new HttpEntity<>(headers);
-            ResponseEntity<Set> responseEntity = this.restTemplate.exchange(uri, HttpMethod.GET, entity, Set.class);
+            ResponseEntity<DataFileMd5Reponse> responseEntity = this.restTemplate.exchange(uri, HttpMethod.GET, entity, DataFileMd5Reponse.class);
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
-                hashes.addAll(responseEntity.getBody());
+                DataFileMd5Reponse reponse = responseEntity.getBody();
+                if (reponse != null) {
+                    hashes.addAll(reponse.getMd5HashValues());
+                }
             }
         } catch (RestClientException exception) {
             LOGGER.error(exception.getMessage());
         }
 
         return hashes;
+    }
+
+    public static class DataFileMd5Reponse {
+
+        private List<String> md5HashValues;
+
+        public DataFileMd5Reponse() {
+        }
+
+        public DataFileMd5Reponse(List<String> md5HashValues) {
+            this.md5HashValues = md5HashValues;
+        }
+
+        public List<String> getMd5HashValues() {
+            return md5HashValues;
+        }
+
+        public void setMd5HashValues(List<String> md5HashValues) {
+            this.md5HashValues = md5HashValues;
+        }
     }
 
 }

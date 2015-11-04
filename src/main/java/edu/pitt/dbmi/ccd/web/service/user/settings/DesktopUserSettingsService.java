@@ -23,6 +23,7 @@ import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.service.RestRequestService;
 import java.net.URI;
 import java.util.Base64;
+import java.util.Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,56 +95,71 @@ public class DesktopUserSettingsService implements UserSettingsService, RestRequ
         String base64Creds = Base64.getEncoder().encodeToString(plainCreds.getBytes());
 
         UserAccount userAccount = userAccountService.findByUsername(desktopUsername);
-        String publicKey = Base64.getEncoder().encodeToString(userAccount.getPublicKey().getBytes());
+        String publicKey = userAccount.getPublicKey();
 
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
             headers.add(HEADER_AUTH, "Basic " + base64Creds);
-            headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
 
-            HttpEntity<WebAccountRequest> entity = new HttpEntity<>(new WebAccountRequest(publicKey), headers);
+            HttpEntity<DesktopWebAccountRequest> entity = new HttpEntity<>(new DesktopWebAccountRequest(publicKey), headers);
 
             URI uri = UriComponentsBuilder.fromHttpUrl(this.userAccountUrl)
                     .pathSegment("desktop")
-                    .build().toUri();
+                    .buildAndExpand(username).toUri();
 
-            ResponseEntity<String> responseEntity = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+            ResponseEntity<DesktopWebAccountResponse> responseEntity = restTemplate.exchange(uri, HttpMethod.POST, entity, DesktopWebAccountResponse.class);
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
-                String accountId = responseEntity.getBody();
-                userAccount.setAccountId(accountId);
-                try {
-                    userAccountService.saveUserAccount(userAccount);
-                    success = true;
-                } catch (Exception exception) {
-                    LOGGER.error(exception.getMessage());
+                DesktopWebAccountResponse response = responseEntity.getBody();
+                if (response != null) {
+                    userAccount.setAccountId(response.getAccountId());
+                    try {
+                        userAccountService.saveUserAccount(userAccount);
+                        success = true;
+                    } catch (Exception exception) {
+                        exception.printStackTrace(System.err);
+                        LOGGER.error(exception.getMessage());
+                    }
                 }
             }
         } catch (RestClientException exception) {
+            exception.printStackTrace(System.err);
             LOGGER.error(exception.getMessage());
         }
 
         return success;
     }
 
-    private class WebAccountRequest {
+    public static class DesktopWebAccountRequest {
 
-        private String key;
+        private final String publicKey;
 
-        public WebAccountRequest() {
+        public DesktopWebAccountRequest(String publicKey) {
+            this.publicKey = publicKey;
         }
 
-        public WebAccountRequest(String key) {
-            this.key = key;
+        public String getPublicKey() {
+            return publicKey;
         }
 
-        public String getKey() {
-            return key;
+    }
+
+    public static class DesktopWebAccountResponse {
+
+        private String accountId;
+
+        public DesktopWebAccountResponse() {
         }
 
-        public void setKey(String key) {
-            this.key = key;
+        public String getAccountId() {
+            return accountId;
         }
+
+        public void setAccountId(String accountId) {
+            this.accountId = accountId;
+        }
+
     }
 
 }

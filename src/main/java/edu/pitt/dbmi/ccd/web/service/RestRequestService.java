@@ -28,9 +28,11 @@ public interface RestRequestService {
 
     public static final String HEADER_APP_ID = "appId";
 
+    public static final String HEADER_ACCOUNT = "Account";
+
     public static final String HEADER_ACCOUNT_ID = "accountId";
 
-    public static final String HEADER_SIGNATURE = "signature";
+    public static final String HEADER_SIGNATURE = "Signature";
 
     public static final String HEADER_AUTH = "Authorization";
 
