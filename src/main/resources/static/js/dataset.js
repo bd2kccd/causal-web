@@ -13,4 +13,5 @@ $('#fileInfo').on('show.bs.modal', function (event) {
     var modal = $(this);
     modal.find('.modal-title').text(filename);
     modal.find('#fileInfoFrame').attr('src', 'data/fileInfo?file=' + filename);
+    modal.find('#annotate_data').attr('onClick', 'window.location.href=\'data/annotation?file=' + filename + '\'');
 });

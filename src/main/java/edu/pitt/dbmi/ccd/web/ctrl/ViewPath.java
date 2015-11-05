@@ -61,6 +61,10 @@ public interface ViewPath {
     public static final String DATA_VIEW = "data";
     public static final String REDIRECT_DATA = "redirect:/data";
 
+    public static final String DATA_ANNOTATION = "dataAnnotation";
+    public static final String DATA_ANNOTATION_VIEW = "annotation/dataAnnotation";
+    public static final String REDIRECT_DATA_ANNOTATION = "redirect:/data/annotation";
+    
     public static final String PC_STABLE_VIEW = "algorithm/pcStable";
 
     public static final String GES_VIEW = "algorithm/ges";
