@@ -21,6 +21,8 @@ package edu.pitt.dbmi.ccd.web.service.user.settings;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.service.RestRequestService;
+import edu.pitt.dbmi.ccd.ws.dto.user.account.DesktopWebAccountRequest;
+import edu.pitt.dbmi.ccd.ws.dto.user.account.DesktopWebAccountResponse;
 import java.net.URI;
 import java.util.Base64;
 import java.util.Collections;
@@ -129,37 +131,6 @@ public class DesktopUserSettingsService implements UserSettingsService, RestRequ
         }
 
         return success;
-    }
-
-    public static class DesktopWebAccountRequest {
-
-        private final String publicKey;
-
-        public DesktopWebAccountRequest(String publicKey) {
-            this.publicKey = publicKey;
-        }
-
-        public String getPublicKey() {
-            return publicKey;
-        }
-
-    }
-
-    public static class DesktopWebAccountResponse {
-
-        private String accountId;
-
-        public DesktopWebAccountResponse() {
-        }
-
-        public String getAccountId() {
-            return accountId;
-        }
-
-        public void setAccountId(String accountId) {
-            this.accountId = accountId;
-        }
-
     }
 
 }

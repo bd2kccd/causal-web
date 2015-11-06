@@ -20,8 +20,8 @@ package edu.pitt.dbmi.ccd.web.ctrl.data;
 
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.model.data.ResumableChunk;
 import edu.pitt.dbmi.ccd.web.service.data.DataFileManagerService;
+import edu.pitt.dbmi.ccd.ws.dto.file.upload.ResumableChunk;
 import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;

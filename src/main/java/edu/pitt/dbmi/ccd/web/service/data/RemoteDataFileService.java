@@ -22,10 +22,10 @@ import edu.pitt.dbmi.ccd.commons.security.WebSecurityDSA;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.service.RestRequestService;
+import edu.pitt.dbmi.ccd.ws.dto.file.data.DataFileMd5Reponse;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,26 +112,6 @@ public class RemoteDataFileService implements RestRequestService {
         }
 
         return hashes;
-    }
-
-    public static class DataFileMd5Reponse {
-
-        private List<String> md5HashValues;
-
-        public DataFileMd5Reponse() {
-        }
-
-        public DataFileMd5Reponse(List<String> md5HashValues) {
-            this.md5HashValues = md5HashValues;
-        }
-
-        public List<String> getMd5HashValues() {
-            return md5HashValues;
-        }
-
-        public void setMd5HashValues(List<String> md5HashValues) {
-            this.md5HashValues = md5HashValues;
-        }
     }
 
 }
