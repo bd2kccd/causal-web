@@ -113,19 +113,23 @@ public abstract class AbstractAlgorithmService {
 
         commands.add(algorithm);
 
-        Path datasetPath;
-        if (dataset == null) {
-            commands.add("--data-dir");
-            datasetPath = Paths.get(userDataDir);
-        } else {
-            datasetPath = Paths.get(userDataDir, dataset);
-            commands.add("--data");
+        dataset = (dataset == null) ? "" : dataset.trim();
+        String[] files = dataset.split(",");
+        StringBuilder sb = new StringBuilder();
+        for (String file : files) {
+            Path path = Paths.get(userDataDir, file);
+            sb.append(path.toAbsolutePath().toString());
+            sb.append(",");
         }
-        commands.add(datasetPath.toString());
+        sb.deleteCharAt(sb.length() - 1);
+        commands.add("--data");
+        commands.add(sb.toString());
 
         commands.addAll(Arrays.asList(parameters));
 
-        String fileName = String.format("%s_%s_%d", algorithmName, (dataset == null) ? "multi" : dataset, System.currentTimeMillis());
+        String fileName = (files.length > 1)
+                ? String.format("%s_%s_%d", algorithmName, "multi-dataset", System.currentTimeMillis())
+                : String.format("%s_%s_%d", algorithmName, dataset, System.currentTimeMillis());
         commands.add("--out-filename");
         commands.add(fileName);
 
@@ -151,7 +155,6 @@ public abstract class AbstractAlgorithmService {
         jobQueueInfo.setUserAccounts(Collections.singleton(userAccount));
 
         jobQueueInfo = jobQueueInfoService.saveJobIntoQueue(jobQueueInfo);
-
         return jobQueueInfo.getId();
     }
 
