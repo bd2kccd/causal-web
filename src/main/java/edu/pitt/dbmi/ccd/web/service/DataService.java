@@ -372,16 +372,23 @@ public class DataService {
         List<AttributeValue> fileInfo = new LinkedList<>();
 
         DataFile dataFile = dataFileService.findByAbsolutePathAndName(absolutePath, name);
-        DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
-        if (dataFileInfo != null) {
-            Integer numOfRows = dataFileInfo.getNumOfRows();
-            Integer numOfCols = dataFileInfo.getNumOfColumns();
-            String md5CheckSum = dataFileInfo.getMd5checkSum();
-            fileInfo.add(new AttributeValue("Row(s):", (numOfRows == null) ? "" : numOfRows.toString()));
-            fileInfo.add(new AttributeValue("Column(s):", (numOfCols == null) ? "" : numOfCols.toString()));
-            fileInfo.add(new AttributeValue("MD5 Checksum:", (md5CheckSum == null) ? "" : md5CheckSum));
-//            fileInfo.add(new AttributeValue("Missing Value:", dataFileInfo.getMissingValue() ? "Yes" : "No"));
+        if (dataFile == null) {
+            return fileInfo;
         }
+
+        DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
+        if (dataFileInfo == null) {
+            return fileInfo;
+        }
+
+        Integer numOfRows = dataFileInfo.getNumOfRows();
+        Integer numOfCols = dataFileInfo.getNumOfColumns();
+        FileDelimiter delimiter = dataFileInfo.getFileDelimiter();
+        VariableType variableType = dataFileInfo.getVariableType();
+        fileInfo.add(new AttributeValue("Row(s):", (numOfRows == null) ? "" : numOfRows.toString()));
+        fileInfo.add(new AttributeValue("Column(s):", (numOfCols == null) ? "" : numOfCols.toString()));
+        fileInfo.add(new AttributeValue("Delimiter:", (delimiter == null) ? "" : delimiter.getName()));
+        fileInfo.add(new AttributeValue("Variable Type:", (variableType == null) ? "" : variableType.getName()));
 
         return fileInfo;
     }

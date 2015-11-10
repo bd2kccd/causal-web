@@ -94,6 +94,7 @@ public class DataManagementController implements ViewPath {
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) throws IOException {
         model.addAttribute("basicInfo", dataService.getFileInfo(appUser.getDataDirectory(), fileName));
+        model.addAttribute("summaryInfo", dataService.getDataFileAdditionalInfo(appUser.getDataDirectory(), fileName));
 
         return FILE_INFO_VIEW;
     }
