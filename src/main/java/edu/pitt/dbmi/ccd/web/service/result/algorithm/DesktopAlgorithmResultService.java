@@ -297,6 +297,31 @@ public class DesktopAlgorithmResultService extends AbstractAlgorithmResultServic
     }
 
     @Override
+    public List<String> getDatasets(String fileName, boolean remote, AppUser appUser) {
+        List<String> datasets = new LinkedList<>();
+
+        if (remote) {
+            byte[] cloudData = downloadRemoteFile(appUser.getUsername(), fileName);
+            if (cloudData != null) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(cloudData), Charset.defaultCharset()))) {
+                    extractDatasets(reader, datasets);
+                } catch (IOException exception) {
+                    LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
+                }
+            }
+        } else {
+            Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
+            try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
+                extractDatasets(reader, datasets);
+            } catch (IOException exception) {
+                LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
+            }
+        }
+
+        return datasets;
+    }
+
+    @Override
     public Map<String, String> getPlotParameters(String fileName, boolean remote, AppUser appUser) {
         Map<String, String> parameters = new TreeMap<>();
 

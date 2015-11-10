@@ -61,9 +61,8 @@
                                             <div class="panel-body">
                                                 <div class="form-group">
                                                     <label for="dataset">Dataset:</label>
-                                                    <select id="dataset" name="dataset" class="form-control dataset-multiple" required="required" multiple="multiple" ng-model="dataset"
+                                                    <select id="dataset" class="form-control" required="required" multiple="multiple"
                                                             th:field="*{dataset}"
-                                                            th:attr="ng-init='dataset = \'' + *{dataset} + '\''"
                                                             th:disabled="${#strings.isEmpty(algoInfo.dataset)}">
                                                         <option value="sim_data_100vars_100_cases.txt"
                                                                 th:each="data : ${datasetList}"
@@ -134,7 +133,7 @@
                                                         <tbody>
                                                             <tr>
                                                                 <td class="col-md-3">Dataset:</td>
-                                                                <td ng-bind="dataset"></td>
+                                                                <td id="datasetSelection"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td class="col-md-3">Penalty Discount:</td>

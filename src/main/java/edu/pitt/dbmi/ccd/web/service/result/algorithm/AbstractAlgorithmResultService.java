@@ -101,6 +101,23 @@ public class AbstractAlgorithmResultService {
         }
     }
 
+    protected void extractDatasets(BufferedReader reader, List<String> datasets) throws IOException {
+        boolean isDatasets = false;
+        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+            line = line.trim();
+
+            if (isDatasets) {
+                if (line.isEmpty()) {
+                    break;
+                } else {
+                    datasets.add(line);
+                }
+            } else if ("Datasets:".equals(line)) {
+                isDatasets = true;
+            }
+        }
+    }
+
     protected void extractParameters(BufferedReader reader, Map<String, String> parameters) throws IOException {
         Pattern equalDelim = Pattern.compile("=");
         boolean isParamters = false;

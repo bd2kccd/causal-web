@@ -124,6 +124,7 @@ public class FastImagesController implements ViewPath {
         } else {
             algorithmService.runLocally(algorithmJar, jobRequest, appUser);
         }
+
         return REDIRECT_JOB_QUEUE;
     }
 

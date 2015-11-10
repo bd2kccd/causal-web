@@ -40,6 +40,8 @@ public interface AlgorithmResultService {
 
     public void downloadResultFile(String fileName, boolean remote, AppUser appUser, HttpServletRequest request, HttpServletResponse response);
 
+    public List<String> getDatasets(String fileName, boolean remote, AppUser appUser);
+
     public Map<String, String> getPlotParameters(String fileName, boolean remote, AppUser appUser);
 
     public List<Node> getGraphNodes(String fileName, boolean remote, AppUser appUser);
