@@ -23,6 +23,7 @@ import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.model.UserRegistration;
 import edu.pitt.dbmi.ccd.web.service.mail.MailService;
+import java.net.URI;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Date;
@@ -47,7 +48,7 @@ public class UserService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
 
-    private final String serverHost;
+    private final String serverUrl;
 
     private final UserAccountService userAccountService;
 
@@ -57,11 +58,11 @@ public class UserService {
 
     @Autowired(required = true)
     public UserService(
-            @Value("${ccd.server.host:}") String serverHost,
+            @Value("${ccd.server.url:}") String serverUrl,
             UserAccountService userAccountService,
             DefaultPasswordService passwordService,
             MailService mailService) {
-        this.serverHost = serverHost;
+        this.serverUrl = serverUrl;
         this.userAccountService = userAccountService;
         this.passwordService = passwordService;
         this.mailService = mailService;
@@ -70,7 +71,7 @@ public class UserService {
     public void registerNewUser(
             final UserRegistration userRegistration,
             final String workspace,
-            final String baseUrl) throws Exception {
+            final String requestURL) throws Exception {
         if (userRegistration == null) {
             throw new IllegalArgumentException("No user registration given.");
         }
@@ -81,7 +82,7 @@ public class UserService {
 
         String accountId = UUID.randomUUID().toString();
 
-        String httpUrl = serverHost.isEmpty() ? baseUrl : baseUrl.replace("localhost", serverHost);
+        String httpUrl = serverUrl.isEmpty() ? requestURL : serverUrl + (new URI(requestURL)).getPath();
 
         String url = UriComponentsBuilder.fromHttpUrl(httpUrl)
                 .pathSegment("activate")
