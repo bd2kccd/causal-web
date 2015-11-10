@@ -65,6 +65,8 @@ public interface ViewPath {
 
     public static final String GES_VIEW = "algorithm/ges";
 
+    public static final String FGS_VIEW = "algorithm/fgs";
+
     public static final String FAST_IMAGES_VIEW = "algorithm/fastImages";
 
     public static final String ALGO_RUN_CONFIRM_VIEW = "algorithm/algoRunConfirm";
