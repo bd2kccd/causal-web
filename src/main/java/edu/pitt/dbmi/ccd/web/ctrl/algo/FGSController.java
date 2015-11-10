@@ -61,7 +61,7 @@ public class FGSController implements ViewPath {
 
     @Autowired(required = true)
     public FGSController(
-            @Value("${ccd.algorithm.ges}") String fgs,
+            @Value("${ccd.algorithm.fgs}") String fgs,
             @Value("${ccd.algorithm.jar}") String algorithmJar,
             AlgorithmService algorithmService) {
         this.fgs = fgs;
