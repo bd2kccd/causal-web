@@ -110,7 +110,7 @@
     </dependencies>
 
     <build>
-        <finalName>ccd</finalName>
+        <finalName>ccd-web</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
