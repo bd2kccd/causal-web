@@ -8,23 +8,26 @@ The web version allows multiple users to run the algorithms on their dataset on 
 ## How Can I Use It?
 ### Required Dependencies
 #### Algorithm Dependencies
+* ccd-algorithm-0.4.3.jar
 * colt-1.2.0.jar
 * commons-collections-3.1.jar
 * commons-math3-3.3.jar
 * jama-1.0.2.jar
-* lib-tetrad-0.3.jar
+* lib-tetrad-0.4.1.jar
 * mtj-0.9.14.jar
+* pal-1.5.1.jar
 * xom-1.1.jar
-* ccd-algorithm-0.3.jar
 
 #### Application Dependencies
-* ccd-db-0.4.jar
+* ccd-db-0.6.0.jar
+* ccd-commons-0.3.0.jar
+* ccd-ws-dto-0.3.0.jar
 
 #### Building the Application
 Since this is a maven project all the dependencies will be download from the Maven public repository when compiling. There is one dependency that must be built and installed manually, the database component.  
-* Download the [ccd-db-04](https://github.com/bd2kccd/ccd-db/tree/v0.4-alpha) project from GitHub.
-* In the ccd-db-04 directory run **mvn install** to build and install the ccd-db-0.4.jar library   
-* After ccd-db-0.4 has been successfully built and installed, go to the **ccd-web** directory and run **mvn package**. This will create a jar file called **ccd-web.jar** in the **/target** folder.
+* Download the [ccd-db-0.6.0](https://github.com/bd2kccd/ccd-db/releases/tag/v0.6.0),[ccd-commons-0.3.0](https://github.com/bd2kccd/ccd-commons/releases/tag/v0.3.0) and [ccd-ws-dto-0.3.0](https://github.com/bd2kccd/ccd-ws-dto/releases/tag/v0.3.0)  project from GitHub.
+* Go to each of these project directory and type **mvn clean install** to build and install the jar libraries.
+* After ccd-db-0.6.0 has been successfully built and installed, go to the **ccd-web** directory and run **mvn package**. This will create a jar file called **ccd-web.jar** in the **/target** folder.
 
 
 ## Run As a Desktop Application
@@ -64,3 +67,49 @@ http://localhost:[port]/ccd       // default port is 8080, otherwise change to s
 ```
 
 ******
+
+## Build a Windows executable application
+Add this launch4j configuarion below to the pom.xml in the build/plugins entity. 
+
+```
+<plugin>
+	<groupId>com.akathist.maven.plugins.launch4j</groupId>
+	<artifactId>launch4j-maven-plugin</artifactId>
+	<executions>
+		<execution>
+			<id>l4j-ccd-web-windows</id>
+			<phase>package</phase>
+			<goals>
+				<goal>launch4j</goal>
+			</goals>
+			<configuration>
+				<headerType>console</headerType>
+				<outfile>target/ccd-desktop-windows.exe</outfile>
+				<jar>target/ccd-web.jar</jar>
+				<errTitle>CCD</errTitle>
+				<classPath>
+					<mainClass>org.springframework.boot.loader.JarLauncher</mainClass>
+					<addDependencies>false</addDependencies>
+				</classPath>
+				<jre>
+					<minVersion>1.8.0</minVersion>
+					<maxHeapSize>4096</maxHeapSize>
+				</jre>
+				<versionInfo>
+					<fileVersion>0.5.2.0</fileVersion>
+					<txtFileVersion>0.5.2.0</txtFileVersion>
+					<fileDescription>CCD Desktop Windows
+						Application</fileDescription>
+					<copyright>University of Pittsburgh and Carnegie Mellon University</copyright>
+					<productVersion>0.5.2.0</productVersion>
+					<txtProductVersion>0.5.2.0</txtProductVersion>
+					<productName>CCD-Desktop</productName>
+					<internalName>ccd-web</internalName>
+					<originalFilename>ccd-desktop-windows-0.5.2.exe</originalFilename>
+				</versionInfo>
+			</configuration>
+		</execution>
+	</executions>
+</plugin>
+
+```

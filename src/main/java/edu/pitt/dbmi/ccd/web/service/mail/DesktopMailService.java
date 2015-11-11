@@ -18,14 +18,21 @@
  */
 package edu.pitt.dbmi.ccd.web.service.mail;
 
+import edu.pitt.dbmi.ccd.ws.dto.mail.FeedbackRequest;
+import java.net.URI;
 import javax.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  *
@@ -41,17 +48,13 @@ public class DesktopMailService implements MailService {
 
     private final String feedbackUri;
 
-    private final String appId;
-
     private final RestTemplate restTemplate;
 
-    @Autowired(required = true)
+    @Autowired
     public DesktopMailService(
             @Value("${ccd.rest.url.mail.feedback}") String feedbackUri,
-            @Value("${ccd.rest.appId}") String appId,
             RestTemplate restTemplate) {
         this.feedbackUri = feedbackUri;
-        this.appId = appId;
         this.restTemplate = restTemplate;
     }
 
@@ -62,48 +65,20 @@ public class DesktopMailService implements MailService {
 
     @Override
     public void sendFeedback(String email, String feedback) throws MessagingException {
-        String uri = feedbackUri + "?appId=" + appId;
-        if (email == null) {
-            restTemplate.postForEntity(uri, new FeedbackRequest(feedback), String.class);
-        } else {
-            restTemplate.postForEntity(uri, new FeedbackRequest(email, feedback), String.class);
-        }
-    }
+        URI uri = UriComponentsBuilder.fromHttpUrl(this.feedbackUri)
+                .build().toUri();
 
-    private class FeedbackRequest {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-        private String email;
+        email = (email == null) ? "" : email.trim();
+        FeedbackRequest request = email.isEmpty()
+                ? new FeedbackRequest(feedback)
+                : new FeedbackRequest(email, feedback);
 
-        private String feedback;
+        HttpEntity<FeedbackRequest> httpEntity = new HttpEntity<>(request, headers);
 
-        public FeedbackRequest() {
-        }
-
-        public FeedbackRequest(String email, String feedback) {
-            this.email = email;
-            this.feedback = feedback;
-        }
-
-        public FeedbackRequest(String feedback) {
-            this.feedback = feedback;
-        }
-
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
-        public String getFeedback() {
-            return feedback;
-        }
-
-        public void setFeedback(String feedback) {
-            this.feedback = feedback;
-        }
-
+        restTemplate.exchange(uri, HttpMethod.POST, httpEntity, String.class);
     }
 
 }

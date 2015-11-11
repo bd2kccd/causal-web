@@ -72,7 +72,7 @@ public class FastImagesController implements ViewPath {
         info.setJvmOptions("");
         info.setRunOnPsc(Boolean.FALSE);
 
-        Map<String, String> map = algorithmService.getUserRunnableData(".*txt", appUser.getUsername());
+        Map<String, String> map = algorithmService.getUserRunnableData(appUser.getUsername());
         if (map.isEmpty()) {
             info.setDataset("");
         } else {
@@ -96,9 +96,6 @@ public class FastImagesController implements ViewPath {
             final Model model) {
         List<String> params = new LinkedList<>();
 
-        params.add("--prefix");
-        params.add(info.getDataset());
-
         params.add("--penalty-discount");
         params.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));
 
@@ -120,7 +117,7 @@ public class FastImagesController implements ViewPath {
         jobRequest.setAlgorithm(fastImages);
         jobRequest.setJvmOptions(jvmOptions);
         jobRequest.setParameters(params.toArray(new String[params.size()]));
-        jobRequest.setDataset(null);
+        jobRequest.setDataset(info.getDataset());
 
         if (info.getRunOnPsc()) {
             algorithmService.runRemotely(jobRequest, appUser);

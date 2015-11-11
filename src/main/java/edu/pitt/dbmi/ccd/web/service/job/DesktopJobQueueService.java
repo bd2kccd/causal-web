@@ -18,11 +18,16 @@
  */
 package edu.pitt.dbmi.ccd.web.service.job;
 
+import edu.pitt.dbmi.ccd.commons.security.WebSecurityDSA;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.JobQueueInfoService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.queue.model.AlgorithmJob;
+import edu.pitt.dbmi.ccd.web.service.RestRequestService;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,7 +55,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 @Profile("desktop")
 @Service
-public class DesktopJobQueueService extends AbstractJobQueueService implements JobQueueService {
+public class DesktopJobQueueService extends AbstractJobQueueService implements JobQueueService, RestRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DesktopJobQueueService.class);
 
@@ -82,15 +87,27 @@ public class DesktopJobQueueService extends AbstractJobQueueService implements J
     public List<AlgorithmJob> listRemoteAlgorithmJobs(String username) {
         List<AlgorithmJob> algorithmJobs = new LinkedList<>();
 
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-            HttpEntity<?> entity = new HttpEntity<>(headers);
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        String accountId = userAccount.getAccountId();
+        if (accountId == null) {
+            return algorithmJobs;
+        }
 
+        try {
             URI uri = UriComponentsBuilder.fromHttpUrl(this.jobQueueUrl)
-                    .queryParam("usr", username)
-                    .queryParam("appId", this.appId)
+                    .pathSegment("list")
                     .build().toUri();
+
+            String signature = WebSecurityDSA.createSignature(uri.toString(), userAccount.getPrivateKey());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            headers.setDate(System.currentTimeMillis());
+            headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
+            headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(accountId.getBytes()));
+            headers.set(HEADER_SIGNATURE, signature);
+
+            HttpEntity<?> entity = new HttpEntity<>(headers);
 
             ResponseEntity<AlgorithmJob[]> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, entity, AlgorithmJob[].class);
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
@@ -111,16 +128,28 @@ public class DesktopJobQueueService extends AbstractJobQueueService implements J
 
     @Override
     public void deleteRemoteAlgorithmJobs(Long id, String username) {
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-            HttpEntity<?> entity = new HttpEntity<>(headers);
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        String accountId = userAccount.getAccountId();
+        if (accountId == null) {
+            return;
+        }
 
+        try {
             URI uri = UriComponentsBuilder.fromHttpUrl(this.jobQueueUrl)
                     .pathSegment(id.toString())
-                    .queryParam("usr", username)
-                    .queryParam("appId", this.appId)
                     .build().toUri();
+
+            String signature = WebSecurityDSA.createSignature(uri.toString(), userAccount.getPrivateKey());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            headers.setDate(System.currentTimeMillis());
+            headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
+            headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(accountId.getBytes()));
+            headers.set(HEADER_SIGNATURE, signature);
+
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+
             restTemplate.exchange(uri, HttpMethod.DELETE, entity, String.class);
         } catch (RestClientException exception) {
             LOGGER.error(exception.getMessage());

@@ -18,14 +18,19 @@
  */
 package edu.pitt.dbmi.ccd.web.service.algo;
 
+import edu.pitt.dbmi.ccd.commons.security.WebSecurityDSA;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.db.service.JobQueueInfoService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.DataService;
+import edu.pitt.dbmi.ccd.web.service.RestRequestService;
 import edu.pitt.dbmi.ccd.web.service.cloud.dto.AlgorithmJobRequest;
 import java.net.URI;
+import java.util.Base64;
+import java.util.Collections;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +54,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 @Profile("desktop")
 @Service
-public class DesktopAlgorithmService extends AbstractAlgorithmService implements AlgorithmService {
+public class DesktopAlgorithmService extends AbstractAlgorithmService implements AlgorithmService, RestRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DesktopAlgorithmService.class);
 
@@ -77,16 +82,28 @@ public class DesktopAlgorithmService extends AbstractAlgorithmService implements
 
     @Override
     public void runRemotely(AlgorithmJobRequest jobRequest, AppUser appUser) {
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-            HttpEntity<?> entity = new HttpEntity<>(jobRequest, headers);
+        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+        String accountId = userAccount.getAccountId();
+        if (accountId == null) {
+            return;
+        }
 
+        try {
             URI uri = UriComponentsBuilder.fromHttpUrl(this.algorithmQueueUrl)
                     .pathSegment("submit")
-                    .queryParam("usr", appUser.getUsername())
-                    .queryParam("appId", this.appId)
                     .build().toUri();
+
+            String signature = WebSecurityDSA.createSignature(uri.toString(), userAccount.getPrivateKey());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            headers.setDate(System.currentTimeMillis());
+            headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
+            headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(accountId.getBytes()));
+            headers.set(HEADER_SIGNATURE, signature);
+
+            HttpEntity<?> entity = new HttpEntity<>(jobRequest, headers);
+
             LOGGER.info(uri.toString());
             restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
         } catch (RestClientException exception) {

@@ -99,6 +99,11 @@ public class GesController implements ViewPath {
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
         List<String> params = new LinkedList<>();
+
+        String delimiter = algorithmService.getFileDelimiter(appUser.getDataDirectory(), info.getDataset());
+        params.add("--delimiter");
+        params.add(delimiter);
+
         params.add("--penalty-discount");
         params.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));
 

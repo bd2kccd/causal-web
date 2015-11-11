@@ -21,7 +21,6 @@ package edu.pitt.dbmi.ccd.web.ctrl;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.LOGIN;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.result.algorithm.AlgorithmResultService;

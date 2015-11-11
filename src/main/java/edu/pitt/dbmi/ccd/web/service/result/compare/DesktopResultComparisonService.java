@@ -21,10 +21,14 @@ package edu.pitt.dbmi.ccd.web.service.result.compare;
 import edu.pitt.dbmi.ccd.commons.file.FilePrint;
 import edu.pitt.dbmi.ccd.commons.graph.SimpleGraph;
 import edu.pitt.dbmi.ccd.commons.graph.SimpleGraphUtil;
+import edu.pitt.dbmi.ccd.commons.security.WebSecurityDSA;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.dto.response.FileInfoResponse;
 import edu.pitt.dbmi.ccd.web.model.ResultFileInfo;
 import edu.pitt.dbmi.ccd.web.model.result.ResultComparison;
+import edu.pitt.dbmi.ccd.web.service.RestRequestService;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -41,6 +45,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -71,9 +76,11 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 @Profile("desktop")
 @Service
-public class DesktopResultComparisonService extends AbstractResultComparisonService implements ResultComparisonService {
+public class DesktopResultComparisonService extends AbstractResultComparisonService implements ResultComparisonService, RestRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DesktopResultComparisonService.class);
+
+    private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
     private final String resultUrl;
 
@@ -85,18 +92,22 @@ public class DesktopResultComparisonService extends AbstractResultComparisonServ
 
     private final RestTemplate restTemplate;
 
+    private final UserAccountService userAccountService;
+
     @Autowired(required = true)
     public DesktopResultComparisonService(
             @Value("${ccd.rest.url.result}") String resultUrl,
             @Value("${ccd.rest.path.result.comparison:/algorithm/comparison}") String comparisonPath,
             @Value("${ccd.rest.path.result.algorithm:/algorithm}") String algorithPath,
             @Value("${ccd.rest.appId}") String appId,
-            RestTemplate restTemplate) {
+            RestTemplate restTemplate,
+            UserAccountService userAccountService) {
         this.resultUrl = resultUrl;
         this.comparisonPath = comparisonPath;
         this.algorithPath = algorithPath;
         this.appId = appId;
         this.restTemplate = restTemplate;
+        this.userAccountService = userAccountService;
     }
 
     @Override
@@ -177,19 +188,29 @@ public class DesktopResultComparisonService extends AbstractResultComparisonServ
         });
 
         if (!remoteFileNames.isEmpty()) {
-            try {
-                HttpHeaders headers = new HttpHeaders();
-                headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-                HttpEntity<?> entity = new HttpEntity<>(remoteFileNames, headers);
+            UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+            String accountId = userAccount.getAccountId();
+            if (accountId != null) {
+                try {
+                    URI uri = UriComponentsBuilder.fromHttpUrl(this.resultUrl)
+                            .pathSegment(this.comparisonPath)
+                            .build().toUri();
 
-                URI url = UriComponentsBuilder.fromHttpUrl(this.resultUrl + this.comparisonPath)
-                        .queryParam("usr", appUser.getUsername())
-                        .queryParam("appId", this.appId)
-                        .build().toUri();
+                    String signature = WebSecurityDSA.createSignature(uri.toString(), userAccount.getPrivateKey());
 
-                restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class);
-            } catch (RestClientException exception) {
-                LOGGER.error(exception.getMessage());
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                    headers.setDate(System.currentTimeMillis());
+                    headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
+                    headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(accountId.getBytes()));
+                    headers.set(HEADER_SIGNATURE, signature);
+
+                    HttpEntity<?> entity = new HttpEntity<>(remoteFileNames, headers);
+
+                    restTemplate.exchange(uri, HttpMethod.DELETE, entity, String.class);
+                } catch (RestClientException exception) {
+                    LOGGER.error(exception.getMessage());
+                }
             }
         }
     }
@@ -259,22 +280,35 @@ public class DesktopResultComparisonService extends AbstractResultComparisonServ
     }
 
     private byte[] downloadRemoteFile(String username, String fileName) {
-        byte[] data = null;
+        byte[] data = EMPTY_BYTE_ARRAY;
+
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        String accountId = userAccount.getAccountId();
+        if (accountId == null) {
+            return data;
+        }
 
         try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Accept", MediaType.TEXT_PLAIN_VALUE);
-            HttpEntity<?> entity = new HttpEntity<>(headers);
-
-            URI url = UriComponentsBuilder.fromHttpUrl(this.resultUrl + this.comparisonPath + "/" + fileName + "/")
-                    .queryParam("usr", username)
-                    .queryParam("appId", this.appId)
+            URI uri = UriComponentsBuilder.fromHttpUrl(this.resultUrl)
+                    .pathSegment(this.comparisonPath)
+                    .queryParam("fileName", fileName)
                     .build().toUri();
 
-            ResponseEntity<ByteArrayResource> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, ByteArrayResource.class);
+            String signature = WebSecurityDSA.createSignature(uri.toString(), userAccount.getPrivateKey());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setAccept(Collections.singletonList(MediaType.TEXT_PLAIN));
+            headers.setDate(System.currentTimeMillis());
+            headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
+            headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(accountId.getBytes()));
+            headers.set(HEADER_SIGNATURE, signature);
+
+            HttpEntity entity = new HttpEntity(headers);
+
+            ResponseEntity<ByteArrayResource> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, entity, ByteArrayResource.class);
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 ByteArrayResource byteArrayResource = responseEntity.getBody();
-                data = byteArrayResource.getByteArray();
+                data = (byteArrayResource == null) ? EMPTY_BYTE_ARRAY : byteArrayResource.getByteArray();
             }
         } catch (RestClientException exception) {
             LOGGER.error(exception.getMessage());
@@ -284,22 +318,35 @@ public class DesktopResultComparisonService extends AbstractResultComparisonServ
     }
 
     private byte[] downloadRemoteAlgoResultFile(String username, String fileName) {
-        byte[] data = null;
+        byte[] data = EMPTY_BYTE_ARRAY;
+
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        String accountId = userAccount.getAccountId();
+        if (accountId == null) {
+            return data;
+        }
 
         try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Accept", MediaType.TEXT_PLAIN_VALUE);
-            HttpEntity<?> entity = new HttpEntity<>(headers);
-
-            URI url = UriComponentsBuilder.fromHttpUrl(this.resultUrl + this.algorithPath + "/" + fileName + "/")
-                    .queryParam("usr", username)
-                    .queryParam("appId", this.appId)
+            URI uri = UriComponentsBuilder.fromHttpUrl(this.resultUrl)
+                    .pathSegment(this.algorithPath)
+                    .queryParam("fileName", fileName)
                     .build().toUri();
 
-            ResponseEntity<ByteArrayResource> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, ByteArrayResource.class);
+            String signature = WebSecurityDSA.createSignature(uri.toString(), userAccount.getPrivateKey());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setAccept(Collections.singletonList(MediaType.TEXT_PLAIN));
+            headers.setDate(System.currentTimeMillis());
+            headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
+            headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(accountId.getBytes()));
+            headers.set(HEADER_SIGNATURE, signature);
+
+            HttpEntity entity = new HttpEntity(headers);
+
+            ResponseEntity<ByteArrayResource> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, entity, ByteArrayResource.class);
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 ByteArrayResource byteArrayResource = responseEntity.getBody();
-                data = byteArrayResource.getByteArray();
+                data = (byteArrayResource == null) ? EMPTY_BYTE_ARRAY : byteArrayResource.getByteArray();
             }
         } catch (RestClientException exception) {
             LOGGER.error(exception.getMessage());
@@ -311,17 +358,29 @@ public class DesktopResultComparisonService extends AbstractResultComparisonServ
     private List<ResultFileInfo> listRemoteResultFileInfo(String username) {
         List<ResultFileInfo> list = new LinkedList<>();
 
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-            HttpEntity<?> entity = new HttpEntity<>(headers);
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        String accountId = userAccount.getAccountId();
+        if (accountId == null) {
+            return list;
+        }
 
-            URI url = UriComponentsBuilder.fromHttpUrl(this.resultUrl + this.comparisonPath)
-                    .queryParam("usr", username)
-                    .queryParam("appId", this.appId)
+        try {
+            URI uri = UriComponentsBuilder.fromHttpUrl(this.resultUrl)
+                    .pathSegment(this.comparisonPath, "list")
                     .build().toUri();
 
-            ResponseEntity<FileInfoResponse[]> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, FileInfoResponse[].class);
+            String signature = WebSecurityDSA.createSignature(uri.toString(), userAccount.getPrivateKey());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            headers.setDate(System.currentTimeMillis());
+            headers.set(HEADER_APP_ID, Base64.getEncoder().encodeToString(this.appId.getBytes()));
+            headers.set(HEADER_ACCOUNT_ID, Base64.getEncoder().encodeToString(accountId.getBytes()));
+            headers.set(HEADER_SIGNATURE, signature);
+
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<FileInfoResponse[]> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, entity, FileInfoResponse[].class);
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 FileInfoResponse[] responseList = responseEntity.getBody();
                 for (FileInfoResponse response : responseList) {

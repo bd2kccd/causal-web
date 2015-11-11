@@ -94,6 +94,22 @@ public class ServerAlgorithmResultService extends AbstractAlgorithmResultService
     }
 
     @Override
+    public List<String> getDatasets(String fileName, boolean remote, AppUser appUser) {
+        List<String> datasets = new LinkedList<>();
+
+        if (!remote) {
+            Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
+            try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
+                extractDatasets(reader, datasets);
+            } catch (IOException exception) {
+                LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
+            }
+        }
+
+        return datasets;
+    }
+
+    @Override
     public Map<String, String> getPlotParameters(String fileName, boolean remote, AppUser appUser) {
         Map<String, String> parameters = new TreeMap<>();
 

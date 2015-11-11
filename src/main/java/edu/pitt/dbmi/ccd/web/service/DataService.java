@@ -34,11 +34,14 @@ import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.model.AttributeValue;
 import edu.pitt.dbmi.ccd.web.model.data.DataListItem;
 import edu.pitt.dbmi.ccd.web.model.data.DataSummary;
-import edu.pitt.dbmi.ccd.web.service.cloud.CloudDataService;
+import edu.pitt.dbmi.ccd.web.model.data.DatasetItem;
+import edu.pitt.dbmi.ccd.web.service.data.RemoteDataFileService;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -74,7 +77,7 @@ public class DataService {
 
     private final UserAccountService userAccountService;
 
-    private final CloudDataService cloudDataService;
+    private final RemoteDataFileService remoteDataFileService;
 
     @Autowired(required = true)
     public DataService(
@@ -82,12 +85,29 @@ public class DataService {
             VariableTypeService variableTypeService,
             FileDelimiterService fileDelimiterService,
             UserAccountService userAccountService,
-            CloudDataService cloudDataService) {
+            RemoteDataFileService remoteDataFileService) {
         this.dataFileService = dataFileService;
         this.variableTypeService = variableTypeService;
         this.fileDelimiterService = fileDelimiterService;
         this.userAccountService = userAccountService;
-        this.cloudDataService = cloudDataService;
+        this.remoteDataFileService = remoteDataFileService;
+    }
+
+    public String getFileDelimiter(String absolutePath, String fileName) {
+        String delimiter = null;
+
+        DataFile dataFile = dataFileService.findByAbsolutePathAndName(absolutePath, fileName);
+        if (dataFile != null) {
+            DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
+            if (dataFileInfo != null) {
+                FileDelimiter fileDelimiter = dataFileInfo.getFileDelimiter();
+                if (fileDelimiter != null) {
+                    delimiter = fileDelimiter.getValue();
+                }
+            }
+        }
+
+        return delimiter;
     }
 
     public List<AttributeValue> getFileInfo(final String dir, final String fileName) {
@@ -181,7 +201,6 @@ public class DataService {
                     }
                 }
             });
-
         }
 
         return map;
@@ -196,71 +215,64 @@ public class DataService {
                 .collect(Collectors.toList());
     }
 
-    public List<DataListItem> createListItem(String username, String dataDir) {
-        List<DataListItem> listItems = new LinkedList<>();
-
-        Set<String> remoteFileHashes = cloudDataService.getDataMd5Hash(username);
-
+    public void refreshLocalFileDatabase(String username, String dataDir) {
         UserAccount userAccount = userAccountService.findByUsername(username);
 
+        // get all the user's dataset from the database
         List<DataFile> dataFiles = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
         Map<String, DataFile> dbDataFile = new HashMap<>();
         dataFiles.forEach(file -> {
             dbDataFile.put(file.getName(), file);
         });
 
-        Map<String, DataFile> localDataFile = new HashMap<>();
+        Map<String, DataFile> saveFiles = new HashMap<>();
         try {
-            List<Path> list = FileInfos.listDirectory(Paths.get(dataDir), false);
-            List<Path> files = list.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
-            for (Path file : files) {
-                BasicFileInfo info = FileInfos.basicPathInfo(file);
-
-                String fileName = info.getFilename();
-                String creationDate = FilePrint.fileTimestamp(info.getCreationTime());
-                String size = FilePrint.humanReadableSize(info.getSize(), true);
-                DataListItem item = new DataListItem(fileName, creationDate, size);
+            List<Path> localFiles = FileInfos.listDirectory(Paths.get(dataDir), false);
+            localFiles.forEach(localFile -> {
+                String fileName = localFile.getFileName().toString();
 
                 DataFile dataFile = dbDataFile.get(fileName);
                 if (dataFile == null) {
-                    dataFile = new DataFile();
-                    dataFile.setName(fileName);
-                    dataFile.setAbsolutePath(info.getAbsolutePath().toString());
-                    dataFile.setCreationTime(new Date(info.getCreationTime()));
-                    dataFile.setFileSize(info.getSize());
-                    dataFile.setLastModifiedTime(new Date(info.getLastModifiedTime()));
-                    dataFile.setUserAccounts(Collections.singleton(userAccount));
+                    try {
+                        BasicFileAttributes attrs = Files.readAttributes(localFile, BasicFileAttributes.class);
+                        long creationTime = attrs.creationTime().toMillis();
+                        long lastModifiedTime = attrs.lastModifiedTime().toMillis();
+                        long fileSize = attrs.size();
 
-                    localDataFile.put(fileName, dataFile);
-                }
+                        dataFile = new DataFile();
+                        dataFile.setName(fileName);
+                        dataFile.setAbsolutePath(localFile.getParent().toRealPath().toString());
+                        dataFile.setCreationTime(new Date(creationTime));
+                        dataFile.setFileSize(fileSize);
+                        dataFile.setLastModifiedTime(new Date(lastModifiedTime));
+                        dataFile.setUserAccounts(Collections.singleton(userAccount));
 
-                DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
-                if (dataFileInfo == null) {
-                    dataFileInfo = new DataFileInfo();
-                    dataFileInfo.setMd5checkSum(MessageDigestHash.computeMD5Hash(file));
-                    dataFile.setDataFileInfo(dataFileInfo);
+                        DataFileInfo dataFileInfo = new DataFileInfo();
+                        dataFileInfo.setMd5checkSum(MessageDigestHash.computeMD5Hash(Paths.get(dataFile.getAbsolutePath(), dataFile.getName())));
+                        dataFile.setDataFileInfo(dataFileInfo);
 
-                    localDataFile.put(fileName, dataFile);
+                        saveFiles.put(fileName, dataFile);
+                    } catch (IOException exception) {
+                        LOGGER.error(exception.getMessage());
+                    }
                 } else {
-                    FileDelimiter delimiter = dataFileInfo.getFileDelimiter();
-                    if (delimiter != null) {
-                        item.setDelimiter(delimiter.getName());
-                    }
+                    DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
+                    if (dataFileInfo == null) {
+                        try {
+                            dataFileInfo = new DataFileInfo();
+                            dataFileInfo.setMd5checkSum(MessageDigestHash.computeMD5Hash(localFile));
+                            dataFile.setDataFileInfo(dataFileInfo);
 
-                    VariableType variableType = dataFileInfo.getVariableType();
-                    if (variableType != null) {
-                        item.setVariableType(variableType.getName());
+                            saveFiles.put(fileName, dataFile);
+                            dbDataFile.remove(fileName);
+                        } catch (IOException exception) {
+                            LOGGER.error(exception.getMessage());
+                        }
+                    } else {
+                        dbDataFile.remove(fileName);
                     }
                 }
-
-                if (remoteFileHashes.contains(dataFileInfo.getMd5checkSum())) {
-                    item.setOnCloud(true);
-                }
-
-                dbDataFile.remove(fileName);
-
-                listItems.add(item);
-            }
+            });
         } catch (IOException exception) {
             LOGGER.error(exception.getMessage());
         }
@@ -275,13 +287,82 @@ public class DataService {
         }
 
         // save all the new files found in the workspace
-        if (!localDataFile.isEmpty()) {
+        if (!saveFiles.isEmpty()) {
             List<DataFile> list = new LinkedList<>();
-            Set<String> keySet = localDataFile.keySet();
+            Set<String> keySet = saveFiles.keySet();
             keySet.forEach(key -> {
-                list.add(localDataFile.get(key));
+                list.add(saveFiles.get(key));
             });
             dataFileService.saveDataFile(list);
+        }
+    }
+
+    public List<DatasetItem> createDatasetList(String username, String dataDir) {
+        List<DatasetItem> dataItems = new LinkedList<>();
+
+        refreshLocalFileDatabase(username, dataDir);
+
+        Set<String> remoteFileHashes = remoteDataFileService.retrieveDataFileMD5Hash(username);
+
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        List<DataFile> dataFileList = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
+        DataFile[] dataFiles = dataFileList.toArray(new DataFile[dataFileList.size()]);
+        Arrays.sort(dataFiles, (dataFile1, dataFile2) -> {
+            return dataFile2.getCreationTime().compareTo(dataFile1.getCreationTime());
+        });
+        boolean offline = (userAccount.getAccountId() == null);
+        for (DataFile dataFile : dataFiles) {
+            DatasetItem dataItem = new DatasetItem();
+            dataItem.setFileName(dataFile.getName());
+            dataItem.setFileSize(FilePrint.humanReadableSize(dataFile.getFileSize(), true));
+            dataItem.setId(dataFile.getId().toString());
+
+            DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
+            dataItem.setRemote(remoteFileHashes.contains(dataFileInfo.getMd5checkSum()));
+            dataItem.setSummarized(dataFileInfo.getFileDelimiter() != null);
+
+            dataItem.setOffline(offline);
+
+            dataItems.add(dataItem);
+        }
+
+        return dataItems;
+    }
+
+    public List<DataListItem> createListItem(String username, String dataDir) {
+        List<DataListItem> listItems = new LinkedList<>();
+
+        refreshLocalFileDatabase(username, dataDir);
+
+        Set<String> remoteFileHashes = remoteDataFileService.retrieveDataFileMD5Hash(username);
+
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        List<DataFile> dataFileList = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
+        DataFile[] dataFiles = dataFileList.toArray(new DataFile[dataFileList.size()]);
+        Arrays.sort(dataFiles, (dataFile1, dataFile2) -> {
+            return dataFile2.getCreationTime().compareTo(dataFile1.getCreationTime());
+        });
+        for (DataFile dataFile : dataFiles) {
+            DataListItem item = new DataListItem();
+            item.setFileName(dataFile.getName());
+            item.setCreationDate(FilePrint.fileTimestamp(dataFile.getCreationTime().getTime()));
+            item.setSize(FilePrint.humanReadableSize(dataFile.getFileSize(), true));
+
+            DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
+
+            FileDelimiter delimiter = dataFileInfo.getFileDelimiter();
+            if (delimiter != null) {
+                item.setDelimiter(delimiter.getName());
+            }
+
+            VariableType variableType = dataFileInfo.getVariableType();
+            if (variableType != null) {
+                item.setVariableType(variableType.getName());
+            }
+
+            item.setOnCloud(remoteFileHashes.contains(dataFileInfo.getMd5checkSum()));
+
+            listItems.add(item);
         }
 
         return listItems;
@@ -291,16 +372,23 @@ public class DataService {
         List<AttributeValue> fileInfo = new LinkedList<>();
 
         DataFile dataFile = dataFileService.findByAbsolutePathAndName(absolutePath, name);
-        DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
-        if (dataFileInfo != null) {
-            Integer numOfRows = dataFileInfo.getNumOfRows();
-            Integer numOfCols = dataFileInfo.getNumOfColumns();
-            String md5CheckSum = dataFileInfo.getMd5checkSum();
-            fileInfo.add(new AttributeValue("Row(s):", (numOfRows == null) ? "" : numOfRows.toString()));
-            fileInfo.add(new AttributeValue("Column(s):", (numOfCols == null) ? "" : numOfCols.toString()));
-            fileInfo.add(new AttributeValue("MD5 Checksum:", (md5CheckSum == null) ? "" : md5CheckSum));
-//            fileInfo.add(new AttributeValue("Missing Value:", dataFileInfo.getMissingValue() ? "Yes" : "No"));
+        if (dataFile == null) {
+            return fileInfo;
         }
+
+        DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
+        if (dataFileInfo == null) {
+            return fileInfo;
+        }
+
+        Integer numOfRows = dataFileInfo.getNumOfRows();
+        Integer numOfCols = dataFileInfo.getNumOfColumns();
+        FileDelimiter delimiter = dataFileInfo.getFileDelimiter();
+        VariableType variableType = dataFileInfo.getVariableType();
+        fileInfo.add(new AttributeValue("Row(s):", (numOfRows == null) ? "" : numOfRows.toString()));
+        fileInfo.add(new AttributeValue("Column(s):", (numOfCols == null) ? "" : numOfCols.toString()));
+        fileInfo.add(new AttributeValue("Delimiter:", (delimiter == null) ? "" : delimiter.getName()));
+        fileInfo.add(new AttributeValue("Variable Type:", (variableType == null) ? "" : variableType.getName()));
 
         return fileInfo;
     }

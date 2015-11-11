@@ -90,6 +90,7 @@ public class AlgorithmResultController implements ViewPath {
         String url = String.format("/algorithm/results/d3graph?file=%s&remote=%s", fileName, remote);
         model.addAttribute("plot", fileName);
         model.addAttribute("link", url);
+        model.addAttribute("datasets", algorithmResultService.getDatasets(fileName, remote, appUser));
         model.addAttribute("parameters", algorithmResultService.getPlotParameters(fileName, remote, appUser));
 
         return PLOT_VIEW;

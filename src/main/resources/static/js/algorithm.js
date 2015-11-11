@@ -11,6 +11,27 @@ $(document).on('click', '.panel-heading span.clickable', function (e) {
     }
 });
 
+function sync() {
+    var selection = '';
+    $('#dataset option:selected').each(function () {
+        if (selection !== '') {
+            selection += ',';
+        }
+        selection += $(this).val();
+    });
+    $('#datasetSelection').text(selection);
+}
+
 $(document).ready(function () {
     $("#continuous").prop("disabled", true);
+    $('#dataset').multiselect({
+        includeSelectAllOption: true,
+        enableFiltering: true,
+        disableIfEmpty: true,
+        buttonWidth: '100%',
+        onChange: function (option, checked) {
+            $('#datasetSelection').text($('.multiselect-selected-text').text());
+        }
+    });
+    sync();
 });

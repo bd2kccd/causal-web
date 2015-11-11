@@ -18,7 +18,12 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.data;
 
+import edu.pitt.dbmi.ccd.commons.security.WebSecurityDSA;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.dto.request.DatasetUploadRequest;
+import edu.pitt.dbmi.ccd.web.service.RestRequestService;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.net.URI;
@@ -26,7 +31,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.slf4j.Logger;
@@ -39,7 +47,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
@@ -68,44 +75,81 @@ public class RemoteDataUploadController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteDataUploadController.class);
 
-    private final String appId;
-
     private final String dataUrl;
 
-    private final int simultaneousUpload;
-
     private final Map<String, ChunkUpload> fileUploadMap;
+
+    private final Map<String, ChunkUpload> trashFileUploadMap;
 
     private final ExecutorService executorService;
 
     private final RestTemplate restTemplate;
 
-    @Autowired(required = true)
-    public RemoteDataUploadController(
-            @Value("${ccd.rest.appId:1}") String appId,
-            @Value("${ccd.rest.url.data:http://localhost:9000/ccd-ws/data}") String dataUrl,
-            @Value("${ccd.data.upload.simultaneousFileUploads:1}") int simultaneousUpload) {
-        this.appId = appId;
-        this.dataUrl = dataUrl + "/chunk";
-        this.simultaneousUpload = simultaneousUpload;
-        this.fileUploadMap = new HashMap<>();
-        this.executorService = Executors.newFixedThreadPool(simultaneousUpload);
-        this.restTemplate = new RestTemplate();
+    private final UserAccountService userAccountService;
 
-        FormHttpMessageConverter converter = new FormHttpMessageConverter();
-        this.restTemplate.getMessageConverters().add(converter);
+    @Autowired
+    public RemoteDataUploadController(
+            @Value("${ccd.rest.url.data:http://localhost:9000/ccd-ws/api/v1.0/account/{accountId}/data/file}") String dataUrl,
+            @Value("${ccd.data.upload.simultaneousFileUploads:1}") int simultaneousUpload,
+            UserAccountService userAccountService) {
+        this.dataUrl = dataUrl;
+        this.fileUploadMap = new HashMap<>();
+        this.trashFileUploadMap = new HashMap<>();
+        this.executorService = Executors.newFixedThreadPool(simultaneousUpload);;
+        this.restTemplate = new RestTemplate();
+        this.userAccountService = userAccountService;
+
+        this.restTemplate.getMessageConverters().add(new FormHttpMessageConverter());
     }
 
     @RequestMapping(value = "list", method = RequestMethod.GET)
-    public ResponseEntity<?> getJobsInQueue() {
-        return ResponseEntity.ok(fileUploadMap.keySet());
+    public synchronized ResponseEntity<?> getJobsInQueue() {
+        List<UploadStatus> status = new LinkedList<>();
+
+        Set<String> keySet = fileUploadMap.keySet();
+        keySet.forEach(key -> {
+            status.add(new UploadStatus(key, fileUploadMap.get(key).isSuspended()));
+        });
+
+        if (!trashFileUploadMap.isEmpty()) {
+            List<String> keys = new LinkedList<>();
+            keySet = trashFileUploadMap.keySet();
+            keySet.forEach(key -> {
+                ChunkUpload chunkUpload = trashFileUploadMap.get(key);
+                if (chunkUpload.cleanServerUpload()) {
+                    keys.add(key);
+                }
+            });
+
+            keys.forEach(key -> {
+                trashFileUploadMap.remove(key);
+            });
+        }
+
+        return ResponseEntity.ok(status);
     }
 
-    @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<?> uploadStatus(
-            @RequestParam("fileName") String fileName,
+    @RequestMapping(value = "cancel", method = RequestMethod.POST)
+    public synchronized ResponseEntity<?> cancelUpload(
+            String id,
             @ModelAttribute("appUser") AppUser appUser) {
-        ChunkUpload chunkUpload = fileUploadMap.get(fileName);
+        if (fileUploadMap.containsKey(id)) {
+            ChunkUpload chunkUpload = fileUploadMap.remove(id);
+            chunkUpload.stop();
+            chunkUpload.resume();
+
+            trashFileUploadMap.put(id, chunkUpload);
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @RequestMapping(value = "status", method = RequestMethod.GET)
+    public synchronized ResponseEntity<?> getUploadStatus(
+            @RequestParam("id") String id,
+            @ModelAttribute("appUser") AppUser appUser) {
+        ChunkUpload chunkUpload = fileUploadMap.get(id);
         if (chunkUpload == null) {
             return ResponseEntity.ok(100);
         } else {
@@ -113,23 +157,89 @@ public class RemoteDataUploadController {
         }
     }
 
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<?> startUpload(
-            @RequestParam("fileName") String fileName,
+    @RequestMapping(value = "pause", method = RequestMethod.POST)
+    public synchronized ResponseEntity<?> pauseUpload(
+            String id,
             @ModelAttribute("appUser") AppUser appUser) {
-        Path file = Paths.get(appUser.getDataDirectory(), fileName);
-        if (Files.exists(file)) {
-            long chunkSize = 1024 * 1024;
-            ChunkUpload chunkUpload = new ChunkUpload(file, chunkSize, appUser.getUsername(), appId, dataUrl, restTemplate);
-            fileUploadMap.put(fileName, chunkUpload);
-            executorService.execute(chunkUpload);
-            return ResponseEntity.ok().build();
-        } else {
+        ChunkUpload chunkUpload = fileUploadMap.get(id);
+        if (chunkUpload == null) {
             return ResponseEntity.notFound().build();
+        } else {
+            chunkUpload.suspend();
+            return ResponseEntity.ok().build();
         }
     }
 
-    private class ChunkUpload implements Runnable {
+    @RequestMapping(value = "upload", method = RequestMethod.POST)
+    public synchronized ResponseEntity<?> startUpload(
+            DatasetUploadRequest uploadRequest,
+            @ModelAttribute("appUser") AppUser appUser) {
+        String id = uploadRequest.getId();
+        String fileName = uploadRequest.getFileName();
+
+        ChunkUpload chunkUpload = fileUploadMap.get(id);
+        if (chunkUpload == null) {
+            Path file = Paths.get(appUser.getDataDirectory(), fileName);
+            if (Files.exists(file)) {
+                UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+                String accountId = userAccount.getAccountId();
+                String privateKey = userAccount.getPrivateKey();
+
+                if (accountId == null || privateKey == null) {
+                    return ResponseEntity.notFound().build();
+                } else {
+                    long chunkSize = 512 * 1024;
+                    chunkUpload = new ChunkUpload(uploadRequest.getId(), file, chunkSize, appUser.getUsername(), dataUrl, restTemplate, userAccountService);
+                    fileUploadMap.put(uploadRequest.getId(), chunkUpload);
+                    executorService.execute(chunkUpload);
+                    return ResponseEntity.ok().build();
+                }
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } else {
+            if (chunkUpload.isSuspended()) {
+                chunkUpload.resume();
+            }
+            return ResponseEntity.ok().build();
+        }
+    }
+
+    public class UploadStatus {
+
+        private String id;
+
+        private boolean paused;
+
+        public UploadStatus() {
+        }
+
+        public UploadStatus(String id, boolean paused) {
+            this.id = id;
+            this.paused = paused;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public boolean isPaused() {
+            return paused;
+        }
+
+        public void setPaused(boolean paused) {
+            this.paused = paused;
+        }
+
+    }
+
+    private class ChunkUpload implements Runnable, RestRequestService {
+
+        private final String id;
 
         private final Path file;
 
@@ -137,127 +247,235 @@ public class RemoteDataUploadController {
 
         private final String username;
 
-        private final String appId;
-
-        private final String restUrl;
+        private final String dataUrl;
 
         private final RestTemplate restTemplate;
 
+        private final UserAccountService userAccountService;
+
         private double progress;
 
-        public ChunkUpload(Path file, long chunkSize, String username, String appId, String restUrl, RestTemplate restTemplate) {
+        private boolean suspended;
+
+        private boolean stopped;
+
+        private String resumableIdentifier;
+
+        public ChunkUpload(String id, Path file, long chunkSize, String username, String dataUrl, RestTemplate restTemplate, UserAccountService userAccountService) {
+            this.id = id;
             this.file = file;
             this.chunkSize = chunkSize;
             this.username = username;
-            this.appId = appId;
-            this.restUrl = restUrl;
+            this.dataUrl = dataUrl;
             this.restTemplate = restTemplate;
+            this.userAccountService = userAccountService;
         }
 
         @Override
         public void run() {
             progress = 0;
+            suspended = false;
+            stopped = false;
             try {
-                String fileName = file.getFileName().toString();
-                long fileSize = Files.size(file);
+                String fileName = this.file.getFileName().toString();
+                long fileSize = Files.size(this.file);
                 long maxOffset = Math.max(Math.round(fileSize / this.chunkSize), 1);
                 long resumableChunkSize = this.chunkSize;
                 long resumableTotalSize = fileSize;
 
                 long resumableTotalChunks = maxOffset;
-                String resumableIdentifier = String.format("%d-%s", fileSize, fileName.replaceAll("/[^0-9a-zA-Z_-]/img", ""));
+                this.resumableIdentifier = String.format("%d-%s", fileSize, fileName.replaceAll("/[^0-9a-zA-Z_-]/img", ""));
                 String resumableFilename = fileName;
                 String resumableRelativePath = fileName;
-                String resumableType = Files.probeContentType(file);
+                String resumableType = Files.probeContentType(this.file);
 
                 try (BufferedInputStream inputStream = new BufferedInputStream(Files.newInputStream(file))) {
-                    for (long offset = 0; offset < maxOffset; offset++) {
-                        long startByte = offset * this.chunkSize;
-                        long endByte = Math.min(fileSize, (offset + 1) * this.chunkSize);
-                        if (fileSize - endByte < this.chunkSize) {
-                            endByte = fileSize;
-                        }
-                        long resumableChunkNumber = offset + 1;
-                        long resumableCurrentChunkSize = endByte - startByte;
+                    try {
+                        for (long offset = 0; offset < maxOffset; offset++) {
+                            UserAccount userAccount = userAccountService.findByUsername(username);
+                            String accountId = userAccount.getAccountId();
+                            String privateKey = userAccount.getPrivateKey();
 
-                        HttpStatus httpStatus;
-                        try {
-                            URI url = UriComponentsBuilder.fromHttpUrl(this.restUrl)
-                                    .queryParam("usr", this.username)
-                                    .queryParam("appId", this.appId)
-                                    .queryParam("resumableIdentifier", resumableIdentifier)
-                                    .queryParam("resumableChunkNumber", Long.toString(resumableChunkNumber))
-                                    .queryParam("resumableChunkSize", Long.toString(resumableChunkSize))
-                                    .build().toUri();
+                            suspended = suspended || accountId == null;
 
-                            HttpHeaders headers = new HttpHeaders();
-                            headers.setContentType(MediaType.APPLICATION_JSON);
-
-                            restTemplate.getForEntity(url, String.class);
-                            httpStatus = HttpStatus.OK;
-                        } catch (HttpClientErrorException exception) {
-                            httpStatus = exception.getStatusCode();
-                        }
-
-                        if (httpStatus == HttpStatus.NOT_FOUND) {
-                            int readSize = (int) resumableCurrentChunkSize;
-                            byte[] byteChunkPart = new byte[readSize];
-                            inputStream.read(byteChunkPart, 0, readSize);
-
-                            ByteArrayResource data = new ByteArrayResource(byteChunkPart) {
-                                @Override
-                                public String getFilename() {
-                                    return fileName;
+                            synchronized (this) {
+                                while (suspended) {
+                                    wait();
+                                    if (stopped) {
+                                        break;
+                                    } else {
+                                        userAccount = userAccountService.findByUsername(username);
+                                        accountId = userAccount.getAccountId();
+                                        suspended = suspended || accountId == null;
+                                    }
                                 }
-                            };
+                                if (stopped) {
+                                    break;
+                                }
+                            }
 
-                            MultiValueMap<String, Object> valueMap = new LinkedMultiValueMap<>();
-                            valueMap.add("file", data);
-                            valueMap.add("resumableChunkNumber", resumableChunkNumber);
-                            valueMap.add("resumableChunkSize", chunkSize);
-                            valueMap.add("resumableCurrentChunkSize", resumableCurrentChunkSize);
-                            valueMap.add("resumableFilename", resumableFilename);
-                            valueMap.add("resumableIdentifier", resumableIdentifier);
-                            valueMap.add("resumableRelativePath", resumableRelativePath);
-                            valueMap.add("resumableTotalChunks", resumableTotalChunks);
-                            valueMap.add("resumableTotalSize", resumableTotalSize);
-                            valueMap.add("resumableType", resumableType);
+                            long startByte = offset * this.chunkSize;
+                            long endByte = Math.min(fileSize, (offset + 1) * this.chunkSize);
+                            if (fileSize - endByte < this.chunkSize) {
+                                endByte = fileSize;
+                            }
+                            long resumableChunkNumber = offset + 1;
+                            long resumableCurrentChunkSize = endByte - startByte;
 
-                            HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(valueMap);
-
-                            URI url = UriComponentsBuilder.fromHttpUrl(this.restUrl)
-                                    .queryParam("usr", this.username)
-                                    .queryParam("appId", this.appId)
-                                    .build().toUri();
+                            HttpStatus httpStatus;
                             try {
-                                restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-                                progress = (offset + 1.0) / maxOffset;
+                                URI uri = UriComponentsBuilder.fromHttpUrl(this.dataUrl)
+                                        .pathSegment("upload", "chunk")
+                                        .queryParam("resumableIdentifier", this.resumableIdentifier)
+                                        .queryParam("resumableChunkNumber", Long.toString(resumableChunkNumber))
+                                        .queryParam("resumableChunkSize", Long.toString(resumableChunkSize))
+                                        .buildAndExpand(accountId)
+                                        .toUri();
+
+                                String signature = WebSecurityDSA.createSignature(uri.toString(), privateKey);
+
+                                HttpHeaders headers = new HttpHeaders();
+                                headers.set(HEADER_ACCOUNT, accountId);
+                                headers.set(HEADER_SIGNATURE, signature);
+
+                                HttpEntity<Map<String, String>> entity = new HttpEntity(headers);
+                                ResponseEntity<String> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
+                                httpStatus = responseEntity.getStatusCode();
                             } catch (HttpClientErrorException exception) {
-                                exception.printStackTrace(System.err);
+                                httpStatus = exception.getStatusCode();
+                            }
+
+                            if (httpStatus == HttpStatus.NOT_FOUND) {
+                                int readSize = (int) resumableCurrentChunkSize;
+                                byte[] byteChunkPart = new byte[readSize];
+                                inputStream.read(byteChunkPart, 0, readSize);
+
+                                ByteArrayResource data = new ByteArrayResource(byteChunkPart) {
+                                    @Override
+                                    public String getFilename() {
+                                        return fileName;
+                                    }
+                                };
+
+                                MultiValueMap<String, Object> valueMap = new LinkedMultiValueMap<>();
+                                valueMap.add("file", data);
+                                valueMap.add("resumableChunkNumber", resumableChunkNumber);
+                                valueMap.add("resumableChunkSize", chunkSize);
+                                valueMap.add("resumableCurrentChunkSize", resumableCurrentChunkSize);
+                                valueMap.add("resumableFilename", resumableFilename);
+                                valueMap.add("resumableIdentifier", this.resumableIdentifier);
+                                valueMap.add("resumableRelativePath", resumableRelativePath);
+                                valueMap.add("resumableTotalChunks", resumableTotalChunks);
+                                valueMap.add("resumableTotalSize", resumableTotalSize);
+                                valueMap.add("resumableType", resumableType);
+
+                                URI uri = UriComponentsBuilder.fromHttpUrl(this.dataUrl)
+                                        .pathSegment("upload", "chunk")
+                                        .buildAndExpand(accountId)
+                                        .toUri();
+
+                                String signature = WebSecurityDSA.createSignature(uri.toString(), privateKey);
+
+                                HttpHeaders headers = new HttpHeaders();
+                                headers.set(HEADER_ACCOUNT, accountId);
+                                headers.set(HEADER_SIGNATURE, signature);
+
+                                HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(valueMap, headers);
+                                try {
+                                    ResponseEntity<String> responseEntity = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+                                    if (responseEntity.getStatusCode() == HttpStatus.OK) {
+                                        progress = (offset + 1.0) / maxOffset;
+                                    }
+                                } catch (HttpClientErrorException exception) {
+                                    exception.printStackTrace(System.err);
+                                }
                             }
                         }
+
+                        if (stopped) {
+
+                        }
+                    } catch (InterruptedException exception) {
+                        LOGGER.error(exception.getMessage());
                     }
                 } catch (IOException exception) {
                     LOGGER.error(exception.getMessage());
                 }
-                fileUploadMap.remove(fileName);
+                fileUploadMap.remove(this.id);
             } catch (IOException exception) {
                 LOGGER.error(exception.getMessage());
             }
         }
 
-        public Path getFile() {
-            return file;
+        public boolean cleanServerUpload() {
+            boolean flag = false;
+
+            UserAccount userAccount = userAccountService.findByUsername(username);
+            String accountId = userAccount.getAccountId();
+            String privateKey = userAccount.getPrivateKey();
+
+            if (accountId != null) {
+                URI uri = UriComponentsBuilder.fromHttpUrl(this.dataUrl)
+                        .pathSegment("upload", "chunk", "clean")
+                        .buildAndExpand(accountId)
+                        .toUri();
+
+                String signature = WebSecurityDSA.createSignature(uri.toString(), privateKey);
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.set(HEADER_ACCOUNT, accountId);
+                headers.set(HEADER_SIGNATURE, signature);
+
+                HttpEntity<CleanUploadRequest> entity = new HttpEntity(new CleanUploadRequest(this.resumableIdentifier), headers);
+                try {
+                    restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+                    flag = true;
+                } catch (HttpClientErrorException exception) {
+                    exception.printStackTrace(System.err);
+                }
+            }
+
+            return flag;
         }
 
-        public long getChunkSize() {
-            return chunkSize;
+        public boolean isSuspended() {
+            return suspended;
+        }
+
+        public synchronized void suspend() {
+            this.suspended = true;
+        }
+
+        synchronized void resume() {
+            suspended = false;
+            notify();
+        }
+
+        public boolean isStopped() {
+            return stopped;
+        }
+
+        public void stop() {
+            this.stopped = true;
         }
 
         public double getProgress() {
             return progress;
         }
 
+    }
+
+    public static class CleanUploadRequest {
+
+        private final String resumableIdentifier;
+
+        public CleanUploadRequest(String resumableIdentifier) {
+            this.resumableIdentifier = resumableIdentifier;
+        }
+
+        public String getResumableIdentifier() {
+            return resumableIdentifier;
+        }
     }
 
 }

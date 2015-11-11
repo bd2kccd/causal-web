@@ -18,10 +18,10 @@
  */
 package edu.pitt.dbmi.ccd.web.service;
 
+import edu.pitt.dbmi.ccd.commons.file.FilePrint;
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.util.FileUtility;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -97,7 +97,7 @@ public class AppUserService {
         appUser.setUsername(username);
         appUser.setFirstName(person.getFirstName());
         appUser.setLastName(person.getLastName());
-        appUser.setLastLogin(FileUtility.DATE_FORMAT.format(userAccount.getLastLoginDate()));
+        appUser.setLastLogin(FilePrint.fileTimestamp(userAccount.getLastLoginDate().getTime()));
         appUser.setWebUser(webapp);
         appUser.setDataDirectory(dataDir.toString());
         appUser.setLibDirectory(libDir.toString());

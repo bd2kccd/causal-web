@@ -19,10 +19,17 @@
 package edu.pitt.dbmi.ccd.web.service.result.algorithm;
 
 import edu.pitt.dbmi.ccd.commons.file.FilePrint;
+import edu.pitt.dbmi.ccd.commons.security.WebSecurityDSA;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.dto.response.FileInfoResponse;
 import edu.pitt.dbmi.ccd.web.model.ResultFileInfo;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
+import edu.pitt.dbmi.ccd.web.service.RestRequestService;
+import edu.pitt.dbmi.ccd.ws.dto.file.FileInfo;
+import edu.pitt.dbmi.ccd.ws.dto.file.result.AlgorithmResultDeleteRequest;
+import edu.pitt.dbmi.ccd.ws.dto.file.result.AlgorithmResultDeleteResponse;
+import edu.pitt.dbmi.ccd.ws.dto.file.result.AlgorithmResultResponse;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -69,9 +76,11 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 @Profile("desktop")
 @Service
-public class DesktopAlgorithmResultService extends AbstractAlgorithmResultService implements AlgorithmResultService {
+public class DesktopAlgorithmResultService extends AbstractAlgorithmResultService implements AlgorithmResultService, RestRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DesktopAlgorithmResultService.class);
+
+    private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
     private final String resultUrl;
 
@@ -81,16 +90,19 @@ public class DesktopAlgorithmResultService extends AbstractAlgorithmResultServic
 
     private final RestTemplate restTemplate;
 
+    private final UserAccountService userAccountService;
+
     @Autowired(required = true)
     public DesktopAlgorithmResultService(
             @Value("${ccd.rest.url.result}") String resultUrl,
-            @Value("${ccd.rest.path.result.algorithm:/algorithm}") String algorithPath,
             @Value("${ccd.rest.appId}") String appId,
-            RestTemplate restTemplate) {
+            RestTemplate restTemplate,
+            UserAccountService userAccountService) {
         this.resultUrl = resultUrl;
-        this.algorithPath = algorithPath;
+        this.algorithPath = "algorithm";
         this.appId = appId;
         this.restTemplate = restTemplate;
+        this.userAccountService = userAccountService;
     }
 
     @Override
@@ -130,19 +142,27 @@ public class DesktopAlgorithmResultService extends AbstractAlgorithmResultServic
         });
 
         if (!remoteFileNames.isEmpty()) {
-            try {
-                HttpHeaders headers = new HttpHeaders();
-                headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-                HttpEntity<?> entity = new HttpEntity<>(remoteFileNames, headers);
+            UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+            String accountId = userAccount.getAccountId();
+            if (accountId != null) {
+                try {
+                    URI uri = UriComponentsBuilder.fromHttpUrl(this.resultUrl)
+                            .pathSegment(this.algorithPath)
+                            .buildAndExpand(accountId).toUri();
 
-                URI url = UriComponentsBuilder.fromHttpUrl(this.resultUrl + this.algorithPath)
-                        .queryParam("usr", appUser.getUsername())
-                        .queryParam("appId", this.appId)
-                        .build().toUri();
+                    String signature = WebSecurityDSA.createSignature(uri.toString(), userAccount.getPrivateKey());
 
-                restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class);
-            } catch (RestClientException exception) {
-                LOGGER.error(exception.getMessage());
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                    headers.set(HEADER_ACCOUNT, accountId);
+                    headers.set(HEADER_SIGNATURE, signature);
+
+                    HttpEntity<AlgorithmResultDeleteRequest> entity = new HttpEntity<>(new AlgorithmResultDeleteRequest(remoteFileNames), headers);
+
+                    restTemplate.exchange(uri, HttpMethod.DELETE, entity, AlgorithmResultDeleteResponse.class);
+                } catch (RestClientException exception) {
+                    LOGGER.error(exception.getMessage());
+                }
             }
         }
     }
@@ -150,33 +170,45 @@ public class DesktopAlgorithmResultService extends AbstractAlgorithmResultServic
     private List<ResultFileInfo> listRemoteResultFileInfo(String username) {
         List<ResultFileInfo> list = new LinkedList<>();
 
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        String accountId = userAccount.getAccountId();
+        if (accountId == null) {
+            return list;
+        }
+
         try {
+            URI uri = UriComponentsBuilder.fromHttpUrl(this.resultUrl)
+                    .pathSegment(this.algorithPath)
+                    .buildAndExpand(accountId).toUri();
+
+            String signature = WebSecurityDSA.createSignature(uri.toString(), userAccount.getPrivateKey());
+
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
+            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            headers.set(HEADER_ACCOUNT, accountId);
+            headers.set(HEADER_SIGNATURE, signature);
+
             HttpEntity<?> entity = new HttpEntity<>(headers);
-
-            URI url = UriComponentsBuilder.fromHttpUrl(this.resultUrl + this.algorithPath)
-                    .queryParam("usr", username)
-                    .queryParam("appId", this.appId)
-                    .build().toUri();
-
-            ResponseEntity<FileInfoResponse[]> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, FileInfoResponse[].class);
+            ResponseEntity<AlgorithmResultResponse> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, entity, AlgorithmResultResponse.class);
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
-                FileInfoResponse[] responseList = responseEntity.getBody();
-                for (FileInfoResponse response : responseList) {
-                    String fileName = response.getFileName();
-                    Long size = response.getSize();
-                    Long creationDate = response.getCreationDate();
+                AlgorithmResultResponse resultResponse = responseEntity.getBody();
+                if (resultResponse != null) {
+                    List<FileInfo> fileInfos = resultResponse.getFileInfos();
+                    fileInfos.forEach(fileInfo -> {
+                        String fileName = fileInfo.getFileName();
+                        Long size = fileInfo.getSize();
+                        Long creationDate = fileInfo.getCreationDate();
 
-                    ResultFileInfo info = new ResultFileInfo();
-                    info.setFileName(fileName);
-                    info.setSize(FilePrint.humanReadableSize(size, true));
-                    info.setCreationDate(FilePrint.fileTimestamp(creationDate));
-                    info.setRawCreationDate(creationDate);
-                    info.setOnCloud(true);
-                    info.setError(fileName.startsWith("error"));
+                        ResultFileInfo info = new ResultFileInfo();
+                        info.setFileName(fileName);
+                        info.setSize(FilePrint.humanReadableSize(size, true));
+                        info.setCreationDate(FilePrint.fileTimestamp(creationDate));
+                        info.setRawCreationDate(creationDate);
+                        info.setOnCloud(true);
+                        info.setError(fileName.startsWith("error"));
 
-                    list.add(info);
+                        list.add(info);
+                    });
                 }
             }
         } catch (RestClientException exception) {
@@ -227,28 +259,66 @@ public class DesktopAlgorithmResultService extends AbstractAlgorithmResultServic
     }
 
     private byte[] downloadRemoteFile(String username, String fileName) {
-        byte[] data = null;
+        byte[] data = EMPTY_BYTE_ARRAY;
+
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        String accountId = userAccount.getAccountId();
+        if (accountId == null) {
+            return data;
+        }
 
         try {
+            URI uri = UriComponentsBuilder.fromHttpUrl(this.resultUrl)
+                    .pathSegment(this.algorithPath, "file")
+                    .queryParam("fileName", fileName)
+                    .buildAndExpand(accountId).toUri();
+
+            String signature = WebSecurityDSA.createSignature(uri.toString(), userAccount.getPrivateKey());
+
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Accept", MediaType.TEXT_PLAIN_VALUE);
-            HttpEntity<?> entity = new HttpEntity<>(headers);
+            headers.setAccept(Collections.singletonList(MediaType.TEXT_PLAIN));
+            headers.set(HEADER_ACCOUNT, accountId);
+            headers.set(HEADER_SIGNATURE, signature);
 
-            URI url = UriComponentsBuilder.fromHttpUrl(this.resultUrl + this.algorithPath + "/" + fileName + "/")
-                    .queryParam("usr", username)
-                    .queryParam("appId", this.appId)
-                    .build().toUri();
+            HttpEntity entity = new HttpEntity(headers);
 
-            ResponseEntity<ByteArrayResource> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, ByteArrayResource.class);
+            ResponseEntity<ByteArrayResource> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, entity, ByteArrayResource.class);
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 ByteArrayResource byteArrayResource = responseEntity.getBody();
-                data = byteArrayResource.getByteArray();
+                if (byteArrayResource != null) {
+                    data = byteArrayResource.getByteArray();
+                }
             }
         } catch (RestClientException exception) {
             LOGGER.error(exception.getMessage());
         }
 
         return data;
+    }
+
+    @Override
+    public List<String> getDatasets(String fileName, boolean remote, AppUser appUser) {
+        List<String> datasets = new LinkedList<>();
+
+        if (remote) {
+            byte[] cloudData = downloadRemoteFile(appUser.getUsername(), fileName);
+            if (cloudData != null) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(cloudData), Charset.defaultCharset()))) {
+                    extractDatasets(reader, datasets);
+                } catch (IOException exception) {
+                    LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
+                }
+            }
+        } else {
+            Path file = Paths.get(appUser.getAlgoResultDir(), fileName);
+            try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
+                extractDatasets(reader, datasets);
+            } catch (IOException exception) {
+                LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
+            }
+        }
+
+        return datasets;
     }
 
     @Override

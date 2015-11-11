@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.user;
 
+import edu.pitt.dbmi.ccd.commons.security.WebSecurityDSA;
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
@@ -29,6 +30,8 @@ import edu.pitt.dbmi.ccd.web.service.UserService;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.KeyPair;
+import java.util.Base64;
 import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.shiro.SecurityUtils;
@@ -40,8 +43,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -83,6 +89,11 @@ public class UserRegistrationController implements ViewPath {
         this.webapp = webapp;
     }
 
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(String.class, new StringTrimmerEditor(false));
+    }
+
     @RequestMapping(method = RequestMethod.POST)
     public String registerWebUser(
             @Value("${ccd.server.workspace}") String workspace,
@@ -117,15 +128,14 @@ public class UserRegistrationController implements ViewPath {
 
     @RequestMapping(value = "activate", method = RequestMethod.GET)
     public String activateWebUser(
-            @RequestParam(value = "user", required = true) final String user,
-            @RequestParam(value = "key", required = true) final String activationKey,
+            @RequestParam(value = "account", required = true) final String account,
             final Model model) {
-        UserAccount userAccount = userAccountService.findByUsernameAndActivationKey(user, activationKey);
-        if (userAccount == null) {
+        String accountId = new String(Base64.getUrlDecoder().decode(account));
+        UserAccount userAccount = userAccountService.findByAccountId(accountId);
+        if (userAccount == null || userAccount.getActive()) {
             throw new UserActivationException();
         } else {
             userAccount.setActive(Boolean.TRUE);
-            userAccount.setActivationKey(null);
             userAccountService.saveUserAccount(userAccount);
 
             model.addAttribute("username", userAccount.getUsername());
@@ -168,13 +178,25 @@ public class UserRegistrationController implements ViewPath {
             return SETUP_VIEW;
         }
 
+        KeyPair keyPair = WebSecurityDSA.generateKeyPair();
+        String publicKey = WebSecurityDSA.getBase64EncodedPublicKey(keyPair);
+        String privateKey = WebSecurityDSA.getBase64EncodedPrivateKey(keyPair);
+
+        String username = System.getProperty("user.name");
+        String password = passwordService.encryptPassword(defaultPassword);
+        Boolean active = Boolean.TRUE;
+        Date createdDate = new Date(System.currentTimeMillis());
+        Date lastLoginDate = new Date(System.currentTimeMillis());
+
         UserAccount userAccount = new UserAccount();
-        userAccount.setActive(true);
-        userAccount.setPassword(passwordService.encryptPassword(defaultPassword));
-        userAccount.setCreatedDate(new Date(System.currentTimeMillis()));
-        userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
-        userAccount.setUsername(System.getProperty("user.name"));
+        userAccount.setActive(active);
+        userAccount.setPassword(password);
+        userAccount.setCreatedDate(createdDate);
+        userAccount.setLastLoginDate(lastLoginDate);
+        userAccount.setUsername(username);
         userAccount.setPerson(person);
+        userAccount.setPrivateKey(privateKey);
+        userAccount.setPublicKey(publicKey);
 
         try {
             userAccount = userAccountService.saveUserAccount(userAccount);

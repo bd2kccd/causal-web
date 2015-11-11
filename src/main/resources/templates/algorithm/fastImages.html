@@ -8,6 +8,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="stylesheet" href="../../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{/vendors/bootstrap/css/bootstrap.min.css}" />
         <link rel="stylesheet" href="../../static/vendors/bootstrap/css/bootstrap-theme.min.css" th:href="@{/vendors/bootstrap/css/bootstrap-theme.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/bootstrap-multiselect/css/bootstrap-multiselect.css" th:href="@{/vendors/bootstrap-multiselect/css/bootstrap-multiselect.css}" />
         <link rel="stylesheet" href="../../static/vendors/metisMenu/metisMenu.min.css" th:href="@{/vendors/metisMenu/metisMenu.min.css}" />
         <link rel="stylesheet" href="../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{/vendors/font-awesome/css/font-awesome.min.css}" />
         <link rel="stylesheet" href="../../static/vendors/sb-admin-2/css/sb-admin-2.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.css}" />
@@ -60,9 +61,8 @@
                                             <div class="panel-body">
                                                 <div class="form-group">
                                                     <label for="dataset">Dataset:</label>
-                                                    <select id="dataset" name="dataset" class="form-control" ng-model="dataset" required="required"
+                                                    <select id="dataset" class="form-control" required="required" multiple="multiple"
                                                             th:field="*{dataset}"
-                                                            th:attr="ng-init='dataset = \'' + *{dataset} + '\''"
                                                             th:disabled="${#strings.isEmpty(algoInfo.dataset)}">
                                                         <option value="sim_data_100vars_100_cases.txt"
                                                                 th:each="data : ${datasetList}"
@@ -133,7 +133,7 @@
                                                         <tbody>
                                                             <tr>
                                                                 <td class="col-md-3">Dataset:</td>
-                                                                <td ng-bind="dataset"></td>
+                                                                <td id="datasetSelection"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td class="col-md-3">Penalty Discount:</td>
@@ -184,6 +184,7 @@
         </div>
         <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
         <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
+        <script src="../../static/vendors/bootstrap-multiselect/js/bootstrap-multiselect.js" th:src="@{/vendors/bootstrap-multiselect/js/bootstrap-multiselect.js}"></script>
         <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.js}"></script>
         <script src="../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>

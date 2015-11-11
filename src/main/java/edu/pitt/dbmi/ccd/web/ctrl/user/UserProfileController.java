@@ -38,8 +38,11 @@ import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -83,6 +86,11 @@ public class UserProfileController implements ViewPath {
         this.securityQuestionService = securityQuestionService;
     }
 
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(String.class, new StringTrimmerEditor(false));
+    }
+
     @RequestMapping(method = RequestMethod.GET)
     public String showPageUserProfile(
             @ModelAttribute("appUser") final AppUser appUser,
@@ -93,6 +101,7 @@ public class UserProfileController implements ViewPath {
         UserInfo userInfo = new UserInfo();
         userInfo.setEmail(person.getEmail());
         userInfo.setFirstName(person.getFirstName());
+        userInfo.setMiddleName(person.getMiddleName());
         userInfo.setLastName(person.getLastName());
 
         UserWorkspace userWorkspace = new UserWorkspace();
@@ -200,6 +209,7 @@ public class UserProfileController implements ViewPath {
         Person person = userAccount.getPerson();
         person.setEmail(userInfo.getEmail());
         person.setFirstName(userInfo.getFirstName());
+        person.setMiddleName(userInfo.getMiddleName());
         person.setLastName(userInfo.getLastName());
 
         userAccount = userAccountService.saveUserAccount(userAccount);

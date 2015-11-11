@@ -15,8 +15,13 @@
         <style>
             iframe {
                 width: 100%;
-                height: 400px;
+                height: 450px;
                 border: none;
+                resize: both;
+                overflow: auto;
+            }
+            #fileInfo .modal-dialog {
+                width: 625px;
             }
         </style>
     </head>
@@ -37,9 +42,6 @@
                                 <thead>
                                     <tr>
                                         <th>Name</th>
-                                        <th>Var Type</th>
-                                        <th>Delimiter</th>
-                                        <th>Created On</th>
                                         <th>Size</th>
                                         <th th:if="${appUser.webUser} == false">PSC</th>
                                         <th>Summarized</th>
@@ -47,30 +49,41 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr th:each="item : ${itemList}">
+                                    <tr th:each="item : ${itemList}" th:class="${item.summarized == false} ? 'warning'">
                                         <td>
-                                            <a href="#" th:attr="data-filename=${item.fileName}" th:text="${item.fileName}" data-toggle="modal" data-target="#fileInfo"></a>
-                                        </td>
-                                        <td th:text="${item.variableType} ? ${item.variableType} : '--'"></td>
-                                        <td th:text="${item.delimiter} ? ${item.delimiter} : '--'"></td>
-                                        <td th:text="${item.creationDate} ? ${item.creationDate} : '--'"></td>
-                                        <td th:text="${item.size} ? ${item.size} : '--'"></td>
-                                        <td th:if="${appUser.webUser} == false">
-                                            <p th:if="${item.onCloud}" data-placement="top" data-toggle="tooltip" title="On PSC">
-                                                <button class="btn btn-info btn-xs"><span class="glyphicon glyphicon-cloud"></span></button>
+                                            <p>
+                                                <a href="#" th:attr="data-filename=${item.fileName}" th:text="${item.fileName}" data-toggle="modal" data-target="#fileInfo"></a>
                                             </p>
-                                            <p th:unless="${item.onCloud}" data-placement="top" data-toggle="tooltip">
-                                                <button th:id="${item.fileName}" class="btn btn-success btn-xs" th:onclick="'javascript:startUpload(this,\'' + ${item.fileName} + '\',\'' + @{/data/upload/remote} + '\');'"><span class="glyphicon glyphicon-upload"></span></button>
+                                            <div class="row" th:if="${appUser.webUser == false and item.remote == false}" th:id="'prg_' + ${item.id}" style="display: none;">
+                                                <div class="col-xs-10">
+                                                    <div class="progress">
+                                                        <div th:id="'prgbar_' + ${item.id}" class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 1%;">0% Complete (success)</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-xs-2">
+                                                    <div class="btn-group">
+                                                        <button class="btn btn-xs btn-danger" th:onclick="'javascript:cancel(\'' + ${item.id} + '\', \'' + @{/data/upload/remote} + '\');'"><span class="glyphicon glyphicon-remove-sign"></span> Cancel</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="fitted" th:text="${item.fileSize} ? ${item.fileSize} : '--'"></td>
+                                        <td class="fitted" th:if="${appUser.webUser} == false">
+                                            <p th:if="${item.remote}" data-placement="top" data-toggle="tooltip" title="On PSC">
+                                                <button class="btn btn-xs btn-info"><span class="glyphicon glyphicon-cloud"></span></button>
+                                            </p>
+                                            <p th:unless="${item.remote}" data-placement="top" data-toggle="tooltip">
+                                                <button th:disabled="${item.offline}" th:id="'btn_' + ${item.id}" class="btn btn-xs btn-success" th:onclick="'javascript:startUpload(\'' + ${item.id} + '\',\'' + ${item.fileName} + '\',\'' + @{/data/upload/remote} + '\');'"><span class="glyphicon glyphicon-upload"></span></button>
                                             </p>
                                         </td>
-                                        <td>
-                                            <p data-placement="top" data-toggle="tooltip" title="Summarize Data" th:title="${item.delimiter} ? 'Review Summary' : 'Data Summarization Required'">
-                                                <a class="btn btn-success btn-xs" th:class="${item.delimiter} ? 'btn btn-success btn-xs' : 'btn btn-warning btn-xs'" href="data/summary?file=" th:href="@{/data/summary(file=${item.fileName})}">
-                                                    <span class="glyphicon glyphicon-flash" th:class="${item.delimiter} ? 'glyphicon glyphicon-flash' : 'glyphicon glyphicon-warning-sign'"></span>
+                                        <td class="fitted">
+                                            <p data-placement="top" data-toggle="tooltip" title="Summarize Data" th:title="${item.summarized} ? 'Review Summary' : 'Data Summarization Required'">
+                                                <a class="btn btn-xs btn-success" th:class="${item.summarized} ? 'btn btn-xs btn-success' : 'btn btn-xs btn-warning'" href="data/summary?file=" th:href="@{/data/summary(file=${item.fileName})}">
+                                                    <span class="fa fa-file-text-o" th:class="${item.summarized} ? 'fa fa-file-text-o' : 'glyphicon glyphicon-warning-sign'"></span>
                                                 </a>
                                             </p>
                                         </td>
-                                        <td>
+                                        <td class="fitted">
                                             <p data-placement="top" data-toggle="tooltip" title="Delete Data">
                                                 <button class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#confirm-delete" data-href="data/delete?file=" th:attr="data-href=@{/data/delete(file=${item.fileName})}"><span class="glyphicon glyphicon-trash"></span></button>
                                             </p>
@@ -131,6 +144,6 @@
         <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.js}"></script>
         <script src="../../static/js/dataset.js" th:src="@{/js/dataset.js}"></script>
-        <script src="../../static/js/dataRemoteUpload.js" th:src="@{/js/dataRemoteUpload.js}"></script>
+        <script src="../../static/js/dataRemoteUpload.js" th:src="@{/js/dataRemoteUpload.js}" th:if="${appUser.webUser} == false"></script>
     </body>
 </html>

@@ -99,6 +99,11 @@ public class PcStableController implements ViewPath {
             final Model model) {
 
         List<String> params = new LinkedList<>();
+
+        String delimiter = algorithmService.getFileDelimiter(appUser.getDataDirectory(), info.getDataset());
+        params.add("--delimiter");
+        params.add(delimiter);
+
         params.add("--alpha");
         params.add(String.valueOf(info.getAlpha().doubleValue()));
 
