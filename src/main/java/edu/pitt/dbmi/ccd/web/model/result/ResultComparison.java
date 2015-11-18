@@ -30,8 +30,6 @@ import java.util.List;
 public class ResultComparison {
 
     private final String fileName;
-    
-    private boolean remote;
 
     private final List<String> fileNames;
 
@@ -39,7 +37,6 @@ public class ResultComparison {
 
     public ResultComparison(String fileName) {
         this.fileName = fileName;
-        this.remote = false;
         this.fileNames = new LinkedList<>();
         this.comparisonData = new LinkedList<>();
     }
@@ -54,14 +51,6 @@ public class ResultComparison {
 
     public List<ResultComparisonData> getComparisonData() {
         return comparisonData;
-    }
-
-    public boolean isRemote() {
-        return remote;
-    }
-
-    public void setRemote(boolean remote) {
-        this.remote = remote;
     }
 
 }

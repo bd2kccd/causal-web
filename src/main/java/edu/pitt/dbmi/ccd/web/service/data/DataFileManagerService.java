@@ -26,8 +26,7 @@ import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
-import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.ws.dto.file.upload.ResumableChunk;
+import edu.pitt.dbmi.ccd.web.model.data.ResumableChunk;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -44,6 +43,7 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -57,12 +57,22 @@ public class DataFileManagerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataFileManagerService.class);
 
+    final String workspace;
+
+    final String dataFolder;
+
     private final UserAccountService userAccountService;
 
     private final DataFileService dataFileService;
 
-    @Autowired(required = true)
-    public DataFileManagerService(UserAccountService userAccountService, DataFileService dataFileService) {
+    @Autowired
+    public DataFileManagerService(
+            @Value("${ccd.server.workspace}") String workspace,
+            @Value("${ccd.folder.data:data}") String dataFolder,
+            UserAccountService userAccountService,
+            DataFileService dataFileService) {
+        this.workspace = workspace;
+        this.dataFolder = dataFolder;
         this.userAccountService = userAccountService;
         this.dataFileService = dataFileService;
     }
@@ -71,13 +81,12 @@ public class DataFileManagerService {
         return true;
     }
 
-    public boolean chunkExists(ResumableChunk chunk, AppUser appUser) throws IOException {
-        String directory = appUser.getDataDirectory();
+    public boolean chunkExists(ResumableChunk chunk, String username) throws IOException {
         String identifier = chunk.getResumableIdentifier();
         String chunkNumber = Integer.toString(chunk.getResumableChunkNumber());
         long chunkSize = chunk.getResumableChunkSize();
 
-        Path chunkFile = Paths.get(directory, identifier, chunkNumber);
+        Path chunkFile = Paths.get(workspace, username, dataFolder, identifier, chunkNumber);
         if (Files.exists(chunkFile)) {
             long size = (Long) Files.getAttribute(chunkFile, "basic:size");
             return size == chunkSize;
@@ -86,13 +95,12 @@ public class DataFileManagerService {
         return false;
     }
 
-    public void storeChunk(ResumableChunk chunk, AppUser appUser) throws IOException {
-        String directory = appUser.getDataDirectory();
+    public void storeChunk(ResumableChunk chunk, String username) throws IOException {
         String identifier = chunk.getResumableIdentifier();
         String chunkNumber = Integer.toString(chunk.getResumableChunkNumber());
         InputStream inputStream = chunk.getFile().getInputStream();
 
-        Path chunkFile = Paths.get(directory, identifier, chunkNumber);
+        Path chunkFile = Paths.get(workspace, username, dataFolder, identifier, chunkNumber);
         if (Files.notExists(chunkFile)) {
             try {
                 Files.createDirectories(chunkFile);
@@ -103,43 +111,17 @@ public class DataFileManagerService {
         Files.copy(inputStream, chunkFile, StandardCopyOption.REPLACE_EXISTING);
     }
 
-    public boolean allChunksUploaded(ResumableChunk chunk, AppUser appUser) {
-        String directory = appUser.getDataDirectory();
+    public boolean allChunksUploaded(ResumableChunk chunk, String username) {
         String identifier = chunk.getResumableIdentifier();
         int numOfChunks = chunk.getResumableTotalChunks();
 
         for (int chunkNo = 1; chunkNo <= numOfChunks; chunkNo++) {
-            if (!Files.exists(Paths.get(directory, identifier, Integer.toString(chunkNo)))) {
+            if (!Files.exists(Paths.get(workspace, username, dataFolder, identifier, Integer.toString(chunkNo)))) {
                 return false;
             }
         }
 
         return true;
-    }
-
-    public String mergeDeleteSave(ResumableChunk chunk, AppUser appUser) throws IOException {
-        String directory = appUser.getDataDirectory();
-        String fileName = chunk.getResumableFilename();
-        int numOfChunks = chunk.getResumableTotalChunks();
-        String identifier = chunk.getResumableIdentifier();
-
-        Path newFile = Paths.get(directory, fileName);
-        Files.deleteIfExists(newFile); // delete the existing file
-        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(newFile.toFile(), false))) {
-            for (int chunkNo = 1; chunkNo <= numOfChunks; chunkNo++) {
-                Path chunkPath = Paths.get(directory, identifier, Integer.toString(chunkNo));
-                Files.copy(chunkPath, bos);
-            }
-        }
-
-        String md5checkSum = saveDataFile(newFile, appUser.getUsername());
-        try {
-            deleteNonEmptyDir(Paths.get(directory, identifier));
-        } catch (IOException exception) {
-            LOGGER.error(exception.getMessage());
-        }
-
-        return md5checkSum;
     }
 
     private String saveDataFile(Path file, String username) throws IOException {
@@ -214,6 +196,30 @@ public class DataFileManagerService {
                 return FileVisitResult.CONTINUE;
             }
         });
+    }
+
+    public String mergeDeleteSave(ResumableChunk chunk, String username) throws IOException {
+        String fileName = chunk.getResumableFilename();
+        int numOfChunks = chunk.getResumableTotalChunks();
+        String identifier = chunk.getResumableIdentifier();
+
+        Path newFile = Paths.get(workspace, username, dataFolder, fileName);
+        Files.deleteIfExists(newFile); // delete the existing file
+        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(newFile.toFile(), false))) {
+            for (int chunkNo = 1; chunkNo <= numOfChunks; chunkNo++) {
+                Path chunkPath = Paths.get(workspace, username, dataFolder, identifier, Integer.toString(chunkNo));
+                Files.copy(chunkPath, bos);
+            }
+        }
+
+        String md5checkSum = saveDataFile(newFile, username);
+        try {
+            deleteNonEmptyDir(Paths.get(workspace, username, dataFolder, identifier));
+        } catch (IOException exception) {
+            LOGGER.error(exception.getMessage());
+        }
+
+        return md5checkSum;
     }
 
 }

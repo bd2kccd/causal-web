@@ -19,9 +19,9 @@
 package edu.pitt.dbmi.ccd.web.ctrl.data;
 
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.model.AppUser;
+import edu.pitt.dbmi.ccd.web.model.data.ResumableChunk;
 import edu.pitt.dbmi.ccd.web.service.data.DataFileManagerService;
-import edu.pitt.dbmi.ccd.ws.dto.file.upload.ResumableChunk;
 import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -31,6 +31,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
 /**
@@ -59,8 +60,11 @@ public class DataUploadController implements ViewPath {
     }
 
     @RequestMapping(value = "chunk", method = RequestMethod.GET)
-    public void checkChunkExistence(HttpServletResponse response, ResumableChunk chunk, @ModelAttribute("appUser") AppUser appUser) throws IOException {
-        if (fileManager.chunkExists(chunk, appUser)) {
+    public void checkChunkExistence(
+            HttpServletResponse response,
+            ResumableChunk chunk,
+            @ModelAttribute("appUser") AppUser appUser) throws IOException {
+        if (fileManager.chunkExists(chunk, appUser.getUsername())) {
             response.setStatus(200); // do not upload chunk again
         } else {
             response.setStatus(404); // chunk not on the server, upload it
@@ -74,18 +78,22 @@ public class DataUploadController implements ViewPath {
             return;
         }
 
+        String username = appUser.getUsername();
         try {
-            fileManager.storeChunk(chunk, appUser);
-            if (fileManager.allChunksUploaded(chunk, appUser)) {
-                response.getWriter().println(fileManager.mergeDeleteSave(chunk, appUser));
+            fileManager.storeChunk(chunk, username);
+            if (fileManager.allChunksUploaded(chunk, username)) {
+                response.getWriter().println(fileManager.mergeDeleteSave(chunk, username));
             }
         } catch (IOException exception) {
-            LOGGER.error(
-                    String.format("Unable to upload chunk %s.", chunk.getResumableFilename()),
-                    exception);
+            LOGGER.error(exception.getMessage());
             throw exception;
         }
         response.setStatus(200);
+    }
+
+    @RequestMapping(value = "/example", method = RequestMethod.GET)
+    public String getExampleFileFInfo(@RequestParam(value = "type") String type) {
+        return "data/example/" + type;
     }
 
 }

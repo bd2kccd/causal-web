@@ -18,18 +18,50 @@
  */
 package edu.pitt.dbmi.ccd.web.service.mail;
 
+import edu.pitt.dbmi.ccd.mail.service.BasicMailService;
+import edu.pitt.dbmi.ccd.mail.service.UserBasicMailService;
 import javax.mail.MessagingException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  *
- * Aug 16, 2015 4:22:17 PM
+ * Nov 18, 2015 10:33:13 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public interface MailService {
+@Service
+public class MailService {
 
-    public void sendRegistrationActivation(String username, String email, String activationUrl) throws MessagingException;
+    private final String sendTo;
 
-    public void sendFeedback(String email, String feedback) throws MessagingException;
+    private final String subject;
+
+    private final BasicMailService basicMailService;
+
+    private final UserBasicMailService userBasicMailService;
+
+    @Autowired
+    public MailService(
+            @Value("${ccd.mail.feedback.to}") String sendTo,
+            @Value("${ccd.mail.feedback.subject:User Feedback}") String subject,
+            BasicMailService basicMailService,
+            UserBasicMailService userBasicMailService) {
+        this.sendTo = sendTo;
+        this.subject = subject;
+        this.basicMailService = basicMailService;
+        this.userBasicMailService = userBasicMailService;
+    }
+
+    public void sendRegistrationActivation(String username, String email, String activationUrl) throws MessagingException {
+        userBasicMailService.sendRegistrationActivation(username, email, activationUrl);
+    }
+
+    public void sendFeedback(String email, String feedback) throws MessagingException {
+        String feedbackSubject = (email == null || email.trim().isEmpty())
+                ? subject + ": Feedback From Anonymous User" : subject + ": Feedback From " + email;
+        basicMailService.send(sendTo, feedbackSubject, feedback, false);
+    }
 
 }

@@ -46,7 +46,7 @@ public class FeedbackController implements ViewPath {
 
     private final MailService mailService;
 
-    @Autowired(required = true)
+    @Autowired
     public FeedbackController(MailService mailService) {
         this.mailService = mailService;
     }
@@ -55,7 +55,7 @@ public class FeedbackController implements ViewPath {
     public String showFeedbackForm(Model model) {
         model.addAttribute("feedback", new Feedback());
 
-        return "feedback";
+        return FEEDBACK_VIEW;
     }
 
     @RequestMapping(method = RequestMethod.POST)
@@ -72,7 +72,7 @@ public class FeedbackController implements ViewPath {
         });
         t.start();
 
-        return "feedback";
+        return FEEDBACK_VIEW;
     }
 
 }

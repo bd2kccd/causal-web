@@ -1,28 +1,19 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
     <head>
-        <meta charset="utf-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <meta charset="UTF-8" />
+        <meta name="description" content="Center for Causal Discovery" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>CCD: Login</title>
-        <meta name="description" content="" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="stylesheet" href="../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{/vendors/bootstrap/css/bootstrap.min.css}" />
-        <link rel="stylesheet" href="../static/vendors/bootstrap/css/bootstrap-theme.min.css" th:href="@{/vendors/bootstrap/css/bootstrap-theme.min.css}" />
-        <link rel="stylesheet" href="../static/css/styles.css" th:href="@{/css/styles.css}" />
-        <link rel="stylesheet" href="../static/css/login.css" th:href="@{/css/login.css}" />
-        <style>
-            iframe {
-                width: 100%;
-                height: 400px;
-                border: none;
-            }
-        </style>
+        <link rel="stylesheet" href="../static/css/styles.css" th:href="@{/css/styles.min.css}" />
+        <link rel="stylesheet" href="../static/css/login.min.css" th:href="@{/css/login.min.css}" />
     </head>
     <body>
         <div class="container">
             <div class="row">
                 <div class="col-md-4 col-md-offset-4">
-                    <div class="login-panel panel panel-pitt">
+                    <div class="panel login-panel panel-pitt">
                         <div class="panel-heading">
                             <h3 class="panel-title" th:text="${@environment.getProperty('ccd.title')}">Center for Causal Discovery</h3>
                         </div>
@@ -74,7 +65,7 @@
                     </div>
                 </div>
             </div>
-            <footer th:replace="fragments/footer_center :: footer">
+            <footer th:replace="fragments/centerFooter :: footer">
                 <div class="row">
                     <div class="text-center">
                         <p class="text-muted">Copyright &copy; 1900 University of Pittsburgh Department of Biomedical Informatics</p>
@@ -166,6 +157,6 @@
         <script src="../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
         <script src="../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
         <script src="../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
-        <script src="../static/js/login.js" th:src="@{/js/login.js}"></script>
+        <script src="../static/js/login.min.js" th:src="@{/js/login.min.js}"></script>
     </body>
 </html>

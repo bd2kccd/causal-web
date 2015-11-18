@@ -32,8 +32,6 @@ public abstract class AlgorithmRunInfo {
 
     protected String jvmOptions;
 
-    protected boolean runOnPsc;
-
     public AlgorithmRunInfo() {
     }
 
@@ -45,11 +43,11 @@ public abstract class AlgorithmRunInfo {
         this.dataset = dataset;
     }
 
-    public Boolean getVerbose() {
+    public boolean isVerbose() {
         return verbose;
     }
 
-    public void setVerbose(Boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -59,14 +57,6 @@ public abstract class AlgorithmRunInfo {
 
     public void setJvmOptions(String jvmOptions) {
         this.jvmOptions = jvmOptions;
-    }
-
-    public Boolean getRunOnPsc() {
-        return runOnPsc;
-    }
-
-    public void setRunOnPsc(Boolean runOnPsc) {
-        this.runOnPsc = runOnPsc;
     }
 
 }

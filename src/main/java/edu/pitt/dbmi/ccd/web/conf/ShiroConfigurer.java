@@ -39,6 +39,9 @@ import org.springframework.context.annotation.DependsOn;
 @Configuration
 public class ShiroConfigurer {
 
+    private static final String AUTHC = "authc";
+    private static final String ANON = "anon";
+
     @Bean(name = "passwordService")
     public DefaultPasswordService passwordService() {
         return new DefaultPasswordService();
@@ -79,18 +82,16 @@ public class ShiroConfigurer {
         ShiroFilterFactoryBean factoryBean = new ShiroFilterFactoryBean();
         factoryBean.setSecurityManager(securityManager());
         factoryBean.setLoginUrl("/login");
-        factoryBean.setUnauthorizedUrl("/login");
+        factoryBean.setUnauthorizedUrl("/401");
         factoryBean.setSuccessUrl("/home");
 
         Map<String, String> filterChainDefinitionMap = new LinkedHashMap<>();
-        filterChainDefinitionMap.put("/home", "authc");
-        filterChainDefinitionMap.put("/algorithm/**", "authc");
-        filterChainDefinitionMap.put("/data/**", "authc");
-        filterChainDefinitionMap.put("/user/profile/**", "authc");
-        filterChainDefinitionMap.put("/user/account", "authc");
-        filterChainDefinitionMap.put("/user/registration/**", "anon");
-        filterChainDefinitionMap.put("/user/account/**", "anon");
-        filterChainDefinitionMap.put("/feedback", "authc");
+        filterChainDefinitionMap.put("/home", AUTHC);
+        filterChainDefinitionMap.put("/user/profile/**", AUTHC);
+        filterChainDefinitionMap.put("/data/**", AUTHC);
+        filterChainDefinitionMap.put("/algorithm/**", AUTHC);
+        filterChainDefinitionMap.put("/jobQueue/**", AUTHC);
+        filterChainDefinitionMap.put("/feedback/**", AUTHC);
         factoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
 
         return factoryBean;

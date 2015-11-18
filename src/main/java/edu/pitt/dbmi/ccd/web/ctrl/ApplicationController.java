@@ -19,12 +19,14 @@
 package edu.pitt.dbmi.ccd.web.ctrl;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
-import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.LOGIN_VIEW;
+import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.REDIRECT_LOGIN;
+import edu.pitt.dbmi.ccd.web.model.AppUser;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
-import edu.pitt.dbmi.ccd.web.service.result.algorithm.AlgorithmResultService;
-import java.util.Collections;
+import edu.pitt.dbmi.ccd.web.service.DataService;
+import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmResultService;
+import edu.pitt.dbmi.ccd.web.service.algo.ResultComparisonService;
 import java.util.Date;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -33,7 +35,6 @@ import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -43,12 +44,6 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-/**
- *
- * Aug 5, 2015 1:54:06 PM
- *
- * @author Kevin V. Bui (kvb2@pitt.edu)
- */
 /**
  *
  * May 14, 2015 12:39:47 PM
@@ -63,83 +58,57 @@ public class ApplicationController implements ViewPath {
 
     private final UserAccountService userAccountService;
 
-    private final DataFileService dataFileService;
+    private final DataService dataService;
 
     private final AlgorithmResultService algorithmResultService;
 
+    private final ResultComparisonService resultComparisonService;
+
     private final AppUserService appUserService;
 
-    private final boolean webapp;
-
-    @Autowired(required = true)
+    @Autowired
     public ApplicationController(
             UserAccountService userAccountService,
-            DataFileService dataFileService,
+            DataService dataService,
             AlgorithmResultService algorithmResultService,
-            AppUserService appUserService, boolean webapp) {
+            ResultComparisonService resultComparisonService,
+            AppUserService appUserService) {
         this.userAccountService = userAccountService;
-        this.dataFileService = dataFileService;
+        this.dataService = dataService;
         this.algorithmResultService = algorithmResultService;
+        this.resultComparisonService = resultComparisonService;
         this.appUserService = appUserService;
-        this.webapp = webapp;
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public String showIndexPage(final Model model) {
+    public String showIndexPage() {
         return REDIRECT_LOGIN;
     }
 
-    @RequestMapping(value = LOGIN, method = RequestMethod.GET)
-    public String showLoginPage(
-            @Value("${ccd.desktop.default.pwd:password123}") final String defaultPassword,
-            @Value("${ccd.desktop.set.error:Unable to setup initial settings.}") final String signInErrMsg,
-            final SessionStatus sessionStatus,
+    @RequestMapping(value = HOME, method = RequestMethod.GET)
+    public String showHomePage(
+            @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
+        String username = appUser.getUsername();
+        model.addAttribute("numOfDataset", dataService.countFiles(username));
+        model.addAttribute("numOfAlgorithmResults", algorithmResultService.countFiles(username));
+        model.addAttribute("numOfComparisonResults", resultComparisonService.countFiles(username));
+
+        return HOME_VIEW;
+    }
+
+    @RequestMapping(value = LOGIN, method = RequestMethod.GET)
+    public String showLoginPage(final SessionStatus sessionStatus) {
         Subject currentUser = SecurityUtils.getSubject();
         if (sessionStatus.isComplete()) {
             currentUser.logout();
-            if (webapp) {
-                return LOGIN_VIEW;
-            } else {
-                return REDIRECT_SETUP;
-            }
+        } else if (currentUser.isAuthenticated()) {
+            return REDIRECT_HOME;
         } else {
-            if (currentUser.isAuthenticated()) {
-                return REDIRECT_HOME;
-            } else {
-                if (webapp) {
-                    return LOGIN_VIEW;
-                } else {
-                    String username = System.getProperty("user.name");
-                    UserAccount userAccount = userAccountService.findByUsername(username);
-                    if (userAccount == null) {
-                        return REDIRECT_SETUP;
-                    }
-
-                    UsernamePasswordToken token = new UsernamePasswordToken(userAccount.getUsername(), defaultPassword);
-                    token.setRememberMe(true);
-                    try {
-                        currentUser.login(token);
-                    } catch (AuthenticationException exception) {
-                        LOGGER.warn(
-                                String.format("Failed login attempt from user %s.", token.getUsername()),
-                                exception);
-                        model.addAttribute("errorMsg", signInErrMsg);
-                        return REDIRECT_SETUP;
-                    }
-
-                    userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
-                    userAccountService.saveUserAccount(userAccount);
-
-                    model.addAttribute("appUser", appUserService.createAppUser(userAccount));
-
-                    userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
-                    userAccountService.saveUserAccount(userAccount);
-
-                    return REDIRECT_HOME;
-                }
-            }
+            sessionStatus.setComplete();
         }
+
+        return LOGIN_VIEW;
     }
 
     @RequestMapping(value = LOGIN, method = RequestMethod.POST)
@@ -149,7 +118,7 @@ public class ApplicationController implements ViewPath {
         try {
             currentUser.login(credentials);
         } catch (AuthenticationException exception) {
-            LOGGER.warn(String.format("Failed login attempt from user %s.", username), exception);
+            LOGGER.warn(String.format("Failed login attempt from user %s.", username));
             model.addAttribute("errorMsg", "Invalid username and/or password.");
             return LOGIN_VIEW;
         }
@@ -170,17 +139,10 @@ public class ApplicationController implements ViewPath {
         }
     }
 
-    @RequestMapping(value = HOME, method = RequestMethod.GET)
-    public String goHome(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
-        model.addAttribute("numOfDataset", dataFileService.findByUserAccounts(Collections.singleton(userAccount)).size());
-        model.addAttribute("numOfResults", algorithmResultService.listResultFileInfo(appUser).size());
-
-        return HOME_VIEW;
-    }
-
-    @RequestMapping(value = "/logout", method = RequestMethod.GET)
-    public String logOut(final SessionStatus sessionStatus, final RedirectAttributes redirectAttributes) {
+    @RequestMapping(value = LOGOUT, method = RequestMethod.GET)
+    public String logOut(
+            final SessionStatus sessionStatus,
+            final RedirectAttributes redirectAttributes) {
         Subject currentUser = SecurityUtils.getSubject();
         if (currentUser.isAuthenticated()) {
             currentUser.logout();

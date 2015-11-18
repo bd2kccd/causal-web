@@ -18,10 +18,9 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl;
 
-import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.service.job.JobQueueService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import edu.pitt.dbmi.ccd.queue.service.JobQueueService;
+import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.REDIRECT_JOB_QUEUE;
+import edu.pitt.dbmi.ccd.web.model.AppUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -43,11 +42,9 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @RequestMapping(value = "/jobQueue")
 public class JobQueueController implements ViewPath {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobQueueController.class);
-
     private final JobQueueService jobQueueService;
 
-    @Autowired(required = true)
+    @Autowired
     public JobQueueController(JobQueueService jobQueueService) {
         this.jobQueueService = jobQueueService;
     }
@@ -56,24 +53,14 @@ public class JobQueueController implements ViewPath {
     public String showJobQueue(
             @ModelAttribute("appUser") AppUser appUser,
             Model model) {
-        model.addAttribute("jobList", jobQueueService.listLocalAlgorithmJobs(appUser.getUsername()));
-        model.addAttribute("remoteJobList", jobQueueService.listRemoteAlgorithmJobs(appUser.getUsername()));
+        model.addAttribute("jobList", jobQueueService.createJobQueueList(appUser.getUsername()));
 
         return JOB_QUEUE;
     }
 
     @RequestMapping(value = "/remove/{id}", method = RequestMethod.GET)
     public String deleteJobQueue(@PathVariable Long id) {
-        jobQueueService.deleteLocalAlgorithmJobs(id);
-
-        return REDIRECT_JOB_QUEUE;
-    }
-
-    @RequestMapping(value = "/remoteRemove/{id}", method = RequestMethod.GET)
-    public String deleteRemoteJobQueue(
-            @PathVariable Long id,
-            @ModelAttribute("appUser") AppUser appUser) {
-        jobQueueService.deleteRemoteAlgorithmJobs(id, appUser.getUsername());
+        jobQueueService.removeJobQueue(id);
 
         return REDIRECT_JOB_QUEUE;
     }

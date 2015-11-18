@@ -22,6 +22,7 @@ import edu.pitt.dbmi.ccd.db.entity.SecurityAnswer;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.SecurityAnswerService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
+import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.model.ResetPasswordInfo;
 import java.util.Collections;
 import java.util.List;
@@ -29,8 +30,11 @@ import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -43,7 +47,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
  */
 @Controller
 @RequestMapping(value = "/user/account")
-public class UserAccountController {
+public class UserAccountController implements ViewPath {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserAccountController.class);
 
@@ -63,6 +67,11 @@ public class UserAccountController {
         this.passwordService = passwordService;
     }
 
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(String.class, new StringTrimmerEditor(false));
+    }
+
     @RequestMapping(value = "reset/pwd", method = RequestMethod.POST)
     public String processUsernameRequest(@ModelAttribute("info") final ResetPasswordInfo info, final Model model) {
         String username = info.getUsername();
@@ -72,7 +81,7 @@ public class UserAccountController {
             model.addAttribute("errMsg", "Sorry, we have no record of that username.");
             model.addAttribute("info", info);
 
-            return "user/account/reqestUsername";
+            return REQUEST_USERNAME_VIEW;
         }
 
         List<SecurityAnswer> list = securityAnswerService.findByUserAccounts(Collections.singleton(userAccount));
@@ -81,7 +90,7 @@ public class UserAccountController {
             model.addAttribute("errMsg", "Please contact the administrator to reset your password.");
             model.addAttribute("info", info);
 
-            return "user/account/reqestUsername";
+            return REQUEST_USERNAME_VIEW;
         }
 
         list.forEach(item -> {
@@ -91,7 +100,7 @@ public class UserAccountController {
         String answer = info.getAnswer();
         if (answer == null || answer.trim().length() == 0) {
             model.addAttribute("info", info);
-            return "user/account/reqestAnswer";
+            return REQUEST_ANSWER_VIEW;
         }
 
         String ans = "";
@@ -103,13 +112,13 @@ public class UserAccountController {
             model.addAttribute("errMsg", "Please try again.");
             info.setAnswer("");
             model.addAttribute("info", info);
-            return "user/account/reqestAnswer";
+            return REQUEST_ANSWER_VIEW;
         }
 
         String password = info.getPassword();
         if (password == null || password.trim().length() == 0) {
             model.addAttribute("info", info);
-            return "user/account/reqestNewPassword";
+            return REQUEST_NEW_PASSWORD_VIEW;
         }
 
         userAccount.setPassword(passwordService.encryptPassword(password));
@@ -124,17 +133,17 @@ public class UserAccountController {
             info.setQuestion("");
             info.setUsername("");
             model.addAttribute("errMsg", "error");
-            return "user/account/requestPwdChangeDone";
+            return REQUEST_PASSWORD_CHANGED_DONE_VIEW;
         }
 
-        return "user/account/requestPwdChangeDone";
+        return REQUEST_PASSWORD_CHANGED_DONE_VIEW;
     }
 
     @RequestMapping(value = "reset/pwd", method = RequestMethod.GET)
     public String showUsernameRequest(final Model model) {
         model.addAttribute("info", new ResetPasswordInfo("", "", "", ""));
 
-        return "user/account/reqestUsername";
+        return REQUEST_USERNAME_VIEW;
     }
 
 }

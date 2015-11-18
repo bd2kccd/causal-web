@@ -1,9 +1,9 @@
 /*
- * metismenu - v2.0.3
+ * metismenu - v2.2.0
  * A jQuery menu plugin
- * https://github.com/onokumus/metisMenu
+ * https://github.com/onokumus/metisMenu#readme
  *
- * Made by Osman Nuri Okumus
+ * Made by Osman Nuri Okumuş <onokumus@gmail.com> (https://github.com/onokumus)
  * Under MIT License
  */
 
@@ -74,10 +74,13 @@
   MetisMenu.DEFAULTS = {
     toggle: true,
     doubleTapToGo: false,
+    preventDefault: true,
     activeClass: 'active',
     collapseClass: 'collapse',
     collapseInClass: 'in',
-    collapsingClass: 'collapsing'
+    collapsingClass: 'collapsing',
+    onTransitionStart: false,
+    onTransitionEnd: false
   };
 
   MetisMenu.prototype.init = function() {
@@ -91,6 +94,7 @@
       .find('li.' + activeClass)
       .has('ul')
       .children('ul')
+      .attr('aria-expanded', true)
       .addClass(collapseClass + ' ' + collapseInClass);
 
     this
@@ -99,6 +103,7 @@
       .not('.' + activeClass)
       .has('ul')
       .children('ul')
+      .attr('aria-expanded', false)
       .addClass(collapseClass);
 
     //add the 'doubleTapToGo' class to active items if needed
@@ -120,12 +125,19 @@
         var self = $(this);
         var $parent = self.parent('li');
         var $list = $parent.children('ul');
-        e.preventDefault();
-
+        if($this.options.preventDefault){
+          e.preventDefault();
+        }
         if ($parent.hasClass(activeClass) && !$this.options.doubleTapToGo) {
           $this.hide($list);
+          self.attr('aria-expanded',false);
         } else {
           $this.show($list);
+          self.attr('aria-expanded',true);
+        }
+
+        if($this.options.onTransitionStart) {
+          $this.options.onTransitionStart();
         }
 
         //Do we need to enable the double tap
@@ -173,7 +185,7 @@
     $parent.addClass(activeClass);
 
     if (this.options.toggle) {
-      this.hide($parent.siblings().children('ul.' + collapseInClass));
+      this.hide($parent.siblings().children('ul.' + collapseInClass).attr('aria-expanded', false));
     }
 
     $this
@@ -183,10 +195,14 @@
 
     this.transitioning = 1;
     var complete = function() {
+      if(this.transitioning && this.options.onTransitionEnd) {
+        this.options.onTransitionEnd();
+      }
       $this
         .removeClass(collapsingClass)
         .addClass(collapseClass + ' ' + collapseInClass)
-        .height('');
+        .height('')
+        .attr('aria-expanded', true);
       this.transitioning = 0;
     };
     if (!$transition) {
@@ -220,10 +236,14 @@
     this.transitioning = 1;
 
     var complete = function() {
+      if(this.transitioning && this.options.onTransitionEnd) {
+        this.options.onTransitionEnd();
+      }
       this.transitioning = 0;
       $this
         .removeClass(collapsingClass)
-        .addClass(collapseClass);
+        .addClass(collapseClass)
+        .attr('aria-expanded', false);
     };
 
     if (!$transition) {

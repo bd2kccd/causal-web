@@ -18,26 +18,40 @@
  */
 package edu.pitt.dbmi.ccd.web.service.algo;
 
-import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.service.cloud.dto.AlgorithmJobRequest;
-import java.util.Map;
+import edu.pitt.dbmi.ccd.db.service.DataFileService;
+import edu.pitt.dbmi.ccd.db.service.JobQueueInfoService;
+import edu.pitt.dbmi.ccd.db.service.UserAccountService;
+import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
+import edu.pitt.dbmi.ccd.web.service.DataService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  *
- * Sep 26, 2015 7:55:52 AM
+ * Nov 17, 2015 11:42:41 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public interface AlgorithmService {
+@Service
+public class AlgorithmService extends AbstractAlgorithmService {
 
-    public Map<String, String> getUserRunnableData(String username);
-
-    public Map<String, String> getUserRunnableData(String prefix, String username);
-
-    public void runRemotely(AlgorithmJobRequest jobRequest, AppUser appUser);
-
-    public void runLocally(String algorithmJar, AlgorithmJobRequest jobRequest, AppUser appUser);
-
-    public String getFileDelimiter(String absolutePath, String fileName);
+    @Autowired
+    public AlgorithmService(
+            @Value("${ccd.server.workspace}") String workspace,
+            @Value("${ccd.folder.data:data}") String dataFolder,
+            @Value("${ccd.folder.results:results}") String resultFolder,
+            @Value("${ccd.folder.lib:lib}") String libFolder,
+            @Value("${ccd.folder.tmp:tmp}") String tmpFolder,
+            @Value("${ccd.folder.results.algorithm:algorithm}") String algorithmResultFolder,
+            DataService dataService,
+            DataFileService dataFileService,
+            VariableTypeService variableTypeService,
+            UserAccountService userAccountService,
+            JobQueueInfoService jobQueueInfoService) {
+        super(workspace, dataFolder, resultFolder, libFolder, tmpFolder,
+                algorithmResultFolder, dataService, dataFileService,
+                variableTypeService, userAccountService, jobQueueInfoService);
+    }
 
 }

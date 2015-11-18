@@ -1,0 +1,10 @@
+iframe {
+    width: 100%;
+    height: 450px;
+    border: none;
+    resize: both;
+    overflow: auto;
+}
+#fileInfo .modal-dialog {
+    width: 625px;
+}

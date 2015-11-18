@@ -19,13 +19,11 @@
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.model.SelectedFiles;
-import edu.pitt.dbmi.ccd.web.service.result.algorithm.AlgorithmResultService;
+import edu.pitt.dbmi.ccd.web.model.AppUser;
+import edu.pitt.dbmi.ccd.web.model.file.SelectedFiles;
+import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmResultService;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -46,18 +44,27 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @RequestMapping(value = "algorithm/results")
 public class AlgorithmResultController implements ViewPath {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmResultController.class);
-
     private final AlgorithmResultService algorithmResultService;
 
-    @Autowired(required = true)
+    @Autowired
     public AlgorithmResultController(AlgorithmResultService algorithmResultService) {
         this.algorithmResultService = algorithmResultService;
     }
 
+    @RequestMapping(value = "download", method = RequestMethod.GET)
+    public void downloadResultFile(
+            @RequestParam(value = "file") final String fileName,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final HttpServletRequest request,
+            final HttpServletResponse response) {
+        algorithmResultService.downloadResultFile(fileName, appUser.getUsername(), request, response);
+    }
+
     @RequestMapping(method = RequestMethod.GET)
-    public String showRunResultsView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        model.addAttribute("itemList", algorithmResultService.listResultFileInfo(appUser));
+    public String showRunResultsView(
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        model.addAttribute("itemList", algorithmResultService.listResultFileInfo(appUser.getUsername()));
 
         return ALGORITHM_RESULTS_VIEW;
     }
@@ -66,56 +73,43 @@ public class AlgorithmResultController implements ViewPath {
     public String deleteResultFile(
             final SelectedFiles selectedFiles,
             @ModelAttribute("appUser") final AppUser appUser) {
-        algorithmResultService.deleteResultFile(selectedFiles.getFiles(), appUser);
+        algorithmResultService.deleteResultFiles(selectedFiles.getFiles(), appUser.getUsername());
 
         return REDIRECT_ALGORITHM_RESULTS;
     }
 
-    @RequestMapping(value = "download", method = RequestMethod.GET)
-    public void downloadResultFile(
+    @RequestMapping(value = "error", method = RequestMethod.GET)
+    public String showResultError(
             @RequestParam(value = "file") final String fileName,
-            @RequestParam(value = "remote") final boolean remote,
-            @ModelAttribute("appUser") final AppUser appUser,
-            final HttpServletRequest request,
-            final HttpServletResponse response) {
-        algorithmResultService.downloadResultFile(fileName, remote, appUser, request, response);
-    }
-
-    @RequestMapping(value = PLOT, method = RequestMethod.GET)
-    public String showPlot(
-            @RequestParam(value = "file") final String fileName,
-            @RequestParam(value = "remote") final boolean remote,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        String url = String.format("/algorithm/results/d3graph?file=%s&remote=%s", fileName, remote);
+        model.addAttribute("errors", algorithmResultService.getErrorMessages(fileName, appUser.getUsername()));
+
+        return ALGORITHM_RESULT_ERROR_VIEW;
+    }
+
+    @RequestMapping(value = "plot", method = RequestMethod.GET)
+    public String showPlot(
+            @RequestParam(value = "file") final String fileName,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        String url = String.format("/algorithm/results/d3graph?file=%s", fileName);
         model.addAttribute("plot", fileName);
         model.addAttribute("link", url);
-        model.addAttribute("datasets", algorithmResultService.getDatasets(fileName, remote, appUser));
-        model.addAttribute("parameters", algorithmResultService.getPlotParameters(fileName, remote, appUser));
+        model.addAttribute("datasets", algorithmResultService.extractDatasetNames(fileName, appUser.getUsername()));
+        model.addAttribute("parameters", algorithmResultService.extractPlotParameters(fileName, appUser.getUsername()));
 
         return PLOT_VIEW;
     }
 
-    @RequestMapping(value = D3_GRAPH, method = RequestMethod.GET)
+    @RequestMapping(value = "d3graph", method = RequestMethod.GET)
     public String showD3Graph(
             @RequestParam(value = "file") final String fileName,
-            @RequestParam(value = "remote") final boolean remote,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        model.addAttribute("data", algorithmResultService.getGraphNodes(fileName, remote, appUser));
+        model.addAttribute("data", algorithmResultService.extractGraphNodes(fileName, appUser.getUsername()));
 
         return D3_GRAPH_VIEW;
-    }
-
-    @RequestMapping(value = "/error", method = RequestMethod.GET)
-    public String showResultError(
-            @RequestParam(value = "file") final String fileName,
-            @RequestParam(value = "remote") final boolean remote,
-            @ModelAttribute("appUser") final AppUser appUser,
-            final Model model) {
-        model.addAttribute("errors", algorithmResultService.getErrorMessages(fileName, remote, appUser));
-
-        return ALGORITHM_RESULT_ERROR_VIEW;
     }
 
 }

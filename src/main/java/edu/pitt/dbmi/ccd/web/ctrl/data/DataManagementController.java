@@ -19,12 +19,9 @@
 package edu.pitt.dbmi.ccd.web.ctrl.data;
 
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.model.AppUser;
+import edu.pitt.dbmi.ccd.web.model.data.DataSummary;
 import edu.pitt.dbmi.ccd.web.service.DataService;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,52 +48,64 @@ public class DataManagementController implements ViewPath {
 
     private final DataService dataService;
 
-    @Autowired(required = true)
+    @Autowired
     public DataManagementController(DataService dataService) {
         this.dataService = dataService;
     }
 
-    @RequestMapping(method = RequestMethod.GET)
-    public String showDatasetView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        model.addAttribute("itemList", dataService.createDatasetList(appUser.getUsername(), appUser.getDataDirectory()));
-
-        return DATASET_VIEW;
-    }
-
-    @RequestMapping(value = "/delete", method = RequestMethod.GET)
-    public String deleteResultFile(
-            @RequestParam(value = "file") final String filename,
-            @ModelAttribute("appUser") final AppUser appUser,
-            final Model model) {
-        String dataDir = appUser.getDataDirectory();
-        Path file = Paths.get(dataDir, filename);
-        if (dataService.getDataFileService().deleteDataFileByNameAndAbsolutePath(dataDir, filename)) {
-            try {
-                Files.deleteIfExists(file);
-            } catch (IOException exception) {
-                LOGGER.error(
-                        String.format("Unable to delete file %s.", file.toAbsolutePath().toString()),
-                        exception);
-            }
-        }
+    @RequestMapping(value = "summary", method = RequestMethod.POST)
+    public String summarizeDataFile(
+            @ModelAttribute("dataSummary") final DataSummary dataSummary,
+            @ModelAttribute("appUser") final AppUser appUser) {
+        dataService.saveDataSummary(dataSummary, appUser.getUsername());
 
         return REDIRECT_DATA;
     }
 
-    @RequestMapping(value = "/example", method = RequestMethod.GET)
-    public String getExampleFileFInfo(@RequestParam(value = "type") String type) {
-        return "data/example/" + type;
-    }
-
-    @RequestMapping(value = FILE_INFO, method = RequestMethod.GET)
-    public String getFileFInfo(
+    @RequestMapping(value = "summary", method = RequestMethod.GET)
+    public String showDataFileSummary(
             @RequestParam(value = "file") final String fileName,
             @ModelAttribute("appUser") final AppUser appUser,
-            final Model model) throws IOException {
-        model.addAttribute("basicInfo", dataService.getFileInfo(appUser.getDataDirectory(), fileName));
-        model.addAttribute("summaryInfo", dataService.getDataFileAdditionalInfo(appUser.getDataDirectory(), fileName));
+            final Model model) {
+        String username = appUser.getUsername();
+        model.addAttribute("fileName", fileName);
+        model.addAttribute("basicInfo", dataService.getFileInfo(fileName, username));
+        model.addAttribute("summaryInfo", dataService.getDataFileAdditionalInfo(fileName, username));
+        model.addAttribute("dataSummary", dataService.getDataSummary(fileName, username));
+        model.addAttribute("variableTypes", dataService.getVariableTypes());
+        model.addAttribute("fileDelimiters", dataService.getFileDelimiters());
+
+        return DATA_SUMMARY_VIEW;
+    }
+
+    @RequestMapping(value = "delete", method = RequestMethod.GET)
+    public String deleteDataFile(
+            @RequestParam(value = "file") final String fileName,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        dataService.deleteDataFile(fileName, appUser.getUsername());
+
+        return REDIRECT_DATA;
+    }
+
+    @RequestMapping(value = "fileInfo", method = RequestMethod.GET)
+    public String getDataFileFInfo(
+            @RequestParam(value = "file") final String fileName,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        model.addAttribute("basicInfo", dataService.getFileInfo(fileName, appUser.getUsername()));
+        model.addAttribute("summaryInfo", dataService.getDataFileAdditionalInfo(fileName, appUser.getUsername()));
 
         return FILE_INFO_VIEW;
+    }
+
+    @RequestMapping(method = RequestMethod.GET)
+    public String showDataFilePage(
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        model.addAttribute("itemList", dataService.listDataFiles(appUser.getUsername()));
+
+        return DATASET_VIEW;
     }
 
 }

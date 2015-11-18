@@ -19,17 +19,15 @@
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.REDIRECT_JOB_QUEUE;
-import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.model.AppUser;
+import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmJobRequest;
 import edu.pitt.dbmi.ccd.web.model.algo.FgsRunInfo;
 import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmService;
-import edu.pitt.dbmi.ccd.web.service.cloud.dto.AlgorithmJobRequest;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -40,9 +38,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
 /**
- * Fast Greedy Search (FGS) Controller.
  *
- * Nov 10, 2015 3:13:04 PM
+ * Nov 17, 2015 11:42:14 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
@@ -51,9 +48,9 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @RequestMapping(value = "/algorithm/fgs")
 public class FGSController implements ViewPath {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FGSController.class);
+    private final static String ALGORITHM_NAME = "fgs";
 
-    private final String fgs;
+    private final String algorithm;
 
     protected final String algorithmJar;
 
@@ -61,24 +58,23 @@ public class FGSController implements ViewPath {
 
     @Autowired(required = true)
     public FGSController(
-            @Value("${ccd.algorithm.fgs}") String fgs,
-            @Value("${ccd.algorithm.jar}") String algorithmJar,
+            @Value("${ccd.algorithm.fgs}") String algorithm,
+            @Value("${ccd.jar.algorithm}") String algorithmJar,
             AlgorithmService algorithmService) {
-        this.fgs = fgs;
+        this.algorithm = algorithm;
         this.algorithmJar = algorithmJar;
         this.algorithmService = algorithmService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public String showGesView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+    public String showFgsView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         FgsRunInfo info = new FgsRunInfo();
         info.setPenaltyDiscount(4.0);
         info.setDepth(3);
         info.setVerbose(Boolean.TRUE);
         info.setJvmOptions("");
-        info.setRunOnPsc(Boolean.FALSE);
 
-        Map<String, String> map = algorithmService.getUserRunnableData(appUser.getUsername());
+        Map<String, String> map = algorithmService.getUserDataset(appUser.getUsername());
         if (map.isEmpty()) {
             info.setDataset("");
         } else {
@@ -96,44 +92,39 @@ public class FGSController implements ViewPath {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public String runGes(
+    public String runFgs(
             @ModelAttribute("algoInfo") final FgsRunInfo info,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        List<String> params = new LinkedList<>();
 
-        String delimiter = algorithmService.getFileDelimiter(appUser.getDataDirectory(), info.getDataset());
-        params.add("--delimiter");
-        params.add(delimiter);
-
-        params.add("--penalty-discount");
-        params.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));
-
-        params.add("--depth");
-        params.add(String.valueOf(info.getDepth().intValue()));
-
-        if (info.getVerbose()) {
-            params.add("--verbose");
+        // build the parameters
+        List<String> parameters = new LinkedList<>();
+        String delimiter = algorithmService.getFileDelimiter(info.getDataset(), appUser.getUsername());
+        parameters.add("--delimiter");
+        parameters.add(delimiter);
+        parameters.add("--penalty-discount");
+        parameters.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));
+        parameters.add("--depth");
+        parameters.add(String.valueOf(info.getDepth().intValue()));
+        if (info.isVerbose()) {
+            parameters.add("--verbose");
         }
 
-        String[] jvmOptions = null;
+        List<String> jvmOptions = new LinkedList<>();
         String jvmOpts = info.getJvmOptions().trim();
         if (jvmOpts.length() > 0) {
-            jvmOptions = jvmOpts.split("\\s+");
+            jvmOptions.addAll(Arrays.asList(jvmOpts.split("\\s+")));
         }
 
-        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest();
-        jobRequest.setAlgorithmName("fgs");
-        jobRequest.setAlgorithm(fgs);
+        List<String> dataset = new LinkedList<>();
+        dataset.add(info.getDataset());
+
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest(ALGORITHM_NAME, algorithmJar, algorithm);
+        jobRequest.setDataset(dataset);
         jobRequest.setJvmOptions(jvmOptions);
-        jobRequest.setParameters(params.toArray(new String[params.size()]));
-        jobRequest.setDataset(info.getDataset());
+        jobRequest.setParameters(parameters);
 
-        if (info.getRunOnPsc()) {
-            algorithmService.runRemotely(jobRequest, appUser);
-        } else {
-            algorithmService.runLocally(algorithmJar, jobRequest, appUser);
-        }
+        algorithmService.addToQueue(jobRequest, appUser.getUsername());
 
         return REDIRECT_JOB_QUEUE;
     }

@@ -26,17 +26,15 @@ import edu.pitt.dbmi.ccd.db.service.SecurityAnswerService;
 import edu.pitt.dbmi.ccd.db.service.SecurityQuestionService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.REDIRECT_USER_PROFILE;
+import edu.pitt.dbmi.ccd.web.model.AppUser;
 import edu.pitt.dbmi.ccd.web.model.user.PasswordChange;
 import edu.pitt.dbmi.ccd.web.model.user.UserInfo;
 import edu.pitt.dbmi.ccd.web.model.user.UserSecurityQuestionAnswer;
-import edu.pitt.dbmi.ccd.web.model.user.UserWorkspace;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import java.util.Collections;
 import java.util.List;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
@@ -60,8 +58,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping(value = "user/profile")
 public class UserProfileController implements ViewPath {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserProfileController.class);
-
     private final UserAccountService userAccountService;
 
     private final AppUserService appUserService;
@@ -72,7 +68,7 @@ public class UserProfileController implements ViewPath {
 
     private final SecurityQuestionService securityQuestionService;
 
-    @Autowired(required = true)
+    @Autowired
     public UserProfileController(
             UserAccountService userAccountService,
             AppUserService appUserService,
@@ -89,47 +85,6 @@ public class UserProfileController implements ViewPath {
     @InitBinder
     public void initBinder(WebDataBinder binder) {
         binder.registerCustomEditor(String.class, new StringTrimmerEditor(false));
-    }
-
-    @RequestMapping(method = RequestMethod.GET)
-    public String showPageUserProfile(
-            @ModelAttribute("appUser") final AppUser appUser,
-            final Model model) {
-        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
-        Person person = userAccount.getPerson();
-
-        UserInfo userInfo = new UserInfo();
-        userInfo.setEmail(person.getEmail());
-        userInfo.setFirstName(person.getFirstName());
-        userInfo.setMiddleName(person.getMiddleName());
-        userInfo.setLastName(person.getLastName());
-
-        UserWorkspace userWorkspace = new UserWorkspace();
-        userWorkspace.setWorkspace(person.getWorkspace());
-
-        PasswordChange passwordChange = new PasswordChange();
-        passwordChange.setCurrentPassword("");
-        passwordChange.setNewPassword("");
-        passwordChange.setConfirmPassword("");
-
-        UserSecurityQuestionAnswer usqa = null;
-        List<SecurityAnswer> securityAnswers = securityAnswerService
-                .findByUserAccounts(Collections.singleton(userAccount));
-        for (SecurityAnswer sa : securityAnswers) {
-            usqa = new UserSecurityQuestionAnswer(sa.getSecurityQuestion(), sa.getAnswer());
-        }
-        if (usqa == null) {
-            usqa = new UserSecurityQuestionAnswer();
-            usqa.setSecurityQuestion(new SecurityQuestion());
-        }
-
-        model.addAttribute("userInfo", userInfo);
-        model.addAttribute("userWorkspace", userWorkspace);
-        model.addAttribute("passwordChange", passwordChange);
-        model.addAttribute("usqa", usqa);
-        model.addAttribute("securityQuestions", securityQuestionService.findAllSecurityQuestion());
-
-        return USER_PROFILE_VIEW;
     }
 
     @RequestMapping(value = "security", method = RequestMethod.POST)
@@ -179,25 +134,6 @@ public class UserProfileController implements ViewPath {
         return REDIRECT_USER_PROFILE;
     }
 
-    @RequestMapping(value = "workspace", method = RequestMethod.POST)
-    public String updateUserWorkspace(
-            @ModelAttribute("userWorkspace") final UserWorkspace userWorkspace,
-            @ModelAttribute("appUser") final AppUser appUser,
-            final Model model) {
-
-        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
-
-        // update person information
-        Person person = userAccount.getPerson();
-        person.setWorkspace(userWorkspace.getWorkspace());
-
-        userAccount = userAccountService.saveUserAccount(userAccount);
-
-        model.addAttribute("appUser", appUserService.createAppUser(userAccount));
-
-        return REDIRECT_USER_PROFILE;
-    }
-
     @RequestMapping(value = "info", method = RequestMethod.POST)
     public String updateUserInfo(
             @ModelAttribute("userInfo") final UserInfo userInfo,
@@ -219,6 +155,42 @@ public class UserProfileController implements ViewPath {
         model.addAttribute("appUser", user);
 
         return REDIRECT_USER_PROFILE;
+    }
+
+    @RequestMapping(method = RequestMethod.GET)
+    public String showUserProfilePage(
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+        Person person = userAccount.getPerson();
+
+        UserInfo userInfo = new UserInfo();
+        userInfo.setEmail(person.getEmail());
+        userInfo.setFirstName(person.getFirstName());
+        userInfo.setMiddleName(person.getMiddleName());
+        userInfo.setLastName(person.getLastName());
+        model.addAttribute("userInfo", userInfo);
+
+        PasswordChange passwordChange = new PasswordChange();
+        passwordChange.setCurrentPassword("");
+        passwordChange.setNewPassword("");
+        passwordChange.setConfirmPassword("");
+        model.addAttribute("passwordChange", passwordChange);
+
+        UserSecurityQuestionAnswer usqa = null;
+        List<SecurityAnswer> securityAnswers = securityAnswerService
+                .findByUserAccounts(Collections.singleton(userAccount));
+        for (SecurityAnswer sa : securityAnswers) {
+            usqa = new UserSecurityQuestionAnswer(sa.getSecurityQuestion(), sa.getAnswer());
+        }
+        if (usqa == null) {
+            usqa = new UserSecurityQuestionAnswer();
+            usqa.setSecurityQuestion(new SecurityQuestion());
+        }
+        model.addAttribute("usqa", usqa);
+        model.addAttribute("securityQuestions", securityQuestionService.findAllSecurityQuestion());
+
+        return USER_PROFILE_VIEW;
     }
 
 }

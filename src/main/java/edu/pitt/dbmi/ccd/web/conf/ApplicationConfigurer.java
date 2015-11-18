@@ -24,8 +24,6 @@ import org.springframework.boot.context.embedded.ErrorPage;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
@@ -39,17 +37,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 public class ApplicationConfigurer extends WebMvcConfigurerAdapter {
 
     @Bean
-    public RestTemplate restTemplate() {
-        int timeoutInMilliSec = 1500;
-
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setReadTimeout(timeoutInMilliSec);
-        factory.setConnectTimeout(timeoutInMilliSec);
-
-        return new RestTemplate(factory);
-    }
-
-    @Bean
     public EmbeddedServletContainerCustomizer webappEmbeddedServletContainerCustomizer() {
         return (ConfigurableEmbeddedServletContainer container) -> {
             ErrorPage[] errorPages = {
@@ -58,7 +45,6 @@ public class ApplicationConfigurer extends WebMvcConfigurerAdapter {
                 new ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/500")
             };
             container.addErrorPages(errorPages);
-            container.setContextPath("/ccd");
         };
     }
 

@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
     <head>
-        <meta charset="utf-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <meta charset="UTF-8" />
+        <meta name="description" content="Center for Causal Discovery" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>CCD: Algorithm Run Results</title>
-        <meta name="description" content="" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="stylesheet" href="../../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{/vendors/bootstrap/css/bootstrap.min.css}" />
         <link rel="stylesheet" href="../../static/vendors/bootstrap/css/bootstrap-theme.min.css" th:href="@{/vendors/bootstrap/css/bootstrap-theme.min.css}" />
         <link rel="stylesheet" href="../../static/vendors/metisMenu/metisMenu.min.css" th:href="@{/vendors/metisMenu/metisMenu.min.css}" />
-        <link rel="stylesheet" href="../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{/vendors/font-awesome/css/font-awesome.min.css}" />
-        <link rel="stylesheet" href="../../static/vendors/sb-admin-2/css/sb-admin-2.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.css}" />
-        <link rel="stylesheet" href="../../static/css/styles.css" th:href="@{/css/styles.css}" />
+        <link rel="stylesheet" href="../../static/vendors/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{/vendors/font-awesome/css/font-awesome.min.css}"/>
+        <link rel="stylesheet" href="../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
         <style>
             .table tbody tr > td.warning {
                 background-color: #f97777 !important;
@@ -30,7 +29,7 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h1 class="page-header">Results</h1>
+                        <h3 class="page-header">Algorithm Results</h3>
                     </div>
                 </div>
                 <div class="row">
@@ -60,7 +59,6 @@
                                             <th>Filename</th>
                                             <th>Created On</th>
                                             <th>Size</th>
-                                            <th th:if="${appUser.webUser} == false">PSC</th>
                                             <th>Save</th>
                                         </tr>
                                     </thead>
@@ -70,17 +68,12 @@
                                                 <input type="checkbox" class="checkResult" name="files" th:value="${item.fileName}" />
                                             </td>
                                             <td>
-                                                <a href="#" th:if="${item.error}" data-toggle="modal" data-target="#errorModal" th:attr="data-href=@{/algorithm/results/error(file=${item.fileName},remote=${item.onCloud})}" th:text="${item.fileName}"></a>
-                                                <a href="#" th:unless="${item.error}" th:href="@{/algorithm/results/plot(file=${item.fileName},remote=${item.onCloud})}" th:text="${item.fileName}"></a>
+                                                <a href="#" th:if="${item.error}" data-toggle="modal" data-target="#errorModal" th:attr="data-href=@{/algorithm/results/error(file=${item.fileName})}" th:text="${item.fileName}"></a>
+                                                <a href="#" th:unless="${item.error}" th:href="@{/algorithm/results/plot(file=${item.fileName})}" th:text="${item.fileName}"></a>
                                             </td>
-                                            <td th:text="${item.creationDate}"></td>
-                                            <td th:text="${item.size}"></td>
-                                            <td th:if="${appUser.webUser} == false">
-                                                <p th:if="${item.onCloud}" data-placement="top" data-toggle="tooltip" title="On PSC">
-                                                    <button type="button" class="btn btn-info btn-xs"><span class="glyphicon glyphicon-cloud"></span></button>
-                                                </p>
-                                            </td>
-                                            <td><p data-placement="top" data-toggle="tooltip" title="Save"><a href="#" th:href="@{/algorithm/results/download(file=${item.fileName},remote=${item.onCloud})}" class="btn btn-success btn-xs"><span class="glyphicon glyphicon-save"></span></a></p></td>
+                                            <td th:text="${item.getCreationDatePrint()}"></td>
+                                            <td th:text="${item.getFileSizePrint()}"></td>
+                                            <td><p data-placement="top" data-toggle="tooltip" title="Save"><a href="#" th:href="@{/algorithm/results/download(file=${item.fileName})}" class="btn btn-success btn-xs"><span class="glyphicon glyphicon-save"></span></a></p></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -162,7 +155,7 @@
         <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
         <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
         <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
-        <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.js}"></script>
-        <script src="../../static/js/runResults.js" th:src="@{/js/runResults.js}"></script>
+        <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
+        <script src="../../static/js/algo/runResults.min.js" th:src="@{/js/algo/runResults.min.js}"></script>
     </body>
 </html>
