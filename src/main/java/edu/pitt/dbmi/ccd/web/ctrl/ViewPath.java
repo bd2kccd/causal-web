@@ -69,4 +69,6 @@ public interface ViewPath {
 
     public static final String FEEDBACK_VIEW = "feedback";
 
+    public static final String USER_ACTIVATION_SUCCESS_VIEW = "user/userActivationSuccess";
+
 }
