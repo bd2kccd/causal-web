@@ -90,11 +90,6 @@
         </dependency>
         <dependency>
             <groupId>edu.pitt.dbmi</groupId>
-            <artifactId>ccd-ws-dto</artifactId>
-            <version>0.3.0</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.pitt.dbmi</groupId>
             <artifactId>ccd-mail</artifactId>
             <version>0.1.2</version>
             <exclusions>
