@@ -77,8 +77,8 @@ public class UserAccountController implements ViewPath {
         String username = info.getUsername();
         UserAccount userAccount = userAccountService.findByUsername(username);
         if (userAccount == null) {
-            model.addAttribute("strErrMsg", "Invalid Username!");
-            model.addAttribute("errMsg", "Sorry, we have no record of that username.");
+            model.addAttribute("strErrMsg", "Security Question Not Set!");
+            model.addAttribute("errMsg", "Please contact the administrator to reset your password.");
             model.addAttribute("info", info);
 
             return REQUEST_USERNAME_VIEW;

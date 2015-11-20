@@ -143,7 +143,7 @@ public class UserProfileController implements ViewPath {
 
         // update person information
         Person person = userAccount.getPerson();
-        person.setEmail(userInfo.getEmail());
+//        person.setEmail(userInfo.getEmail());
         person.setFirstName(userInfo.getFirstName());
         person.setMiddleName(userInfo.getMiddleName());
         person.setLastName(userInfo.getLastName());
