@@ -4,12 +4,12 @@ CCD web is a Java web-based application that allows users to run causal modeling
 ## How Can I Use It?
 ### Required Dependencies
 #### Algorithm Dependencies
-* ccd-algorithm-0.4.3.jar
+*  [ccd-algorithm-0.4.3.jar](https://github.com/bd2kccd/ccd-algorithm/releases/tag/v0.4.3https://github.com/bd2kccd/ccd-algorithm/releases/tag/v0.4.3)
 * colt-1.2.0.jar
 * commons-collections-3.1.jar
 * commons-math3-3.3.jar
 * jama-1.0.2.jar
-* lib-tetrad-0.4.1.jar
+* [lib-tetrad-0.4.1.jar](https://github.com/bd2kccd/lib-tetrad/releases/tag/v0.4.1)
 * mtj-0.9.14.jar
 * pal-1.5.1.jar
 * xom-1.1.jar
