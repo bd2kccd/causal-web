@@ -24,6 +24,7 @@ CCD web is a Java web-based application that allows users to run causal modeling
 #### Building the Application
 Since this is a maven project all the dependencies will be download from the Maven public repository when compiling.  The following dependencies must be downloaded, built, and installed manually.
 
+* [lib-tetrad-0.4.1](https://github.com/bd2kccd/lib-tetrad/releases/tag/v0.4.1)
 * [ccd-algorithm-0.4.3](https://github.com/bd2kccd/ccd-algorithm/releases/tag/v0.4.3) 
 * [ccd-job-queue-0.1.3](https://github.com/bd2kccd/ccd-job-queue/releases/tag/v0.1.3) 
 * [ccd-mail-0.1.2](https://github.com/bd2kccd/ccd-mail/releases/tag/v0.1.2) 
@@ -33,14 +34,51 @@ Since this is a maven project all the dependencies will be download from the Mav
 Go to each of these project directory and type **mvn clean install** to build and install the jar libraries.
 
 ## Run Web Application
-### Configurations
-There are three property files you must fill in to tell the application where to run, what database to use, etc.
-1. **application-mysql.properties** (MySQL database configurations)
-2. **application.properties** (Spring Boot configurations)
-3. **ccd.properties** (CCD web application related configurations)
+### Prerequisite
+You will need a GMail account.  GMail will be used to send out account activation link and feedback.
+For production, you will need a MySQL account.
 
 ### Setting Up
 First, you need to create a workspace for the application to work in.  Create a directory called **workspace**, for an example ***/home/tuser/workspace***.  Inside the workspace directory, create another folder called **lib**, for an example ***/home/tuser/workspace/lib***.  Put all the algorithm dependencies in the **lib** folder.
+
+### Configurations
+There are 4 configuration files:
+1. **application-hsqldb.properties**: HSQLDB database configurations (for testing only).
+2. **application-mysql.properties**: MySQL database configurations
+3. **application.properties**: Spring Boot configurations
+4. **ccd.properties**: CCD web application related configurations
+
+#### Workspace Configurations
+Set the property **ccd.server.workspace** in the  **ccd.properties** file to the workspace location.
+```java
+// based on the above example
+ccd.server.workspace=/home/tuser/workspace
+```
+
+#### Mail Configurations
+Set the following properties in the **application.properties** file:
+```java
+// add gmail account
+spring.mail.username=<gmail username>
+spring.mail.password=<gmail username>
+```
+Set the following properties in the **ccd.properties** file:
+```java
+// add gmail account
+ccd.mail.feedback.to=<gmail username>
+```
+
+#### Testing Configurations
+Set the following properties in the **application.properties** file:
+```java
+spring.profiles.active=scheduler,hsqldb
+```
+
+#### Production Configurations
+Set the following properties in the **application.properties** file:
+```java
+spring.profiles.active=scheduler,mysql
+```
 
 Make sure you set **ccd.server.workspace=/home/tuser/workspace** and **ccd.folder.lib=lib** in the **ccd.properties** file.
 
@@ -59,51 +97,4 @@ java -Xmx4G -jar ccd-web.jar
 To launch app in the browser
 ```
 http://localhost:[port]/ccd       // default port is 8080, otherwise change to specified port
-```
-
-******
-
-## Build a Windows executable application
-Add this launch4j configuarion below to the pom.xml in the build/plugins entity. 
-
-```
-<plugin>
-	<groupId>com.akathist.maven.plugins.launch4j</groupId>
-	<artifactId>launch4j-maven-plugin</artifactId>
-	<executions>
-		<execution>
-			<id>l4j-ccd-web-windows</id>
-			<phase>package</phase>
-			<goals>
-				<goal>launch4j</goal>
-			</goals>
-			<configuration>
-				<headerType>console</headerType>
-				<outfile>target/ccd-desktop-windows.exe</outfile>
-				<jar>target/ccd-web.jar</jar>
-				<errTitle>CCD</errTitle>
-				<classPath>
-					<mainClass>org.springframework.boot.loader.JarLauncher</mainClass>
-					<addDependencies>false</addDependencies>
-				</classPath>
-				<jre>
-					<minVersion>1.8.0</minVersion>
-					<maxHeapSize>4096</maxHeapSize>
-				</jre>
-				<versionInfo>
-					<fileVersion>1.0.0</fileVersion>
-					<txtFileVersion>1.0.0</txtFileVersion>
-					<fileDescription>CCD Desktop Windows
-						Application</fileDescription>
-					<copyright>University of Pittsburgh and Carnegie Mellon University</copyright>
-					<productVersion>1.0.0</productVersion>
-					<txtProductVersion>1.0.0</txtProductVersion>
-					<productName>CCD-Desktop</productName>
-					<internalName>ccd-web</internalName>
-					<originalFilename>ccd-desktop-windows-0.5.2.exe</originalFilename>
-				</versionInfo>
-			</configuration>
-		</execution>
-	</executions>
-</plugin>
 ```
