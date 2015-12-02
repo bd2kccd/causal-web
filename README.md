@@ -10,7 +10,7 @@ CCD web is a Java web-based application that allows users to run causal modeling
 * You will need a GMail account.  GMail will be used to send out account activation link and feedback.
 
 ### Download the source code
-Since this is a maven project all the dependencies will be download from the Maven public repository when compiling.  The following dependencies must be downloaded (or git cloned), built, and installed.
+Since this is a maven project all the dependencies will be download from the Maven public repository when compiling.  The following dependencies must be downloaded, built, and installed.
 
 * [lib-tetrad-0.4.1](https://github.com/bd2kccd/lib-tetrad/releases/tag/v0.4.1)
 * [ccd-algorithm-0.4.3](https://github.com/bd2kccd/ccd-algorithm/releases/tag/v0.4.3) 
