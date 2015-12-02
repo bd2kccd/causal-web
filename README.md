@@ -10,7 +10,7 @@ CCD web is a Java web-based application that allows users to run causal modeling
 * You will need a GMail account.  GMail will be used to send out account activation link and feedback.
 
 ### Download the source code
-Since this is a maven project all the submodules will need to be download from Github.  The following dependencies must be downloaded, built, and installed.
+Since this is a multimodule project all the submodules will need to be download and installed.  The following modules must be downloaded, built, and installed.
 
 * [lib-tetrad-0.4.1](https://github.com/bd2kccd/lib-tetrad/releases/tag/v0.4.1)
 * [ccd-algorithm-0.4.3](https://github.com/bd2kccd/ccd-algorithm/releases/tag/v0.4.3) 
@@ -18,13 +18,24 @@ Since this is a maven project all the submodules will need to be download from G
 * [ccd-mail-0.1.2](https://github.com/bd2kccd/ccd-mail/releases/tag/v0.1.2) 
 * [ccd-db-0.6.0](https://github.com/bd2kccd/ccd-db/releases/tag/v0.6.0) 
 * [ccd-commons-0.3.0](https://github.com/bd2kccd/ccd-commons/releases/tag/v0.3.0) 
+* [ccd-web-1.0.0](https://github.com/bd2kccd/ccd-web/releases/tag/v1.0.0)
 
 Download each module, uncompress the release, cd to each project directory and type **mvn clean install** to build and install the jar libraries.
 
 ## Configure and build the software
 
-### Setup the directory structure
-First, you need to create a workspace for the application to work in.  Create a directory called **workspace**, for an example ***/home/tuser/workspace***.  Inside the workspace directory, create another folder called **lib**, for an example ***/home/tuser/workspace/lib***.  Put all the algorithm dependencies in the **lib** folder.
+### Setup the directory structure and copy libraries
+First, you need to create a workspace for the application to work in.  Create a directory called **workspace**, for an example ***/home/tuser/workspace***.  Inside the workspace directory, create another folder called **lib**, for an example ***/home/tuser/workspace/lib***.  
+Copy the following libraries to the  **workspace/lib** folder
+* ccd-algorithm-0.4.3.jar (found in <ccd-algorithm-0.4.3>/target)
+* lib-tetrad-0.4.1.jar (found in <ccd-tetrad-0.4.1>/target)
+* colt-1.2.0.jar (found in lib-tetrad-0.4.1/lib)
+* commons-collections-3.1.jar (found in lib-tetrad-0.4.1/lib)
+* commons-math3-3.3.jar (found in lib-tetrad-0.4.1/lib)
+* jama-1.0.2.jar (found in lib-tetrad-0.4.1/lib)
+* mtj-0.9.14.jar (found in lib-tetrad-0.4.1/lib)
+* pal-1.5.1.jar (found in lib-tetrad-0.4.1/lib)
+* xom-1.1.jar (found in lib-tetrad-0.4.1/lib)
 
 ### Configure
 There are 4 configuration files:
@@ -86,16 +97,7 @@ http://localhost:[port]/ccd       // default port is 8080, otherwise change to s
 
 
 ###  Dependencies
-#### Algorithm Dependencies (automatically provided by Maven)
-*  [ccd-algorithm-0.4.3.jar](https://github.com/bd2kccd/ccd-algorithm/releases/tag/v0.4.3)
-* colt-1.2.0.jar
-* commons-collections-3.1.jar
-* commons-math3-3.3.jar
-* jama-1.0.2.jar
-* [lib-tetrad-0.4.1.jar](https://github.com/bd2kccd/lib-tetrad/releases/tag/v0.4.1)
-* mtj-0.9.14.jar
-* pal-1.5.1.jar
-* xom-1.1.jar
+
 
 #### ccd-web application dependencies (build/install before building the ccd-web application)
 * ccd-job-queue-0.1.3.jar
