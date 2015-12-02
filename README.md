@@ -87,7 +87,7 @@ http://localhost:[port]/ccd       // default port is 8080, otherwise change to s
 
 ###  Dependencies
 #### Algorithm Dependencies (automatically provided by Maven)
-*  [ccd-algorithm-0.4.3.jar](https://github.com/bd2kccd/ccd-algorithm/releases/tag/v0.4.3https://github.com/bd2kccd/ccd-algorithm/releases/tag/v0.4.3)
+*  [ccd-algorithm-0.4.3.jar](https://github.com/bd2kccd/ccd-algorithm/releases/tag/v0.4.3)
 * colt-1.2.0.jar
 * commons-collections-3.1.jar
 * commons-math3-3.3.jar
