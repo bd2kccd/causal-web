@@ -29,8 +29,8 @@ First, you need to create a workspace for the application to work in.  Create a 
 Inside the workspace directory, create another folder called **lib**, for example ***/home/tuser/workspace/lib***.  
 
 Copy the following libraries to the  **workspace/lib** folder
-* ccd-algorithm-0.4.3.jar (found in <ccd-algorithm-0.4.3>/target)
-* lib-tetrad-0.4.1.jar (found in <ccd-tetrad-0.4.1>/target)
+* ccd-algorithm-0.4.3.jar (found in ccd-algorithm-0.4.3/target)
+* lib-tetrad-0.4.1.jar (found in ccd-tetrad-0.4.1/target)
 * colt-1.2.0.jar (found in lib-tetrad-0.4.1/lib)
 * commons-collections-3.1.jar (found in lib-tetrad-0.4.1/lib)
 * commons-math3-3.3.jar (found in lib-tetrad-0.4.1/lib)
