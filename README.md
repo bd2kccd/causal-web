@@ -22,7 +22,7 @@ Since this is a multimodule project all the submodules will need to be download 
 
 Download each module, uncompress the download, cd to each project directory and type **mvn clean install** to build and install the jar libraries.
 
-## Configure and build the software
+## Configure the software
 
 ### Setup the directory structure and copy libraries
 First, you need to create a workspace for the application to work in.  Create a directory called **workspace**, for an example ***/home/tuser/workspace***.  
@@ -40,7 +40,7 @@ Copy the following libraries to the  **workspace/lib** folder
 * xom-1.1.jar (found in lib-tetrad-0.4.1/lib)
 
 ### Configure
-There are 4 configuration files:
+There are 4 configuration files to configure located in ccd-web-1.0.0/src/main/resources:
 1. **application-hsqldb.properties**: HSQLDB database configurations (for testing only).
 2. **application-mysql.properties**: MySQL database configurations
 3. **application.properties**: Spring Boot configurations
@@ -80,7 +80,7 @@ spring.profiles.active=scheduler,mysql
 
 Make sure you set **ccd.server.workspace=/home/tuser/workspace** and **ccd.folder.lib=lib** in the **ccd.properties** file.
 
-### Compile the Program
+## Compile the Program
 Go to the **ccd-web** directory and run the command **mvn clean package**. This will create a jar file called **ccd-web-1.0.0.jar** in the **/target** folder.
 
 ### Launch the Program
