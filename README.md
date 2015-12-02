@@ -20,12 +20,14 @@ Since this is a multimodule project all the submodules will need to be download 
 * [ccd-commons-0.3.0](https://github.com/bd2kccd/ccd-commons/releases/tag/v0.3.0) 
 * [ccd-web-1.0.0](https://github.com/bd2kccd/ccd-web/releases/tag/v1.0.0)
 
-Download each module, uncompress the release, cd to each project directory and type **mvn clean install** to build and install the jar libraries.
+Download each module, uncompress the download, cd to each project directory and type **mvn clean install** to build and install the jar libraries.
 
 ## Configure and build the software
 
 ### Setup the directory structure and copy libraries
-First, you need to create a workspace for the application to work in.  Create a directory called **workspace**, for an example ***/home/tuser/workspace***.  Inside the workspace directory, create another folder called **lib**, for an example ***/home/tuser/workspace/lib***.  
+First, you need to create a workspace for the application to work in.  Create a directory called **workspace**, for an example ***/home/tuser/workspace***.  
+Inside the workspace directory, create another folder called **lib**, for example ***/home/tuser/workspace/lib***.  
+
 Copy the following libraries to the  **workspace/lib** folder
 * ccd-algorithm-0.4.3.jar (found in <ccd-algorithm-0.4.3>/target)
 * lib-tetrad-0.4.1.jar (found in <ccd-tetrad-0.4.1>/target)
