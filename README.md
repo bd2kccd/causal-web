@@ -3,7 +3,7 @@ CCD web is a Java web-based application that allows users to run causal modeling
 
 Documentation for using the web application can be found at http://www.ccd.pitt.edu/wiki/index.php?title=CCD_Web_Application_Quick_Start_and_User_Guide 
 
-If you want to host your own hardware, follow the instructions below for configuring, building and installing the application.
+If you want to host the application with your own hardware, follow the instructions below for configuring, building and installing the application.
 
 ## Building the software
 
