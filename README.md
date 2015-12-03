@@ -1,5 +1,9 @@
 # ccd-web
-CCD web is a Java web-based application that allows users to run causal modeling algorithms on their dataset.
+CCD web is a Java web-based application that allows users to run causal modeling algorithms on their dataset.  The Center for Causal Discovery is hosting this application at the Pittsburgh Supercomputing Center and you can access it at [https://dxcvm26.psc.edu/ccd https://dxcvm26.psc.edu/ccd].
+
+Documentation for using the web application can be found at [http://www.ccd.pitt.edu/wiki/index.php?title=CCD_Web_Application_Quick_Start_and_User_Guide http://www.ccd.pitt.edu/wiki/index.php?title=CCD_Web_Application_Quick_Start_and_User_Guide]
+
+If you want to host your own hardware, follow the instructions below for configuring, building and installing the application.
 
 ## Building the software
 
