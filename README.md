@@ -101,12 +101,3 @@ To launch app in the browser
 http://localhost:[port]/ccd       // default port is 8080, otherwise change to specified port
 ```
 
-
-###  Dependencies
-
-
-#### ccd-web application dependencies (build/install before building the ccd-web application)
-* ccd-job-queue-0.1.3.jar
-* ccd-mail-0.1.2.jar
-* ccd-db-0.6.0.jar
-* ccd-commons-0.3.0.jar
