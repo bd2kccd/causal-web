@@ -89,21 +89,25 @@ public class UserRegistrationController implements ViewPath {
             final UserRegistration userRegistration,
             final RedirectAttributes redirectAttributes,
             final HttpServletRequest request) {
-        String username = userRegistration.getUsername();
-        if (userAccountService.findByUsername(username) == null) {
-            String email = userRegistration.getEmail();
-            if (userAccountService.findUserAccountByEmail(email) == null) {
-                if (userService.registerNewUser(userRegistration, request.getRequestURL().toString())) {
-                    String msg = "Thank you for registering.  Check your email to verify and activate your account.";
-                    redirectAttributes.addFlashAttribute("successMsg", msg);
+        if (userRegistration.isAgree()) {
+            String username = userRegistration.getUsername();
+            if (userAccountService.findByUsername(username) == null) {
+                String email = userRegistration.getEmail();
+                if (userAccountService.findUserAccountByEmail(email) == null) {
+                    if (userService.registerNewUser(userRegistration, request.getRequestURL().toString())) {
+                        String msg = "Thank you for registering.  Check your email to activate your account.";
+                        redirectAttributes.addFlashAttribute("successMsg", msg);
+                    } else {
+                        redirectAttributes.addFlashAttribute("errorMsg", String.format("Unable to register user '%s' at this time.", username));
+                    }
                 } else {
-                    redirectAttributes.addFlashAttribute("errorMsg", String.format("Unable to register user '%s' at this time.", username));
+                    redirectAttributes.addFlashAttribute("errorMsg", String.format("This email '%s' has already been registered.", email));
                 }
             } else {
-                redirectAttributes.addFlashAttribute("errorMsg", String.format("This email '%s' has already been registered.", email));
+                redirectAttributes.addFlashAttribute("errorMsg", String.format("Username '%s' is already taken.", username));
             }
         } else {
-            redirectAttributes.addFlashAttribute("errorMsg", String.format("Username '%s' is already taken.", username));
+            redirectAttributes.addFlashAttribute("errorMsg", "You must accept the terms and conditions.");
         }
 
         return REDIRECT_LOGIN;

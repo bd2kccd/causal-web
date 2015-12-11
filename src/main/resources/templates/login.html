@@ -116,7 +116,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <input type="checkbox" name="agree" value="true" checked="checked" /> Agree to <a href="#agreement" data-toggle="modal" data-target="#agreement">Terms &amp; Conditions</a>
+                                    <input id="agree" type="checkbox" name="agree" /> Agree to <a href="#agreement" data-toggle="modal" data-target="#agreement">Terms &amp; Conditions</a>
                                 </div>
                                 <button id="register" type="submit" class="btn btn-success pull-right">Sign Up</button>
                             </fieldset>
@@ -129,11 +129,10 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h4 class="modal-title pitt-color">Terms &amp; Conditions</h4>
+                        <h4 class="modal-title pitt-color">Terms and Conditions</h4>
                     </div>
                     <div class="modal-body">
-                        <p>By using this software you agree to blah blah blah...</p>
-                        <p>And, also, blah blah blah..</p>
+                        <textarea id="agreement" readonly="readonly" th:utext="${@environment.getProperty('ccd.agreement')}"></textarea>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>

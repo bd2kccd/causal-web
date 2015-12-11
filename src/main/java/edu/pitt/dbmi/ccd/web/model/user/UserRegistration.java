@@ -32,6 +32,8 @@ public class UserRegistration {
 
     private String password;
 
+    private boolean agree;
+
     public UserRegistration() {
     }
 
@@ -57,6 +59,14 @@ public class UserRegistration {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public boolean isAgree() {
+        return agree;
+    }
+
+    public void setAgree(boolean agree) {
+        this.agree = agree;
     }
 
 }
