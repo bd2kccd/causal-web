@@ -17,7 +17,7 @@ If you want to host the application with your own hardware, follow the instructi
 Since this is a multimodule project all the submodules will need to be download and installed.  The following modules must be downloaded, built, and installed.
 
 * [lib-tetrad-0.4.2](https://github.com/bd2kccd/lib-tetrad/releases/tag/v0.4.2)
-* [ccd-algorithm-0.4.4](https://github.com/bd2kccd/ccd-algorithm/releases/tag/v0.4.3) 
+* [ccd-algorithm-0.4.4](https://github.com/bd2kccd/ccd-algorithm/releases/tag/v0.4.4) 
 * [ccd-job-queue-0.1.3](https://github.com/bd2kccd/ccd-job-queue/releases/tag/v0.1.3) 
 * [ccd-mail-0.1.2](https://github.com/bd2kccd/ccd-mail/releases/tag/v0.1.2) 
 * [ccd-db-0.6.0](https://github.com/bd2kccd/ccd-db/releases/tag/v0.6.0) 
