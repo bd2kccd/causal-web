@@ -28,6 +28,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -130,7 +131,6 @@ public class AlgorithmResultService {
 
     public List<ResultFileInfo> listResultFileInfo(final String username) {
         List<ResultFileInfo> resultFileInfos = new LinkedList<>();
-
         try {
             Path dir = Paths.get(workspace, username, resultFolder, algorithmResultFolder);
             List<Path> list = FileInfos.listDirectory(dir, false);
@@ -152,7 +152,13 @@ public class AlgorithmResultService {
             LOGGER.error(exception.getMessage());
         }
 
-        return resultFileInfos;
+        // sort results in descent order
+        ResultFileInfo[] array = resultFileInfos.toArray(new ResultFileInfo[resultFileInfos.size()]);
+        Arrays.sort(array, (fileInfo1, fileInfo2) -> {
+            return fileInfo2.getCreationDate().compareTo(fileInfo1.getCreationDate());
+        });
+
+        return Arrays.asList(array);
     }
 
     public List<String> extractDatasetNames(final String fileName, final String username) {
