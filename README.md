@@ -16,8 +16,8 @@ If you want to host the application with your own hardware, follow the instructi
 ### Download the source code
 Since this is a multimodule project all the submodules will need to be download and installed.  The following modules must be downloaded, built, and installed.
 
-* [lib-tetrad-0.4.1](https://github.com/bd2kccd/lib-tetrad/releases/tag/v0.4.1)
-* [ccd-algorithm-0.4.3](https://github.com/bd2kccd/ccd-algorithm/releases/tag/v0.4.3) 
+* [lib-tetrad-0.4.2](https://github.com/bd2kccd/lib-tetrad/releases/tag/v0.4.2)
+* [ccd-algorithm-0.4.4](https://github.com/bd2kccd/ccd-algorithm/releases/tag/v0.4.3) 
 * [ccd-job-queue-0.1.3](https://github.com/bd2kccd/ccd-job-queue/releases/tag/v0.1.3) 
 * [ccd-mail-0.1.2](https://github.com/bd2kccd/ccd-mail/releases/tag/v0.1.2) 
 * [ccd-db-0.6.0](https://github.com/bd2kccd/ccd-db/releases/tag/v0.6.0) 
@@ -33,15 +33,15 @@ First, you need to create a workspace for the application to work in.  Create a 
 Inside the workspace directory, create another folder called **lib**, for example ***/home/tuser/workspace/lib***.  
 
 Copy the following libraries to the  **workspace/lib** folder
-* ccd-algorithm-0.4.3.jar (found in ccd-algorithm-0.4.3/target)
-* lib-tetrad-0.4.1.jar (found in ccd-tetrad-0.4.1/target)
-* colt-1.2.0.jar (found in lib-tetrad-0.4.1/lib)
-* commons-collections-3.1.jar (found in lib-tetrad-0.4.1/lib)
-* commons-math3-3.3.jar (found in lib-tetrad-0.4.1/lib)
-* jama-1.0.2.jar (found in lib-tetrad-0.4.1/lib)
-* mtj-0.9.14.jar (found in lib-tetrad-0.4.1/lib)
-* pal-1.5.1.jar (found in lib-tetrad-0.4.1/lib)
-* xom-1.1.jar (found in lib-tetrad-0.4.1/lib)
+* ccd-algorithm-0.4.4.jar (found in ccd-algorithm-0.4.4/target)
+* lib-tetrad-0.4.2.jar (found in ccd-tetrad-0.4.1/target)
+* colt-1.2.0.jar (found in lib-tetrad-0.4.2/lib)
+* commons-collections-3.1.jar (found in lib-tetrad-0.4.2/lib)
+* commons-math3-3.3.jar (found in lib-tetrad-0.4.2/lib)
+* jama-1.0.2.jar (found in lib-tetrad-0.4.2/lib)
+* mtj-0.9.14.jar (found in lib-tetrad-0.4.2/lib)
+* pal-1.5.1.jar (found in lib-tetrad-0.4.2/lib)
+* xom-1.1.jar (found in lib-tetrad-0.4.2/lib)
 
 ### Configure
 There are 4 configuration files to configure located in ccd-web-1.0.0/src/main/resources:
