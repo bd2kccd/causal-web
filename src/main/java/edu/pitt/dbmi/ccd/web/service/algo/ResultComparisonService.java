@@ -162,7 +162,6 @@ public class ResultComparisonService {
 
     public List<FileInfo> list(final String username) {
         List<FileInfo> fileInfos = new LinkedList<>();
-
         try {
             Path resultComparisonDir = Paths.get(workspace, username, resultFolder, resultComparisonFolder);
             List<Path> list = FileInfos.listDirectory(resultComparisonDir, false);
@@ -180,7 +179,13 @@ public class ResultComparisonService {
             LOGGER.error(exception.getMessage());
         }
 
-        return fileInfos;
+        // sort results in descent order
+        FileInfo[] array = fileInfos.toArray(new FileInfo[fileInfos.size()]);
+        Arrays.sort(array, (fileInfo1, fileInfo2) -> {
+            return fileInfo2.getCreationDate().compareTo(fileInfo1.getCreationDate());
+        });
+
+        return Arrays.asList(array);
     }
 
     public ResultComparison readInResultComparisonFile(String fileName, String username) {
