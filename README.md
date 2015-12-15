@@ -22,7 +22,7 @@ Since this is a multimodule project all the submodules will need to be download 
 * [ccd-mail-0.1.2](https://github.com/bd2kccd/ccd-mail/releases/tag/v0.1.2) 
 * [ccd-db-0.6.0](https://github.com/bd2kccd/ccd-db/releases/tag/v0.6.0) 
 * [ccd-commons-0.3.0](https://github.com/bd2kccd/ccd-commons/releases/tag/v0.3.0) 
-* [ccd-web-1.0.0](https://github.com/bd2kccd/ccd-web/releases/tag/v1.0.0)
+* [ccd-web-1.1.0](https://github.com/bd2kccd/ccd-web/releases/tag/v1.1.0)
 
 Download each module, uncompress the download, cd to each project directory and type **mvn clean install** to build and install the jar libraries.
 
