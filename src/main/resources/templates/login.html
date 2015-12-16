@@ -8,6 +8,7 @@
         <link rel="apple-touch-icon" href="../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
         <link rel="icon" href="../static/favicon.ico" th:href="@{/favicon.ico}" />
         <link rel="stylesheet" href="../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{/vendors/bootstrap/css/bootstrap.min.css}" />
+        <link rel="stylesheet" href="../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{/vendors/font-awesome/css/font-awesome.min.css}"/>
         <link rel="stylesheet" href="../static/css/styles.css" th:href="@{/css/styles.min.css}" />
         <link rel="stylesheet" href="../static/css/login.min.css" th:href="@{/css/login.min.css}" />
     </head>
@@ -38,13 +39,13 @@
                                     <form id="login" method="POST" action="" role="form">
                                         <div class="form-group">
                                             <div class="input-group">
-                                                <span class="input-group-addon"><i class="glyphicon glyphicon-user pitt-color"></i></span> 
+                                                <span class="input-group-addon"><i class="fa fa-user pitt-color"></i></span> 
                                                 <input class="form-control" placeholder="Username" name="username" type="text" autofocus="autofocus" value="" required="required" />
                                             </div>
                                         </div>
                                         <div class="form-group">
                                             <div class="input-group">
-                                                <span class="input-group-addon"><i class="glyphicon glyphicon-lock pitt-color"></i></span>
+                                                <span class="input-group-addon"><i class="fa fa-lock pitt-color"></i></span>
                                                 <input class="form-control" placeholder="Password" name="password" type="password" value="" required="required" />
                                             </div>
                                         </div>
@@ -83,40 +84,61 @@
                         <h4 class="modal-title pitt-color">CCD Account Request</h4>
                     </div>
                     <div class="modal-body">
-                        <form id="registration" role="form" method="POST" action="user/registration" th:action="@{/user/registration}">
+                        <form id="registration" role="form" method="POST" action="user/registration" th:action="@{/user/registration}" th:object="${userRegistration}">
                             <fieldset>
                                 <div class="form-group">
                                     <div class="input-group">
                                         <span class="input-group-addon">
-                                            <i class="glyphicon glyphicon-user pitt-color"></i>
+                                            <i class="fa fa-user pitt-color"></i>
                                         </span> 
-                                        <input class="form-control" placeholder="Username" name="username" type="text" autofocus="autofocus" required="required" />
+                                        <input class="form-control" placeholder="Username" name="username" type="text" autofocus="autofocus" th:field="*{username}" required="required" />
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <div class="input-group">
                                         <span class="input-group-addon">
-                                            <i class="glyphicon glyphicon-envelope pitt-color"></i>
+                                            <i class="fa fa-envelope pitt-color"></i>
                                         </span> 
-                                        <input class="form-control" placeholder="Email" name="email" type="email" required="required" />
+                                        <input class="form-control" placeholder="Email" name="email" type="email" th:field="*{email}" required="required" />
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <div class="input-group">
                                         <span class="input-group-addon">
-                                            <i class="glyphicon glyphicon-lock pitt-color"></i>
+                                            <i class="fa fa-lock pitt-color"></i>
                                         </span> 
-                                        <input id="password" class="form-control" placeholder="Password" name="password" type="password" required="required" />
+                                        <input id="password" class="form-control" placeholder="Password" name="password" type="password" th:field="*{password}" required="required" />
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <div class="input-group">
                                         <span class="input-group-addon">
-                                            <i class="glyphicon glyphicon-lock pitt-color"></i>
+                                            <i class="fa fa-lock pitt-color"></i>
                                         </span> 
                                         <input id="confirmPassword" class="form-control" placeholder="Confirm Password" name="confirmPassword" type="password" required="required" />
                                     </div>
                                 </div>
+                                <fieldset class="security_qa_border">
+                                    <legend class="security_qa_border">Security Question/Answer</legend>
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">
+                                                <i class="fa fa-question-circle pitt-color"></i>
+                                            </span>
+                                            <select id="secureQues" name="secureQues" class="form-control" title="Please select a security question." th:field="*{secureQues}" required="required">
+                                                <option th:each="squestion : ${securityQuestions}" value="" th:value="${squestion.id}" th:text="${squestion.question}"></option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">
+                                                <i class="fa fa-user-secret pitt-color"></i>
+                                            </span>
+                                            <input id="secureAns" class="form-control" placeholder="Security Answer" name="secureAns" type="text" th:field="*{secureAns}" required="required" />
+                                        </div>
+                                    </div>
+                                </fieldset>
                                 <div class="form-group">
                                     <input id="agree" type="checkbox" name="agree" /> Agree to <a href="#agreement" data-toggle="modal" data-target="#agreement">Terms &amp; Conditions</a>
                                 </div>

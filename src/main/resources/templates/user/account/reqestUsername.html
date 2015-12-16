@@ -10,6 +10,7 @@
         <link rel="icon" href="../../../static/favicon.ico" th:href="@{/favicon.ico}" />
         <link rel="stylesheet" href="../../../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{/vendors/bootstrap/css/bootstrap.min.css}" />
         <link rel="stylesheet" href="../../../static/vendors/bootstrap/css/bootstrap-theme.min.css" th:href="@{/vendors/bootstrap/css/bootstrap-theme.min.css}" />
+        <link rel="stylesheet" href="../../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{/vendors/font-awesome/css/font-awesome.min.css}"/>
         <link rel="stylesheet" href="../../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
     </head>
     <body>
@@ -19,7 +20,7 @@
                 <div class="form-group">
                     <label for="username">Please enter your username:</label>
                     <div class="input-group">
-                        <span class="input-group-addon"><i class="glyphicon glyphicon-user pitt-color"></i></span> 
+                        <span class="input-group-addon"><i class="fa fa-user pitt-color"></i></span>
                         <input class="form-control" id="username" name="username" type="text" autofocus="autofocus" value="" th:field="*{username}" required="required" />
                     </div>
                 </div>

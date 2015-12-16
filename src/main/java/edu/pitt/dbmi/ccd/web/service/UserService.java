@@ -19,12 +19,15 @@
 package edu.pitt.dbmi.ccd.web.service;
 
 import edu.pitt.dbmi.ccd.db.entity.Person;
+import edu.pitt.dbmi.ccd.db.entity.SecurityAnswer;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.SecurityAnswerService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
 import edu.pitt.dbmi.ccd.web.service.mail.MailService;
 import java.net.URI;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Date;
 import java.util.UUID;
 import javax.mail.MessagingException;
@@ -34,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -51,6 +55,8 @@ public class UserService {
 
     private final UserAccountService userAccountService;
 
+    private final SecurityAnswerService securityAnswerService;
+
     private final DefaultPasswordService passwordService;
 
     private final MailService mailService;
@@ -59,10 +65,12 @@ public class UserService {
     public UserService(
             @Value("${ccd.server.url:}") String serverUrl,
             UserAccountService userAccountService,
+            SecurityAnswerService securityAnswerService,
             DefaultPasswordService passwordService,
             MailService mailService) {
         this.serverUrl = serverUrl;
         this.userAccountService = userAccountService;
+        this.securityAnswerService = securityAnswerService;
         this.passwordService = passwordService;
         this.mailService = mailService;
     }
@@ -103,23 +111,42 @@ public class UserService {
             userAccount.setPerson(person);
             userAccount.setUsername(username);
 
-            userAccountService.saveUserAccount(userAccount);
+            SecurityAnswer securityAnswer = new SecurityAnswer();
+            securityAnswer.setAnswer(userRegistration.getSecureAns());
+            securityAnswer.setSecurityQuestion(userRegistration.getSecureQues());
+            securityAnswer.setUserAccounts(Collections.singleton(userAccount));
 
-            Thread t = new Thread(() -> {
-                try {
-                    mailService.sendRegistrationActivation(username, email, url);
-                } catch (MessagingException exception) {
-                    LOGGER.warn(String.format("Unable to send registration email for user '%s'.", username), exception);
-                }
-            });
-            t.start();
-
-            success = true;
+            success = persistUserRegistration(userAccount, securityAnswer);
+            if (success) {
+                Thread t = new Thread(() -> {
+                    try {
+                        mailService.sendRegistrationActivation(username, email, url);
+                    } catch (MessagingException exception) {
+                        LOGGER.warn(String.format("Unable to send registration email for user '%s'.", username), exception);
+                    }
+                });
+                t.start();
+            }
         } catch (Exception exception) {
             LOGGER.warn(exception.getMessage());
         }
 
         return success;
+    }
+
+    @Transactional(noRollbackFor = Exception.class)
+    private boolean persistUserRegistration(UserAccount userAccount, SecurityAnswer securityAnswer) throws Exception {
+        boolean flag = false;
+
+        try {
+            userAccountService.saveUserAccount(userAccount);
+            securityAnswerService.saveSecurityAnswer(securityAnswer);
+            flag = true;
+        } catch (Exception exception) {
+            throw new Exception("Unable to create new user account.");
+        }
+
+        return flag;
     }
 
 }

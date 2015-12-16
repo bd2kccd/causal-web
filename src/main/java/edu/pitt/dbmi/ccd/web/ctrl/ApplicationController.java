@@ -19,10 +19,12 @@
 package edu.pitt.dbmi.ccd.web.ctrl;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.SecurityQuestionService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.LOGIN_VIEW;
 import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.REDIRECT_LOGIN;
 import edu.pitt.dbmi.ccd.web.model.AppUser;
+import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.DataService;
 import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmResultService;
@@ -64,6 +66,8 @@ public class ApplicationController implements ViewPath {
 
     private final ResultComparisonService resultComparisonService;
 
+    private final SecurityQuestionService securityQuestionService;
+
     private final AppUserService appUserService;
 
     @Autowired
@@ -72,11 +76,13 @@ public class ApplicationController implements ViewPath {
             DataService dataService,
             AlgorithmResultService algorithmResultService,
             ResultComparisonService resultComparisonService,
+            SecurityQuestionService securityQuestionService,
             AppUserService appUserService) {
         this.userAccountService = userAccountService;
         this.dataService = dataService;
         this.algorithmResultService = algorithmResultService;
         this.resultComparisonService = resultComparisonService;
+        this.securityQuestionService = securityQuestionService;
         this.appUserService = appUserService;
     }
 
@@ -98,7 +104,7 @@ public class ApplicationController implements ViewPath {
     }
 
     @RequestMapping(value = LOGIN, method = RequestMethod.GET)
-    public String showLoginPage(final SessionStatus sessionStatus) {
+    public String showLoginPage(final SessionStatus sessionStatus, final Model model) {
         Subject currentUser = SecurityUtils.getSubject();
         if (sessionStatus.isComplete()) {
             currentUser.logout();
@@ -107,6 +113,9 @@ public class ApplicationController implements ViewPath {
         } else {
             sessionStatus.setComplete();
         }
+
+        model.addAttribute("userRegistration", new UserRegistration());
+        model.addAttribute("securityQuestions", securityQuestionService.findAllSecurityQuestion());
 
         return LOGIN_VIEW;
     }
@@ -120,6 +129,8 @@ public class ApplicationController implements ViewPath {
         } catch (AuthenticationException exception) {
             LOGGER.warn(String.format("Failed login attempt from user %s.", username));
             model.addAttribute("errorMsg", "Invalid username and/or password.");
+            model.addAttribute("userRegistration", new UserRegistration());
+            model.addAttribute("securityQuestions", securityQuestionService.findAllSecurityQuestion());
             return LOGIN_VIEW;
         }
 
@@ -134,6 +145,8 @@ public class ApplicationController implements ViewPath {
         } else {
             currentUser.logout();
             model.addAttribute("errorMsg", "Your account has not been activated.");
+            model.addAttribute("userRegistration", new UserRegistration());
+            model.addAttribute("securityQuestions", securityQuestionService.findAllSecurityQuestion());
 
             return LOGIN_VIEW;
         }
