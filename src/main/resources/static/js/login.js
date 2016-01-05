@@ -56,13 +56,22 @@ $(document).ready(function () {
             },
             confirmPassword: {
                 equalTo: "#password"
+            },
+            secureQues: {
+                required: true
+            },
+            secureAns: {
+                maxlength: 25,
+                required: true
             }
         },
         messages: {
             username: "Please enter a valid username (no white space).",
             email: "Please enter a valid email.",
             password: "Please enter valid a password (5-25 chars).",
-            confirmPassword: "Please reenter password."
+            confirmPassword: "Please reenter password.",
+            secureQues: "Please select a security question.",
+            secureAns: "Please enter the security answer."
         },
         highlight: function (element) {
             $(element).closest('.form-group').addClass('has-error');

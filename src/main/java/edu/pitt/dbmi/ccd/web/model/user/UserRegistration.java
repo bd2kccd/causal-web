@@ -18,6 +18,8 @@
  */
 package edu.pitt.dbmi.ccd.web.model.user;
 
+import edu.pitt.dbmi.ccd.db.entity.SecurityQuestion;
+
 /**
  *
  * Jun 20, 2015 12:20:50 PM
@@ -31,6 +33,10 @@ public class UserRegistration {
     private String email;
 
     private String password;
+
+    private SecurityQuestion secureQues;
+
+    private String secureAns;
 
     private boolean agree;
 
@@ -59,6 +65,22 @@ public class UserRegistration {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public SecurityQuestion getSecureQues() {
+        return secureQues;
+    }
+
+    public void setSecureQues(SecurityQuestion secureQues) {
+        this.secureQues = secureQues;
+    }
+
+    public String getSecureAns() {
+        return secureAns;
+    }
+
+    public void setSecureAns(String secureAns) {
+        this.secureAns = secureAns;
     }
 
     public boolean isAgree() {
