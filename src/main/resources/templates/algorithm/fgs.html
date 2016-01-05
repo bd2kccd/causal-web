@@ -57,7 +57,7 @@
                                             </div>
                                             <div class="panel-body">
                                                 <div class="form-group">
-                                                    <label for="dataset">Dataset:</label>
+                                                    <label for="dataset">Dataset: (Data must be summarized before appearing here. Only continuous data is analyzable by this algorithm.)</label>
                                                     <select id="dataset" name="dataset" class="form-control" ng-model="dataset" required="required"
                                                             th:field="*{dataset}"
                                                             th:attr="ng-init='dataset = \'' + *{dataset} + '\''"
@@ -85,11 +85,11 @@
                                             </div>
                                             <div class="panel-body">
                                                 <div class="form-group">
-                                                    <label for="penaltyDiscount" class="control-label">Penalty Discount</label>
+                                                    <label for="penaltyDiscount" class="control-label">Penalty Discount - multiplier on the penalty term of the BIC score for continuous data. We suggest 2 for &lt;50 variables and 4 for &gt;50 variables.</label>
                                                     <input type="number" id="penaltyDiscount" name="penaltyDiscount" maxlength="10" class="form-control" placeholder="Penalty Discount" ng-model="penaltyDiscount" th:attr="ng-init='penaltyDiscount=' + *{penaltyDiscount}" th:field="*{penaltyDiscount}" required="required" />
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="depth" class="control-label">Search Depth (minimum value: -1)</label>
+                                                    <label for="depth" class="control-label">Search Depth (a value of -1 indicates no limit)</label>
                                                     <input type="number" id="depth" name="depth" maxlength="10" class="form-control" placeholder="Depth" ng-model="depth" th:attr="ng-init='depth=' + *{depth}" th:field="*{depth}" required="required" />
                                                 </div>
                                                 <div class="form-group">

@@ -66,7 +66,7 @@
                                 </div>
                                 <div class="panel-body">
                                     <div class="form-group">
-                                        <label>Variable Type:</label>
+                                        <label>Variable Type: (only continuous data can be analysed at this time)</label>
                                         <label for="variableType" class="radio-inline" th:each="varType : ${variableTypes}">
                                             <input type="radio" name="variableType" id="variableType" th:id="${varType.name}" value="continuous" th:value="${varType.id}" th:field="*{variableType}" required="required" /><span th:text="${varType.name}">continuous</span>
                                         </label>
