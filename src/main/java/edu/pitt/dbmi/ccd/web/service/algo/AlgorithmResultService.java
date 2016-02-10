@@ -30,6 +30,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -159,6 +160,43 @@ public class AlgorithmResultService {
         });
 
         return Arrays.asList(array);
+    }
+
+    public Map<String, Map<String, String>> extractDataCategories(final String fileName, final String username, final List<String> categoryNames) {
+        Map<String, Map<String, String>> info = new LinkedHashMap<>();
+        categoryNames.forEach(key -> {
+            info.put(key, new LinkedHashMap<>());
+        });
+        Path file = Paths.get(workspace, username, resultFolder, algorithmResultFolder, fileName);
+        try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
+            Pattern equalDelim = Pattern.compile("=");
+            boolean isCategory = false;
+            Map<String, String> map = null;
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                line = line.trim();
+
+                if (isCategory) {
+                    if (line.isEmpty()) {
+                        isCategory = false;
+                    } else {
+                        if (map != null) {
+                            String[] data = equalDelim.split(line);
+                            if (data.length == 2) {
+                                map.put(data[0].trim(), data[1].trim());
+                            }
+                        }
+                    }
+                } else if (line.endsWith(":")) {
+                    String name = line.replace(":", "");
+                    map = info.get(name);
+                    isCategory = true;
+                }
+            }
+        } catch (IOException exception) {
+            LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
+        }
+
+        return info;
     }
 
     public List<String> extractDatasetNames(final String fileName, final String username) {

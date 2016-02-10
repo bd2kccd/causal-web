@@ -22,6 +22,8 @@ import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.model.AppUser;
 import edu.pitt.dbmi.ccd.web.model.file.SelectedFiles;
 import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmResultService;
+import java.util.Arrays;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,8 +98,10 @@ public class AlgorithmResultController implements ViewPath {
         String url = String.format("/algorithm/results/d3graph?file=%s", fileName);
         model.addAttribute("plot", fileName);
         model.addAttribute("link", url);
-        model.addAttribute("datasets", algorithmResultService.extractDatasetNames(fileName, appUser.getUsername()));
-        model.addAttribute("parameters", algorithmResultService.extractPlotParameters(fileName, appUser.getUsername()));
+
+        String username = appUser.getUsername();
+        List<String> categoryNames = Arrays.asList("Data File", "Dataset Read In", "Runtime Parameters", "Algorithm Parameters");
+        model.addAttribute("categories", algorithmResultService.extractDataCategories(fileName, username, categoryNames));
 
         return PLOT_VIEW;
     }

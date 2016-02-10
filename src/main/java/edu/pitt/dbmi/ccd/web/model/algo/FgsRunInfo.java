@@ -26,27 +26,47 @@ package edu.pitt.dbmi.ccd.web.model.algo;
  */
 public class FgsRunInfo extends AlgorithmRunInfo {
 
-    protected Integer depth;
+    protected int depth;
 
-    protected Double penaltyDiscount;
+    protected double penaltyDiscount;
+
+    protected boolean faithful;
+
+    protected boolean ignoreLinearDependence;
 
     public FgsRunInfo() {
     }
 
-    public Integer getDepth() {
+    public int getDepth() {
         return depth;
     }
 
-    public void setDepth(Integer depth) {
+    public void setDepth(int depth) {
         this.depth = depth;
     }
 
-    public Double getPenaltyDiscount() {
+    public double getPenaltyDiscount() {
         return penaltyDiscount;
     }
 
-    public void setPenaltyDiscount(Double penaltyDiscount) {
+    public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
+    }
+
+    public boolean isFaithful() {
+        return faithful;
+    }
+
+    public void setFaithful(boolean faithful) {
+        this.faithful = faithful;
+    }
+
+    public boolean isIgnoreLinearDependence() {
+        return ignoreLinearDependence;
+    }
+
+    public void setIgnoreLinearDependence(boolean ignoreLinearDependence) {
+        this.ignoreLinearDependence = ignoreLinearDependence;
     }
 
 }

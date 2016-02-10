@@ -115,10 +115,11 @@ public abstract class AbstractAlgorithmService {
 
         // add classpath
         Path classPath = Paths.get(workspace, libFolder, algorithmJar);
-        commands.add("-cp");
+        commands.add("-jar");
         commands.add(classPath.toString());
 
         // add algorithm
+        commands.add("--algorithm");
         commands.add(algorithm);
 
         // add dataset
@@ -138,7 +139,7 @@ public abstract class AbstractAlgorithmService {
         String fileName = (dataset.size() > 1)
                 ? String.format("%s_%s_%d", algorithmName, "multi-dataset", currentTime)
                 : String.format("%s_%s_%d", algorithmName, listToSeperatedValues(dataset, ","), currentTime);
-        commands.add("--out-filename");
+        commands.add("--output-prefix");
         commands.add(fileName);
 
         String cmd = listToSeperatedValues(commands, ";");

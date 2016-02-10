@@ -96,6 +96,20 @@
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
+                                                        <label for="faithful" class="control-label">
+                                                            <input type="checkbox" id="faithful" name="faithful" ng-model="faithful" th:attr="ng-init='faithful=' + *{faithful}" th:field="*{faithful}" /> faithful
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label for="ignoreLinearDependence" class="control-label">
+                                                            <input type="checkbox" id="ignoreLinearDependence" name="ignoreLinearDependence" ng-model="ignoreLinearDependence" th:attr="ng-init='ignoreLinearDependence=' + *{ignoreLinearDependence}" th:field="*{ignoreLinearDependence}" /> ignoreLinearDependence
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="checkbox">
                                                         <label for="verbose" class="control-label">
                                                             <input type="checkbox" id="verbose" name="verbose" ng-model="verbose" th:attr="ng-init='verbose=' + *{verbose}" th:field="*{verbose}" /> Verbose
                                                         </label>
@@ -142,6 +156,14 @@
                                                             <tr>
                                                                 <td class="col-md-2">Search Depth:</td>
                                                                 <td ng-bind="depth"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="col-md-2">Search Depth:</td>
+                                                                <td ng-bind="faithful"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="col-md-2">Search Depth:</td>
+                                                                <td ng-bind="ignoreLinearDependence"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td class="col-md-3">Verbose:</td>

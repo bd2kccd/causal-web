@@ -71,7 +71,9 @@ public class FGSController implements ViewPath {
         FgsRunInfo info = new FgsRunInfo();
         info.setPenaltyDiscount(4.0);
         info.setDepth(3);
-        info.setVerbose(Boolean.TRUE);
+        info.setFaithful(true);
+        info.setIgnoreLinearDependence(true);
+        info.setVerbose(true);
         info.setJvmOptions("");
 
         Map<String, String> map = algorithmService.getUserDataset(appUser.getUsername());
@@ -103,11 +105,17 @@ public class FGSController implements ViewPath {
         parameters.add("--delimiter");
         parameters.add(delimiter);
         parameters.add("--penalty-discount");
-        parameters.add(String.valueOf(info.getPenaltyDiscount().doubleValue()));
+        parameters.add(String.valueOf(info.getPenaltyDiscount()));
         parameters.add("--depth");
-        parameters.add(String.valueOf(info.getDepth().intValue()));
+        parameters.add(String.valueOf(info.getDepth()));
         if (info.isVerbose()) {
             parameters.add("--verbose");
+        }
+        if (info.isFaithful()) {
+            parameters.add("--faithful");
+        }
+        if (info.isIgnoreLinearDependence()) {
+            parameters.add("--ignore-linear-dependence");
         }
 
         List<String> jvmOptions = new LinkedList<>();
