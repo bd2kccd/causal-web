@@ -97,14 +97,14 @@
                                                 <div class="form-group">
                                                     <div class="checkbox">
                                                         <label for="faithful" class="control-label">
-                                                            <input type="checkbox" id="faithful" name="faithful" ng-model="faithful" th:attr="ng-init='faithful=' + *{faithful}" th:field="*{faithful}" /> faithful
+                                                            <input type="checkbox" id="faithful" name="faithful" ng-model="faithful" th:attr="ng-init='faithful=' + *{faithful}" th:field="*{faithful}" /> Faithful
                                                         </label>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
                                                         <label for="ignoreLinearDependence" class="control-label">
-                                                            <input type="checkbox" id="ignoreLinearDependence" name="ignoreLinearDependence" ng-model="ignoreLinearDependence" th:attr="ng-init='ignoreLinearDependence=' + *{ignoreLinearDependence}" th:field="*{ignoreLinearDependence}" /> ignoreLinearDependence
+                                                            <input type="checkbox" id="ignoreLinearDependence" name="ignoreLinearDependence" ng-model="ignoreLinearDependence" th:attr="ng-init='ignoreLinearDependence=' + *{ignoreLinearDependence}" th:field="*{ignoreLinearDependence}" /> Ignore Linear Dependence
                                                         </label>
                                                     </div>
                                                 </div>
@@ -154,15 +154,15 @@
                                                                 <td ng-bind="penaltyDiscount"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-2">Search Depth:</td>
+                                                                <td class="col-md-3">Search Depth:</td>
                                                                 <td ng-bind="depth"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-2">Search Depth:</td>
+                                                                <td class="col-md-3">Faithful:</td>
                                                                 <td ng-bind="faithful"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-2">Search Depth:</td>
+                                                                <td class="col-md-3">Ignore Linear Dependence:</td>
                                                                 <td ng-bind="ignoreLinearDependence"></td>
                                                             </tr>
                                                             <tr>
@@ -170,7 +170,7 @@
                                                                 <td ng-bind="verbose"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-2">Advanced Options:</td>
+                                                                <td class="col-md-3">Advanced Options:</td>
                                                                 <td ng-bind="jvmOptions"></td>
                                                             </tr>
                                                         </tbody>
