@@ -135,6 +135,9 @@ public abstract class AbstractAlgorithmService {
         // add parameters
         commands.addAll(parameters);
 
+        // don't create any validation files
+        commands.add("--no-validation-output");
+
         long currentTime = System.currentTimeMillis();
         String fileName = (dataset.size() > 1)
                 ? String.format("%s_%s_%d", algorithmName, "multi-dataset", currentTime)
