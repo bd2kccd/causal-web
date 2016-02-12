@@ -34,7 +34,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
@@ -196,61 +196,20 @@ public class AlgorithmResultService {
             LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
         }
 
+        // clean up
+        List<String> trash = new LinkedList<>();
+        Set<String> keySet = info.keySet();
+        keySet.forEach(key -> {
+            Map<String, String> map = info.get(key);
+            if (map.isEmpty()) {
+                trash.add(key);
+            }
+        });
+        trash.forEach(key -> {
+            info.remove(key);
+        });
+
         return info;
-    }
-
-    public List<String> extractDatasetNames(final String fileName, final String username) {
-        List<String> datasets = new LinkedList<>();
-
-        Path file = Paths.get(workspace, username, resultFolder, algorithmResultFolder, fileName);
-        try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
-            boolean isDatasets = false;
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                line = line.trim();
-
-                if (isDatasets) {
-                    if (line.isEmpty()) {
-                        break;
-                    } else {
-                        datasets.add(line);
-                    }
-                } else if ("Datasets:".equals(line)) {
-                    isDatasets = true;
-                }
-            }
-        } catch (IOException exception) {
-            LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
-        }
-
-        return datasets;
-    }
-
-    public Map<String, String> extractPlotParameters(final String fileName, final String username) {
-        Map<String, String> parameters = new TreeMap<>();
-
-        Path file = Paths.get(workspace, username, resultFolder, algorithmResultFolder, fileName);
-        try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
-            Pattern equalDelim = Pattern.compile("=");
-            boolean isParamters = false;
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                line = line.trim();
-
-                if (isParamters) {
-                    String[] data = equalDelim.split(line);
-                    if (data.length == 2) {
-                        parameters.put(data[0].trim(), data[1].trim());
-                    } else {
-                        break;
-                    }
-                } else if ("Graph Parameters:".equals(line)) {
-                    isParamters = true;
-                }
-            }
-        } catch (IOException exception) {
-            LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
-        }
-
-        return parameters;
     }
 
     public List<Node> extractGraphNodes(final String fileName, final String username) {
