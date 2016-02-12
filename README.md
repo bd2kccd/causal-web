@@ -35,7 +35,7 @@ Copy the following libraries to the  **workspace/lib** folder
 * tetrad-cli-5.3.0.jar
 
 ### Configure
-There are 4 configuration files to configure located in ccd-web-1.0.0/src/main/resources:
+There are 4 configuration files to configure located in ccd-web-1.2.0/src/main/resources:
 1. **application-hsqldb.properties**: HSQLDB database configurations (for testing only).
 2. **application-mysql.properties**: MySQL database configurations
 3. **application.properties**: Spring Boot configurations
@@ -76,15 +76,15 @@ spring.profiles.active=scheduler,mysql
 Make sure you set **ccd.server.workspace=/home/tuser/workspace** and **ccd.folder.lib=lib** in the **ccd.properties** file.
 
 ## Compile the Program
-Go to the **ccd-web** directory and run the command **mvn clean package**. This will create a jar file called **ccd-web-1.0.0.jar** in the **/target** folder.
+Go to the **ccd-web** directory and run the command **mvn clean package**. This will create a jar file called **ccd-web-1.2.0.jar** in the **/target** folder.
 
 ### Launch the Program
 ```java
-java -jar ccd-web.jar
+java -jar ccd-web-1.2.0.jar
 ```
 To give the program 4GB of memory to run on, type the follow, using the jvm options:
 ```java
-java -Xmx4G -jar ccd-web.jar
+java -Xmx4G -jar ccd-web-1.2.0.jar
 ```
 
 To launch app in the browser
