@@ -100,7 +100,7 @@ public class AlgorithmResultController implements ViewPath {
         model.addAttribute("link", url);
 
         String username = appUser.getUsername();
-        List<String> categoryNames = Arrays.asList("Data File", "Dataset Read In", "Runtime Parameters", "Algorithm Parameters", "Datasets", "Graph Parameters");
+        List<String> categoryNames = Arrays.asList("Data File", "Dataset Read In", "Runtime Parameters", "Algorithm Parameters", "Graph Parameters");
         model.addAttribute("categories", algorithmResultService.extractDataCategories(fileName, username, categoryNames));
 
         return PLOT_VIEW;
