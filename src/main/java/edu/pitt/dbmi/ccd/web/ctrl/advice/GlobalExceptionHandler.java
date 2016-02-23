@@ -36,12 +36,15 @@ public class GlobalExceptionHandler {
 
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     @ExceptionHandler(HttpSessionRequiredException.class)
-    public void handleSessionRequiredException() {
+    public void unauthorized() {
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    @ExceptionHandler(InvalidDataAccessResourceUsageException.class)
-    public void handleInvalidDataAccessResourceUsageException() {
+    @ExceptionHandler({
+        InvalidDataAccessResourceUsageException.class,
+        NullPointerException.class
+    })
+    public void internalServerError() {
     }
 
 }

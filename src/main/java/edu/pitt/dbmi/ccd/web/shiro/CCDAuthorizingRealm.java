@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 University of Pittsburgh.
+ * Copyright (C) 2016 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,7 +33,6 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  *
@@ -41,10 +40,9 @@ import org.springframework.stereotype.Component;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-@Component
 public class CCDAuthorizingRealm extends AuthorizingRealm {
 
-    @Autowired(required = true)
+    @Autowired
     private UserAccountService userAccountService;
 
     @Override
@@ -56,7 +54,7 @@ public class CCDAuthorizingRealm extends AuthorizingRealm {
         }
 
         Set<String> roles = new LinkedHashSet<>();
-        roles.add("admin");
+        roles.add("user");
         Set<String> permissions = new LinkedHashSet<>();
         permissions.add("*");
 

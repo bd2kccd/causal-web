@@ -39,9 +39,6 @@ import org.springframework.context.annotation.DependsOn;
 @Configuration
 public class ShiroConfigurer {
 
-    private static final String AUTHC = "authc";
-    private static final String ANON = "anon";
-
     @Bean(name = "passwordService")
     public DefaultPasswordService passwordService() {
         return new DefaultPasswordService();
@@ -83,15 +80,10 @@ public class ShiroConfigurer {
         factoryBean.setSecurityManager(securityManager());
         factoryBean.setLoginUrl("/login");
         factoryBean.setUnauthorizedUrl("/401");
-        factoryBean.setSuccessUrl("/home");
+        factoryBean.setSuccessUrl("/secured/home");
 
         Map<String, String> filterChainDefinitionMap = new LinkedHashMap<>();
-        filterChainDefinitionMap.put("/home", AUTHC);
-        filterChainDefinitionMap.put("/user/profile/**", AUTHC);
-        filterChainDefinitionMap.put("/data/**", AUTHC);
-        filterChainDefinitionMap.put("/algorithm/**", AUTHC);
-        filterChainDefinitionMap.put("/jobQueue/**", AUTHC);
-        filterChainDefinitionMap.put("/feedback/**", AUTHC);
+        filterChainDefinitionMap.put("/secured/**", "authc");
         factoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
 
         return factoryBean;

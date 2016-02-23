@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>CCD: Footer</title>
+        <meta name="description" content="" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="apple-touch-icon" href="../../../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
+        <link rel="icon" href="../../../static/favicon.ico" th:href="@{/favicon.ico}" />
+        <link rel="stylesheet" href="../../../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{/vendors/bootstrap/css/bootstrap.min.css}" />
+    </head>
+    <body>
+        <div class="container">
+            <footer>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="page-header"></div>
+                        <p class="text-muted" th:inline="text">Copyright &copy; [[${#dates.year(#dates.createNow())} + ' ' + ${@environment.getProperty('ccd.app.copyright')}]]</p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </body>
+</html>

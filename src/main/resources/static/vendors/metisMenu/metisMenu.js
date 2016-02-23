@@ -1,5 +1,5 @@
 /*
- * metismenu - v2.2.0
+ * metismenu - v2.4.0
  * A jQuery menu plugin
  * https://github.com/onokumus/metisMenu#readme
  *
@@ -7,7 +7,15 @@
  * Under MIT License
  */
 
-(function($) {
+(function(root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    define(['jquery'], factory);
+  } else if (typeof exports === 'object') {
+    module.exports = factory(require('jquery'));
+  } else {
+    root.sortable = factory(root.jQuery);
+  }
+}(this, function($) {
   'use strict';
 
   function transitionEnd() {
@@ -127,6 +135,9 @@
         var $list = $parent.children('ul');
         if($this.options.preventDefault){
           e.preventDefault();
+        }
+        if(self.attr('aria-disabled') === 'true'){
+            return;
         }
         if ($parent.hasClass(activeClass) && !$this.options.doubleTapToGo) {
           $this.hide($list);
@@ -283,5 +294,4 @@
     $.fn.metisMenu = old;
     return this;
   };
-
-})(jQuery);
+}));

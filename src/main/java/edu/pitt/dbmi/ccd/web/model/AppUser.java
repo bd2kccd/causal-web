@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.model;
 
+import java.util.Date;
 import org.springframework.context.annotation.Scope;
 
 /**
@@ -37,7 +38,11 @@ public class AppUser {
 
     private String lastName;
 
-    private String lastLogin;
+    private String email;
+
+    private Date lastLogin;
+
+    private boolean localAccount;
 
     public AppUser() {
     }
@@ -74,12 +79,28 @@ public class AppUser {
         this.lastName = lastName;
     }
 
-    public String getLastLogin() {
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Date getLastLogin() {
         return lastLogin;
     }
 
-    public void setLastLogin(String lastLogin) {
+    public void setLastLogin(Date lastLogin) {
         this.lastLogin = lastLogin;
+    }
+
+    public boolean isLocalAccount() {
+        return localAccount;
+    }
+
+    public void setLocalAccount(boolean localAccount) {
+        this.localAccount = localAccount;
     }
 
 }
