@@ -6,19 +6,18 @@ $(document).ready(function () {
     $('#login').validate({
         rules: {
             username: {
-                minlength: 3,
-                nowhitespace: true,
+                email: true,
                 required: true
             },
             password: {
-                minlength: 5,
+                minlength: 1,
                 maxlength: 25,
                 nowhitespace: true,
                 required: true
             }
         },
         messages: {
-            username: "Please enter a valid username.",
+            username: "Please enter a valid email.",
             password: "Please enter your password."
         },
         highlight: function (element) {
@@ -40,11 +39,6 @@ $(document).ready(function () {
     $('#registration').validate({
         rules: {
             username: {
-                minlength: 3,
-                nowhitespace: true,
-                required: true
-            },
-            email: {
                 email: true,
                 required: true
             },
@@ -56,22 +50,12 @@ $(document).ready(function () {
             },
             confirmPassword: {
                 equalTo: "#password"
-            },
-            secureQues: {
-                required: true
-            },
-            secureAns: {
-                maxlength: 25,
-                required: true
             }
         },
         messages: {
-            username: "Please enter a valid username (no white space).",
-            email: "Please enter a valid email.",
+            username: "Please enter a valid email.",
             password: "Please enter valid a password (5-25 chars).",
             confirmPassword: "Please reenter password.",
-            secureQues: "Please select a security question.",
-            secureAns: "Please enter the security answer."
         },
         highlight: function (element) {
             $(element).closest('.form-group').addClass('has-error');

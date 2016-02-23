@@ -16,31 +16,47 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web;
-
-import edu.pitt.dbmi.ccd.db.CCDDatabaseApplication;
-import edu.pitt.dbmi.ccd.mail.CCDMailApplication;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.PropertySource;
+package edu.pitt.dbmi.ccd.web.model.user;
 
 /**
  *
- * Aug 5, 2015 1:27:02 PM
+ * Feb 23, 2016 3:52:56 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-@SpringBootApplication
-@Import({CCDDatabaseApplication.class, CCDMailApplication.class})
-@PropertySource("classpath:ccd.properties")
-public class CcdWebApplication {
+public class UserRegistration {
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        SpringApplication.run(CcdWebApplication.class, args);
+    private String username;
+
+    private String password;
+
+    private boolean agree;
+
+    public UserRegistration() {
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public boolean isAgree() {
+        return agree;
+    }
+
+    public void setAgree(boolean agree) {
+        this.agree = agree;
     }
 
 }

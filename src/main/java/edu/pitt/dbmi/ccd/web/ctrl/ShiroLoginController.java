@@ -20,6 +20,7 @@ package edu.pitt.dbmi.ccd.web.ctrl;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
+import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  *
@@ -71,19 +73,23 @@ public class ShiroLoginController implements ViewPath {
             sessionStatus.setComplete();
         }
 
+        model.addAttribute("userRegistration", new UserRegistration());
+
         return LOGIN_VIEW;
     }
 
     @RequestMapping(value = LOGIN, method = RequestMethod.POST)
-    public String processLogin(final UsernamePasswordToken credentials, final Model model) {
+    public String processLogin(
+            final UsernamePasswordToken credentials,
+            final RedirectAttributes redirectAttributes) {
         Subject currentUser = SecurityUtils.getSubject();
         String username = credentials.getUsername();
         try {
             currentUser.login(credentials);
         } catch (AuthenticationException exception) {
             LOGGER.warn(String.format("Failed login attempt from user %s.", username));
-            model.addAttribute("errorMsg", "Invalid username and/or password.");
-            return LOGIN_VIEW;
+            redirectAttributes.addFlashAttribute("errorMsg", "Invalid username and/or password.");
+            return REDIRECT_LOGIN;
         }
 
         UserAccount userAccount = userAccountService.findByUsername(username);
@@ -91,8 +97,8 @@ public class ShiroLoginController implements ViewPath {
             return REDIRECT_HOME;
         } else {
             currentUser.logout();
-            model.addAttribute("errorMsg", "Your account has not been activated.");
-            return LOGIN_VIEW;
+            redirectAttributes.addFlashAttribute("errorMsg", "Your account has not been activated.");
+            return REDIRECT_LOGIN;
         }
     }
 
