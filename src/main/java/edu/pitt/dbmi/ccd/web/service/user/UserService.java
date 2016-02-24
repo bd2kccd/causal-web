@@ -77,7 +77,8 @@ public class UserService {
         String username = userRegistration.getUsername();
         String password = userRegistration.getPassword();
         String email = userRegistration.getUsername();
-        String workspString = Paths.get(ccdProperties.getWorkspaceDir(), LOCAL_FOLDER).toAbsolutePath().toString();
+        String workspString = Paths.get(ccdProperties.getWorkspaceDir(), LOCAL_FOLDER)
+                .toAbsolutePath().toString();
 
         String account = UUID.randomUUID().toString();
 
@@ -112,10 +113,11 @@ public class UserService {
         if (success) {
             Thread t = new Thread(() -> {
                 try {
-                    String url = UriComponentsBuilder.fromHttpUrl(ccdProperties.getServerURL()).pathSegment("activate")
+                    String activationLink = UriComponentsBuilder.fromHttpUrl(ccdProperties.getServerURL()).pathSegment("activate")
                             .queryParam("account", Base64.getUrlEncoder().encodeToString(account.getBytes()))
                             .build().toString();
-                    mailService.sendRegistrationActivation(username, email, url);
+                    mailService.sendUserActivationLink(email, activationLink);
+                    mailService.sendNewUserAlert(email, userAccount.getRegistrationDate(), userIPAddress);
                 } catch (MessagingException exception) {
                     LOGGER.warn(String.format("Unable to send registration email for user '%s'.", username), exception);
                 }

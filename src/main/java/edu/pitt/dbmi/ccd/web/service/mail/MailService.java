@@ -18,11 +18,18 @@
  */
 package edu.pitt.dbmi.ccd.web.service.mail;
 
-import edu.pitt.dbmi.ccd.mail.service.BasicMailService;
-import edu.pitt.dbmi.ccd.mail.service.UserBasicMailService;
+import edu.pitt.dbmi.ccd.mail.AbstractBasicMail;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import javax.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring4.SpringTemplateEngine;
 
 /**
  *
@@ -31,20 +38,47 @@ import org.springframework.stereotype.Service;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @Service
-public class MailService {
+public class MailService extends AbstractBasicMail {
 
-    private final BasicMailService basicMailService;
+    private static final Locale LOCALE = new Locale("en", "US");
 
-    private final UserBasicMailService userBasicMailService;
+    private static final DateFormat EMAIL_DATE_FORMAT = new SimpleDateFormat("EE, MMMMM dd, yyyy hh:mm:ss a");
+
+    private final String senderEmail;
+
+    private final SpringTemplateEngine templateEngine;
 
     @Autowired
-    public MailService(BasicMailService basicMailService, UserBasicMailService userBasicMailService) {
-        this.basicMailService = basicMailService;
-        this.userBasicMailService = userBasicMailService;
+    public MailService(
+            @Value("${spring.mail.username}") String senderEmail,
+            SpringTemplateEngine templateEngine,
+            JavaMailSender javaMailSender) {
+        super(javaMailSender);
+        this.senderEmail = senderEmail;
+        this.templateEngine = templateEngine;
     }
 
-    public void sendRegistrationActivation(String username, String email, String activationUrl) throws MessagingException {
-        userBasicMailService.sendRegistrationActivation(username, email, activationUrl);
+    public void sendUserActivationLink(String email, String activationLink) throws MessagingException {
+        Context context = new Context(LOCALE);
+        context.setVariable("email", email);
+        context.setVariable("activationLink", activationLink);
+
+        String to = email;
+        String subject = "CCD Account Activation";
+        String body = this.templateEngine.process("email/userActivation", context);
+        send(to, subject, body, true);
+    }
+
+    public void sendNewUserAlert(String registeredEmail, Date registrationDate, String userIPAddress) throws MessagingException {
+        Context context = new Context(LOCALE);
+        context.setVariable("email", registeredEmail);
+        context.setVariable("registrationDate", EMAIL_DATE_FORMAT.format(registrationDate));
+        context.setVariable("registrationLocation", userIPAddress);
+
+        String to = senderEmail;
+        String subject = "New Registered User!";
+        String body = this.templateEngine.process("email/newUserAlert", context);
+        send(to, subject, body, true);
     }
 
 }
