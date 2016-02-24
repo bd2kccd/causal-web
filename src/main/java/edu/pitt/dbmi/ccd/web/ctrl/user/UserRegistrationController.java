@@ -18,15 +18,20 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.user;
 
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
+import edu.pitt.dbmi.ccd.web.exception.UserActivationException;
 import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
 import edu.pitt.dbmi.ccd.web.service.user.UserService;
+import java.util.Base64;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -73,6 +78,24 @@ public class UserRegistrationController implements ViewPath {
         }
 
         return REDIRECT_LOGIN;
+    }
+
+    @RequestMapping(value = "activate", method = RequestMethod.GET)
+    public String activateNewUser(
+            @RequestParam(value = "account", required = true) final String account,
+            final Model model) {
+        String accountId = new String(Base64.getUrlDecoder().decode(account));
+        UserAccount userAccount = userAccountService.findByAccount(accountId);
+        if (userAccount == null || userAccount.isActive()) {
+            throw new UserActivationException();
+        } else {
+            userAccount.setActive(Boolean.TRUE);
+            userAccountService.saveUserAccount(userAccount);
+
+            model.addAttribute("username", userAccount.getUsername());
+
+            return USER_ACTIVATION_SUCCESS_VIEW;
+        }
     }
 
 }

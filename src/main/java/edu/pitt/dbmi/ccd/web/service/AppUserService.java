@@ -18,7 +18,16 @@
  */
 package edu.pitt.dbmi.ccd.web.service;
 
+import edu.pitt.dbmi.ccd.db.entity.Person;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.entity.UserLogin;
+import edu.pitt.dbmi.ccd.web.model.AppUser;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +49,50 @@ public class AppUserService {
     @Autowired
     public AppUserService(CcdProperties ccdProperties) {
         this.ccdProperties = ccdProperties;
+    }
+
+    public AppUser createAppUser(final UserAccount userAccount) {
+        UserLogin userLogin = userAccount.getUserLogin();
+        Date lastLoginDate = userLogin.getLastLoginDate();
+
+        Person person = userAccount.getPerson();
+        String firstName = person.getFirstName();
+        String middleName = person.getMiddleName();
+        String lastName = person.getLastName();
+        String email = person.getEmail();
+        String workspace = person.getWorkspace();
+
+        String dataFolder = ccdProperties.getDataFolder();
+        String tmpFolder = ccdProperties.getTmpFolder();
+        String resultFolder = ccdProperties.getResultFolder();
+
+        Path[] directories = {
+            Paths.get(workspace, dataFolder),
+            Paths.get(workspace, resultFolder),
+            Paths.get(workspace, tmpFolder),
+            Paths.get(workspace, resultFolder, "algorithm"),
+            Paths.get(workspace, resultFolder, "comparison")
+        };
+        for (Path directory : directories) {
+            if (Files.notExists(directory)) {
+                try {
+                    Files.createDirectories(directory);
+                } catch (IOException exception) {
+                    LOGGER.error(String.format("Unable to create directory '%s'.", directory), exception);
+                }
+            }
+        }
+
+        AppUser appUser = new AppUser();
+        appUser.setUsername(email);
+        appUser.setFirstName(firstName == null ? "" : firstName);
+        appUser.setMiddleName(middleName == null ? "" : middleName);
+        appUser.setLastName(lastName == null ? "" : lastName);
+        appUser.setEmail(email);
+        appUser.setLastLogin(lastLoginDate == null ? new Date(System.currentTimeMillis()) : lastLoginDate);
+        appUser.setLocalAccount(true);
+
+        return appUser;
     }
 
 }

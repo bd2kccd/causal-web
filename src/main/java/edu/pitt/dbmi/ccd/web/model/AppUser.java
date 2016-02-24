@@ -95,7 +95,7 @@ public class AppUser {
         this.lastLogin = lastLogin;
     }
 
-    public boolean isLocalAccount() {
+    public boolean getLocalAccount() {
         return localAccount;
     }
 

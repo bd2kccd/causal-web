@@ -19,9 +19,14 @@
 package edu.pitt.dbmi.ccd.web.ctrl;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.entity.UserLogin;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
+import edu.pitt.dbmi.ccd.web.util.UrlUtility;
+import java.net.UnknownHostException;
+import java.util.Date;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -80,8 +85,10 @@ public class ShiroLoginController implements ViewPath {
 
     @RequestMapping(value = LOGIN, method = RequestMethod.POST)
     public String processLogin(
+            final HttpServletRequest request,
             final UsernamePasswordToken credentials,
-            final RedirectAttributes redirectAttributes) {
+            final RedirectAttributes redirectAttributes,
+            final Model model) {
         Subject currentUser = SecurityUtils.getSubject();
         String username = credentials.getUsername();
         try {
@@ -94,12 +101,38 @@ public class ShiroLoginController implements ViewPath {
 
         UserAccount userAccount = userAccountService.findByUsername(username);
         if (userAccount.isActive()) {
+            UserLogin userLogin = userAccount.getUserLogin();
+            userLogin.setLastLoginDate(userLogin.getLoginDate());
+            userLogin.setLastLoginLocation(userLogin.getLoginLocation());
+            userLogin.setLoginDate(new Date(System.currentTimeMillis()));
+            try {
+                userLogin.setLoginLocation(UrlUtility.InetNTOA(request.getRemoteAddr()));
+            } catch (UnknownHostException exception) {
+                LOGGER.info(exception.getLocalizedMessage());
+            }
+            userAccountService.saveUserAccount(userAccount);
+
+            model.addAttribute("appUser", appUserService.createAppUser(userAccount));
             return REDIRECT_HOME;
         } else {
             currentUser.logout();
             redirectAttributes.addFlashAttribute("errorMsg", "Your account has not been activated.");
             return REDIRECT_LOGIN;
         }
+    }
+
+    @RequestMapping(value = "logout", method = RequestMethod.GET)
+    public String logOut(
+            final SessionStatus sessionStatus,
+            final RedirectAttributes redirectAttributes) {
+        Subject currentUser = SecurityUtils.getSubject();
+        if (currentUser.isAuthenticated()) {
+            currentUser.logout();
+            sessionStatus.setComplete();
+            redirectAttributes.addFlashAttribute("successMsg", "You have successfully logged out.");
+        }
+
+        return REDIRECT_LOGIN;
     }
 
 }

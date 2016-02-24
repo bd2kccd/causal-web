@@ -27,7 +27,10 @@ import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import edu.pitt.dbmi.ccd.web.service.mail.MailService;
 import edu.pitt.dbmi.ccd.web.util.UrlUtility;
+import java.io.IOException;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Date;
@@ -62,7 +65,11 @@ public class UserService {
     private final UserAccountService userAccountService;
 
     @Autowired
-    public UserService(CcdProperties ccdProperties, DefaultPasswordService passwordService, MailService mailService, UserAccountService userAccountService) {
+    public UserService(
+            CcdProperties ccdProperties,
+            DefaultPasswordService passwordService,
+            MailService mailService,
+            UserAccountService userAccountService) {
         this.ccdProperties = ccdProperties;
         this.passwordService = passwordService;
         this.mailService = mailService;
@@ -74,13 +81,20 @@ public class UserService {
             final String userIPAddress) {
         boolean success = false;
 
+        String account = UUID.randomUUID().toString();
+        Path userDir = Paths.get(ccdProperties.getWorkspaceDir(), LOCAL_FOLDER, account.replace("-", "_"));
+
         String username = userRegistration.getUsername();
         String password = userRegistration.getPassword();
         String email = userRegistration.getUsername();
-        String workspString = Paths.get(ccdProperties.getWorkspaceDir(), LOCAL_FOLDER)
-                .toAbsolutePath().toString();
+        String workspString = userDir.toAbsolutePath().toString();
 
-        String account = UUID.randomUUID().toString();
+        try {
+            Files.createDirectories(userDir);
+        } catch (IOException exception) {
+            LOGGER.error(exception.getMessage());
+            return false;
+        }
 
         Person person = new Person();
         person.setFirstName("");
@@ -107,13 +121,13 @@ public class UserService {
         try {
             success = userAccountService.saveUserAccount(userAccount) != null;
         } catch (Exception exception) {
-            LOGGER.error(exception.getLocalizedMessage());
+            LOGGER.error(exception.getMessage());
         }
 
         if (success) {
             Thread t = new Thread(() -> {
                 try {
-                    String activationLink = UriComponentsBuilder.fromHttpUrl(ccdProperties.getServerURL()).pathSegment("activate")
+                    String activationLink = UriComponentsBuilder.fromHttpUrl(ccdProperties.getServerURL()).pathSegment("user", "registration", "activate")
                             .queryParam("account", Base64.getUrlEncoder().encodeToString(account.getBytes()))
                             .build().toString();
                     mailService.sendUserActivationLink(email, activationLink);

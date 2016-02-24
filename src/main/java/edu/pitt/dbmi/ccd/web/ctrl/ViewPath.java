@@ -35,4 +35,6 @@ public interface ViewPath {
     public static final String HOME_VIEW = "secured/home";
     public static final String REDIRECT_HOME = "redirect:/secured/home";
 
+    public static final String USER_ACTIVATION_SUCCESS_VIEW = "user/userActivationSuccess";
+
 }
