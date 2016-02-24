@@ -22,6 +22,7 @@ import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
 import edu.pitt.dbmi.ccd.web.service.user.UserService;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,19 +54,19 @@ public class UserRegistrationController implements ViewPath {
     @RequestMapping(method = RequestMethod.POST)
     public String registerWebUser(
             final UserRegistration userRegistration,
-            final RedirectAttributes redirectAttributes) {
+            final RedirectAttributes redirectAttributes,
+            final HttpServletRequest request) {
         if (userRegistration.isAgree()) {
             String username = userRegistration.getUsername();
             if (userAccountService.findByUsername(username) == null) {
-                String password = userRegistration.getPassword();
-                if (userService.registerNewUser(username, password)) {
+                if (userService.registerNewUser(userRegistration, request.getRemoteAddr())) {
                     String msg = "Thank You! Please check your email to activate your account.";
                     redirectAttributes.addFlashAttribute("successMsg", msg);
                 } else {
                     redirectAttributes.addFlashAttribute("errorMsg", "Sorry, registration is unavailable at this time.");
                 }
             } else {
-                redirectAttributes.addFlashAttribute("errorMsg", "Your email has already been registered.");
+                redirectAttributes.addFlashAttribute("errorMsg", username + " has already been registered.");
             }
         } else {
             redirectAttributes.addFlashAttribute("errorMsg", "You must accept the terms and conditions.");

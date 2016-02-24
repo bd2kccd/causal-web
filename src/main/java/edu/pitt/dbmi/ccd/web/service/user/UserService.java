@@ -18,10 +18,21 @@
  */
 package edu.pitt.dbmi.ccd.web.service.user;
 
+import edu.pitt.dbmi.ccd.db.entity.Person;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.entity.UserLogin;
+import edu.pitt.dbmi.ccd.db.entity.UserLoginAttempt;
+import edu.pitt.dbmi.ccd.db.service.UserAccountService;
+import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import edu.pitt.dbmi.ccd.web.service.mail.MailService;
+import edu.pitt.dbmi.ccd.web.util.UrlUtility;
+import java.net.UnknownHostException;
+import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.Date;
 import java.util.UUID;
+import javax.mail.MessagingException;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,25 +51,77 @@ public class UserService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
 
+    private static final String LOCAL_FOLDER = "local";
+
     private final CcdProperties ccdProperties;
+
     private final DefaultPasswordService passwordService;
+
     private final MailService mailService;
 
+    private final UserAccountService userAccountService;
+
     @Autowired
-    public UserService(CcdProperties ccdProperties, DefaultPasswordService passwordService, MailService mailService) {
+    public UserService(CcdProperties ccdProperties, DefaultPasswordService passwordService, MailService mailService, UserAccountService userAccountService) {
         this.ccdProperties = ccdProperties;
         this.passwordService = passwordService;
         this.mailService = mailService;
+        this.userAccountService = userAccountService;
     }
 
-    public boolean registerNewUser(final String username, final String password) {
+    public boolean registerNewUser(
+            final UserRegistration userRegistration,
+            final String userIPAddress) {
         boolean success = false;
 
-        String accountId = UUID.randomUUID().toString();
+        String username = userRegistration.getUsername();
+        String password = userRegistration.getPassword();
+        String email = userRegistration.getUsername();
+        String workspString = Paths.get(ccdProperties.getWorkspaceDir(), LOCAL_FOLDER).toAbsolutePath().toString();
 
-        String url = UriComponentsBuilder.fromHttpUrl(ccdProperties.getServerURL()).pathSegment("activate")
-                .queryParam("account", Base64.getUrlEncoder().encodeToString(accountId.getBytes()))
-                .build().toString();
+        String account = UUID.randomUUID().toString();
+
+        Person person = new Person();
+        person.setFirstName("");
+        person.setLastName("");
+        person.setEmail(email);
+        person.setWorkspace(workspString);
+
+        UserAccount userAccount = new UserAccount();
+        userAccount.setAccount(account);
+        userAccount.setActive(false);
+        userAccount.setDisabled(false);
+        userAccount.setPassword(passwordService.encryptPassword(password));
+        userAccount.setPerson(person);
+        userAccount.setRegistrationDate(new Date(System.currentTimeMillis()));
+        try {
+            userAccount.setRegistrationLocation(UrlUtility.InetNTOA(userIPAddress));
+        } catch (UnknownHostException exception) {
+            LOGGER.error(exception.getLocalizedMessage());
+        }
+        userAccount.setUserLogin(new UserLogin());
+        userAccount.setUserLoginAttempt(new UserLoginAttempt());
+        userAccount.setUsername(username);
+
+        try {
+            success = userAccountService.saveUserAccount(userAccount) != null;
+        } catch (Exception exception) {
+            LOGGER.error(exception.getLocalizedMessage());
+        }
+
+        if (success) {
+            Thread t = new Thread(() -> {
+                try {
+                    String url = UriComponentsBuilder.fromHttpUrl(ccdProperties.getServerURL()).pathSegment("activate")
+                            .queryParam("account", Base64.getUrlEncoder().encodeToString(account.getBytes()))
+                            .build().toString();
+                    mailService.sendRegistrationActivation(username, email, url);
+                } catch (MessagingException exception) {
+                    LOGGER.warn(String.format("Unable to send registration email for user '%s'.", username), exception);
+                }
+            });
+            t.start();
+        }
 
         return success;
     }
