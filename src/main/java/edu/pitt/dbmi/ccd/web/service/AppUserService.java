@@ -51,7 +51,7 @@ public class AppUserService {
         this.ccdProperties = ccdProperties;
     }
 
-    public AppUser createAppUser(final UserAccount userAccount) {
+    public AppUser createAppUser(final UserAccount userAccount, final boolean localAccount) {
         UserLogin userLogin = userAccount.getUserLogin();
         Date lastLoginDate = userLogin.getLastLoginDate();
 
@@ -90,7 +90,7 @@ public class AppUserService {
         appUser.setLastName(lastName == null ? "" : lastName);
         appUser.setEmail(email);
         appUser.setLastLogin(lastLoginDate == null ? new Date(System.currentTimeMillis()) : lastLoginDate);
-        appUser.setLocalAccount(true);
+        appUser.setLocalAccount(localAccount);
 
         return appUser;
     }

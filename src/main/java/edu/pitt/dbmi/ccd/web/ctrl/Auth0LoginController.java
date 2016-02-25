@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl;
 
+import com.auth0.Auth0User;
 import com.auth0.NonceGenerator;
 import com.auth0.NonceStorage;
 import com.auth0.RequestNonceStorage;
@@ -35,10 +36,12 @@ import edu.pitt.dbmi.ccd.web.util.UrlUtility;
 import java.net.UnknownHostException;
 import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
+import org.apache.shiro.web.subject.WebSubject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,6 +85,52 @@ public class Auth0LoginController implements ViewPath {
         this.ccdProperties = ccdProperties;
         this.userAccountService = userAccountService;
         this.appUserService = appUserService;
+    }
+
+    @RequestMapping(value = "auth0", method = RequestMethod.GET)
+    public String processAuth0Login(
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            final RedirectAttributes redirectAttributes,
+            final Model model) {
+        Auth0User auth0User = Auth0User.get(request);
+        if (auth0User == null) {
+            return REDIRECT_LOGIN;
+        } else {
+            String email = auth0User.getEmail().toLowerCase();
+            UserAccount userAccount = userAccountService.findByEmail(email);
+            if (userAccount == null) {
+                String firstName = auth0User.getProperty("given_name");
+                String lastName = auth0User.getProperty("family_name");
+            } else {
+                if (userAccount.isActive()) {
+                    UserLogin userLogin = userAccount.getUserLogin();
+                    userLogin.setLastLoginDate(userLogin.getLoginDate());
+                    userLogin.setLastLoginLocation(userLogin.getLoginLocation());
+                    userLogin.setLoginDate(new Date(System.currentTimeMillis()));
+                    try {
+                        userLogin.setLoginLocation(UrlUtility.InetNTOA(request.getRemoteAddr()));
+                    } catch (UnknownHostException exception) {
+                        LOGGER.info(exception.getLocalizedMessage());
+                    }
+                    userAccountService.saveUserAccount(userAccount);
+
+                    model.addAttribute("appUser", appUserService.createAppUser(userAccount, false));
+
+                    new WebSubject.Builder(request, response)
+                            .authenticated(true)
+                            .sessionCreationEnabled(true)
+                            .buildSubject();
+
+                    return REDIRECT_HOME;
+                } else {
+                    redirectAttributes.addAttribute("errorMsg", "Your account has not been activated.");
+
+                    return REDIRECT_LOGIN;
+                }
+            }
+            return REDIRECT_HOME;
+        }
     }
 
     @RequestMapping(value = LOGIN, method = RequestMethod.GET)
@@ -138,7 +187,7 @@ public class Auth0LoginController implements ViewPath {
             }
             userAccountService.saveUserAccount(userAccount);
 
-            model.addAttribute("appUser", appUserService.createAppUser(userAccount));
+            model.addAttribute("appUser", appUserService.createAppUser(userAccount, true));
             return REDIRECT_HOME;
         } else {
             currentUser.logout();

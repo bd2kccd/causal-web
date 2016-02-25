@@ -112,7 +112,7 @@ public class ShiroLoginController implements ViewPath {
             }
             userAccountService.saveUserAccount(userAccount);
 
-            model.addAttribute("appUser", appUserService.createAppUser(userAccount));
+            model.addAttribute("appUser", appUserService.createAppUser(userAccount, true));
             return REDIRECT_HOME;
         } else {
             currentUser.logout();
