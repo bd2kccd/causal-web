@@ -23,6 +23,7 @@ import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.entity.UserLogin;
 import edu.pitt.dbmi.ccd.db.entity.UserLoginAttempt;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
+import edu.pitt.dbmi.ccd.web.model.AppUser;
 import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import edu.pitt.dbmi.ccd.web.service.mail.MailService;
@@ -54,8 +55,6 @@ public class UserService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
 
-    private static final String LOCAL_FOLDER = "local";
-
     private final CcdProperties ccdProperties;
 
     private final DefaultPasswordService passwordService;
@@ -76,14 +75,86 @@ public class UserService {
         this.userAccountService = userAccountService;
     }
 
-    public boolean registerNewUser(
-            final UserRegistration userRegistration,
-            HttpServletRequest request) {
+    public boolean registerNewFederatedUser(
+            final AppUser appUser,
+            final HttpServletRequest request) {
         boolean success = false;
 
         String userIPAddress = request.getRemoteAddr();
         String account = UUID.randomUUID().toString();
-        Path userDir = Paths.get(ccdProperties.getWorkspaceDir(), LOCAL_FOLDER, account.replace("-", "_"));
+        Path userDir = Paths.get(ccdProperties.getWorkspaceDir(), account.replace("-", "_"));
+
+        String username = appUser.getEmail();
+        String email = appUser.getEmail();
+        String firstName = appUser.getFirstName();
+        String lastName = appUser.getLastName();
+        String workspString = userDir.toAbsolutePath().toString();
+
+        try {
+            Files.createDirectories(userDir);
+        } catch (IOException exception) {
+            LOGGER.error(exception.getMessage());
+            return false;
+        }
+
+        Date now = new Date(System.currentTimeMillis());
+        UserLogin userLogin = new UserLogin();
+        userLogin.setLoginDate(now);
+        userLogin.setLastLoginDate(now);
+
+        Person person = new Person();
+        person.setFirstName(firstName);
+        person.setLastName(lastName);
+        person.setEmail(email);
+        person.setWorkspace(workspString);
+
+        UserAccount userAccount = new UserAccount();
+        userAccount.setAccount(account);
+        userAccount.setActive(true);
+        userAccount.setDisabled(false);
+        userAccount.setPassword("federated");
+        userAccount.setPerson(person);
+        userAccount.setRegistrationDate(new Date(System.currentTimeMillis()));
+        try {
+            long location = UrlUtility.InetNTOA(userIPAddress);
+            userAccount.setRegistrationLocation(location);
+            userLogin.setLoginLocation(location);
+            userLogin.setLastLoginLocation(location);
+        } catch (UnknownHostException exception) {
+            LOGGER.error(exception.getLocalizedMessage());
+        }
+        userAccount.setUserLogin(userLogin);
+        userAccount.setUserLoginAttempt(new UserLoginAttempt());
+        userAccount.setUsername(username);
+
+        try {
+            success = userAccountService.saveUserAccount(userAccount) != null;
+        } catch (Exception exception) {
+            LOGGER.error(exception.getMessage());
+        }
+
+        if (success) {
+            Thread t = new Thread(() -> {
+                try {
+                    mailService.sendNewUserAlert(email, userAccount.getRegistrationDate(), userIPAddress);
+                } catch (MessagingException exception) {
+                    LOGGER.warn(String.format("Unable to send registration email for user '%s'.", username), exception);
+                }
+            });
+            t.start();
+        }
+
+        return success;
+    }
+
+    public boolean registerNewUser(
+            final UserRegistration userRegistration,
+            final HttpServletRequest request) {
+        boolean success = false;
+
+        String userIPAddress = request.getRemoteAddr();
+        String account = UUID.randomUUID().toString();
+        Path userDir = Paths.get(ccdProperties.getWorkspaceDir(), account.replace("-", "_"));
 
         String username = userRegistration.getUsername();
         String password = userRegistration.getPassword();

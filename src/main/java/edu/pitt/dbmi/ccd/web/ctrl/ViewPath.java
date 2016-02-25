@@ -37,4 +37,8 @@ public interface ViewPath {
 
     public static final String USER_ACTIVATION_SUCCESS_VIEW = "user/userActivationSuccess";
 
+    public static final String TERMS = "terms";
+    public static final String TERMS_VIEW = "terms";
+    public static final String REDIRECT_TERMS = "redirect:/terms";
+
 }

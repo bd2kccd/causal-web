@@ -100,6 +100,14 @@ public class Auth0LoginController implements ViewPath {
             if (userAccount == null) {
                 String firstName = auth0User.getProperty("given_name");
                 String lastName = auth0User.getProperty("family_name");
+                AppUser appUser = new AppUser();
+                appUser.setEmail(email);
+                appUser.setFirstName((firstName == null) ? "" : firstName);
+                appUser.setMiddleName("");
+                appUser.setLastName((lastName == null) ? "" : lastName);
+                appUser.setLocalAccount(false);
+                model.addAttribute("appUser", appUser);
+                return TERMS;
             } else {
                 if (userAccount.isActive()) {
                     UserLogin userLogin = userAccount.getUserLogin();
@@ -127,7 +135,6 @@ public class Auth0LoginController implements ViewPath {
                     return REDIRECT_LOGIN;
                 }
             }
-            return REDIRECT_HOME;
         }
     }
 
@@ -168,7 +175,15 @@ public class Auth0LoginController implements ViewPath {
             currentUser.login(credentials);
         } catch (AuthenticationException exception) {
             LOGGER.warn(String.format("Failed login attempt from user %s.", username));
-            redirectAttributes.addFlashAttribute("errorMsg", "Invalid username and/or password.");
+            String errorMsg = "Invalid username and/or password.";
+            UserAccount userAccount = userAccountService.findByUsername(username);
+            if (userAccount != null) {
+                String password = userAccount.getPassword();
+                if (password.startsWith("federated")) {
+                    errorMsg = "Password not set.  Please sign in using SSO.";
+                }
+            }
+            redirectAttributes.addFlashAttribute("errorMsg", errorMsg);
             return REDIRECT_LOGIN;
         }
 

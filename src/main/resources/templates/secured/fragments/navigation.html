@@ -32,10 +32,10 @@
                             <i class="fa fa-user fa-fw"></i>  <i class="fa fa-caret-down"></i>
                         </a>
                         <ul class="dropdown-menu dropdown-menu">
-                            <li th:if="${appUser.localAccount}">
+                            <li>
                                 <a href="../user/profile.html" th:href="@{/user/profile}"><i class="fa fa-user fa-fw"></i> User Profile</a>
                             </li>
-                            <li class="divider" th:if="${appUser.localAccount}"></li>
+                            <li class="divider"></li>
                             <li>
                                 <a href="../../login.html" th:href="@{/logout}"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
                             </li>
