@@ -53,6 +53,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  *
@@ -148,7 +149,7 @@ public class Auth0LoginController implements ViewPath {
         NonceStorage nonceStorage = new RequestNonceStorage(request);
         nonceStorage.setState(nonce);
 
-        model.addAttribute("callbackUrl", ccdProperties.getServerURL() + "/callback");
+        model.addAttribute("callbackUrl", UrlUtility.buildURI(request, ccdProperties, "callback"));
         model.addAttribute("state", nonce);
         model.addAttribute("userRegistration", new UserRegistration());
 
@@ -210,9 +211,13 @@ public class Auth0LoginController implements ViewPath {
         if (appUser.getLocalAccount()) {
             return new RedirectView(LOGIN, true);
         } else {
-            String ccdLogOut = ccdProperties.getServerURL() + "/" + LOGIN;
-            String redirect = String.format("https://%s/v2/logout?returnTo=%s", auth0Domain, ccdLogOut);
-            return new RedirectView(redirect, false);
+            String redirectUrl = UriComponentsBuilder.newInstance()
+                    .scheme("https")
+                    .host(auth0Domain)
+                    .pathSegment("v2", "logout")
+                    .queryParam("returnTo", UrlUtility.buildURI(request, ccdProperties, LOGIN))
+                    .build().toString();
+            return new RedirectView(redirectUrl, false);
         }
     }
 

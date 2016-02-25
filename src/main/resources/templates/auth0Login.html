@@ -149,32 +149,32 @@
         <script src="../static/vendors/auth0/lock-8.2.3.min.js" th:src="@{/vendors/auth0/lock-8.2.3.min.js}"></script>
         <script src="../static/js/login.min.js" th:src="@{/js/login.min.js}"></script>
         <script type="text/javascript" th:inline="javascript">
-                                                        $(document).ready(function () {
-                                                            $('[data-toggle="tooltip"]').tooltip();
-                                                        });
-                                                        var auth0ClientId = /*[[${@environment.getProperty('auth0.clientId')}]]*/ '';
-                                                        var auth0Domain = /*[[${@environment.getProperty('auth0.domain')}]]*/ '';
-                                                        var state = /*[[${state}]]*/ '';
-                                                        var callbackUrl = /*[[${callbackUrl}]]*/ '';
-                                                        var iconUrl = /*[[@{/img/ccd_logo.png}]]*/ '';
-                                                        var lock = new Auth0Lock(auth0ClientId, auth0Domain);
-                                                        function signIn() {
-                                                            lock.show({
-                                                                dict: {
-                                                                    signin: {
-                                                                        title: "CCD Web",
-                                                                        footerText: 'Log in with your Pitt or Harvard account.'
-                                                                    }
-                                                                },
-                                                                icon: iconUrl,
-                                                                callbackURL: callbackUrl,
-                                                                responseType: 'code',
-                                                                rememberLastLogin: true,
-                                                                authParams: {
-                                                                    state: state
-                                                                }
-                                                            });
-                                                        }
+            $(document).ready(function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            });
+            var auth0ClientId = /*[[${@environment.getProperty('auth0.clientId')}]]*/ '';
+            var auth0Domain = /*[[${@environment.getProperty('auth0.domain')}]]*/ '';
+            var state = /*[[${state}]]*/ '';
+            var callbackUrl = /*[[${callbackUrl}]]*/ '';
+            var iconUrl = /*[[@{/img/ccd_logo.png}]]*/ '';
+            var lock = new Auth0Lock(auth0ClientId, auth0Domain);
+            function signIn() {
+                lock.show({
+                    dict: {
+                        signin: {
+                            title: "CCD Web",
+                            footerText: 'Log in with your Pitt or Harvard account.'
+                        }
+                    },
+                    icon: iconUrl,
+                    callbackURL: callbackUrl,
+                    responseType: 'code',
+                    rememberLastLogin: true,
+                    authParams: {
+                        state: state
+                    }
+                });
+            }
         </script>
     </body>
 </html>

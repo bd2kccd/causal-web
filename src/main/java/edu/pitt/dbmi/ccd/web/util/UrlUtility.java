@@ -18,9 +18,11 @@
  */
 package edu.pitt.dbmi.ccd.web.util;
 
+import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import javax.servlet.http.HttpServletRequest;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  *
@@ -81,56 +83,30 @@ public class UrlUtility {
         return InetAddress.getByAddress(addr).getHostAddress();
     }
 
-    public static String getHostURL(HttpServletRequest request) {
-        String scheme = request.getScheme();  // http or https
-        String hostName = request.getServerName();  // hostname.com
-        int serverPort = request.getServerPort(); // 80
+    public static UriComponentsBuilder buildURI(HttpServletRequest request, CcdProperties ccdProperties) {
+        String name = ccdProperties.getCallbackServerName();
+        String port = ccdProperties.getCallbackServerPort();
 
-        if ((serverPort == 80) || (serverPort == 443)) {
-            return String.format("%s://%s", scheme, hostName);
-        } else {
-            return String.format("%s://%s:%d", scheme, hostName, serverPort);
-        }
-    }
-
-    public static String getURL(HttpServletRequest request) {
         String scheme = request.getScheme();  // http or https
-        String hostName = request.getServerName();  // hostname.com
-        int serverPort = request.getServerPort(); // 80
+        String serverName = (name == null || name.isEmpty()) ? request.getServerName() : name;  // hostname.com
+        int serverPort = (port == null || port.isEmpty()) ? request.getServerPort() : Integer.parseInt(port); // 80
         String contextPath = request.getContextPath();  // /ccd
 
-        if ((serverPort == 80) || (serverPort == 443)) {
-            return String.format("%s://%s%s", scheme, hostName, contextPath);
-        } else {
-            return String.format("%s://%s:%d%s", scheme, hostName, serverPort, contextPath);
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
+                .scheme(scheme)
+                .host(serverName);
+        if (!(serverPort == 80 || serverPort == 443)) {
+            uriBuilder = uriBuilder.port(serverPort);
         }
+        if (!(contextPath == null || contextPath.isEmpty())) {
+            uriBuilder = uriBuilder.path(contextPath);
+        }
+
+        return uriBuilder;
     }
 
-    public static String buildURL(HttpServletRequest request, String relativePath) {
-        String scheme = request.getScheme();  // http or https
-        String hostName = request.getServerName();  // hostname.com
-        int serverPort = request.getServerPort(); // 80
-        String contextPath = request.getContextPath();  // /ccd
-
-        if (relativePath != null) {
-            if (relativePath.startsWith("/")) {
-                relativePath = relativePath.replaceFirst("/", "");
-            }
-        }
-
-        if ((serverPort == 80) || (serverPort == 443)) {
-            if (relativePath == null) {
-                return String.format("%s://%s%s", scheme, hostName, contextPath);
-            } else {
-                return String.format("%s://%s%s/%s", scheme, hostName, contextPath, relativePath);
-            }
-        } else {
-            if (relativePath == null) {
-                return String.format("%s://%s:%d%s", scheme, hostName, serverPort, contextPath);
-            } else {
-                return String.format("%s://%s:%d%s/%s", scheme, hostName, serverPort, contextPath, relativePath);
-            }
-        }
+    public static String buildURI(HttpServletRequest request, CcdProperties ccdProperties, String... pathSegments) {
+        return buildURI(request, ccdProperties).pathSegment(pathSegments).build().normalize().toString();
     }
 
 }

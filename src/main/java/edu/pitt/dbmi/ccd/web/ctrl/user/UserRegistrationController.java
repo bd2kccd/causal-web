@@ -64,7 +64,7 @@ public class UserRegistrationController implements ViewPath {
         if (userRegistration.isAgree()) {
             String username = userRegistration.getUsername();
             if (userAccountService.findByUsername(username) == null) {
-                if (userService.registerNewUser(userRegistration, request.getRemoteAddr())) {
+                if (userService.registerNewUser(userRegistration, request)) {
                     String msg = "Thank You! Please check your email to activate your account.";
                     redirectAttributes.addFlashAttribute("successMsg", msg);
                 } else {

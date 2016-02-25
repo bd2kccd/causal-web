@@ -36,12 +36,12 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 import javax.mail.MessagingException;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  *
@@ -78,9 +78,10 @@ public class UserService {
 
     public boolean registerNewUser(
             final UserRegistration userRegistration,
-            final String userIPAddress) {
+            HttpServletRequest request) {
         boolean success = false;
 
+        String userIPAddress = request.getRemoteAddr();
         String account = UUID.randomUUID().toString();
         Path userDir = Paths.get(ccdProperties.getWorkspaceDir(), LOCAL_FOLDER, account.replace("-", "_"));
 
@@ -127,7 +128,7 @@ public class UserService {
         if (success) {
             Thread t = new Thread(() -> {
                 try {
-                    String activationLink = UriComponentsBuilder.fromHttpUrl(ccdProperties.getServerURL()).pathSegment("user", "registration", "activate")
+                    String activationLink = UrlUtility.buildURI(request, ccdProperties).pathSegment("user", "registration", "activate")
                             .queryParam("account", Base64.getUrlEncoder().encodeToString(account.getBytes()))
                             .build().toString();
                     mailService.sendUserActivationLink(email, activationLink);

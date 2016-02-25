@@ -32,8 +32,11 @@ import org.springframework.stereotype.Component;
 @PropertySource("classpath:ccd.properties")
 public class CcdProperties {
 
-    @Value("${ccd.server.url}")
-    private String serverURL;
+    @Value("${ccd.callback.server.name}")
+    private String callbackServerName;
+
+    @Value("${ccd.callback.server.port}")
+    private String callbackServerPort;
 
     @Value("${ccd.app.title}")
     private String title;
@@ -62,40 +65,84 @@ public class CcdProperties {
     public CcdProperties() {
     }
 
-    public String getServerURL() {
-        return serverURL;
+    public String getCallbackServerName() {
+        return callbackServerName;
+    }
+
+    public void setCallbackServerName(String callbackServerName) {
+        this.callbackServerName = callbackServerName;
+    }
+
+    public String getCallbackServerPort() {
+        return callbackServerPort;
+    }
+
+    public void setCallbackServerPort(String callbackServerPort) {
+        this.callbackServerPort = callbackServerPort;
     }
 
     public String getTitle() {
         return title;
     }
 
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public String getCopyright() {
         return copyright;
+    }
+
+    public void setCopyright(String copyright) {
+        this.copyright = copyright;
     }
 
     public String getAgreement() {
         return agreement;
     }
 
+    public void setAgreement(String agreement) {
+        this.agreement = agreement;
+    }
+
     public String getWorkspaceDir() {
         return workspaceDir;
+    }
+
+    public void setWorkspaceDir(String workspaceDir) {
+        this.workspaceDir = workspaceDir;
     }
 
     public String getDataFolder() {
         return dataFolder;
     }
 
+    public void setDataFolder(String dataFolder) {
+        this.dataFolder = dataFolder;
+    }
+
     public String getLibFolder() {
         return libFolder;
+    }
+
+    public void setLibFolder(String libFolder) {
+        this.libFolder = libFolder;
     }
 
     public String getTmpFolder() {
         return tmpFolder;
     }
 
+    public void setTmpFolder(String tmpFolder) {
+        this.tmpFolder = tmpFolder;
+    }
+
     public String getResultFolder() {
         return resultFolder;
+    }
+
+    public void setResultFolder(String resultFolder) {
+        this.resultFolder = resultFolder;
     }
 
 }
