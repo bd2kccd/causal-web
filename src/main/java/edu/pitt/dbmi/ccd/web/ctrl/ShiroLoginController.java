@@ -25,6 +25,7 @@ import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.util.UrlUtility;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.shiro.SecurityUtils;
@@ -95,7 +96,7 @@ public class ShiroLoginController implements ViewPath {
             currentUser.login(credentials);
         } catch (AuthenticationException exception) {
             LOGGER.warn(String.format("Failed login attempt from user %s.", username));
-            redirectAttributes.addFlashAttribute("errorMsg", "Invalid username and/or password.");
+            redirectAttributes.addFlashAttribute("errorMsg", Collections.singletonList("Invalid username and/or password."));
             return REDIRECT_LOGIN;
         }
 
@@ -116,7 +117,7 @@ public class ShiroLoginController implements ViewPath {
             return REDIRECT_HOME;
         } else {
             currentUser.logout();
-            redirectAttributes.addFlashAttribute("errorMsg", "Your account has not been activated.");
+            redirectAttributes.addFlashAttribute("errorMsg", Collections.singletonList("Your account has not been activated."));
             return REDIRECT_LOGIN;
         }
     }
@@ -129,7 +130,7 @@ public class ShiroLoginController implements ViewPath {
         if (currentUser.isAuthenticated()) {
             currentUser.logout();
             sessionStatus.setComplete();
-            redirectAttributes.addFlashAttribute("successMsg", "You have successfully logged out.");
+            redirectAttributes.addFlashAttribute("successMsg", Collections.singletonList("You have successfully logged out."));
         }
 
         return REDIRECT_LOGIN;

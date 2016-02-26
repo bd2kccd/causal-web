@@ -8,7 +8,6 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="apple-touch-icon" href="../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
         <link rel="icon" href="../static/favicon.ico" th:href="@{/favicon.ico}" />
-        <link rel="stylesheet" href="../static/vendors/normalize/normalize.min.css" th:href="@{/vendors/normalize/normalize.min.css}" />
         <link rel="stylesheet" href="../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{/vendors/bootstrap/css/bootstrap.min.css}" />
         <link rel="stylesheet" href="../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{/vendors/font-awesome/css/font-awesome.min.css}"/>
         <link rel="stylesheet" href="../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
@@ -29,10 +28,14 @@
                                 </div>
                             </div>
                             <div th:if="${successMsg}" class="row">
-                                <div class="alert alert-success text-center" role="alert" th:text="${successMsg}"></div>
+                                <div class="alert alert-success text-center" role="alert">
+                                    <div th:each="msg : ${successMsg}" th:text="${msg}"></div>
+                                </div>
                             </div>
                             <div th:if="${errorMsg}" class="row">
-                                <div class="alert alert-danger text-center" role="alert" th:text="${errorMsg}"></div>
+                                <div class="alert alert-danger text-center" role="alert">
+                                    <div th:each="msg : ${errorMsg}" th:text="${msg}"></div>
+                                </div>
                             </div>
                             <div class="row">
                                 <div class="col-sm-12 col-md-10  col-md-offset-1">
@@ -82,7 +85,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
-                        <h4 class="modal-title pitt-color">CCD Account Sign Up</h4>
+                        <h4 class="modal-title pitt-color">CCD Account Registration</h4>
                     </div>
                     <div class="modal-body">
                         <form id="registration" role="form" method="POST" action="" th:action="@{/user/registration}" th:object="${userRegistration}">

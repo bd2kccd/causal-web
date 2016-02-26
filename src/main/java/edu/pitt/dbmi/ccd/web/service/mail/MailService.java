@@ -27,6 +27,7 @@ import javax.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring4.SpringTemplateEngine;
@@ -58,6 +59,32 @@ public class MailService extends AbstractBasicMail {
         this.templateEngine = templateEngine;
     }
 
+    @Async
+    public void sendNewRegistrationConfirmation(String email) throws MessagingException {
+        Context context = new Context(LOCALE);
+        context.setVariable("email", email);
+
+        String to = email;
+        String subject = "CCD Account Registration";
+        String body = this.templateEngine.process("email/new_account_review", context);
+        send(to, subject, body, true);
+    }
+
+    @Async
+    public void sendNewUserAlert(String email, Date registrationDate, String userIPAddress, String activationLink) throws MessagingException {
+        Context context = new Context(LOCALE);
+        context.setVariable("email", email);
+        context.setVariable("registrationDate", EMAIL_DATE_FORMAT.format(registrationDate));
+        context.setVariable("registrationLocation", userIPAddress);
+        context.setVariable("activationLink", activationLink);
+
+        String to = senderEmail;
+        String subject = "Alert: New Registered User!";
+        String body = this.templateEngine.process("email/new_user_activation", context);
+        send(to, subject, body, true);
+    }
+
+    @Deprecated
     public void sendUserActivationLink(String email, String activationLink) throws MessagingException {
         Context context = new Context(LOCALE);
         context.setVariable("email", email);
@@ -69,6 +96,7 @@ public class MailService extends AbstractBasicMail {
         send(to, subject, body, true);
     }
 
+    @Deprecated
     public void sendNewUserAlert(String registeredEmail, Date registrationDate, String userIPAddress) throws MessagingException {
         Context context = new Context(LOCALE);
         context.setVariable("email", registeredEmail);
@@ -81,6 +109,7 @@ public class MailService extends AbstractBasicMail {
         send(to, subject, body, true);
     }
 
+    @Deprecated
     public void sendFederatedUserPassword(String email, String password) throws MessagingException {
         Context context = new Context(LOCALE);
         context.setVariable("email", email);

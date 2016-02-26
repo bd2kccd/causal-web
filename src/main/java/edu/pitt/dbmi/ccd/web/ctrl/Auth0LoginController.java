@@ -25,12 +25,14 @@ import com.auth0.RequestNonceStorage;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.entity.UserLogin;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
+import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.REDIRECT_LOGIN;
 import edu.pitt.dbmi.ccd.web.model.AppUser;
 import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.util.UrlUtility;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -130,7 +132,7 @@ public class Auth0LoginController implements ViewPath {
 
                     return REDIRECT_HOME;
                 } else {
-                    redirectAttributes.addAttribute("errorMsg", "Your account has not been activated.");
+                    redirectAttributes.addAttribute("errorMsg", Collections.singletonList("Your account has not been activated."));
 
                     return REDIRECT_LOGIN;
                 }
@@ -175,15 +177,7 @@ public class Auth0LoginController implements ViewPath {
             currentUser.login(credentials);
         } catch (AuthenticationException exception) {
             LOGGER.warn(String.format("Failed login attempt from user %s.", username));
-            String errorMsg = "Invalid username and/or password.";
-            UserAccount userAccount = userAccountService.findByUsername(username);
-            if (userAccount != null) {
-                String password = userAccount.getPassword();
-                if (password.startsWith("federated")) {
-                    errorMsg = "Password not set.  Please sign in using SSO.";
-                }
-            }
-            redirectAttributes.addFlashAttribute("errorMsg", errorMsg);
+            redirectAttributes.addFlashAttribute("errorMsg", Collections.singletonList("Invalid username and/or password."));
             return REDIRECT_LOGIN;
         }
 
@@ -204,7 +198,7 @@ public class Auth0LoginController implements ViewPath {
             return REDIRECT_HOME;
         } else {
             currentUser.logout();
-            redirectAttributes.addFlashAttribute("errorMsg", "Your account has not been activated.");
+            redirectAttributes.addFlashAttribute("errorMsg", Collections.singletonList("Your account has not been activated."));
             return REDIRECT_LOGIN;
         }
     }
@@ -220,7 +214,7 @@ public class Auth0LoginController implements ViewPath {
         if (currentUser.isAuthenticated()) {
             currentUser.logout();
             sessionStatus.setComplete();
-            redirectAttributes.addFlashAttribute("successMsg", "You have successfully logged out.");
+            redirectAttributes.addFlashAttribute("successMsg", Collections.singletonList("You have successfully logged out."));
         }
 
         if (appUser.getLocalAccount()) {

@@ -27,6 +27,7 @@ import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.user.UserService;
 import java.util.Base64;
+import java.util.Collections;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.shiro.web.subject.WebSubject;
@@ -51,6 +52,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @SessionAttributes("appUser")
 @RequestMapping(value = "user/registration")
 public class UserRegistrationController implements ViewPath {
+
+    private static final String[] REGISTRATION_SUCCESS = {
+        "Thank you for registering!",
+        "You should receive an email from us shortly."
+    };
 
     private final UserAccountService userAccountService;
 
@@ -87,7 +93,7 @@ public class UserRegistrationController implements ViewPath {
                 return REDIRECT_HOME;
             } else {
                 sessionStatus.setComplete();
-                redirectAttributes.addFlashAttribute("errorMsg", "Sorry, registration is unavailable at this time.");
+                redirectAttributes.addFlashAttribute("errorMsg", Collections.singletonList("Sorry, registration is unavailable at this time."));
                 return REDIRECT_LOGIN;
             }
         } else {
@@ -104,16 +110,15 @@ public class UserRegistrationController implements ViewPath {
             String username = userRegistration.getUsername();
             if (userAccountService.findByUsername(username) == null) {
                 if (userService.registerNewUser(userRegistration, request)) {
-                    String msg = "Thank You! Please check your email to activate your account.";
-                    redirectAttributes.addFlashAttribute("successMsg", msg);
+                    redirectAttributes.addFlashAttribute("successMsg", REGISTRATION_SUCCESS);
                 } else {
-                    redirectAttributes.addFlashAttribute("errorMsg", "Sorry, registration is unavailable at this time.");
+                    redirectAttributes.addFlashAttribute("errorMsg", Collections.singletonList("Sorry, registration is unavailable at this time."));
                 }
             } else {
-                redirectAttributes.addFlashAttribute("errorMsg", username + " has already been registered.");
+                redirectAttributes.addFlashAttribute("errorMsg", Collections.singletonList(username + " has already been registered."));
             }
         } else {
-            redirectAttributes.addFlashAttribute("errorMsg", "You must accept the terms and conditions.");
+            redirectAttributes.addFlashAttribute("errorMsg", Collections.singletonList("You must accept the terms and conditions."));
         }
 
         return REDIRECT_LOGIN;

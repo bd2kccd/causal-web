@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>Account Review</title>
+        <meta name="description" content="" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+    </head>
+    <body>
+        <p>
+            Hello, <span th:text="${email}">email</span>
+        </p>
+        <p>
+            Thank you for your registration!  We will review your registration.<br />
+            You will get an e-mail confirming your account once we approve.
+        </p>
+        <p>
+            Thanks again,<br />
+            CCD administrator
+        </p>
+    </body>
+</html>

@@ -16,31 +16,34 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web;
+package edu.pitt.dbmi.ccd.web.ctrl;
 
-import edu.pitt.dbmi.ccd.db.CCDDatabaseApplication;
-import edu.pitt.dbmi.ccd.mail.CCDMailApplication;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Import;
-import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  *
- * Aug 5, 2015 1:27:02 PM
+ * Aug 5, 2015 2:21:22 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-@SpringBootApplication
-@Import({CCDDatabaseApplication.class, CCDMailApplication.class})
-@EnableAsync
-public class CcdWebApplication {
+@Controller
+public class HttpStatusCodeController {
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        SpringApplication.run(CcdWebApplication.class, args);
+    @RequestMapping(value = "/401", method = {RequestMethod.GET, RequestMethod.POST})
+    public String showUnauthorizedAccess() {
+        return "status-code/401";
+    }
+
+    @RequestMapping(value = "/404", method = {RequestMethod.GET, RequestMethod.POST})
+    public String showPageNotFound() {
+        return "status-code/404";
+    }
+
+    @RequestMapping(value = "/500", method = {RequestMethod.GET, RequestMethod.POST})
+    public String showInternalServerError() {
+        return "status-code/500";
     }
 
 }

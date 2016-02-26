@@ -200,18 +200,15 @@ public class UserService {
         }
 
         if (success) {
-            Thread t = new Thread(() -> {
-                try {
-                    String activationLink = UrlUtility.buildURI(request, ccdProperties).pathSegment("user", "registration", "activate")
-                            .queryParam("account", Base64.getUrlEncoder().encodeToString(account.getBytes()))
-                            .build().toString();
-                    mailService.sendUserActivationLink(email, activationLink);
-                    mailService.sendNewUserAlert(email, userAccount.getRegistrationDate(), userIPAddress);
-                } catch (MessagingException exception) {
-                    LOGGER.warn(String.format("Unable to send registration email for user '%s'.", username), exception);
-                }
-            });
-            t.start();
+            String activationLink = UrlUtility.buildURI(request, ccdProperties).pathSegment("user", "registration", "activate")
+                    .queryParam("account", Base64.getUrlEncoder().encodeToString(account.getBytes()))
+                    .build().toString();
+            try {
+                mailService.sendNewRegistrationConfirmation(email);
+                mailService.sendNewUserAlert(email, userAccount.getRegistrationDate(), userIPAddress, activationLink);
+            } catch (MessagingException exception) {
+                LOGGER.warn(String.format("Unable to send registration email for user '%s'.", username), exception);
+            }
         }
 
         return success;
