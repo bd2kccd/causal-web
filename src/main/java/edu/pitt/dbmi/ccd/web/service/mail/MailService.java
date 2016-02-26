@@ -81,4 +81,15 @@ public class MailService extends AbstractBasicMail {
         send(to, subject, body, true);
     }
 
+    public void sendFederatedUserPassword(String email, String password) throws MessagingException {
+        Context context = new Context(LOCALE);
+        context.setVariable("email", email);
+        context.setVariable("password", password);
+
+        String to = email;
+        String subject = "New CCD Account";
+        String body = this.templateEngine.process("email/newFederatedAccount", context);
+        send(to, subject, body, true);
+    }
+
 }

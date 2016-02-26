@@ -35,6 +35,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Random;
 import java.util.UUID;
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
@@ -88,6 +89,7 @@ public class UserService {
         String email = appUser.getEmail();
         String firstName = appUser.getFirstName();
         String lastName = appUser.getLastName();
+        String password = generatePassword(20);
         String workspString = userDir.toAbsolutePath().toString();
 
         try {
@@ -112,7 +114,7 @@ public class UserService {
         userAccount.setAccount(account);
         userAccount.setActive(true);
         userAccount.setDisabled(false);
-        userAccount.setPassword("federated");
+        userAccount.setPassword(passwordService.encryptPassword(password));
         userAccount.setPerson(person);
         userAccount.setRegistrationDate(new Date(System.currentTimeMillis()));
         try {
@@ -136,6 +138,7 @@ public class UserService {
         if (success) {
             Thread t = new Thread(() -> {
                 try {
+                    mailService.sendFederatedUserPassword(email, password);
                     mailService.sendNewUserAlert(email, userAccount.getRegistrationDate(), userIPAddress);
                 } catch (MessagingException exception) {
                     LOGGER.warn(String.format("Unable to send registration email for user '%s'.", username), exception);
@@ -212,6 +215,19 @@ public class UserService {
         }
 
         return success;
+    }
+
+    private String generatePassword(int length) {
+        StringBuilder sb = new StringBuilder("ccd");
+
+        String alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>?/;:/*-+.#$%^&£!";
+        int bound = alphabet.length();
+        Random random = new Random(System.currentTimeMillis());
+        for (int i = 0; i < length; i++) {
+            sb.append(alphabet.charAt(random.nextInt(bound)));
+        }
+
+        return sb.toString();
     }
 
 }
