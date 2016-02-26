@@ -87,9 +87,9 @@ public class UrlUtility {
         String name = ccdProperties.getCallbackServerName();
         String port = ccdProperties.getCallbackServerPort();
 
-        String scheme = request.getScheme();  // http or https
         String serverName = (name == null || name.isEmpty()) ? request.getServerName() : name;  // hostname.com
         int serverPort = (port == null || port.isEmpty()) ? request.getServerPort() : Integer.parseInt(port); // 80
+        String scheme = (serverPort == 443) ? "https" : "http";  // http or https
         String contextPath = request.getContextPath();  // /ccd
 
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()

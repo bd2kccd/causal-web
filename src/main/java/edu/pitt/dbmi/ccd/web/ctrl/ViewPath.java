@@ -41,4 +41,7 @@ public interface ViewPath {
     public static final String TERMS_VIEW = "terms";
     public static final String REDIRECT_TERMS = "redirect:/terms";
 
+    public static final String USER_PROFILE_VIEW = "secured/user/userProfile";
+    public static final String REDIRECT_USER_PROFILE = "redirect:/secured/user/profile";
+
 }
