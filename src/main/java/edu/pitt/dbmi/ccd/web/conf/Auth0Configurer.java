@@ -50,9 +50,10 @@ public class Auth0Configurer {
 
     @Bean(name = "authFilter")
     public FilterRegistrationBean authFilter() {
+        System.out.println(auth0Properties);
         FilterRegistrationBean registrationBean = new FilterRegistrationBean();
         registrationBean.setFilter(new Auth0Filter());
-        registrationBean.addInitParameter("auth0.redirect_on_authentication_error", "/login");
+        registrationBean.addInitParameter("auth0.redirect_on_authentication_error", auth0Properties.getRedirectOnAuthenticationError());
         registrationBean.addUrlPatterns("/");
 
         return registrationBean;
@@ -61,8 +62,8 @@ public class Auth0Configurer {
     @Bean(name = "redirectCallback")
     public ServletRegistrationBean redirectCallback() {
         Map<String, String> initParameters = new HashMap<>();
-        initParameters.put("auth0.redirect_on_success", "/auth0");
-        initParameters.put("auth0.redirect_on_error", "/login");
+        initParameters.put("auth0.redirect_on_success", auth0Properties.getRedirectOnSuccess());
+        initParameters.put("auth0.redirect_on_error", auth0Properties.getRedirectOnError());
         initParameters.put("auth0.client_id", auth0Properties.getClientId());
         initParameters.put("auth0.client_secret", auth0Properties.getClientSecret());
         initParameters.put("auth0.domain", auth0Properties.getDomain());
@@ -70,7 +71,7 @@ public class Auth0Configurer {
         ServletRegistrationBean registrationBean = new ServletRegistrationBean();
         registrationBean.setServlet(new Auth0ServletCallback());
         registrationBean.setInitParameters(initParameters);
-        registrationBean.addUrlMappings("/callback");
+        registrationBean.addUrlMappings(auth0Properties.getCallbackUrlMapping());
 
         return registrationBean;
     }

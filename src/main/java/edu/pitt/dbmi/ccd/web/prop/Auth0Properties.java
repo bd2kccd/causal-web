@@ -37,6 +37,12 @@ public class Auth0Properties {
     private String clientSecret;
     private String domain;
 
+    private String redirectOnAuthenticationError;
+    private String redirectOnSuccess;
+    private String redirectOnError;
+
+    private String callbackUrlMapping;
+
     public Auth0Properties() {
     }
 
@@ -62,6 +68,38 @@ public class Auth0Properties {
 
     public void setDomain(String domain) {
         this.domain = domain;
+    }
+
+    public String getRedirectOnAuthenticationError() {
+        return redirectOnAuthenticationError;
+    }
+
+    public void setRedirectOnAuthenticationError(String redirectOnAuthenticationError) {
+        this.redirectOnAuthenticationError = redirectOnAuthenticationError;
+    }
+
+    public String getRedirectOnSuccess() {
+        return redirectOnSuccess;
+    }
+
+    public void setRedirectOnSuccess(String redirectOnSuccess) {
+        this.redirectOnSuccess = redirectOnSuccess;
+    }
+
+    public String getRedirectOnError() {
+        return redirectOnError;
+    }
+
+    public void setRedirectOnError(String redirectOnError) {
+        this.redirectOnError = redirectOnError;
+    }
+
+    public String getCallbackUrlMapping() {
+        return callbackUrlMapping;
+    }
+
+    public void setCallbackUrlMapping(String callbackUrlMapping) {
+        this.callbackUrlMapping = callbackUrlMapping;
     }
 
 }
