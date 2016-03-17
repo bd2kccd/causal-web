@@ -23,17 +23,21 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <h1 class="page-header">Import Data</h1>
+                        <p>
+                            After uploading your data, it will show up in the Datasets page.  Prior to analysis each dataset must by summarized by clicking
+                        on the summarize button next to the dataset name.
+                        </p>
                     </div>
+                    
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
+                        <h2>From My Computer</h2>
                         <p>Supported formats:</p>
                         <ul>
                             <li><a href="#" data-type="tabular" data-title="Tabular" data-toggle="modal" data-target="#dataExample">Tab delimited</a></li>
                             <li><a href="#" data-type="csv" data-title="CSV" data-toggle="modal" data-target="#dataExample">Comma delimited</a></li>
                         </ul>
-                        <p>After uploading your data, it will show up in the Datasets page.  Prior to analysis each dataset must by summarized by clicking
-                        on the summarize button next to the dataset name.</p>
                     </div>
                 </div>
                 <div class="row">
@@ -86,6 +90,25 @@
                         </div>
                     </div>
                 </div>
+                
+                
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h2>From PIC-SURE API</h2>
+                        <p>The following URL will be used to query the PIC-SURE data:</p>
+                        <p class="text-info">
+                        http://localhost:3000/zhy19/demographics%2FRACE%2Fwhite!!demographics%2FSEX%2Fmale
+                        </p>
+
+                        <div class="btn btn-primary" id="apiBtn"><span class="glyphicon glyphicon-transfer"></span>&nbsp;&nbsp;Load data from PIC-SURE API</div>
+                    </div>
+                    
+                    <div class="col-lg-12">
+                        <p id="apiMsg" class="alert alert-success">The PIC-SURE API data has been loaded successfully.</p>
+                    </div>
+                </div>
+
+                
                 <footer th:replace="fragments/footer :: footer">
                     <div class="row">
                         <div class="col-lg-12">
@@ -118,5 +141,6 @@
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
         <script src="../../static/vendors/resumable-js/resumable.min.js" th:src="@{/vendors/resumable-js/resumable.min.js}"></script>
         <script src="../../static/js/data/dataUpload.min.js" th:src="@{/js/data/dataUpload.min.js}"></script>
+        <script src="../../static/js/data/dataUploadViaApi.js" th:src="@{/js/data/dataUploadViaApi.js}"></script>
     </body>
 </html>
