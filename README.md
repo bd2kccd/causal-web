@@ -14,16 +14,20 @@ If you want to host the application with your own hardware, follow the instructi
 * You will need a GMail account.  GMail will be used to send out account activation link and feedback.
 
 ### Download the source code
-Since this is a multimodule project all the submodules will need to be download and installed.  The following modules must be downloaded, built, and installed.
+#### Dependencies
+Download and uncompress the source code for each of following dependencies:
 
-* [tetrad-cli-5.3.0.jar](https://github.com/cmu-phil/tetrad)
 * [ccd-job-queue-0.1.3](https://github.com/bd2kccd/ccd-job-queue/releases/tag/v0.1.3)
 * [ccd-mail-0.1.2](https://github.com/bd2kccd/ccd-mail/releases/tag/v0.1.2)
 * [ccd-db-0.6.0](https://github.com/bd2kccd/ccd-db/releases/tag/v0.6.0)
 * [ccd-commons-0.3.0](https://github.com/bd2kccd/ccd-commons/releases/tag/v0.3.0)
-* [ccd-web-1.2.0](https://github.com/bd2kccd/ccd-web/releases/tag/v1.2.0)
 
-Download each module, uncompress the download, cd to each project directory and type **mvn clean install** to build and install the jar libraries.
+To install the dependencies, go to the top directory of each project and do a maven install by typing **mvn install**.
+
+#### Application
+Download and uncompress the application source code  [ccd-web-1.2.1](https://github.com/bd2kccd/ccd-web/releases/tag/v1.2.1).  To compile and build the application, go to the directory **ccd-web-1.2.1** and type **mvn package**.
+
+#### External Dependencies
 
 ## Configure the software
 
@@ -91,4 +95,3 @@ To launch app in the browser
 ```
 http://localhost:[port]/ccd       // default port is 8080, otherwise change to specified port
 ```
-
