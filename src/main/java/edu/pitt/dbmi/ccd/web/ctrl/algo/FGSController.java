@@ -75,6 +75,8 @@ public class FGSController implements ViewPath {
         info.setIgnoreLinearDependence(true);
         info.setVerbose(true);
         info.setJvmOptions("");
+        info.setNonZeroVarianceValidation(true);
+        info.setUniqueVarNameValidation(true);
 
         Map<String, String> map = algorithmService.getUserDataset(appUser.getUsername());
         if (map.isEmpty()) {
@@ -105,9 +107,9 @@ public class FGSController implements ViewPath {
         parameters.add("--delimiter");
         parameters.add(delimiter);
         parameters.add("--penalty-discount");
-        parameters.add(String.valueOf(info.getPenaltyDiscount()));
+        parameters.add(Double.toString(info.getPenaltyDiscount()));
         parameters.add("--depth");
-        parameters.add(String.valueOf(info.getDepth()));
+        parameters.add(Integer.toString(info.getDepth()));
         if (info.isVerbose()) {
             parameters.add("--verbose");
         }
@@ -116,6 +118,12 @@ public class FGSController implements ViewPath {
         }
         if (info.isIgnoreLinearDependence()) {
             parameters.add("--ignore-linear-dependence");
+        }
+        if (!info.isNonZeroVarianceValidation()) {
+            parameters.add("--skip-non-zero-variance");
+        }
+        if (!info.isUniqueVarNameValidation()) {
+            parameters.add("--skip-unique-var-name");
         }
 
         List<String> jvmOptions = new LinkedList<>();

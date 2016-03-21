@@ -40,6 +40,10 @@
                                 </div>
                                 <div class="stepwizard-step">
                                     <button id="step3btn" class="btn btn-default btn-circle" onclick="window.location.href = '#step3'" disabled="disabled">3</button>
+                                    <p>Select Data Validations</p>
+                                </div>
+                                <div class="stepwizard-step">
+                                    <button id="step4btn" class="btn btn-default btn-circle" onclick="window.location.href = '#step4'" disabled="disabled">4</button>
                                     <p>Run Algorithm</p>
                                 </div>
                             </div>
@@ -136,7 +140,36 @@
                             <div class="row setup-content" id="step3">
                                 <div class="col-xs-12">
                                     <div class="col-md-12">
-                                        <h3> Step 3: Run Algorithm</h3>
+                                        <h3> Step 3: Select Data Validations</h3>
+                                        <div class="panel panel-primary">
+                                            <div class="panel-heading">
+                                                <h3 class="panel-title">Data Validations</h3>
+                                            </div>
+                                            <div class="panel-body">
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label for="nonZeroVarianceValidation" class="control-label">
+                                                            <input type="checkbox" id="nonZeroVarianceValidation" name="nonZeroVarianceValidation" ng-model="nonZeroVarianceValidation" th:attr="ng-init='nonZeroVarianceValidation=' + *{nonZeroVarianceValidation}" th:field="*{nonZeroVarianceValidation}" /> Non-zero Variance - ensure that each variable has non-zero variance
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label for="uniqueVarNameValidation" class="control-label">
+                                                            <input type="checkbox" id="uniqueVarNameValidation" name="uniqueVarNameValidation" ng-model="uniqueVarNameValidation" th:attr="ng-init='uniqueVarNameValidation=' + *{uniqueVarNameValidation}" th:field="*{uniqueVarNameValidation}" /> Unique Variable Name - ensure that there are no duplicated variable names
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-primary btn-lg btn-block nextBtn">Next</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row setup-content" id="step4">
+                                <div class="col-xs-12">
+                                    <div class="col-md-12">
+                                        <h3> Step 4: Run Algorithm</h3>
                                         <div class="panel panel-primary">
                                             <div class="panel-heading">
                                                 <h3 class="panel-title">Summary</h3>
@@ -144,11 +177,17 @@
                                             <div class="panel-body">
                                                 <div class="table-responsive">
                                                     <table class="table table-striped">
+                                                        <caption>Dataset</caption>
                                                         <tbody>
                                                             <tr>
-                                                                <td class="col-md-3">Dataset:</td>
+                                                                <td class="col-md-3">File:</td>
                                                                 <td ng-bind="dataset"></td>
                                                             </tr>
+                                                        </tbody>
+                                                    </table>
+                                                    <table class="table table-striped">
+                                                        <caption>Parameters</caption>
+                                                        <tbody>
                                                             <tr>
                                                                 <td class="col-md-3">Penalty Discount:</td>
                                                                 <td ng-bind="penaltyDiscount"></td>
@@ -172,6 +211,19 @@
                                                             <tr>
                                                                 <td class="col-md-3">Advanced Options:</td>
                                                                 <td ng-bind="jvmOptions"></td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                    <table class="table table-striped">
+                                                        <caption>Data Validations</caption>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td class="col-md-3">Non-zero Variance:</td>
+                                                                <td ng-bind="nonZeroVarianceValidation"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="col-md-3">Unique Variable Name:</td>
+                                                                <td ng-bind="uniqueVarNameValidation"></td>
                                                             </tr>
                                                         </tbody>
                                                     </table>
