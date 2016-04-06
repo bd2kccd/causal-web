@@ -40,10 +40,6 @@
                                 </div>
                                 <div class="stepwizard-step">
                                     <button id="step3btn" class="btn btn-default btn-circle" onclick="window.location.href = '#step3'" disabled="disabled">3</button>
-                                    <p>Select Data Validations</p>
-                                </div>
-                                <div class="stepwizard-step">
-                                    <button id="step4btn" class="btn btn-default btn-circle" onclick="window.location.href = '#step4'" disabled="disabled">4</button>
                                     <p>Run Algorithm</p>
                                 </div>
                             </div>
@@ -68,12 +64,33 @@
                                                             th:field="*{dataset}"
                                                             th:attr="ng-init='dataset = \'' + *{dataset} + '\''"
                                                             th:disabled="${#strings.isEmpty(algoInfo.dataset)}">
-                                                        <option value="sim_data_100vars_100_cases.txt"
+                                                        <option value=""
                                                                 th:each="data : ${datasetList}"
                                                                 th:value="${data.key}"
                                                                 th:text="${data.value}"
                                                                 th:disabled="${#strings.isEmpty(algoInfo.dataset)}">sim_data_100vars_100_cases.txt (75.48 kB)</option>
                                                     </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="panel panel-primary">
+                                            <div class="panel-heading">
+                                                <h3 class="panel-title">Data Validations</h3>
+                                            </div>
+                                            <div class="panel-body">
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label for="nonZeroVarianceValidation" class="control-label">
+                                                            <input type="checkbox" id="nonZeroVarianceValidation" name="nonZeroVarianceValidation" ng-model="nonZeroVarianceValidation" th:attr="ng-init='nonZeroVarianceValidation=' + *{nonZeroVarianceValidation}" th:field="*{nonZeroVarianceValidation}" /> Non-zero Variance - ensure that each variable has non-zero variance
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="checkbox">
+                                                        <label for="uniqueVarNameValidation" class="control-label">
+                                                            <input type="checkbox" id="uniqueVarNameValidation" name="uniqueVarNameValidation" ng-model="uniqueVarNameValidation" th:attr="ng-init='uniqueVarNameValidation=' + *{uniqueVarNameValidation}" th:field="*{uniqueVarNameValidation}" /> Unique Variable Name - ensure that there are no duplicated variable names
+                                                        </label>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -140,36 +157,7 @@
                             <div class="row setup-content" id="step3">
                                 <div class="col-xs-12">
                                     <div class="col-md-12">
-                                        <h3> Step 3: Select Data Validations</h3>
-                                        <div class="panel panel-primary">
-                                            <div class="panel-heading">
-                                                <h3 class="panel-title">Data Validations</h3>
-                                            </div>
-                                            <div class="panel-body">
-                                                <div class="form-group">
-                                                    <div class="checkbox">
-                                                        <label for="nonZeroVarianceValidation" class="control-label">
-                                                            <input type="checkbox" id="nonZeroVarianceValidation" name="nonZeroVarianceValidation" ng-model="nonZeroVarianceValidation" th:attr="ng-init='nonZeroVarianceValidation=' + *{nonZeroVarianceValidation}" th:field="*{nonZeroVarianceValidation}" /> Non-zero Variance - ensure that each variable has non-zero variance
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group">
-                                                    <div class="checkbox">
-                                                        <label for="uniqueVarNameValidation" class="control-label">
-                                                            <input type="checkbox" id="uniqueVarNameValidation" name="uniqueVarNameValidation" ng-model="uniqueVarNameValidation" th:attr="ng-init='uniqueVarNameValidation=' + *{uniqueVarNameValidation}" th:field="*{uniqueVarNameValidation}" /> Unique Variable Name - ensure that there are no duplicated variable names
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <button type="button" class="btn btn-primary btn-lg btn-block nextBtn">Next</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row setup-content" id="step4">
-                                <div class="col-xs-12">
-                                    <div class="col-md-12">
-                                        <h3> Step 4: Run Algorithm</h3>
+                                        <h3> Step 3: Run Algorithm</h3>
                                         <div class="panel panel-primary">
                                             <div class="panel-heading">
                                                 <h3 class="panel-title">Summary</h3>
