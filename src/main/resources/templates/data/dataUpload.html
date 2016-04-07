@@ -98,6 +98,8 @@
                         
                         <p>Separate multiple fields with "!!" sign</p>
                         
+                        <span id="apiUsername" th:text="${appUser.username}"></span>
+                        
                         <div class="form-group">
                         <label for="whereFields">Where Fields (E.g., demographics/RACE/white!!demographics/SEX/male)</label>
                         <textarea id="whereFields" class="form-control" rows="3"></textarea>
@@ -149,6 +151,6 @@
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
         <script src="../../static/vendors/resumable-js/resumable.min.js" th:src="@{/vendors/resumable-js/resumable.min.js}"></script>
         <script src="../../static/js/data/dataUpload.min.js" th:src="@{/js/data/dataUpload.min.js}"></script>
-        <script src="../../static/js/data/dataUploadViaApi.js" th:src="@{/js/data/dataUploadViaApi.js}"></script>
+        <script src="../../static/js/data/dataUploadViaApi.js" th:src="@{/js/data/dataUploadViaApi.min.js}"></script>
     </body>
 </html>
