@@ -95,11 +95,19 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <h2>From PIC-SURE API</h2>
-                        <p>The following URL will be used to query the PIC-SURE data:</p>
-                        <p class="text-info">
-                        http://localhost:3000/zhy19/demographics%2FRACE%2Fwhite!!demographics%2FSEX%2Fmale
-                        </p>
-
+                        
+                        <p>Separate multiple fields with "!!" sign</p>
+                        
+                        <div class="form-group">
+                        <label for="whereFields">Where Fields (E.g., demographics/RACE/white!!demographics/SEX/male)</label>
+                        <textarea id="whereFields" class="form-control" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                        <label for="selectFields">Select Fields (E.g., demographics/AGE!!examination/blood pressure/mean diastolic)</label>
+                        <textarea id="selectFields" class="form-control" rows="3"></textarea>
+                        </div>
+                        
                         <div class="btn btn-primary" id="apiBtn"><span class="glyphicon glyphicon-transfer"></span>&nbsp;&nbsp;Load data from PIC-SURE API</div>
                     </div>
                     
