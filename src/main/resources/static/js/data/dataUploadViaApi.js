@@ -1,12 +1,22 @@
 // Hide message by default
 $('#apiMsg').hide();
 
+var whereFields = '';
+$("#whereFields").on('change keyup paste', function() {
+    whereFields = $(this).val();
+});
+
+var selectFields = '';
+$("#selectFields").on('change keyup paste', function() {
+    selectFields = $(this).val();
+});
+
 
 // Separate the ajax request with callbacks
 var apiBtn = $('#apiBtn');
 apiBtn.click(function() {
     var jqxhr = $.ajax({
-        url: "http://localhost:3000/zhy19/demographics%2FRACE%2Fwhite!!demographics%2FSEX%2Fmale",
+        url: "http://localhost:3000/zhy19/" + encodeURIComponent(whereFields) + '/' + encodeURIComponent(selectFields),
         method: 'GET', 
         async : true,
         dataType: "text"
