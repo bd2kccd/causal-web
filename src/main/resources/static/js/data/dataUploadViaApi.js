@@ -1,5 +1,7 @@
 // Hide message by default
 $('#apiMsg').hide();
+// Hide the username
+$("#apiUsername").hide();
 
 var whereFields = '';
 $("#whereFields").on('change keyup paste', function() {
@@ -11,12 +13,13 @@ $("#selectFields").on('change keyup paste', function() {
     selectFields = $(this).val();
 });
 
+var username = $("#apiUsername").text();
 
 // Separate the ajax request with callbacks
 var apiBtn = $('#apiBtn');
 apiBtn.click(function() {
     var jqxhr = $.ajax({
-        url: "http://localhost:3000/zhy19/" + encodeURIComponent(whereFields) + '/' + encodeURIComponent(selectFields),
+        url: "http://localhost:3000/" + username + '/' + encodeURIComponent(whereFields) + '/' + encodeURIComponent(selectFields),
         method: 'GET', 
         async : true,
         dataType: "text"
