@@ -26,14 +26,16 @@ package edu.pitt.dbmi.ccd.web.model.algo;
  */
 public abstract class AlgorithmRunInfo {
 
-    private String dataset;
-    private boolean verbose;
-    private String jvmOptions;
-
-    private boolean nonZeroVarianceValidation;
-    private boolean uniqueVarNameValidation;
+    protected String dataset;
+    protected boolean verbose;
+    protected String jvmOptions;
 
     public AlgorithmRunInfo() {
+    }
+
+    @Override
+    public String toString() {
+        return "AlgorithmRunInfo{" + "dataset=" + dataset + ", verbose=" + verbose + ", jvmOptions=" + jvmOptions + '}';
     }
 
     public String getDataset() {
@@ -58,22 +60,6 @@ public abstract class AlgorithmRunInfo {
 
     public void setJvmOptions(String jvmOptions) {
         this.jvmOptions = jvmOptions;
-    }
-
-    public boolean isNonZeroVarianceValidation() {
-        return nonZeroVarianceValidation;
-    }
-
-    public void setNonZeroVarianceValidation(boolean nonZeroVarianceValidation) {
-        this.nonZeroVarianceValidation = nonZeroVarianceValidation;
-    }
-
-    public boolean isUniqueVarNameValidation() {
-        return uniqueVarNameValidation;
-    }
-
-    public void setUniqueVarNameValidation(boolean uniqueVarNameValidation) {
-        this.uniqueVarNameValidation = uniqueVarNameValidation;
     }
 
 }

@@ -92,6 +92,12 @@ public abstract class AbstractAlgorithmService {
         return dataService.listAlgorithmDataset(username, variableType);
     }
 
+    public Map<String, String> getUserDiscreteDataset(String username) {
+        VariableType variableType = variableTypeService.findByName("discrete");
+
+        return dataService.listAlgorithmDataset(username, variableType);
+    }
+
     public String getFileDelimiter(String fileName, String username) {
         return dataService.getFileDelimiter(fileName, username);
     }
