@@ -134,7 +134,7 @@ public class ApplicationController implements ViewPath {
             return LOGIN_VIEW;
         }
 
-        UserAccount userAccount = userAccountService.findByUsername(username);
+        UserAccount userAccount = userAccountService.findByUsername(username).get();
         if (userAccount.getActive()) {
             model.addAttribute("appUser", appUserService.createAppUser(userAccount));
 
@@ -166,4 +166,7 @@ public class ApplicationController implements ViewPath {
         return REDIRECT_LOGIN;
     }
 
+    private String getAnnotationsAPIToken(String username, String password) {
+        return null;
+    }
 }

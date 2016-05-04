@@ -67,11 +67,12 @@ public class UserRegistrationController implements ViewPath {
 
     @RequestMapping(value = "activate", method = RequestMethod.GET)
     public String activateWebUser(
-            @RequestParam(value = "account", required = true) final String account,
+            @RequestParam(value = "account", required = true) final Long accountId,
             final Model model) {
-        String accountId = new String(Base64.getUrlDecoder().decode(account));
-        UserAccount userAccount = userAccountService.findByAccountId(accountId);
-        if (userAccount == null || userAccount.getActive()) {
+        // String accountId = new String(Base64.getUrlDecoder().decode(account));
+        UserAccount userAccount = userAccountService.findById(accountId).orElseThrow(() -> new UserActivationException());
+
+        if (userAccount.getActive()) {
             throw new UserActivationException();
         } else {
             userAccount.setActive(Boolean.TRUE);
@@ -91,9 +92,9 @@ public class UserRegistrationController implements ViewPath {
             final HttpServletRequest request) {
         if (userRegistration.isAgree()) {
             String username = userRegistration.getUsername();
-            if (userAccountService.findByUsername(username) == null) {
+            if (!userAccountService.findByUsername(username).isPresent()) {
                 String email = userRegistration.getEmail();
-                if (userAccountService.findUserAccountByEmail(email) == null) {
+                if (!userAccountService.findByEmail(email).isPresent()) {
                     if (userService.registerNewUser(userRegistration, request.getRequestURL().toString())) {
                         String msg = "Thank you for registering.  Check your email to activate your account.";
                         redirectAttributes.addFlashAttribute("successMsg", msg);

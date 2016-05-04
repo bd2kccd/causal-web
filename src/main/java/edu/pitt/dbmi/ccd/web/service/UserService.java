@@ -103,9 +103,7 @@ public class UserService {
             person.setWorkspace("");
 
             UserAccount userAccount = new UserAccount();
-            userAccount.setAccountId(accountId);
             userAccount.setActive(Boolean.FALSE);
-            userAccount.setCreatedDate(new Date(System.currentTimeMillis()));
             userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
             userAccount.setPassword(passwordService.encryptPassword(password));
             userAccount.setPerson(person);

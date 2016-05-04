@@ -147,7 +147,7 @@ public abstract class AbstractAlgorithmService {
 
         String cmd = listToSeperatedValues(commands, ";");
 
-        UserAccount userAccount = userAccountService.findByUsername(username);
+        UserAccount userAccount = userAccountService.findByUsername(username).get();
         JobQueueInfo jobQueueInfo = new JobQueueInfo();
         jobQueueInfo.setAddedTime(new Date(System.currentTimeMillis()));
         jobQueueInfo.setAlgorName(algorithmName);

@@ -92,7 +92,7 @@ public class UserProfileController implements ViewPath {
             @ModelAttribute("usqa") final UserSecurityQuestionAnswer usqa,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername()).get();
 
         List<SecurityAnswer> list = securityAnswerService.findByUserAccounts(Collections.singleton(userAccount));
         if (list.isEmpty()) {
@@ -119,7 +119,7 @@ public class UserProfileController implements ViewPath {
             @ModelAttribute("appUser") final AppUser appUser,
             final RedirectAttributes redirectAttributes,
             final Model model) {
-        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername()).get();
         String currentPwd = passwordChange.getCurrentPassword();
         String encryptedPwd = userAccount.getPassword();
 
@@ -139,7 +139,7 @@ public class UserProfileController implements ViewPath {
             @ModelAttribute("userInfo") final UserInfo userInfo,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername()).get();
 
         // update person information
         Person person = userAccount.getPerson();
@@ -161,7 +161,7 @@ public class UserProfileController implements ViewPath {
     public String showUserProfilePage(
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername()).get();
         Person person = userAccount.getPerson();
 
         UserInfo userInfo = new UserInfo();

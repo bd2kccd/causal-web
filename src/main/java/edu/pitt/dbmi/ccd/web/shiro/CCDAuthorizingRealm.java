@@ -50,10 +50,7 @@ public class CCDAuthorizingRealm extends AuthorizingRealm {
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
         final String username = (String) principalCollection.getPrimaryPrincipal();
-        final UserAccount userAccount = userAccountService.findByUsername(username);
-        if (userAccount == null) {
-            throw new UnknownAccountException("Account does not exist");
-        }
+        final UserAccount userAccount = userAccountService.findByUsername(username).orElseThrow(() -> new UnknownAccountException("Account does not exist"));
 
         Set<String> roles = new LinkedHashSet<>();
         roles.add("admin");
@@ -73,10 +70,7 @@ public class CCDAuthorizingRealm extends AuthorizingRealm {
         if (username == null) {
             throw new UnknownAccountException("Username not provided");
         }
-        final UserAccount userAccount = userAccountService.findByUsername(username);
-        if (userAccount == null) {
-            throw new UnknownAccountException("Account does not exist");
-        }
+        final UserAccount userAccount = userAccountService.findByUsername(username).orElseThrow(() -> new UnknownAccountException("Account does not exist"));
 
         return new SimpleAuthenticationInfo(username, userAccount.getPassword().toCharArray(), getName());
     }

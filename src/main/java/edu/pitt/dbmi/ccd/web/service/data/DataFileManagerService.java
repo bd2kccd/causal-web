@@ -134,7 +134,7 @@ public class DataFileManagerService {
         Date lastModifiedTime = new Date(fileInfo.getLastModifiedTime());
         long fileSize = fileInfo.getSize();
 
-        UserAccount userAccount = userAccountService.findByUsername(username);
+        UserAccount userAccount = userAccountService.findByUsername(username).get();
 
         synchronized (dataFileService) {
             DataFile dataFile = dataFileService.findByAbsolutePathAndName(absolutePath, name);

@@ -39,6 +39,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Optional;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -124,7 +125,7 @@ public class DataService {
         Map<String, String> map = new TreeMap<>();
 
         if (variableType != null) {
-            UserAccount userAccount = userAccountService.findByUsername(username);
+            UserAccount userAccount = userAccountService.findByUsername(username).get();
 
             //get the files stored in the database
             List<DataFile> dbDataFiles = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
@@ -284,7 +285,7 @@ public class DataService {
 
         refreshLocalFileDatabase(Paths.get(workspace, username, dataFolder), username);
 
-        UserAccount userAccount = userAccountService.findByUsername(username);
+        UserAccount userAccount = userAccountService.findByUsername(username).get();
         List<DataFile> dataFileList = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
         DataFile[] dataFiles = dataFileList.toArray(new DataFile[dataFileList.size()]);
         Arrays.sort(dataFiles, (dataFile1, dataFile2) -> {
@@ -322,7 +323,7 @@ public class DataService {
     }
 
     public void refreshLocalFileDatabase(final Path dataDir, final String username) {
-        UserAccount userAccount = userAccountService.findByUsername(username);
+        UserAccount userAccount = userAccountService.findByUsername(username).get();
 
         // get all the user's dataset from the database
         List<DataFile> dataFiles = dataFileService.findByUserAccounts(Collections.singleton(userAccount));

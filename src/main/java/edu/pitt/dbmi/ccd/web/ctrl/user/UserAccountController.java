@@ -24,6 +24,7 @@ import edu.pitt.dbmi.ccd.db.service.SecurityAnswerService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.model.ResetPasswordInfo;
+import java.util.Optional;
 import java.util.Collections;
 import java.util.List;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
@@ -75,13 +76,17 @@ public class UserAccountController implements ViewPath {
     @RequestMapping(value = "reset/pwd", method = RequestMethod.POST)
     public String processUsernameRequest(@ModelAttribute("info") final ResetPasswordInfo info, final Model model) {
         String username = info.getUsername();
-        UserAccount userAccount = userAccountService.findByUsername(username);
-        if (userAccount == null) {
+        UserAccount userAccount;
+
+        Optional<UserAccount> userAccountOptional = userAccountService.findByUsername(username);
+        if (!userAccountOptional.isPresent()) {
             model.addAttribute("strErrMsg", "Security Question Not Set!");
             model.addAttribute("errMsg", "Please contact the administrator to reset your password.");
             model.addAttribute("info", info);
 
             return REQUEST_USERNAME_VIEW;
+        } else {
+            userAccount = userAccountOptional.get();
         }
 
         List<SecurityAnswer> list = securityAnswerService.findByUserAccounts(Collections.singleton(userAccount));
