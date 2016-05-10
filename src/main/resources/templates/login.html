@@ -53,7 +53,7 @@
                                             <input type="checkbox" name="rememberMe" value="true" checked="checked" /> Remember Me
                                         </div>
                                         <div class="form-group">
-                                            <input type="submit" class="btn btn-lg btn-block btn-pitt" value="Sign In" />
+                                            <input type="submit" class="btn btn-lg btn-block btn-pitt" value="Sign In" onClick="JavaScript:getAnnotationsToken()"/>
                                         </div>
                                     </form>
                                     <div style="border-top: 1px solid #ddd; padding-top:15px; font-size:85%">
@@ -181,5 +181,6 @@
         <script src="../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
         <script src="../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
         <script src="../static/js/login.min.js" th:src="@{/js/login.min.js}"></script>
+        <script src="../static/js/annotations.js" th:src="@{/js/annotations.js}"></script>
     </body>
 </html>

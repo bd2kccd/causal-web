@@ -102,12 +102,7 @@ public class UserService {
             person.setEmail(email);
             person.setWorkspace("");
 
-            UserAccount userAccount = new UserAccount();
-            userAccount.setActive(Boolean.FALSE);
-            userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
-            userAccount.setPassword(passwordService.encryptPassword(password));
-            userAccount.setPerson(person);
-            userAccount.setUsername(username);
+            UserAccount userAccount = new UserAccount(person, username, passwordService.encryptPassword(password));
 
             SecurityAnswer securityAnswer = new SecurityAnswer();
             securityAnswer.setAnswer(userRegistration.getSecureAns());
