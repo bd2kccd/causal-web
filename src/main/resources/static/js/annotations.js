@@ -1,4 +1,4 @@
-var apiURL = "http://localhost:8080/api";
+var apiURL = "http://localhost:8000/api";
 var tokenURL = apiURL+"/oauth/token";
 
 function getAnnotationsToken() {
@@ -11,6 +11,26 @@ function getAnnotationsToken() {
 
     var params = "grant_type=password&username="+username+"&password="+password;
 
+    console.log("groups test");
+    $.ajax({
+        url: apiURL+"/groups",
+        type: 'get',
+        headers: {
+            'Authorization': 'Bearer 373aca45-3bad-4c2d-af86-ed84b384ff26',
+        },
+        dataType: 'json',
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader('Authorization','Bearer 373aca45-3bad-4c2d-af86-ed84b384ff26');
+        },
+        success: function(data) {
+            console.log("Success\ndata: " + data)
+        },
+        error: function(data) {
+            console.log("Error\ndata: " + data)
+        }
+    });
+
+    console.log("token test");
     $.ajax({
         url: tokenURL,
         type: 'post',
