@@ -26,20 +26,21 @@ package edu.pitt.dbmi.ccd.web.model.algo;
  */
 public class FgsDiscreteRunInfo extends AlgorithmRunInfo {
 
-    protected double structurePrior;
-    protected double samplePrior;
-    protected int depth;
-    protected boolean faithful;
+    private double structurePrior;
+    private double samplePrior;
+    private int depth;
+    private boolean heuristicSpeedup;
 
     // data validation
-    protected boolean uniqueVarNameValidation;
+    private boolean uniqueVarNameValidation;
+    private boolean limitNumOfCategory;
 
     public FgsDiscreteRunInfo() {
     }
 
     @Override
     public String toString() {
-        return "FgsDiscreteRunInfo{" + "structurePrior=" + structurePrior + ", samplePrior=" + samplePrior + ", depth=" + depth + ", faithful=" + faithful + ", uniqueVarNameValidation=" + uniqueVarNameValidation + '}';
+        return "FgsDiscreteRunInfo{" + "structurePrior=" + structurePrior + ", samplePrior=" + samplePrior + ", depth=" + depth + ", heuristicSpeedup=" + heuristicSpeedup + ", uniqueVarNameValidation=" + uniqueVarNameValidation + ", limitNumOfCategory=" + limitNumOfCategory + '}';
     }
 
     public double getStructurePrior() {
@@ -66,12 +67,12 @@ public class FgsDiscreteRunInfo extends AlgorithmRunInfo {
         this.depth = depth;
     }
 
-    public boolean isFaithful() {
-        return faithful;
+    public boolean isHeuristicSpeedup() {
+        return heuristicSpeedup;
     }
 
-    public void setFaithful(boolean faithful) {
-        this.faithful = faithful;
+    public void setHeuristicSpeedup(boolean heuristicSpeedup) {
+        this.heuristicSpeedup = heuristicSpeedup;
     }
 
     public boolean isUniqueVarNameValidation() {
@@ -80,6 +81,14 @@ public class FgsDiscreteRunInfo extends AlgorithmRunInfo {
 
     public void setUniqueVarNameValidation(boolean uniqueVarNameValidation) {
         this.uniqueVarNameValidation = uniqueVarNameValidation;
+    }
+
+    public boolean isLimitNumOfCategory() {
+        return limitNumOfCategory;
+    }
+
+    public void setLimitNumOfCategory(boolean limitNumOfCategory) {
+        this.limitNumOfCategory = limitNumOfCategory;
     }
 
 }

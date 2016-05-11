@@ -29,7 +29,7 @@ public class FgsContinuousRunInfo extends AlgorithmRunInfo {
     // algorithm parameters
     protected int depth;
     protected double penaltyDiscount;
-    protected boolean faithful;
+    protected boolean heuristicSpeedup;
 
     protected boolean ignoreLinearDependence;
 
@@ -42,7 +42,7 @@ public class FgsContinuousRunInfo extends AlgorithmRunInfo {
 
     @Override
     public String toString() {
-        return "FgsContinuousRunInfo{" + "depth=" + depth + ", penaltyDiscount=" + penaltyDiscount + ", faithful=" + faithful + ", ignoreLinearDependence=" + ignoreLinearDependence + ", nonZeroVarianceValidation=" + nonZeroVarianceValidation + ", uniqueVarNameValidation=" + uniqueVarNameValidation + '}';
+        return "FgsContinuousRunInfo{" + "depth=" + depth + ", penaltyDiscount=" + penaltyDiscount + ", heuristicSpeedup=" + heuristicSpeedup + ", ignoreLinearDependence=" + ignoreLinearDependence + ", nonZeroVarianceValidation=" + nonZeroVarianceValidation + ", uniqueVarNameValidation=" + uniqueVarNameValidation + '}';
     }
 
     public int getDepth() {
@@ -61,12 +61,12 @@ public class FgsContinuousRunInfo extends AlgorithmRunInfo {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    public boolean isFaithful() {
-        return faithful;
+    public boolean isHeuristicSpeedup() {
+        return heuristicSpeedup;
     }
 
-    public void setFaithful(boolean faithful) {
-        this.faithful = faithful;
+    public void setHeuristicSpeedup(boolean heuristicSpeedup) {
+        this.heuristicSpeedup = heuristicSpeedup;
     }
 
     public boolean isIgnoreLinearDependence() {

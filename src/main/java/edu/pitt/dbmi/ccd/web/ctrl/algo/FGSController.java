@@ -165,11 +165,14 @@ public class FGSController implements ViewPath {
         if (algoInfo.isVerbose()) {
             parameters.add("--verbose");
         }
-        if (algoInfo.isFaithful()) {
-            parameters.add("--faithful");
+        if (algoInfo.isHeuristicSpeedup()) {
+            parameters.add("--heuristic-speedup");
         }
         if (!algoInfo.isUniqueVarNameValidation()) {
             parameters.add("--skip-unique-var-name");
+        }
+        if (!algoInfo.isLimitNumOfCategory()) {
+            parameters.add("--skip-category-limit");
         }
 
         return parameters;
@@ -187,8 +190,8 @@ public class FGSController implements ViewPath {
         if (algoInfo.isVerbose()) {
             parameters.add("--verbose");
         }
-        if (algoInfo.isFaithful()) {
-            parameters.add("--faithful");
+        if (algoInfo.isHeuristicSpeedup()) {
+            parameters.add("--heuristic-speedup");
         }
         if (algoInfo.isIgnoreLinearDependence()) {
             parameters.add("--ignore-linear-dependence");
@@ -206,7 +209,7 @@ public class FGSController implements ViewPath {
     private FgsContinuousRunInfo createDefaultFgsContinuousRunInfo() {
         FgsContinuousRunInfo runInfo = new FgsContinuousRunInfo();
         runInfo.setPenaltyDiscount(4.0);
-        runInfo.setFaithful(true);
+        runInfo.setHeuristicSpeedup(true);
         runInfo.setDepth(3);
         runInfo.setIgnoreLinearDependence(true);
         runInfo.setNonZeroVarianceValidation(true);
@@ -221,9 +224,10 @@ public class FGSController implements ViewPath {
         FgsDiscreteRunInfo runInfo = new FgsDiscreteRunInfo();
         runInfo.setSamplePrior(1.0);
         runInfo.setStructurePrior(1.0);
-        runInfo.setFaithful(true);
+        runInfo.setHeuristicSpeedup(true);
         runInfo.setDepth(3);
         runInfo.setUniqueVarNameValidation(true);
+        runInfo.setLimitNumOfCategory(true);
         runInfo.setVerbose(true);
         runInfo.setJvmOptions("");
 

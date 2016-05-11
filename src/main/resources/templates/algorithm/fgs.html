@@ -112,13 +112,13 @@
                                                     <input type="number" id="penaltyDiscount" name="penaltyDiscount" maxlength="10" class="form-control" placeholder="Penalty Discount" ng-model="penaltyDiscount" th:attr="ng-init='penaltyDiscount=' + *{penaltyDiscount}" th:field="*{penaltyDiscount}" required="required" />
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="depth" class="control-label">Search Depth (a value of -1 indicates no limit)</label>
+                                                    <label for="depth" class="control-label">Depth (a value of -1 indicates no limit)</label>
                                                     <input type="number" id="depth" name="depth" maxlength="10" class="form-control" placeholder="Depth" ng-model="depth" th:attr="ng-init='depth=' + *{depth}" th:field="*{depth}" required="required" />
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="faithful" class="control-label">
-                                                            <input type="checkbox" id="faithful" name="faithful" ng-model="faithful" th:attr="ng-init='faithful=' + *{faithful}" th:field="*{faithful}" /> Assume Faithfulness - all conditional independence relations that hold in the distribution are entailed by the Causal Markov Assumption
+                                                        <label for="heuristicSpeedup" class="control-label">
+                                                            <input type="checkbox" id="heuristicSpeedup" name="heuristicSpeedup" ng-model="heuristicSpeedup" th:attr="ng-init='heuristicSpeedup=' + *{heuristicSpeedup}" th:field="*{heuristicSpeedup}" /> Heuristic Speedup - all conditional independence relations that hold in the distribution are entailed by the Causal Markov Assumption
                                                         </label>
                                                     </div>
                                                 </div>
@@ -181,12 +181,12 @@
                                                                 <td ng-bind="penaltyDiscount"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-3">Search Depth:</td>
+                                                                <td class="col-md-3">Depth:</td>
                                                                 <td ng-bind="depth"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-3">Faithful:</td>
-                                                                <td ng-bind="faithful"></td>
+                                                                <td class="col-md-3">Heuristic Speedup</td>
+                                                                <td ng-bind="heuristicSpeedup"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td class="col-md-3">Ignore Linear Dependence:</td>

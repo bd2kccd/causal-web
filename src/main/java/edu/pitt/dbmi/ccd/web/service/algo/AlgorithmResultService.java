@@ -219,12 +219,27 @@ public class AlgorithmResultService {
         try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
             Pattern space = Pattern.compile("\\s+");
             boolean isData = false;
+            String delimiter = ";";
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 line = line.trim();
                 if (isData) {
-                    String[] data = space.split(line);
-                    if (data.length == 4) {
-                        nodes.add(new Node(data[1], data[3], data[2]));
+                    String[] data = space.split(line, 2);
+                    if (data.length == 2) {
+                        String value = data[1].trim();
+                        String[] nodeNames = value
+                                .replaceAll("---", delimiter)
+                                .replaceAll("-->", delimiter)
+                                .replaceAll("<--", delimiter)
+                                .replaceAll("<->", delimiter)
+                                .replaceAll("o->", delimiter)
+                                .replaceAll("<-o", delimiter)
+                                .replaceAll("o-o", delimiter).split(delimiter);
+                        if (nodeNames.length == 2) {
+                            String source = nodeNames[0].trim();
+                            String target = nodeNames[1].trim();
+                            String type = value.replaceAll(source, "").replaceAll(target, "").trim();
+                            nodes.add(new Node(source, target, type));
+                        }
                     }
                 } else if ("Graph Edges:".equals(line)) {
                     isData = true;
