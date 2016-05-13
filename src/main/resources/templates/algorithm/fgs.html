@@ -112,7 +112,7 @@
                                                     <input type="number" id="penaltyDiscount" name="penaltyDiscount" maxlength="10" class="form-control" placeholder="Penalty Discount" ng-model="penaltyDiscount" th:attr="ng-init='penaltyDiscount=' + *{penaltyDiscount}" th:field="*{penaltyDiscount}" required="required" />
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="depth" class="control-label">Depth (a value of -1 indicates no limit)</label>
+                                                    <label for="depth" class="control-label">Search Depth - the maximum number of edges to orient into a node during a single orientation step. A value of -1 indicates no limit.</label>
                                                     <input type="number" id="depth" name="depth" maxlength="10" class="form-control" placeholder="Depth" ng-model="depth" th:attr="ng-init='depth=' + *{depth}" th:field="*{depth}" required="required" />
                                                 </div>
                                                 <div class="form-group">
