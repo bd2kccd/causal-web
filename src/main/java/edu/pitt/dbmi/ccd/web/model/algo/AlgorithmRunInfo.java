@@ -28,14 +28,14 @@ public abstract class AlgorithmRunInfo {
 
     protected String dataset;
     protected boolean verbose;
-    protected String jvmOptions;
+    protected int jvmMaxMem;
 
     public AlgorithmRunInfo() {
     }
 
     @Override
     public String toString() {
-        return "AlgorithmRunInfo{" + "dataset=" + dataset + ", verbose=" + verbose + ", jvmOptions=" + jvmOptions + '}';
+        return "AlgorithmRunInfo{" + "dataset=" + dataset + ", verbose=" + verbose + ", jvmMaxMem=" + jvmMaxMem + '}';
     }
 
     public String getDataset() {
@@ -54,12 +54,12 @@ public abstract class AlgorithmRunInfo {
         this.verbose = verbose;
     }
 
-    public String getJvmOptions() {
-        return jvmOptions;
+    public int getJvmMaxMem() {
+        return jvmMaxMem;
     }
 
-    public void setJvmOptions(String jvmOptions) {
-        this.jvmOptions = jvmOptions;
+    public void setJvmMaxMem(int jvmMaxMem) {
+        this.jvmMaxMem = jvmMaxMem;
     }
 
 }

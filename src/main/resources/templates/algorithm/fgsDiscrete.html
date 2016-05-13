@@ -80,16 +80,14 @@
                                             <div class="panel-body">
                                                 <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="uniqueVarNameValidation" class="control-label">
-                                                            <input type="checkbox" id="uniqueVarNameValidation" name="uniqueVarNameValidation" ng-model="uniqueVarNameValidation" th:attr="ng-init='uniqueVarNameValidation=' + *{uniqueVarNameValidation}" th:field="*{uniqueVarNameValidation}" /> Unique Variable Name - ensure that there are no duplicated variable names
-                                                        </label>
+                                                        <label for="uniqueVarNameValidation" class="control-label"></label>
+                                                        <input type="checkbox" id="uniqueVarNameValidation" name="uniqueVarNameValidation" ng-model="uniqueVarNameValidation" th:attr="ng-init='uniqueVarNameValidation=' + *{uniqueVarNameValidation}" th:field="*{uniqueVarNameValidation}" /> Unique Variable Name - ensure that there are no duplicated variable names
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="limitNumOfCategory" class="control-label">
-                                                            <input type="checkbox" id="limitNumOfCategory" name="limitNumOfCategory" ng-model="limitNumOfCategory" th:attr="ng-init='limitNumOfCategory=' + *{limitNumOfCategory}" th:field="*{limitNumOfCategory}" /> Limit Number of Categories - ensure the number of categories of a variable does not exceed 10.
-                                                        </label>
+                                                        <label for="limitNumOfCategory" class="control-label"></label>
+                                                        <input type="checkbox" id="limitNumOfCategory" name="limitNumOfCategory" ng-model="limitNumOfCategory" th:attr="ng-init='limitNumOfCategory=' + *{limitNumOfCategory}" th:field="*{limitNumOfCategory}" /> Limit Number of Categories - ensure the number of categories of a variable does not exceed 10.
                                                     </div>
                                                 </div>
                                             </div>
@@ -121,29 +119,31 @@
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="heuristicSpeedup" class="control-label">
-                                                            <input type="checkbox" id="heuristicSpeedup" name="heuristicSpeedup" ng-model="heuristicSpeedup" th:attr="ng-init='heuristicSpeedup=' + *{heuristicSpeedup}" th:field="*{heuristicSpeedup}" /> Heuristic Speedup - all conditional independence relations that hold in the distribution are entailed by the Causal Markov Assumption
-                                                        </label>
+                                                        <label for="heuristicSpeedup" class="control-label"></label>
+                                                        <input type="checkbox" id="heuristicSpeedup" name="heuristicSpeedup" ng-model="heuristicSpeedup" th:attr="ng-init='heuristicSpeedup=' + *{heuristicSpeedup}" th:field="*{heuristicSpeedup}" /> Heuristic Speedup - all conditional independence relations that hold in the distribution are entailed by the Causal Markov Assumption
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="verbose" class="control-label">
-                                                            <input type="checkbox" id="verbose" name="verbose" ng-model="verbose" th:attr="ng-init='verbose=' + *{verbose}" th:field="*{verbose}" /> Verbose Output - output includes extra information about the run
-                                                        </label>
+                                                        <label for="verbose" class="control-label"></label>
+                                                        <input type="checkbox" id="verbose" name="verbose" ng-model="verbose" th:attr="ng-init='verbose=' + *{verbose}" th:field="*{verbose}" /> Verbose Output - output includes extra information about the run
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="panel panel-primary">
                                             <div class="panel-heading">
-                                                <h3 class="panel-title">Advanced Options (JVM)</h3>
+                                                <h3 class="panel-title">Advanced Options For Java Virtual Machine (JVM)</h3>
                                                 <span class="pull-right clickable panel-collapsed"><i class="glyphicon glyphicon-chevron-down"></i></span>
                                             </div>
                                             <div class="panel-body" style="display: none;">
                                                 <div class="form-group">
-                                                    <label for="jvmOptions" class="control-label">JVM Parameters</label>
-                                                    <input type="text" id="jvmOptions" name="jvmOptions" class="form-control" placeholder="example: -Xmx1024M" ng-model="jvmOptions" th:attr="ng-init='jvmOptions=' + *{jvmOptions}" th:field="*{jvmOptions}" />
+                                                    <label for="jvmMaxMem" class="control-label">Maximum memory allocation. Enter 0 to use the JVM default value.</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-addon">-Xmx</span>
+                                                        <input type="number" class="form-control" id="jvmMaxMem" name="jvmMaxMem" aria-describedby="mem_unit" ng-model="jvmMaxMem" th:attr="ng-init='jvmMaxMem=' + *{jvmMaxMem}" th:field="*{jvmMaxMem}" />
+                                                        <span class="input-group-addon" id="mem_unit">GB</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -194,8 +194,8 @@
                                                                 <td ng-bind="verbose"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-3">Advanced Options:</td>
-                                                                <td ng-bind="jvmOptions"></td>
+                                                                <td class="col-md-3">Advanced JVM Options:</td>
+                                                                <td>-Xmx{{jvmMaxMem}}G</td>
                                                             </tr>
                                                         </tbody>
                                                     </table>

@@ -25,7 +25,6 @@ import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmRunInfo;
 import edu.pitt.dbmi.ccd.web.model.algo.FgsContinuousRunInfo;
 import edu.pitt.dbmi.ccd.web.model.algo.FgsDiscreteRunInfo;
 import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmService;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -136,9 +135,10 @@ public class FGSController implements ViewPath {
 
     private List<String> getJvmOptions(AlgorithmRunInfo algoInfo) {
         List<String> jvmOptions = new LinkedList<>();
-        String jvmOpts = algoInfo.getJvmOptions().trim();
-        if (jvmOpts.length() > 0) {
-            jvmOptions.addAll(Arrays.asList(jvmOpts.split("\\s+")));
+
+        int jvmMaxMem = algoInfo.getJvmMaxMem();
+        if (jvmMaxMem > 0) {
+            jvmOptions.add(String.format("-Xmx%dG", jvmMaxMem));
         }
 
         return jvmOptions;
@@ -215,7 +215,7 @@ public class FGSController implements ViewPath {
         runInfo.setNonZeroVarianceValidation(true);
         runInfo.setUniqueVarNameValidation(true);
         runInfo.setVerbose(true);
-        runInfo.setJvmOptions("");
+        runInfo.setJvmMaxMem(0);
 
         return runInfo;
     }
@@ -229,7 +229,7 @@ public class FGSController implements ViewPath {
         runInfo.setUniqueVarNameValidation(true);
         runInfo.setLimitNumOfCategory(true);
         runInfo.setVerbose(true);
-        runInfo.setJvmOptions("");
+        runInfo.setJvmMaxMem(0);
 
         return runInfo;
     }
