@@ -117,20 +117,23 @@
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="heuristicSpeedup" class="control-label"></label>
-                                                        <input type="checkbox" id="heuristicSpeedup" name="heuristicSpeedup" ng-model="heuristicSpeedup" th:attr="ng-init='heuristicSpeedup=' + *{heuristicSpeedup}" th:field="*{heuristicSpeedup}" /> Heuristic Speedup - all conditional independence relations that hold in the distribution are entailed by the Causal Markov Assumption
+                                                        <label for="heuristicSpeedup" class="control-label">
+                                                            <input type="checkbox" id="heuristicSpeedup" name="heuristicSpeedup" ng-model="heuristicSpeedup" th:attr="ng-init='heuristicSpeedup=' + *{heuristicSpeedup}" th:field="*{heuristicSpeedup}" /> Heuristic Speedup - all conditional independence relations that hold in the distribution are entailed by the Causal Markov Assumption
+                                                        </label>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="ignoreLinearDependence" class="control-label"></label>
-                                                        <input type="checkbox" id="ignoreLinearDependence" name="ignoreLinearDependence" ng-model="ignoreLinearDependence" th:attr="ng-init='ignoreLinearDependence=' + *{ignoreLinearDependence}" th:field="*{ignoreLinearDependence}" /> Ignore Linear Dependence - one variable is the result of some combination of other variables
+                                                        <label for="ignoreLinearDependence" class="control-label">
+                                                            <input type="checkbox" id="ignoreLinearDependence" name="ignoreLinearDependence" ng-model="ignoreLinearDependence" th:attr="ng-init='ignoreLinearDependence=' + *{ignoreLinearDependence}" th:field="*{ignoreLinearDependence}" /> Ignore Linear Dependence - one variable is the result of some combination of other variables
+                                                        </label>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="verbose" class="control-label"></label>
-                                                        <input type="checkbox" id="verbose" name="verbose" ng-model="verbose" th:attr="ng-init='verbose=' + *{verbose}" th:field="*{verbose}" /> Verbose Output - output includes extra information about the run
+                                                        <label for="verbose" class="control-label">
+                                                            <input type="checkbox" id="verbose" name="verbose" ng-model="verbose" th:attr="ng-init='verbose=' + *{verbose}" th:field="*{verbose}" /> Verbose Output - output includes extra information about the run
+                                                        </label>
                                                     </div>
                                                 </div>
                                             </div>
@@ -142,11 +145,10 @@
                                             </div>
                                             <div class="panel-body" style="display: none;">
                                                 <div class="form-group">
-                                                    <label for="jvmMaxMem" class="control-label">Maximum memory allocation. Enter 0 to use the JVM default value.</label>
+                                                    <label for="jvmMaxMem" class="control-label">Maximum memory allocation for the JVM. Enter 0 for default.</label>
                                                     <div class="input-group">
-                                                        <span class="input-group-addon">-Xmx</span>
                                                         <input type="number" class="form-control" id="jvmMaxMem" name="jvmMaxMem" aria-describedby="mem_unit" ng-model="jvmMaxMem" th:attr="ng-init='jvmMaxMem=' + *{jvmMaxMem}" th:field="*{jvmMaxMem}" />
-                                                        <span class="input-group-addon" id="mem_unit">GB</span>
+                                                        <span class="input-group-addon" id="mem_unit">Gigabyte</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -242,6 +244,7 @@
         <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
         <script src="../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
+        <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
         <script src="../../static/js/algo/fgsValidate.min.js" th:src="@{/js/algo/fgsValidate.min.js}"></script>
         <script src="../../static/js/algo/stepwizard.min.js" th:src="@{/js/algo/stepwizard.min.js}"></script>
         <script src="../../static/js/algo/algorithm.min.js" th:src="@{/js/algo/algorithm.min.js}"></script>

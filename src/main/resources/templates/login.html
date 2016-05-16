@@ -50,7 +50,11 @@
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <input type="checkbox" name="rememberMe" value="true" checked="checked" /> Remember Me
+                                            <div class="checkbox">
+                                                <label for="rememberMe" class="control-label">
+                                                    <input type="checkbox" id="rememberMe" name="rememberMe" value="true" checked="checked" /> Remember Me
+                                                </label>
+                                            </div>
                                         </div>
                                         <div class="form-group">
                                             <input type="submit" class="btn btn-lg btn-block btn-pitt" value="Sign In" />
@@ -180,6 +184,7 @@
         <script src="../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
         <script src="../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
         <script src="../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
+        <script src="../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
         <script src="../static/js/login.min.js" th:src="@{/js/login.min.js}"></script>
     </body>
 </html>

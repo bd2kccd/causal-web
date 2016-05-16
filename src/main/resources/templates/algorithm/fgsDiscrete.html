@@ -80,14 +80,16 @@
                                             <div class="panel-body">
                                                 <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="uniqueVarNameValidation" class="control-label"></label>
-                                                        <input type="checkbox" id="uniqueVarNameValidation" name="uniqueVarNameValidation" ng-model="uniqueVarNameValidation" th:attr="ng-init='uniqueVarNameValidation=' + *{uniqueVarNameValidation}" th:field="*{uniqueVarNameValidation}" /> Unique Variable Name - ensure that there are no duplicated variable names
+                                                        <label for="uniqueVarNameValidation" class="control-label">
+                                                            <input type="checkbox" id="uniqueVarNameValidation" name="uniqueVarNameValidation" ng-model="uniqueVarNameValidation" th:attr="ng-init='uniqueVarNameValidation=' + *{uniqueVarNameValidation}" th:field="*{uniqueVarNameValidation}" /> Unique Variable Name - ensure that there are no duplicated variable names
+                                                        </label>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="limitNumOfCategory" class="control-label"></label>
-                                                        <input type="checkbox" id="limitNumOfCategory" name="limitNumOfCategory" ng-model="limitNumOfCategory" th:attr="ng-init='limitNumOfCategory=' + *{limitNumOfCategory}" th:field="*{limitNumOfCategory}" /> Limit Number of Categories - ensure the number of categories of a variable does not exceed 10.
+                                                        <label for="limitNumOfCategory" class="control-label">
+                                                            <input type="checkbox" id="limitNumOfCategory" name="limitNumOfCategory" ng-model="limitNumOfCategory" th:attr="ng-init='limitNumOfCategory=' + *{limitNumOfCategory}" th:field="*{limitNumOfCategory}" /> Limit Number of Categories - ensure the number of categories of a variable does not exceed 10.
+                                                        </label>
                                                     </div>
                                                 </div>
                                             </div>
@@ -119,14 +121,16 @@
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="heuristicSpeedup" class="control-label"></label>
-                                                        <input type="checkbox" id="heuristicSpeedup" name="heuristicSpeedup" ng-model="heuristicSpeedup" th:attr="ng-init='heuristicSpeedup=' + *{heuristicSpeedup}" th:field="*{heuristicSpeedup}" /> Heuristic Speedup - all conditional independence relations that hold in the distribution are entailed by the Causal Markov Assumption
+                                                        <label for="heuristicSpeedup" class="control-label">
+                                                            <input type="checkbox" id="heuristicSpeedup" name="heuristicSpeedup" ng-model="heuristicSpeedup" th:attr="ng-init='heuristicSpeedup=' + *{heuristicSpeedup}" th:field="*{heuristicSpeedup}" /> Heuristic Speedup - all conditional independence relations that hold in the distribution are entailed by the Causal Markov Assumption
+                                                        </label>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="verbose" class="control-label"></label>
-                                                        <input type="checkbox" id="verbose" name="verbose" ng-model="verbose" th:attr="ng-init='verbose=' + *{verbose}" th:field="*{verbose}" /> Verbose Output - output includes extra information about the run
+                                                        <label for="verbose" class="control-label">
+                                                            <input type="checkbox" id="verbose" name="verbose" ng-model="verbose" th:attr="ng-init='verbose=' + *{verbose}" th:field="*{verbose}" /> Verbose Output - output includes extra information about the run
+                                                        </label>
                                                     </div>
                                                 </div>
                                             </div>
@@ -138,11 +142,10 @@
                                             </div>
                                             <div class="panel-body" style="display: none;">
                                                 <div class="form-group">
-                                                    <label for="jvmMaxMem" class="control-label">Maximum memory allocation. Enter 0 to use the JVM default value.</label>
+                                                    <label for="jvmMaxMem" class="control-label">Maximum memory allocation for the JVM. Enter 0 for default.</label>
                                                     <div class="input-group">
-                                                        <span class="input-group-addon">-Xmx</span>
                                                         <input type="number" class="form-control" id="jvmMaxMem" name="jvmMaxMem" aria-describedby="mem_unit" ng-model="jvmMaxMem" th:attr="ng-init='jvmMaxMem=' + *{jvmMaxMem}" th:field="*{jvmMaxMem}" />
-                                                        <span class="input-group-addon" id="mem_unit">GB</span>
+                                                        <span class="input-group-addon" id="mem_unit">Gigabyte</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -238,6 +241,8 @@
         <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
         <script src="../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
+        <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
+        <script src="../../static/js/algo/fgsDiscreteValidate.min.js" th:src="@{/js/algo/fgsDiscreteValidate.min.js}"></script>
         <script src="../../static/js/algo/stepwizard.min.js" th:src="@{/js/algo/stepwizard.min.js}"></script>
         <script src="../../static/js/algo/algorithm.min.js" th:src="@{/js/algo/algorithm.min.js}"></script>
     </body>
