@@ -68,16 +68,20 @@
                                 </div>
                                 <div class="panel-body">
                                     <div class="form-group">
-                                        <label>Variable Type: (only continuous data can be analysed at this time)</label>
-                                        <label for="variableType" class="radio-inline" th:each="varType : ${variableTypes}">
-                                            <input type="radio" name="variableType" id="variableType" th:id="${varType.name}" value="continuous" th:value="${varType.id}" th:field="*{variableType}" required="required" /><span th:text="${varType.name}">continuous</span>
-                                        </label>
+                                        <label>Variable Type:</label>
+                                        <div class="radio-inline">
+                                            <label for="variableType" class="radio-inline" th:for="${varType.name}" th:each="varType : ${variableTypes}">
+                                                <input type="radio" id="variableType" name="variableType" value="continuous" th:id="${varType.name}" th:value="${varType.id}" th:field="*{variableType}" required="required" /><span th:text="${varType.name}">continuous</span>
+                                            </label>
+                                        </div>
                                     </div>
                                     <div class="form-group">
                                         <label>Delimiter:</label>
-                                        <label for="fileDelimiter" class="radio-inline" th:each="delim : ${fileDelimiters}">
-                                            <input type="radio" name="fileDelimiter" id="fileDelimiter" th:id="${delim.name}" value="tab" th:value="${delim.id}" th:field="*{fileDelimiter}" required="required" /><span th:text="${delim.name}">tab</span>
-                                        </label>
+                                        <div class="radio-inline">
+                                            <label class="radio-inline" for="fileDelimiter" th:for="${delim.name}" th:each="delim : ${fileDelimiters}">
+                                                <input type="radio" id="fileDelimiter" name="fileDelimiter" value="tab" th:id="${delim.name}" th:value="${delim.id}" th:field="*{fileDelimiter}" required="required" /><span th:text="${delim.name}">tab</span>
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="panel-footer">
