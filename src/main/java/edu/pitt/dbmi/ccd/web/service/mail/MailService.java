@@ -18,12 +18,16 @@
  */
 package edu.pitt.dbmi.ccd.web.service.mail;
 
-import edu.pitt.dbmi.ccd.mail.service.BasicMailService;
-import edu.pitt.dbmi.ccd.mail.service.UserBasicMailService;
+import edu.pitt.dbmi.ccd.mail.AbstractBasicMail;
+import java.util.Locale;
 import javax.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring4.SpringTemplateEngine;
 
 /**
  *
@@ -32,36 +36,43 @@ import org.springframework.stereotype.Service;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @Service
-public class MailService {
+public class MailService extends AbstractBasicMail {
+
+    private static final Locale LOCALE = new Locale("en", "US");
 
     private final String sendTo;
 
-    private final String subject;
-
-    private final BasicMailService basicMailService;
-
-    private final UserBasicMailService userBasicMailService;
+    private final SpringTemplateEngine templateEngine;
 
     @Autowired
     public MailService(
-            @Value("${ccd.mail.feedback.to}") String sendTo,
-            @Value("${ccd.mail.feedback.subject:User Feedback}") String subject,
-            BasicMailService basicMailService,
-            UserBasicMailService userBasicMailService) {
+            @Value("${spring.mail.username}") String sendTo,
+            SpringTemplateEngine templateEngine,
+            JavaMailSender javaMailSender) {
+        super(javaMailSender);
         this.sendTo = sendTo;
-        this.subject = subject;
-        this.basicMailService = basicMailService;
-        this.userBasicMailService = userBasicMailService;
+        this.templateEngine = templateEngine;
     }
 
+    @Async
     public void sendRegistrationActivation(String username, String email, String activationUrl) throws MessagingException {
-        userBasicMailService.sendRegistrationActivation(username, email, activationUrl);
+        Context context = new Context(LOCALE);
+        context.setVariable("username", username);
+        context.setVariable("email", email);
+        context.setVariable("activationUrl", activationUrl);
+
+        String to = email;
+        String subject = "CCD Account Activation";
+        String body = this.templateEngine.process("email/registration-activation", context);
+        boolean html = true;
+        send(to, subject, body, html);
     }
 
+    @Async
     public void sendFeedback(String email, String feedback) throws MessagingException {
         String feedbackSubject = (email == null || email.trim().isEmpty())
-                ? subject + ": Feedback From Anonymous User" : subject + ": Feedback From " + email;
-        basicMailService.send(sendTo, feedbackSubject, feedback, false);
+                ? "User Feedback From Anonymous User" : "User Feedback From " + email;
+        send(sendTo, feedbackSubject, feedback, false);
     }
 
 }
