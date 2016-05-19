@@ -18,7 +18,7 @@ $(document).ready(function () {
                 required: true,
                 number: true,
                 min: 0,
-                max: 256
+                max: 128
             }
         },
         messages: {
@@ -33,9 +33,9 @@ $(document).ready(function () {
                 required: "Please select the search depth."
             },
             jvmMaxMem: {
-                required: "Must be a number between 0 and 256.",
-                min: "Must between 0 and 256.",
-                max: "Must between 0 and 256."
+                required: "Must be a number between 0 and 128.",
+                min: "Must between 0 and 128.",
+                max: "Must between 0 and 128."
             }
         },
         highlight: function (element) {
