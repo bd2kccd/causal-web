@@ -215,30 +215,31 @@ public class AlgorithmResultService {
     public List<Node> extractGraphNodes(final String fileName, final String username) {
         List<Node> nodes = new LinkedList<>();
 
+        CharSequence[] edgeTypes = {
+            "---", "-->", "<--", "<->", "o->", "<-o", "o-o"
+        };
+        CharSequence emptyString = "";
+
         Path file = Paths.get(workspace, username, resultFolder, algorithmResultFolder, fileName);
         try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
             Pattern space = Pattern.compile("\\s+");
             boolean isData = false;
-            String delimiter = ";";
+            CharSequence delimiter = ";";
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 line = line.trim();
                 if (isData) {
                     String[] data = space.split(line, 2);
                     if (data.length == 2) {
                         String value = data[1].trim();
-                        String[] nodeNames = value
-                                .replaceAll("---", delimiter)
-                                .replaceAll("-->", delimiter)
-                                .replaceAll("<--", delimiter)
-                                .replaceAll("<->", delimiter)
-                                .replaceAll("o->", delimiter)
-                                .replaceAll("<-o", delimiter)
-                                .replaceAll("o-o", delimiter).split(delimiter);
+                        for (CharSequence edgeType : edgeTypes) {
+                            value = value.replace(edgeType, delimiter);
+                        }
+                        String[] nodeNames = value.split(delimiter.toString());
                         if (nodeNames.length == 2) {
-                            String source = nodeNames[0].trim();
-                            String target = nodeNames[1].trim();
-                            String type = value.replaceAll(source, "").replaceAll(target, "").trim();
-                            nodes.add(new Node(source, target, type));
+                            CharSequence source = nodeNames[0].trim();
+                            CharSequence target = nodeNames[1].trim();
+                            String type = value.replace(source, emptyString).replace(target, emptyString).trim();
+                            nodes.add(new Node(source.toString(), target.toString(), type));
                         }
                     }
                 } else if ("Graph Edges:".equals(line)) {
