@@ -165,8 +165,8 @@ public class FGSController implements ViewPath {
         if (algoInfo.isVerbose()) {
             parameters.add("--verbose");
         }
-        if (algoInfo.isHeuristicSpeedup()) {
-            parameters.add("--heuristic-speedup");
+        if (!algoInfo.isHeuristicSpeedup()) {
+            parameters.add("--disable-heuristic-speedup");
         }
         if (!algoInfo.isUniqueVarNameValidation()) {
             parameters.add("--skip-unique-var-name");
@@ -190,8 +190,8 @@ public class FGSController implements ViewPath {
         if (algoInfo.isVerbose()) {
             parameters.add("--verbose");
         }
-        if (algoInfo.isHeuristicSpeedup()) {
-            parameters.add("--heuristic-speedup");
+        if (!algoInfo.isHeuristicSpeedup()) {
+            parameters.add("--disable-heuristic-speedup");
         }
         if (algoInfo.isIgnoreLinearDependence()) {
             parameters.add("--ignore-linear-dependence");
