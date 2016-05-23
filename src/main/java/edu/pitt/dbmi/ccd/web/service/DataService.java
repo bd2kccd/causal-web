@@ -192,20 +192,25 @@ public class DataService {
         } else {
             dataSummary.setFileName(fileName);
 
+            FileDelimiter defaultDelimiter = fileName.endsWith(".csv")
+                    ? fileDelimiterService.getFileDelimiterRepository().findByName("comma")
+                    : fileDelimiterService.getFileDelimiterRepository().findByName("tab");
+            VariableType defaultVarType = variableTypeService.findByName("continuous");
+
             DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
             if (dataFileInfo == null) {
-                dataSummary.setVariableType(variableTypeService.findByName("continuous"));
-                dataSummary.setFileDelimiter(fileDelimiterService.getFileDelimiterRepository().findByName("tab"));
+                dataSummary.setVariableType(defaultVarType);
+                dataSummary.setFileDelimiter(defaultDelimiter);
             } else {
-                VariableType variableType = dataFileInfo.getVariableType();
-                if (variableType == null) {
-                    variableType = variableTypeService.findByName("continuous");
+                VariableType varType = dataFileInfo.getVariableType();
+                if (varType == null) {
+                    varType = defaultVarType;
                 }
-                dataSummary.setVariableType(variableType);
+                dataSummary.setVariableType(varType);
 
                 FileDelimiter delimiter = dataFileInfo.getFileDelimiter();
                 if (delimiter == null) {
-                    delimiter = fileDelimiterService.getFileDelimiterRepository().findByName("tab");
+                    delimiter = defaultDelimiter;
                 }
                 dataSummary.setFileDelimiter(delimiter);
             }
