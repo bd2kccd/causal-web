@@ -215,31 +215,33 @@ public class AlgorithmResultService {
     public List<Node> extractGraphNodes(final String fileName, final String username) {
         List<Node> nodes = new LinkedList<>();
 
-        CharSequence[] edgeTypes = {
+        String[] edgeTypes = {
             "---", "-->", "<--", "<->", "o->", "<-o", "o-o"
         };
-        CharSequence emptyString = "";
 
         Path file = Paths.get(workspace, username, resultFolder, algorithmResultFolder, fileName);
         try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
             Pattern space = Pattern.compile("\\s+");
             boolean isData = false;
-            CharSequence delimiter = ";";
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 line = line.trim();
                 if (isData) {
                     String[] data = space.split(line, 2);
                     if (data.length == 2) {
                         String value = data[1].trim();
-                        for (CharSequence edgeType : edgeTypes) {
-                            value = value.replace(edgeType, delimiter);
+
+                        String edge = "";
+                        for (String edgeType : edgeTypes) {
+                            if (value.contains(edgeType)) {
+                                edge = edgeType;
+                                break;
+                            }
                         }
-                        String[] nodeNames = value.split(delimiter.toString());
-                        if (nodeNames.length == 2) {
-                            CharSequence source = nodeNames[0].trim();
-                            CharSequence target = nodeNames[1].trim();
-                            String type = value.replace(source, emptyString).replace(target, emptyString).trim();
-                            nodes.add(new Node(source.toString(), target.toString(), type));
+                        String[] values = value.split(edge);
+                        if (values.length == 2) {
+                            String source = values[0].trim();
+                            String target = values[1].trim();
+                            nodes.add(new Node(source, target, edge));
                         }
                     }
                 } else if ("Graph Edges:".equals(line)) {
