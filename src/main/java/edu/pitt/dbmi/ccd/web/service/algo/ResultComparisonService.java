@@ -120,7 +120,7 @@ public class ResultComparisonService {
 
         Set<String> distinctEdges = simpleGraphComparison.getDistinctEdges();
         Set<String> edgesInAll = simpleGraphComparison.getEdgesInAll();
-        Set<String> sameEndPoints = simpleGraphComparison.getSameEndPoints();
+        Set<String> sameEdgeTypes = simpleGraphComparison.getSameEdgeTypes();
 
         String resultFileName = "result_comparison_" + System.currentTimeMillis() + ".txt";
 
@@ -132,7 +132,7 @@ public class ResultComparisonService {
         for (String edge : distinctEdges) {
             ResultComparisonData rc = new ResultComparisonData(edge);
             rc.setInAll(edgesInAll.contains(edge));
-            rc.setSimilarEndPoint(sameEndPoints.contains(edge));
+            rc.setSameEdgeType(sameEdgeTypes.contains(edge));
             rc.setCountIndex(++countIndex);
 
             comparisonResults.add(rc);
@@ -153,7 +153,7 @@ public class ResultComparisonService {
                 writer.write(String.format("%s\t%s\t%s\n",
                         comparison.getEdge(),
                         comparison.isInAll() ? "1" : "0",
-                        comparison.isSimilarEndPoint() ? "1" : "0"));
+                        comparison.isSameEdgeType() ? "1" : "0"));
             }
         } catch (IOException exception) {
             LOGGER.error(String.format("Unable to write file '%s'.", resultFileName), exception);
@@ -207,7 +207,7 @@ public class ResultComparisonService {
                 if (fields.length == 3) {
                     ResultComparisonData data = new ResultComparisonData(fields[0]);
                     data.setInAll("1".equals(fields[1]));
-                    data.setSimilarEndPoint("1".equals(fields[2]));
+                    data.setSameEdgeType("1".equals(fields[2]));
                     data.setCountIndex(++indexCount);
 
                     comparisonData.add(data);
