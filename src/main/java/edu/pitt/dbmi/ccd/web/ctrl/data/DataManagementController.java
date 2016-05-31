@@ -78,6 +78,11 @@ public class DataManagementController implements ViewPath {
         return DATA_SUMMARY_VIEW;
     }
 
+    @RequestMapping(value = "annotations", method = RequestMethod.GET)
+    public String showDataFileAnnotations(final Model model) {
+        return DATA_ANNOTATIONS_VIEW;
+    }
+
     @RequestMapping(value = "delete", method = RequestMethod.GET)
     public String deleteDataFile(
             @RequestParam(value = "file") final String fileName,
