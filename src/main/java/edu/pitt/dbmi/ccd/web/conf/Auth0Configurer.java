@@ -50,7 +50,6 @@ public class Auth0Configurer {
 
     @Bean(name = "authFilter")
     public FilterRegistrationBean authFilter() {
-        System.out.println(auth0Properties);
         FilterRegistrationBean registrationBean = new FilterRegistrationBean();
         registrationBean.setFilter(new Auth0Filter());
         registrationBean.addInitParameter("auth0.redirect_on_authentication_error", "/login");
