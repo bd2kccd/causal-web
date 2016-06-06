@@ -6,18 +6,18 @@ const apiURL = "http://localhost:8000/api";
 const tokenURL = apiURL+"/oauth/token";
 const client = "causal-web";
 const clientPassword = "";
+const passwordGrant = "password";
+const refreshGrant = "refresh_token";
 
 /**
  * Fetch refresh and access tokens from Annotations API
  */
 function requestAnnotationsTokens() {
-    const grantType = "password";
-
     $.ajax({
         url: tokenURL,
         type: 'post',
         data: {
-            grant_type: grantType,
+            grant_type: passwordGrant,
             username: document.getElementById("login").username.value,
             password: document.getElementById("login").password.value
         },
@@ -53,8 +53,12 @@ function storeAccessToken(token, expires) {
  */
 function getAccessToken() {
     var value = "; " + document.cookie;
-    var parts = value.split("; " + 'access_token' + "=");
-    if (parts.length == 2) return parts.pop().split(";").shift();
+    var parts = value.split("; access_token=");
+    if (parts.length == 2) {
+        return parts.pop().split(";").shift();
+    } else {
+        return "";
+    }
 }
 
 /**
@@ -77,13 +81,11 @@ function getRefreshToken() {
  * Fetch new access token using refresh token
  */
 function requestAccessToken() {
-    const grantType = "refresh_token";
-
     $.ajax({
         url: tokenURL,
         type: 'post',
         data: {
-            grant_type: grantType,
+            grant_type: refreshGrant,
             refresh_token: getRefreshToken();
         },
         beforeSend: function (xhr) {
