@@ -50,6 +50,9 @@ public interface ViewPath {
     public static final String DATA_SUMMARY_VIEW = "data/dataSummary";
     public static final String DATA_UPLOAD_VIEW = "data/dataUpload";
 
+    public static final String DATASET_PRIOR_VIEW = "data/prior";
+    public static final String REDIRECT_DATASET_PRIOR = "redirect:/data/prior";
+
     public static final String FILE_INFO_VIEW = "fs/fileInfo";
 
     public static final String ALGORITHM_RESULTS_VIEW = "algorithm/algorithmResults";

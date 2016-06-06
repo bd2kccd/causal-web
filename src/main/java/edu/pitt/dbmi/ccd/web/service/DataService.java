@@ -284,6 +284,36 @@ public class DataService {
         return list;
     }
 
+    public List<DatasetFileInfo> listDataPriorFiles(final String username) {
+        List<DatasetFileInfo> datasetFileInfos = new LinkedList<>();
+
+        refreshLocalFileDatabase(Paths.get(workspace, username, dataFolder), username);
+
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        List<DataFile> dataFileList = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
+        DataFile[] dataFiles = dataFileList.toArray(new DataFile[dataFileList.size()]);
+        Arrays.sort(dataFiles, (dataFile1, dataFile2) -> {
+            return dataFile2.getCreationTime().compareTo(dataFile1.getCreationTime());
+        });
+
+        for (DataFile dataFile : dataFiles) {
+            String fileName = dataFile.getName();
+            if (fileName.endsWith(".prior")) {
+                DatasetFileInfo datasetFileInfo = new DatasetFileInfo();
+                datasetFileInfo.setCreationDate(dataFile.getCreationTime());
+                datasetFileInfo.setFileName(dataFile.getName());
+                datasetFileInfo.setFileSize(dataFile.getFileSize());
+
+                DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
+                datasetFileInfo.setSummarized(dataFileInfo.getFileDelimiter() != null);
+
+                datasetFileInfos.add(datasetFileInfo);
+            }
+        }
+
+        return datasetFileInfos;
+    }
+
     public List<DatasetFileInfo> listDataFiles(final String username) {
         List<DatasetFileInfo> datasetFileInfos = new LinkedList<>();
 
@@ -297,6 +327,13 @@ public class DataService {
         });
 
         for (DataFile dataFile : dataFiles) {
+            String fileName = dataFile.getName();
+
+            // skip prior file
+            if (fileName.endsWith(".prior")) {
+                continue;
+            }
+
             DatasetFileInfo datasetFileInfo = new DatasetFileInfo();
             datasetFileInfo.setCreationDate(dataFile.getCreationTime());
             datasetFileInfo.setFileName(dataFile.getName());
@@ -317,7 +354,7 @@ public class DataService {
         try {
             Path dir = Paths.get(workspace, username, dataFolder);
             List<Path> list = FileInfos.listDirectory(dir, false);
-            List<Path> files = list.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
+            List<Path> files = list.stream().filter(path -> (Files.isRegularFile(path) && !path.getFileName().toString().endsWith(".prior"))).collect(Collectors.toList());
             count = files.size();
         } catch (IOException exception) {
             LOGGER.error(exception.getMessage());

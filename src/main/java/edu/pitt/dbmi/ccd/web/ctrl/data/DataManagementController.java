@@ -85,7 +85,7 @@ public class DataManagementController implements ViewPath {
             final Model model) {
         dataService.deleteDataFile(fileName, appUser.getUsername());
 
-        return REDIRECT_DATA;
+        return fileName.endsWith(".prior") ? REDIRECT_DATASET_PRIOR : REDIRECT_DATA;
     }
 
     @RequestMapping(value = "fileInfo", method = RequestMethod.GET)
@@ -94,7 +94,9 @@ public class DataManagementController implements ViewPath {
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
         model.addAttribute("basicInfo", dataService.getFileInfo(fileName, appUser.getUsername()));
-        model.addAttribute("summaryInfo", dataService.getDataFileAdditionalInfo(fileName, appUser.getUsername()));
+        if (!fileName.endsWith(".prior")) {
+            model.addAttribute("summaryInfo", dataService.getDataFileAdditionalInfo(fileName, appUser.getUsername()));
+        }
 
         return FILE_INFO_VIEW;
     }
@@ -106,6 +108,15 @@ public class DataManagementController implements ViewPath {
         model.addAttribute("itemList", dataService.listDataFiles(appUser.getUsername()));
 
         return DATASET_VIEW;
+    }
+
+    @RequestMapping(value = "prior", method = RequestMethod.GET)
+    public String showPriorFilePage(
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        model.addAttribute("itemList", dataService.listDataPriorFiles(appUser.getUsername()));
+
+        return DATASET_PRIOR_VIEW;
     }
 
 }
