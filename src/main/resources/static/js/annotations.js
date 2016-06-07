@@ -29,9 +29,6 @@ function requestAnnotationsTokens() {
         success: function(data) {
             storeAccessToken(data['access_token'], data['expires_in']);
             storeRefreshToken(data['refresh_token']);
-        },
-        error: function(data) {
-            console.log("Error fetching tokens\ndata: " + data);
         }
     });
 }
@@ -57,7 +54,7 @@ function getAccessToken() {
     if (parts.length == 2) {
         return parts.pop().split(";").shift();
     } else {
-        return "";
+        return requestAccessToken();
     }
 }
 
@@ -79,14 +76,16 @@ function getRefreshToken() {
 
 /**
  * Fetch new access token using refresh token
+ * @return {string} access token
  */
 function requestAccessToken() {
+    var accessToken = "";
     $.ajax({
         url: tokenURL,
         type: 'post',
         data: {
             grant_type: refreshGrant,
-            refresh_token: getRefreshToken();
+            refresh_token: getRefreshToken()
         },
         beforeSend: function (xhr) {
             xhr.setRequestHeader('Authorization', 'Basic ' + btoa(client + ':' + clientPassword));
@@ -94,10 +93,27 @@ function requestAccessToken() {
         },
         dataType: 'json',
         success: function(data) {
-            storeAccessToken(data['access_token'], data['expires_in']);
+            accessToken = data['access_token'];
+            var expires = data['expires_in'];
+            storeAccessToken(accessToken, expires);
         },
         error: function(data) {
-            console.log("Error fetching access token\ndata: " + data);
+            console.log("Error fetching access token");
+        }
+    });
+    return accessToken;
+}
+
+function getUser() {
+    $.ajax({
+        url: apiURL+"/users/1";
+        type: 'get',
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('Authorization', 'Bearer ' + getAccessToken());
+        },
+        dataType: 'json',
+        success: function(data) {
+            console.log("Success fetching user: " + data['username']);
         }
     });
 }

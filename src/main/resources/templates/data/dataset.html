@@ -52,10 +52,10 @@
                                             </p>
                                         </td>
                                         <td>
-                                            <p data-placement="top" data-toggle="tooltip" title="Annotate Data" th:title="Metadata">
-                                                <button class="btn btn-primary btn-xs" data-title="Annotations" data-toggle="modal" data-target="#annotations" data-href="data/annotations" th:href="@{/data/annotations}">
-                                                    <span class="glyphicon glyphicon-comment"></span>
-                                                </button>
+                                            <p data-placement="top" data-toggle="tooltip" title="Annotate Data" th:title="'Annotate Data'">
+                                                <a class="btn btn-xs btn-primary" th:class="'btn btn-xs btn-primary'" href="data/annotations?file=" th:href="@{/data/annotations(file=${item.fileName})}">
+                                                    <span class="glyphicon glyphicon-comment" th:class="'glyphicon glyphicon-comment'"></span>
+                                                </a>
                                             </p>
                                         </td>
                                         <td>

@@ -39,12 +39,6 @@ repositories {
 dependencies {
     compile("edu.pitt.dbmi:ccd-db:0.6.0")
     compile("edu.pitt.dbmi:ccd-commons:0.3.0")
-    compile("edu.pitt.dbmi:ccd-annotations:0.3.0") {
-        exclude(module: "spring-boot-starter-undertow")
-        exclude(module: "spring-boot-starter-logging")
-        exclude(module: "ccd-oauth2")
-        exclude(group: "io.springfox")
-    }
     compile(group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: "${springBootVersion}") {
         exclude(module: 'spring-boot-starter-logging')
     }

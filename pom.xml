@@ -109,33 +109,6 @@
             <artifactId>ccd-commons</artifactId>
             <version>0.3.0</version>
         </dependency>
-        <dependency>
-            <groupId>edu.pitt.dbmi</groupId>
-            <artifactId>ccd-annotations</artifactId>
-            <version>0.3.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-undertow</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-logging</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>edu.pitt.dbmi</groupId>
-                    <artifactId>ccd-oauth2</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.springfox</groupId>
-                    <artifactId>springfox-swagger2</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.springfox</groupId>
-                    <artifactId>springfox-swagger-ui</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
     </dependencies>
 
     <build>
