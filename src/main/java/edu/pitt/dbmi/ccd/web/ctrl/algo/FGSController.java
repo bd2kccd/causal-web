@@ -70,6 +70,7 @@ public class FGSController implements ViewPath {
     @RequestMapping(value = "discrete", method = RequestMethod.GET)
     public String showFgsDiscreteView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         Map<String, String> dataset = algorithmService.getUserDiscreteDataset(appUser.getUsername());
+        Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
         FgsDiscreteRunInfo algoInfo = createDefaultFgsDiscreteRunInfo();
 
         // set the default dataset
@@ -79,7 +80,14 @@ public class FGSController implements ViewPath {
             algoInfo.setDataset(dataset.keySet().iterator().next());  // get one element
         }
 
+        if (prior.isEmpty()) {
+            algoInfo.setPriorKnowledge("");
+        } else {
+            algoInfo.setPriorKnowledge(prior.keySet().iterator().next());
+        }
+
         model.addAttribute("datasetList", dataset);
+        model.addAttribute("priorList", prior);
         model.addAttribute("algoInfo", algoInfo);
 
         return FGS_DISCRETE_VIEW;
@@ -92,6 +100,7 @@ public class FGSController implements ViewPath {
             final Model model) {
         AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("fgs-discrete", algorithmJar, fgsDiscreteAlgorithm);
         jobRequest.setDataset(getDataset(algoInfo));
+        jobRequest.setPriorKnowledge(getPriorKnowledge(algoInfo));
         jobRequest.setJvmOptions(getJvmOptions(algoInfo));
         jobRequest.setParameters(getParametersForDiscrete(algoInfo, appUser.getUsername()));
 
@@ -103,6 +112,7 @@ public class FGSController implements ViewPath {
     @RequestMapping(method = RequestMethod.GET)
     public String showFgsView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         Map<String, String> dataset = algorithmService.getUserDataset(appUser.getUsername());
+        Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
         FgsContinuousRunInfo algoInfo = createDefaultFgsContinuousRunInfo();
 
         // set the default dataset
@@ -112,7 +122,14 @@ public class FGSController implements ViewPath {
             algoInfo.setDataset(dataset.keySet().iterator().next());  // get one element
         }
 
+        if (prior.isEmpty()) {
+            algoInfo.setPriorKnowledge("");
+        } else {
+            algoInfo.setPriorKnowledge(prior.keySet().iterator().next());
+        }
+
         model.addAttribute("datasetList", dataset);
+        model.addAttribute("priorList", prior);
         model.addAttribute("algoInfo", algoInfo);
 
         return FGS_VIEW;
@@ -125,6 +142,7 @@ public class FGSController implements ViewPath {
             final Model model) {
         AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("fgs", algorithmJar, fgsAlgorithm);
         jobRequest.setDataset(getDataset(algoInfo));
+        jobRequest.setPriorKnowledge(getPriorKnowledge(algoInfo));
         jobRequest.setJvmOptions(getJvmOptions(algoInfo));
         jobRequest.setParameters(getParametersForContinuous(algoInfo, appUser.getUsername()));
 
@@ -146,6 +164,15 @@ public class FGSController implements ViewPath {
 
     private List<String> getDataset(AlgorithmRunInfo algoInfo) {
         return Collections.singletonList(algoInfo.getDataset());
+    }
+
+    private List<String> getPriorKnowledge(AlgorithmRunInfo algoInfo) {
+        String priorKnowledge = algoInfo.getPriorKnowledge();
+        if (priorKnowledge.trim().length() == 0) {
+            return Collections.EMPTY_LIST;
+        } else {
+            return Collections.singletonList(algoInfo.getPriorKnowledge());
+        }
     }
 
     private List<String> getParametersForDiscrete(FgsDiscreteRunInfo algoInfo, String username) {

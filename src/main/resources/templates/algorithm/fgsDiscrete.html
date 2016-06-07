@@ -75,6 +75,24 @@
                                         </div>
                                         <div class="panel panel-primary">
                                             <div class="panel-heading">
+                                                <h3 class="panel-title">Prior Knowledge</h3>
+                                            </div>
+                                            <div class="panel-body">
+                                                <div class="form-group">
+                                                    <label for="priorKnowledge">Prior</label>
+                                                    <select id="priorKnowledge" name="priorKnowledge" class="form-control" ng-model="priorKnowledge"
+                                                            th:field="*{priorKnowledge}"
+                                                            th:attr="ng-init='priorKnowledge = \'' + *{priorKnowledge} + '\''">
+                                                        <option value=""
+                                                                th:each="prior : ${priorList}"
+                                                                th:value="${prior.key}"
+                                                                th:text="${prior.value}">sim_data_100vars_100_cases.prior (75.48 kB)</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="panel panel-primary">
+                                            <div class="panel-heading">
                                                 <h3 class="panel-title">Data Validations</h3>
                                             </div>
                                             <div class="panel-body">
@@ -170,6 +188,15 @@
                                                             <tr>
                                                                 <td class="col-md-3">File:</td>
                                                                 <td ng-bind="dataset"></td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                    <table class="table table-striped">
+                                                        <caption>Prior Knowledge</caption>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td class="col-md-3">File:</td>
+                                                                <td ng-bind="priorKnowledge"></td>
                                                             </tr>
                                                         </tbody>
                                                     </table>

@@ -104,7 +104,7 @@ public class DataService {
             if (dataFileInfo != null) {
                 FileDelimiter fileDelimiter = dataFileInfo.getFileDelimiter();
                 if (fileDelimiter != null) {
-                    delimiter = fileDelimiter.getValue();
+                    delimiter = fileDelimiter.getName();
                 }
             }
         }
@@ -142,6 +142,25 @@ public class DataService {
                 }
             });
         }
+
+        return map;
+    }
+
+    public Map<String, String> listPriorKnowledge(String username) {
+        Map<String, String> map = new TreeMap<>();
+        map.put("", "");
+
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        List<DataFile> dbDataFiles = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
+        dbDataFiles.forEach(dataFile -> {
+            String fileName = dataFile.getName();
+            if (fileName.endsWith(".prior")) {
+                String size = FilePrint.humanReadableSize(dataFile.getFileSize(), true);
+                String description = String.format("%s (%s)", fileName, size);
+
+                map.put(fileName, description);
+            }
+        });
 
         return map;
     }

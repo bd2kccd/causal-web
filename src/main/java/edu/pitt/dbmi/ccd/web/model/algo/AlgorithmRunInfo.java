@@ -27,6 +27,7 @@ package edu.pitt.dbmi.ccd.web.model.algo;
 public abstract class AlgorithmRunInfo {
 
     protected String dataset;
+    protected String priorKnowledge;
     protected boolean verbose;
     protected int jvmMaxMem;
 
@@ -35,7 +36,7 @@ public abstract class AlgorithmRunInfo {
 
     @Override
     public String toString() {
-        return "AlgorithmRunInfo{" + "dataset=" + dataset + ", verbose=" + verbose + ", jvmMaxMem=" + jvmMaxMem + '}';
+        return "AlgorithmRunInfo{" + "dataset=" + dataset + ", priorKnowledge=" + priorKnowledge + ", verbose=" + verbose + ", jvmMaxMem=" + jvmMaxMem + '}';
     }
 
     public String getDataset() {
@@ -44,6 +45,14 @@ public abstract class AlgorithmRunInfo {
 
     public void setDataset(String dataset) {
         this.dataset = dataset;
+    }
+
+    public String getPriorKnowledge() {
+        return priorKnowledge;
+    }
+
+    public void setPriorKnowledge(String priorKnowledge) {
+        this.priorKnowledge = priorKnowledge;
     }
 
     public boolean isVerbose() {
