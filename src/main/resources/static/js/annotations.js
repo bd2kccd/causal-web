@@ -106,7 +106,7 @@ function requestAccessToken() {
 
 function getUser() {
     $.ajax({
-        url: apiURL+"/users/1";
+        url: apiURL+"/users/1",
         type: 'get',
         beforeSend: function (xhr) {
             xhr.setRequestHeader('Authorization', 'Bearer ' + getAccessToken());

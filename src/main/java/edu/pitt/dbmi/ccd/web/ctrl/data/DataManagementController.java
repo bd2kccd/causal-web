@@ -18,20 +18,17 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.data;
 
-import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import edu.pitt.dbmi.ccd.web.model.AppUser;
-import edu.pitt.dbmi.ccd.web.model.data.DataSummary;
-import edu.pitt.dbmi.ccd.web.service.DataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.bind.annotation.*;
+
+import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
+import edu.pitt.dbmi.ccd.web.model.AppUser;
+import edu.pitt.dbmi.ccd.web.model.data.DataSummary;
+import edu.pitt.dbmi.ccd.web.service.DataService;
 
 /**
  *
@@ -80,8 +77,9 @@ public class DataManagementController implements ViewPath {
 
     @RequestMapping(value = "annotations", method = RequestMethod.GET)
     public String showDataFileAnnotations(
-            @RequestParam(value = "file") final String fileName,
+            @RequestParam(value = "fileName") final String fileName,
             final Model model) {
+        model.addAttribute("fileName", fileName);
         model.addAttribute("fileName", fileName);
 
         return DATA_ANNOTATIONS_VIEW;

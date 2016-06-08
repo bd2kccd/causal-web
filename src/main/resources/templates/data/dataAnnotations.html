@@ -22,6 +22,11 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <h3 class="page-header" th:text="'Annotations: ' + ${fileName}">file name</h3>
+                        <script th:inline="javascript">
+                            console.log("Showing annotations");
+                            console.log("In thymeleaf template);
+                            var fileName = /*[[${fileName}]]*/ null;
+                        </script>
                     </div>
                 </div>
             </div>

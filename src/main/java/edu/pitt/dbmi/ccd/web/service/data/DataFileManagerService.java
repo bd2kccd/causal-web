@@ -18,33 +18,32 @@
  */
 package edu.pitt.dbmi.ccd.web.service.data;
 
-import edu.pitt.dbmi.ccd.commons.file.MessageDigestHash;
-import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
-import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
-import edu.pitt.dbmi.ccd.db.entity.DataFile;
-import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
-import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.service.DataFileService;
-import edu.pitt.dbmi.ccd.db.service.UserAccountService;
-import edu.pitt.dbmi.ccd.web.model.data.ResumableChunk;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.Date;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import edu.pitt.dbmi.ccd.commons.file.MessageDigestHash;
+import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
+import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
+import edu.pitt.dbmi.ccd.db.entity.DataFile;
+import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
+import edu.pitt.dbmi.ccd.db.entity.Upload;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.DataFileService;
+import edu.pitt.dbmi.ccd.db.service.UploadService;
+import edu.pitt.dbmi.ccd.db.service.UserAccountService;
+import edu.pitt.dbmi.ccd.web.model.data.ResumableChunk;
 
 /**
  *
@@ -65,16 +64,20 @@ public class DataFileManagerService {
 
     private final DataFileService dataFileService;
 
+    private final UploadService uploadService;
+
     @Autowired
     public DataFileManagerService(
             @Value("${ccd.server.workspace}") String workspace,
             @Value("${ccd.folder.data:data}") String dataFolder,
             UserAccountService userAccountService,
-            DataFileService dataFileService) {
+            DataFileService dataFileService,
+            UploadService uploadService) {
         this.workspace = workspace;
         this.dataFolder = dataFolder;
         this.userAccountService = userAccountService;
         this.dataFileService = dataFileService;
+        this.uploadService = uploadService;
     }
 
     public boolean isSupported(ResumableChunk chunk) {
@@ -166,6 +169,10 @@ public class DataFileManagerService {
             }
 
             dataFileService.saveDataFile(dataFile);
+
+            // Create new annotatable Upload entity
+            Upload upload = new Upload(userAccount, dataFile.getName(), dataFile);
+            uploadService.save(upload);
         }
 
         return md5checkSum;

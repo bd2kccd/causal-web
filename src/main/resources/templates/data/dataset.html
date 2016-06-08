@@ -53,7 +53,7 @@
                                         </td>
                                         <td>
                                             <p data-placement="top" data-toggle="tooltip" title="Annotate Data" th:title="'Annotate Data'">
-                                                <a class="btn btn-xs btn-primary" th:class="'btn btn-xs btn-primary'" href="data/annotations?file=" th:href="@{/data/annotations(file=${item.fileName})}">
+                                                <a class="btn btn-xs btn-primary" th:class="'btn btn-xs btn-primary'" href="data/annotations?file=" th:href="@{/data/annotations(fileName=${item.fileName})}">
                                                     <span class="glyphicon glyphicon-comment" th:class="'glyphicon glyphicon-comment'"></span>
                                                 </a>
                                             </p>
@@ -95,9 +95,9 @@
                         <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> No</button>
                     </div>
                 </div>
-                <!-- /.modal-content --> 
+                <!-- /.modal-content -->
             </div>
-            <!-- /.modal-dialog --> 
+            <!-- /.modal-dialog -->
         </div>
         <div id="fileInfo" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="info" aria-hidden="true">
             <div class="modal-dialog">
