@@ -37,7 +37,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr th:each="item : ${itemList}" th:class="${item.summarized == false} ? 'warning'">
+                                    <tr th:each="item : ${itemList}">
                                         <td>
                                             <a href="#" th:attr="data-filename=${item.fileName}" th:text="${item.fileName}" data-toggle="modal" data-target="#priorFileInfo"></a>
                                         </td>
