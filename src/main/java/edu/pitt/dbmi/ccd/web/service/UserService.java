@@ -86,14 +86,18 @@ public class UserService {
         String accountId = UUID.randomUUID().toString();
 
         try {
-            UriComponentsBuilder uriComponentsBuilder = serverUrl.isEmpty()
-                    ? UriComponentsBuilder.fromHttpUrl(requestURL)
-                    : UriComponentsBuilder.fromHttpUrl(serverUrl).pathSegment((new URI(requestURL)).getPath());
+            UriComponentsBuilder uriComponentsBuilder;
+            if (serverUrl.isEmpty()) {
+                uriComponentsBuilder = UriComponentsBuilder.fromHttpUrl(requestURL);
+            } else {
+                String[] paths = new URI(requestURL).getPath().split("/");
+                uriComponentsBuilder = UriComponentsBuilder.fromHttpUrl(serverUrl).pathSegment(paths);
+            }
 
             String url = uriComponentsBuilder
                     .pathSegment("activate")
                     .queryParam("account", Base64.getUrlEncoder().encodeToString(accountId.getBytes()))
-                    .build().toString();
+                    .build().normalize().toString();
 
             Person person = new Person();
             person.setFirstName("");
