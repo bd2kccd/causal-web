@@ -13,6 +13,8 @@
         <link rel="stylesheet" href="../../static/vendors/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.min.css}" />
         <link rel="stylesheet" href="../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{/vendors/font-awesome/css/font-awesome.min.css}"/>
         <link rel="stylesheet" href="../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
+        <script src="../../static/js/annotations.js" th:src="@{/js/annotations.js}"></script>
+        <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
     </head>
     <body>
         <div id="wrapper">
@@ -28,13 +30,30 @@
                             console.log("In thymeleaf template");
                             var fileName = /*[[${fileName}]]*/ null;
                             console.log(fileName);
+                            var username = /*[[${username}]]*/ null;
+                            console.log(username);
+
+
+                            $.ajax({
+                                url: "http://localhost:8000/api/annotations?user="+username+"&upload=3",
+                                type: 'get',
+                                beforeSend: function (xhr) {
+                                    xhr.setRequestHeader('Authorization', 'Bearer ' + getAccessToken());
+                                },
+                                dataType: 'json',
+                                success: function(data) {
+                                    console.log("Success fetching annotations\nCount: " + data['page']['totalElements']);
+                                },
+                                error: function(data) {
+                                    console.log("Failed to fetch annotations");
+                                }
+                            });
                             /*]]>*/
                         </script>
                     </div>
                 </div>
             </div>
         </div>
-        <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
         <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
         <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>

@@ -78,8 +78,10 @@ public class DataManagementController implements ViewPath {
     @RequestMapping(value = "annotations", method = RequestMethod.GET)
     public String showDataFileAnnotations(
             @RequestParam(value = "fileName") final String fileName,
+            @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        model.addAttribute("fileName", fileName);
+        String username = appUser.getUsername();
+        model.addAttribute("username", username);
         model.addAttribute("fileName", fileName);
 
         return DATA_ANNOTATIONS_VIEW;
