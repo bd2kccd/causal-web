@@ -79,7 +79,6 @@ function getRefreshToken() {
  * @return {string} access token
  */
 function requestAccessToken() {
-    var accessToken = "";
     $.ajax({
         url: tokenURL,
         type: 'post',
@@ -93,15 +92,16 @@ function requestAccessToken() {
         },
         dataType: 'json',
         success: function(data) {
-            accessToken = data['access_token'];
+            var accessToken = data['access_token'];
             var expires = data['expires_in'];
             storeAccessToken(accessToken, expires);
+            return accessToken;
         },
         error: function(data) {
             console.log("Error fetching access token");
+            return "";
         }
     });
-    return accessToken;
 }
 
 function getUser() {
