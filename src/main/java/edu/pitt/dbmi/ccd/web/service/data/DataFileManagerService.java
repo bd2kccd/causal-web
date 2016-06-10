@@ -146,8 +146,12 @@ public class DataFileManagerService {
                 dataFile.setAbsolutePath(absolutePath);
                 dataFile.setName(name);
                 dataFile.setUserAccounts(Collections.singleton(userAccount));
+                dataFile.setCreationTime(creationTime);
+
+                // Create new annotatable Upload entity
+                Upload upload = new Upload(userAccount, dataFile.getName(), dataFile);
+                uploadService.save(upload);
             }
-            dataFile.setCreationTime(creationTime);
             dataFile.setFileSize(fileSize);
             dataFile.setLastModifiedTime(lastModifiedTime);
 
@@ -169,10 +173,6 @@ public class DataFileManagerService {
             }
 
             dataFileService.saveDataFile(dataFile);
-
-            // Create new annotatable Upload entity
-            Upload upload = new Upload(userAccount, dataFile.getName(), dataFile);
-            uploadService.save(upload);
         }
 
         return md5checkSum;
