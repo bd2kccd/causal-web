@@ -29,6 +29,8 @@ Download and uncompress the application source code  [ccd-web-1.2.1](https://git
 
 #### External Dependencies
 
+* [tetrad-cli-5.3.0.jar](https://github.com/cmu-phil/tetrad/releases/tag/5.3.0-20160318)
+
 ## Configure the software
 
 ### Setup the directory structure and copy libraries
