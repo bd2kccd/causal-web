@@ -102,7 +102,7 @@ public class UserService {
             person.setEmail(email);
             person.setWorkspace("");
 
-            UserAccount userAccount = new UserAccount(person, username, passwordService.encryptPassword(password));
+            UserAccount userAccount = new UserAccount(person, username, passwordService.encryptPassword(password), accountId);
 
             SecurityAnswer securityAnswer = new SecurityAnswer();
             securityAnswer.setAnswer(userRegistration.getSecureAns());
