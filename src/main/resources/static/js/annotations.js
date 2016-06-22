@@ -98,7 +98,6 @@ function requestAccessToken() {
             return accessToken;
         },
         error: function(data) {
-            console.log("Error fetching access token");
             return "";
         }
     });
