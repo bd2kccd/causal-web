@@ -26,6 +26,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,12 +37,9 @@ import org.springframework.stereotype.Service;
 import edu.pitt.dbmi.ccd.commons.file.MessageDigestHash;
 import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
-import edu.pitt.dbmi.ccd.db.entity.DataFile;
-import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
-import edu.pitt.dbmi.ccd.db.entity.Upload;
-import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.entity.*;
 import edu.pitt.dbmi.ccd.db.service.DataFileService;
-import edu.pitt.dbmi.ccd.db.service.UploadService;
+import edu.pitt.dbmi.ccd.db.service.AnnotationTargetService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.model.data.ResumableChunk;
 
@@ -64,7 +62,7 @@ public class DataFileManagerService {
 
     private final DataFileService dataFileService;
 
-    private final UploadService uploadService;
+    private final AnnotationTargetService annotationTargetService;
 
     @Autowired
     public DataFileManagerService(
@@ -72,12 +70,12 @@ public class DataFileManagerService {
             @Value("${ccd.folder.data:data}") String dataFolder,
             UserAccountService userAccountService,
             DataFileService dataFileService,
-            UploadService uploadService) {
+            AnnotationTargetService annotationTargetService) {
         this.workspace = workspace;
         this.dataFolder = dataFolder;
         this.userAccountService = userAccountService;
         this.dataFileService = dataFileService;
-        this.uploadService = uploadService;
+        this.annotationTargetService = annotationTargetService;
     }
 
     public boolean isSupported(ResumableChunk chunk) {
@@ -141,6 +139,7 @@ public class DataFileManagerService {
 
         synchronized (dataFileService) {
             DataFile dataFile = dataFileService.findByAbsolutePathAndName(absolutePath, name);
+            AnnotationTarget annotationTarget;
             if (dataFile == null) {
                 dataFile = new DataFile();
                 dataFile.setAbsolutePath(absolutePath);
@@ -148,9 +147,11 @@ public class DataFileManagerService {
                 dataFile.setUserAccounts(Collections.singleton(userAccount));
                 dataFile.setCreationTime(creationTime);
 
-                // Create new annotatable Upload entity
-                Upload upload = new Upload(userAccount, dataFile.getName(), dataFile);
-                uploadService.save(upload);
+                // Create new annotatable entity (Annotation Target)
+                annotationTarget = new AnnotationTarget(userAccount, dataFile.getName(), dataFile);
+            } else {
+                // Get annotatable entity from Data File
+                annotationTarget = annotationTargetService.findByDataFile(dataFile).orElse(new AnnotationTarget(userAccount, dataFile.getName(), dataFile));
             }
             dataFile.setFileSize(fileSize);
             dataFile.setLastModifiedTime(lastModifiedTime);
@@ -173,6 +174,7 @@ public class DataFileManagerService {
             }
 
             dataFileService.saveDataFile(dataFile);
+            annotationTargetService.save(annotationTarget);
         }
 
         return md5checkSum;
