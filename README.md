@@ -30,8 +30,6 @@ Download and uncompress the application source code  [causal-web-1.2.2](https://
 #### External Dependencies
 * [causal-cmd-5.3.0.jar](https://github.com/cmu-phil/tetrad/releases/tag/v5.3.0-20160624)
 
-* [tetrad-cli-5.3.0.jar](https://github.com/cmu-phil/tetrad/releases/tag/5.3.0-20160318)
-
 ## Configure the software
 
 ### Setup the directory structure and copy libraries
