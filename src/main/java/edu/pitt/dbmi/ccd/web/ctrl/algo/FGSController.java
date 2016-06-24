@@ -21,13 +21,14 @@ package edu.pitt.dbmi.ccd.web.ctrl.algo;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.model.AppUser;
 import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmJobRequest;
-import edu.pitt.dbmi.ccd.web.model.algo.FgsRunInfo;
+import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmRunInfo;
+import edu.pitt.dbmi.ccd.web.model.algo.FgsContinuousRunInfo;
+import edu.pitt.dbmi.ccd.web.model.algo.FgsDiscreteRunInfo;
 import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmService;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -45,104 +46,219 @@ import org.springframework.web.bind.annotation.SessionAttributes;
  */
 @Controller
 @SessionAttributes("appUser")
-@RequestMapping(value = "/algorithm/fgs")
+@RequestMapping(value = "algorithm/fgs")
 public class FGSController implements ViewPath {
 
-    private final static String ALGORITHM_NAME = "fgs";
-
-    private final String algorithm;
-
+    private final String fgsAlgorithm;
+    private final String fgsDiscreteAlgorithm;
     protected final String algorithmJar;
 
     private final AlgorithmService algorithmService;
 
-    @Autowired(required = true)
+    @Autowired
     public FGSController(
-            @Value("${ccd.algorithm.fgs}") String algorithm,
+            @Value("${ccd.algorithm.fgs}") String fgsAlgorithm,
+            @Value("${ccd.algorithm.fgs.discrete}") String fgsDiscreteAlgorithm,
             @Value("${ccd.jar.algorithm}") String algorithmJar,
             AlgorithmService algorithmService) {
-        this.algorithm = algorithm;
+        this.fgsAlgorithm = fgsAlgorithm;
+        this.fgsDiscreteAlgorithm = fgsDiscreteAlgorithm;
         this.algorithmJar = algorithmJar;
         this.algorithmService = algorithmService;
     }
 
-    @RequestMapping(method = RequestMethod.GET)
-    public String showFgsView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        FgsRunInfo info = new FgsRunInfo();
-        info.setPenaltyDiscount(4.0);
-        info.setDepth(3);
-        info.setFaithful(true);
-        info.setIgnoreLinearDependence(true);
-        info.setVerbose(true);
-        info.setJvmOptions("");
-        info.setNonZeroVarianceValidation(true);
-        info.setUniqueVarNameValidation(true);
+    @RequestMapping(value = "discrete", method = RequestMethod.GET)
+    public String showFgsDiscreteView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+        Map<String, String> dataset = algorithmService.getUserDiscreteDataset(appUser.getUsername());
+        Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
+        FgsDiscreteRunInfo algoInfo = createDefaultFgsDiscreteRunInfo();
 
-        Map<String, String> map = algorithmService.getUserDataset(appUser.getUsername());
-        if (map.isEmpty()) {
-            info.setDataset("");
+        // set the default dataset
+        if (dataset.isEmpty()) {
+            algoInfo.setDataset("");
         } else {
-            Set<String> keySet = map.keySet();
-            for (String key : keySet) {
-                info.setDataset(key);
-                break;
-            }
+            algoInfo.setDataset(dataset.keySet().iterator().next());  // get one element
         }
 
-        model.addAttribute("datasetList", map);
-        model.addAttribute("algoInfo", info);
+        if (prior.isEmpty()) {
+            algoInfo.setPriorKnowledge("");
+        } else {
+            algoInfo.setPriorKnowledge(prior.keySet().iterator().next());
+        }
+
+        model.addAttribute("datasetList", dataset);
+        model.addAttribute("priorList", prior);
+        model.addAttribute("algoInfo", algoInfo);
+
+        return FGS_DISCRETE_VIEW;
+    }
+
+    @RequestMapping(value = "discrete", method = RequestMethod.POST)
+    public String runFgsDiscrete(
+            @ModelAttribute("algoInfo") final FgsDiscreteRunInfo algoInfo,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("fgs-discrete", algorithmJar, fgsDiscreteAlgorithm);
+        jobRequest.setDataset(getDataset(algoInfo));
+        jobRequest.setPriorKnowledge(getPriorKnowledge(algoInfo));
+        jobRequest.setJvmOptions(getJvmOptions(algoInfo));
+        jobRequest.setParameters(getParametersForDiscrete(algoInfo, appUser.getUsername()));
+
+        algorithmService.addToQueue(jobRequest, appUser.getUsername());
+
+        return REDIRECT_JOB_QUEUE;
+    }
+
+    @RequestMapping(method = RequestMethod.GET)
+    public String showFgsView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+        Map<String, String> dataset = algorithmService.getUserDataset(appUser.getUsername());
+        Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
+        FgsContinuousRunInfo algoInfo = createDefaultFgsContinuousRunInfo();
+
+        // set the default dataset
+        if (dataset.isEmpty()) {
+            algoInfo.setDataset("");
+        } else {
+            algoInfo.setDataset(dataset.keySet().iterator().next());  // get one element
+        }
+
+        if (prior.isEmpty()) {
+            algoInfo.setPriorKnowledge("");
+        } else {
+            algoInfo.setPriorKnowledge(prior.keySet().iterator().next());
+        }
+
+        model.addAttribute("datasetList", dataset);
+        model.addAttribute("priorList", prior);
+        model.addAttribute("algoInfo", algoInfo);
 
         return FGS_VIEW;
     }
 
     @RequestMapping(method = RequestMethod.POST)
     public String runFgs(
-            @ModelAttribute("algoInfo") final FgsRunInfo info,
+            @ModelAttribute("algoInfo") final FgsContinuousRunInfo algoInfo,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-
-        // build the parameters
-        List<String> parameters = new LinkedList<>();
-        String delimiter = algorithmService.getFileDelimiter(info.getDataset(), appUser.getUsername());
-        parameters.add("--delimiter");
-        parameters.add(delimiter);
-        parameters.add("--penalty-discount");
-        parameters.add(Double.toString(info.getPenaltyDiscount()));
-        parameters.add("--depth");
-        parameters.add(Integer.toString(info.getDepth()));
-        if (info.isVerbose()) {
-            parameters.add("--verbose");
-        }
-        if (info.isFaithful()) {
-            parameters.add("--faithful");
-        }
-        if (info.isIgnoreLinearDependence()) {
-            parameters.add("--ignore-linear-dependence");
-        }
-        if (!info.isNonZeroVarianceValidation()) {
-            parameters.add("--skip-non-zero-variance");
-        }
-        if (!info.isUniqueVarNameValidation()) {
-            parameters.add("--skip-unique-var-name");
-        }
-
-        List<String> jvmOptions = new LinkedList<>();
-        String jvmOpts = info.getJvmOptions().trim();
-        if (jvmOpts.length() > 0) {
-            jvmOptions.addAll(Arrays.asList(jvmOpts.split("\\s+")));
-        }
-
-        List<String> dataset = new LinkedList<>();
-        dataset.add(info.getDataset());
-
-        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest(ALGORITHM_NAME, algorithmJar, algorithm);
-        jobRequest.setDataset(dataset);
-        jobRequest.setJvmOptions(jvmOptions);
-        jobRequest.setParameters(parameters);
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("fgs", algorithmJar, fgsAlgorithm);
+        jobRequest.setDataset(getDataset(algoInfo));
+        jobRequest.setPriorKnowledge(getPriorKnowledge(algoInfo));
+        jobRequest.setJvmOptions(getJvmOptions(algoInfo));
+        jobRequest.setParameters(getParametersForContinuous(algoInfo, appUser.getUsername()));
 
         algorithmService.addToQueue(jobRequest, appUser.getUsername());
 
         return REDIRECT_JOB_QUEUE;
+    }
+
+    private List<String> getJvmOptions(AlgorithmRunInfo algoInfo) {
+        List<String> jvmOptions = new LinkedList<>();
+
+        int jvmMaxMem = algoInfo.getJvmMaxMem();
+        if (jvmMaxMem > 0) {
+            jvmOptions.add(String.format("-Xmx%dG", jvmMaxMem));
+        }
+
+        return jvmOptions;
+    }
+
+    private List<String> getDataset(AlgorithmRunInfo algoInfo) {
+        return Collections.singletonList(algoInfo.getDataset());
+    }
+
+    private List<String> getPriorKnowledge(AlgorithmRunInfo algoInfo) {
+        String priorKnowledge = algoInfo.getPriorKnowledge();
+        if (priorKnowledge.trim().length() == 0) {
+            return Collections.EMPTY_LIST;
+        } else {
+            return Collections.singletonList(algoInfo.getPriorKnowledge());
+        }
+    }
+
+    private List<String> getParametersForDiscrete(FgsDiscreteRunInfo algoInfo, String username) {
+        List<String> parameters = new LinkedList<>();
+        String delimiter = algorithmService.getFileDelimiter(algoInfo.getDataset(), username);
+        parameters.add("--delimiter");
+        parameters.add(delimiter);
+
+        parameters.add("--structure-prior");
+        parameters.add(Double.toString(algoInfo.getStructurePrior()));
+
+        parameters.add("--sample-prior");
+        parameters.add(Double.toString(algoInfo.getSamplePrior()));
+
+        parameters.add("--depth");
+        parameters.add(Integer.toString(algoInfo.getDepth()));
+        if (algoInfo.isVerbose()) {
+            parameters.add("--verbose");
+        }
+        if (!algoInfo.isHeuristicSpeedup()) {
+            parameters.add("--disable-heuristic-speedup");
+        }
+        if (!algoInfo.isUniqueVarNameValidation()) {
+            parameters.add("--skip-unique-var-name");
+        }
+        if (!algoInfo.isLimitNumOfCategory()) {
+            parameters.add("--skip-category-limit");
+        }
+
+        return parameters;
+    }
+
+    private List<String> getParametersForContinuous(FgsContinuousRunInfo algoInfo, String username) {
+        List<String> parameters = new LinkedList<>();
+        String delimiter = algorithmService.getFileDelimiter(algoInfo.getDataset(), username);
+        parameters.add("--delimiter");
+        parameters.add(delimiter);
+        parameters.add("--penalty-discount");
+        parameters.add(Double.toString(algoInfo.getPenaltyDiscount()));
+        parameters.add("--depth");
+        parameters.add(Integer.toString(algoInfo.getDepth()));
+        if (algoInfo.isVerbose()) {
+            parameters.add("--verbose");
+        }
+        if (!algoInfo.isHeuristicSpeedup()) {
+            parameters.add("--disable-heuristic-speedup");
+        }
+        if (algoInfo.isIgnoreLinearDependence()) {
+            parameters.add("--ignore-linear-dependence");
+        }
+        if (!algoInfo.isNonZeroVarianceValidation()) {
+            parameters.add("--skip-non-zero-variance");
+        }
+        if (!algoInfo.isUniqueVarNameValidation()) {
+            parameters.add("--skip-unique-var-name");
+        }
+
+        return parameters;
+    }
+
+    private FgsContinuousRunInfo createDefaultFgsContinuousRunInfo() {
+        FgsContinuousRunInfo runInfo = new FgsContinuousRunInfo();
+        runInfo.setPenaltyDiscount(4.0);
+        runInfo.setHeuristicSpeedup(true);
+        runInfo.setDepth(3);
+        runInfo.setIgnoreLinearDependence(true);
+        runInfo.setNonZeroVarianceValidation(true);
+        runInfo.setUniqueVarNameValidation(true);
+        runInfo.setVerbose(true);
+        runInfo.setJvmMaxMem(0);
+
+        return runInfo;
+    }
+
+    private FgsDiscreteRunInfo createDefaultFgsDiscreteRunInfo() {
+        FgsDiscreteRunInfo runInfo = new FgsDiscreteRunInfo();
+        runInfo.setSamplePrior(1.0);
+        runInfo.setStructurePrior(1.0);
+        runInfo.setHeuristicSpeedup(true);
+        runInfo.setDepth(3);
+        runInfo.setUniqueVarNameValidation(true);
+        runInfo.setLimitNumOfCategory(true);
+        runInfo.setVerbose(true);
+        runInfo.setJvmMaxMem(0);
+
+        return runInfo;
     }
 
 }

@@ -92,6 +92,16 @@ public abstract class AbstractAlgorithmService {
         return dataService.listAlgorithmDataset(username, variableType);
     }
 
+    public Map<String, String> getUserPriorKnowledgeFiles(String username) {
+        return dataService.listPriorKnowledge(username);
+    }
+
+    public Map<String, String> getUserDiscreteDataset(String username) {
+        VariableType variableType = variableTypeService.findByName("discrete");
+
+        return dataService.listAlgorithmDataset(username, variableType);
+    }
+
     public String getFileDelimiter(String fileName, String username) {
         return dataService.getFileDelimiter(fileName, username);
     }
@@ -101,6 +111,7 @@ public abstract class AbstractAlgorithmService {
         String algorithmJar = jobRequest.getAlgorithmJar();
         String algorithm = jobRequest.getAlgorithm();
         List<String> dataset = jobRequest.getDataset();
+        List<String> priorKnowledge = jobRequest.getPriorKnowledge();
         List<String> jvmOptions = jobRequest.getJvmOptions();
         List<String> parameters = jobRequest.getParameters();
 
@@ -131,6 +142,18 @@ public abstract class AbstractAlgorithmService {
         String datasetList = listToSeperatedValues(datasetPath, ",");
         commands.add("--data");
         commands.add(datasetList);
+
+        //add prior
+        List<String> priorKnowledgePath = new LinkedList<>();
+        if (!priorKnowledge.isEmpty()) {
+            priorKnowledge.forEach(priorKnowledgeFile -> {
+                Path priorKnowledgeFilePath = Paths.get(workspace, username, dataFolder, priorKnowledgeFile);
+                priorKnowledgePath.add(priorKnowledgeFilePath.toAbsolutePath().toString());
+            });
+            String knowledgeList = listToSeperatedValues(priorKnowledgePath, ",");
+            commands.add("--knowledge");
+            commands.add(knowledgeList);
+        }
 
         // add parameters
         commands.addAll(parameters);

@@ -30,7 +30,6 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
 import java.util.UUID;
-import javax.mail.MessagingException;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,14 +86,18 @@ public class UserService {
         String accountId = UUID.randomUUID().toString();
 
         try {
-            UriComponentsBuilder uriComponentsBuilder = serverUrl.isEmpty()
-                    ? UriComponentsBuilder.fromHttpUrl(requestURL)
-                    : UriComponentsBuilder.fromHttpUrl(serverUrl).pathSegment((new URI(requestURL)).getPath());
+            UriComponentsBuilder uriComponentsBuilder;
+            if (serverUrl.isEmpty()) {
+                uriComponentsBuilder = UriComponentsBuilder.fromHttpUrl(requestURL);
+            } else {
+                String[] paths = new URI(requestURL).getPath().split("/");
+                uriComponentsBuilder = UriComponentsBuilder.fromHttpUrl(serverUrl).pathSegment(paths);
+            }
 
             String url = uriComponentsBuilder
                     .pathSegment("activate")
                     .queryParam("account", Base64.getUrlEncoder().encodeToString(accountId.getBytes()))
-                    .build().toString();
+                    .build().normalize().toString();
 
             Person person = new Person();
             person.setFirstName("");
@@ -118,14 +121,7 @@ public class UserService {
 
             success = persistUserRegistration(userAccount, securityAnswer);
             if (success) {
-                Thread t = new Thread(() -> {
-                    try {
-                        mailService.sendRegistrationActivation(username, email, url);
-                    } catch (MessagingException exception) {
-                        LOGGER.warn(String.format("Unable to send registration email for user '%s'.", username), exception);
-                    }
-                });
-                t.start();
+                mailService.sendRegistrationActivation(username, email, url);
             }
         } catch (Exception exception) {
             LOGGER.warn(exception.getMessage());

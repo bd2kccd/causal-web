@@ -215,6 +215,10 @@ public class AlgorithmResultService {
     public List<Node> extractGraphNodes(final String fileName, final String username) {
         List<Node> nodes = new LinkedList<>();
 
+        String[] edgeTypes = {
+            "---", "-->", "<--", "<->", "o->", "<-o", "o-o"
+        };
+
         Path file = Paths.get(workspace, username, resultFolder, algorithmResultFolder, fileName);
         try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
             Pattern space = Pattern.compile("\\s+");
@@ -222,9 +226,23 @@ public class AlgorithmResultService {
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 line = line.trim();
                 if (isData) {
-                    String[] data = space.split(line);
-                    if (data.length == 4) {
-                        nodes.add(new Node(data[1], data[3], data[2]));
+                    String[] data = space.split(line, 2);
+                    if (data.length == 2) {
+                        String value = data[1].trim();
+
+                        String edge = "";
+                        for (String edgeType : edgeTypes) {
+                            if (value.contains(edgeType)) {
+                                edge = edgeType;
+                                break;
+                            }
+                        }
+                        String[] values = value.split(edge);
+                        if (values.length == 2) {
+                            String source = values[0].trim();
+                            String target = values[1].trim();
+                            nodes.add(new Node(source, target, edge));
+                        }
                     }
                 } else if ("Graph Edges:".equals(line)) {
                     isData = true;

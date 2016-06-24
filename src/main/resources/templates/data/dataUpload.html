@@ -27,13 +27,30 @@
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
-                        <p>Supported formats:</p>
+                        <h4>Dataset</h4>
+                        <p>Only tabular dataset is supported with either of the following delimiters:</p>
                         <ul>
-                            <li><a href="#" data-type="tabular" data-title="Tabular" data-toggle="modal" data-target="#dataExample">Tab delimited</a></li>
-                            <li><a href="#" data-type="csv" data-title="CSV" data-toggle="modal" data-target="#dataExample">Comma delimited</a></li>
+                            <li><a href="#" data-type="tabular" data-title="Tabular" data-toggle="modal" data-target="#tabDataExample">Tab delimited</a></li>
+                            <li><a href="#" data-type="csv" data-title="CSV" data-toggle="modal" data-target="#commaDataExample">Comma delimited</a></li>
                         </ul>
-                        <p>After uploading your data, it will show up in the Datasets page.  Prior to analysis each dataset must by summarized by clicking
-                        on the summarize button next to the dataset name.</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h4>Prior Knowledge File</h4>
+                        <p>
+                            Prior knowledge files must have <span style="font-style: italic;font-weight: bold">.prior</span> extension.
+                            Prior knowledge file <a href="#" data-type="tabular" data-title="Tabular" data-toggle="modal" data-target="#priorKnowledgeFormat">format</a>.
+                        </p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h4>Note:</h4>
+                        <p>
+                            After uploading your data, it will show up in the Datasets page.  Prior to analysis each dataset must by summarized by clicking
+                            on the summarize button next to the dataset name.
+                        </p>
                     </div>
                 </div>
                 <div class="row">
@@ -96,18 +113,77 @@
                 </footer>
             </div>
         </div>
-        <div id="dataExample" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="info" aria-hidden="true">
+        <div id="tabDataExample" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="info" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
-                        <h4 class="modal-title"></h4>
+                        <h4 class="modal-title">Tab Delimited Tabular Data</h4>
                     </div>
                     <div class="modal-body">
-                        <iframe class="embed-responsive-item" id="dataExampleFrame" marginwidth="0" marginheight="0" scrolling="yes"></iframe>
+                        <pre>
+X0&#9;X1&#9;X2&#9;X3&#9;X4&#9;X5&#9;X6&#9;X7
+2.4475&#9;0.5148&#9;2.5901&#9;-0.0721&#9;1.4016&#9;0.0888&#9;-7.9602&#9;1.1406
+-0.8261&#9;0.0612&#9;-3.68&#9;4.0955&#9;1.2874&#9;-0.801&#9;4.1415&#9;-0.7477
+0.2292&#9;-1.4067&#9;0.1086&#9;3.1234&#9;-0.6666&#9;-0.5165&#9;3.4851&#9;1.2906
+1.9147&#9;0.0218&#9;2.3734&#9;3.4512&#9;1.284&#9;-1.2361&#9;-4.5019&#9;1.0082
+2.1585&#9;2.0749&#9;-0.5698&#9;0.9008&#9;3.7927&#9;-2.1687&#9;-1.0944&#9;-3.5404
+0.5168&#9;-0.5694&#9;-0.2519&#9;-0.811&#9;-1.7504&#9;2.2543&#9;0.6082&#9;-2.1273
+1.2596&#9;-1.9587&#9;1.6036&#9;0.1512&#9;2.8354&#9;2.8037&#9;-0.1661&#9;-0.7514
+2.2545&#9;-1.7264&#9;-4.2746&#9;1.7404&#9;1.0999&#9;1.8959&#9;3.4948&#9;-1.7983
+2.5974&#9;-2.6567&#9;-0.8007&#9;-0.604&#9;-0.4938&#9;1.1526&#9;4.3406&#9;0.2634
+4.0817&#9;1.2652&#9;-0.3697&#9;2.6089&#9;4.6733&#9;-0.3017&#9;-0.3998&#9;-0.7225
+                        </pre>
                     </div>
-                    <div class="modal-footer ">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+        <div id="commaDataExample" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="info" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                        <h4 class="modal-title">Comma Delimited Tabular Data</h4>
+                    </div>
+                    <div class="modal-body">
+                        <pre>
+X0,X1,X2,X3,X4,X5,X6,X7
+2.4475,0.5148,2.5901,-0.0721,1.4016,0.0888,-7.9602,1.1406
+-0.8261,0.0612,-3.68,4.0955,1.2874,-0.801,4.1415,-0.7477
+0.2292,-1.4067,0.1086,3.1234,-0.6666,-0.5165,3.4851,1.2906
+1.9147,0.0218,2.3734,3.4512,1.284,-1.2361,-4.5019,1.0082
+2.1585,2.0749,-0.5698,0.9008,3.7927,-2.1687,-1.0944,-3.5404
+0.5168,-0.5694,-0.2519,-0.811,-1.7504,2.2543,0.6082,-2.1273
+1.2596,-1.9587,1.6036,0.1512,2.8354,2.8037,-0.1661,-0.7514
+2.2545,-1.7264,-4.2746,1.7404,1.0999,1.8959,3.4948,-1.7983
+2.5974,-2.6567,-0.8007,-0.604,-0.4938,1.1526,4.3406,0.2634
+4.0817,1.2652,-0.3697,2.6089,4.6733,-0.3017,-0.3998,-0.7225
+                        </pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="priorKnowledgeFormat" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="info" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                        <h4 class="modal-title">Prior Knowledge File Format</h4>
+                    </div>
+                    <div class="modal-body">
+                        <pre>
+/knowledge
+forbiddirect
+X17 X19
+
+requiredirect
+X15 X17
+
+addtemporal
+0 X1 X2
+1 X3 X4
+4 X5
+                        </pre>
                     </div>
                 </div>
             </div>

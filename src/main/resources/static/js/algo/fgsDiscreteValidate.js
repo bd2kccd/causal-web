@@ -4,7 +4,12 @@ $(document).ready(function () {
             dataset: {
                 required: true
             },
-            penaltyDiscount: {
+            structurePrior: {
+                required: true,
+                number: true,
+                greaterThan: 0
+            },
+            samplePrior: {
                 required: true,
                 number: true,
                 greaterThan: 0
@@ -25,8 +30,12 @@ $(document).ready(function () {
             dataset: {
                 required: "Please select a dataset."
             },
-            penaltyDiscount: {
-                required: "Please set the penalty discount.",
+            structurePrior: {
+                required: "Please set the structure prior.",
+                greaterThan: "Value must be greater than 0."
+            },
+            samplePrior: {
+                required: "Please set the sample prior.",
                 greaterThan: "Value must be greater than 0."
             },
             depth: {

@@ -32,14 +32,9 @@ public class ResultComparisonData {
 
     private boolean inAll;
 
-    private boolean similarEndPoint;
+    private boolean sameEdgeType;
 
     public ResultComparisonData() {
-    }
-
-    @Override
-    public String toString() {
-        return "ResultComparisonData{" + "countIndex=" + countIndex + ", edge=" + edge + ", inAll=" + inAll + ", similarEndPoint=" + similarEndPoint + '}';
     }
 
     public ResultComparisonData(String edge) {
@@ -70,12 +65,12 @@ public class ResultComparisonData {
         this.inAll = inAll;
     }
 
-    public boolean isSimilarEndPoint() {
-        return similarEndPoint;
+    public boolean isSameEdgeType() {
+        return sameEdgeType;
     }
 
-    public void setSimilarEndPoint(boolean similarEndPoint) {
-        this.similarEndPoint = similarEndPoint;
+    public void setSameEdgeType(boolean sameEdgeType) {
+        this.sameEdgeType = sameEdgeType;
     }
 
 }

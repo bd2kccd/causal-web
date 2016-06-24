@@ -23,7 +23,7 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h1 class="page-header">FGS</h1>
+                        <h1 class="page-header">FGS Discrete</h1>
                     </div>
                 </div>
                 <div class="row">
@@ -59,7 +59,7 @@
                                             </div>
                                             <div class="panel-body">
                                                 <div class="form-group">
-                                                    <label for="dataset">Dataset: (Data must be summarized before appearing here. Only continuous data is analyzable by this algorithm.)</label>
+                                                    <label for="dataset">Dataset: (Data must be summarized before appearing here. Only discrete data is analyzable by this algorithm.)</label>
                                                     <select id="dataset" name="dataset" class="form-control" ng-model="dataset" required="required"
                                                             th:field="*{dataset}"
                                                             th:attr="ng-init='dataset = \'' + *{dataset} + '\''"
@@ -98,15 +98,15 @@
                                             <div class="panel-body">
                                                 <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="nonZeroVarianceValidation" class="control-label">
-                                                            <input type="checkbox" id="nonZeroVarianceValidation" name="nonZeroVarianceValidation" ng-model="nonZeroVarianceValidation" th:attr="ng-init='nonZeroVarianceValidation=' + *{nonZeroVarianceValidation}" th:field="*{nonZeroVarianceValidation}" /> Non-zero Variance - ensure that each variable has non-zero variance
+                                                        <label for="uniqueVarNameValidation" class="control-label">
+                                                            <input type="checkbox" id="uniqueVarNameValidation" name="uniqueVarNameValidation" ng-model="uniqueVarNameValidation" th:attr="ng-init='uniqueVarNameValidation=' + *{uniqueVarNameValidation}" th:field="*{uniqueVarNameValidation}" /> Unique Variable Name - ensure that there are no duplicated variable names
                                                         </label>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="uniqueVarNameValidation" class="control-label">
-                                                            <input type="checkbox" id="uniqueVarNameValidation" name="uniqueVarNameValidation" ng-model="uniqueVarNameValidation" th:attr="ng-init='uniqueVarNameValidation=' + *{uniqueVarNameValidation}" th:field="*{uniqueVarNameValidation}" /> Unique Variable Name - ensure that there are no duplicated variable names
+                                                        <label for="limitNumOfCategory" class="control-label">
+                                                            <input type="checkbox" id="limitNumOfCategory" name="limitNumOfCategory" ng-model="limitNumOfCategory" th:attr="ng-init='limitNumOfCategory=' + *{limitNumOfCategory}" th:field="*{limitNumOfCategory}" /> Limit Number of Categories - ensure the number of categories of a variable does not exceed 10.
                                                         </label>
                                                     </div>
                                                 </div>
@@ -126,8 +126,12 @@
                                             </div>
                                             <div class="panel-body">
                                                 <div class="form-group">
-                                                    <label for="penaltyDiscount" class="control-label">Penalty Discount - multiplier on the penalty term of the BIC score for continuous data. We suggest 2 for &lt;50 variables and 4 for &gt;50 variables.</label>
-                                                    <input type="number" id="penaltyDiscount" name="penaltyDiscount" maxlength="10" class="form-control" placeholder="Penalty Discount" ng-model="penaltyDiscount" th:attr="ng-init='penaltyDiscount=' + *{penaltyDiscount}" th:field="*{penaltyDiscount}" required="required" />
+                                                    <label for="structurePrior" class="control-label">Structure Prior</label>
+                                                    <input type="number" id="structurePrior" name="structurePrior" maxlength="10" class="form-control" placeholder="Structure Prior" ng-model="structurePrior" th:attr="ng-init='structurePrior=' + *{structurePrior}" th:field="*{structurePrior}" required="required" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="samplePrior" class="control-label">Sample Prior</label>
+                                                    <input type="number" id="samplePrior" name="samplePrior" maxlength="10" class="form-control" placeholder="Sample Prior" ng-model="samplePrior" th:attr="ng-init='samplePrior=' + *{samplePrior}" th:field="*{samplePrior}" required="required" />
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="depth" class="control-label">Search Depth - the maximum number of edges to orient into a node during a single orientation step. A value of -1 indicates no limit.</label>
@@ -137,13 +141,6 @@
                                                     <div class="checkbox">
                                                         <label for="heuristicSpeedup" class="control-label">
                                                             <input type="checkbox" id="heuristicSpeedup" name="heuristicSpeedup" ng-model="heuristicSpeedup" th:attr="ng-init='heuristicSpeedup=' + *{heuristicSpeedup}" th:field="*{heuristicSpeedup}" /> Heuristic Speedup - in the large sample limit, all conditional independence relations that hold in the distribution are entailed by the Causal Markov Assumption
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group">
-                                                    <div class="checkbox">
-                                                        <label for="ignoreLinearDependence" class="control-label">
-                                                            <input type="checkbox" id="ignoreLinearDependence" name="ignoreLinearDependence" ng-model="ignoreLinearDependence" th:attr="ng-init='ignoreLinearDependence=' + *{ignoreLinearDependence}" th:field="*{ignoreLinearDependence}" /> Ignore Linear Dependence - one variable is the result of some combination of other variables
                                                         </label>
                                                     </div>
                                                 </div>
@@ -207,8 +204,12 @@
                                                         <caption>Parameters</caption>
                                                         <tbody>
                                                             <tr>
-                                                                <td class="col-md-3">Penalty Discount:</td>
-                                                                <td ng-bind="penaltyDiscount"></td>
+                                                                <td class="col-md-3">Structure Prior:</td>
+                                                                <td ng-bind="structurePrior"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="col-md-3">Sample Prior:</td>
+                                                                <td ng-bind="samplePrior"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td class="col-md-3">Depth:</td>
@@ -217,10 +218,6 @@
                                                             <tr>
                                                                 <td class="col-md-3">Heuristic Speedup</td>
                                                                 <td ng-bind="heuristicSpeedup"></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td class="col-md-3">Ignore Linear Dependence:</td>
-                                                                <td ng-bind="ignoreLinearDependence"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td class="col-md-3">Verbose:</td>
@@ -236,12 +233,12 @@
                                                         <caption>Data Validations</caption>
                                                         <tbody>
                                                             <tr>
-                                                                <td class="col-md-3">Non-zero Variance:</td>
-                                                                <td ng-bind="nonZeroVarianceValidation"></td>
-                                                            </tr>
-                                                            <tr>
                                                                 <td class="col-md-3">Unique Variable Name:</td>
                                                                 <td ng-bind="uniqueVarNameValidation"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="col-md-3">Limit Number of Categories:</td>
+                                                                <td ng-bind="limitNumOfCategory"></td>
                                                             </tr>
                                                         </tbody>
                                                     </table>
@@ -272,7 +269,7 @@
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
         <script src="../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
         <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
-        <script src="../../static/js/algo/fgsValidate.min.js" th:src="@{/js/algo/fgsValidate.min.js}"></script>
+        <script src="../../static/js/algo/fgsDiscreteValidate.min.js" th:src="@{/js/algo/fgsDiscreteValidate.min.js}"></script>
         <script src="../../static/js/algo/stepwizard.min.js" th:src="@{/js/algo/stepwizard.min.js}"></script>
         <script src="../../static/js/algo/algorithm.min.js" th:src="@{/js/algo/algorithm.min.js}"></script>
     </body>

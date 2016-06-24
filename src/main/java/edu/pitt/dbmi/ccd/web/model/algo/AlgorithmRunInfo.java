@@ -26,14 +26,17 @@ package edu.pitt.dbmi.ccd.web.model.algo;
  */
 public abstract class AlgorithmRunInfo {
 
-    private String dataset;
-    private boolean verbose;
-    private String jvmOptions;
-
-    private boolean nonZeroVarianceValidation;
-    private boolean uniqueVarNameValidation;
+    protected String dataset;
+    protected String priorKnowledge;
+    protected boolean verbose;
+    protected int jvmMaxMem;
 
     public AlgorithmRunInfo() {
+    }
+
+    @Override
+    public String toString() {
+        return "AlgorithmRunInfo{" + "dataset=" + dataset + ", priorKnowledge=" + priorKnowledge + ", verbose=" + verbose + ", jvmMaxMem=" + jvmMaxMem + '}';
     }
 
     public String getDataset() {
@@ -44,6 +47,14 @@ public abstract class AlgorithmRunInfo {
         this.dataset = dataset;
     }
 
+    public String getPriorKnowledge() {
+        return priorKnowledge;
+    }
+
+    public void setPriorKnowledge(String priorKnowledge) {
+        this.priorKnowledge = priorKnowledge;
+    }
+
     public boolean isVerbose() {
         return verbose;
     }
@@ -52,28 +63,12 @@ public abstract class AlgorithmRunInfo {
         this.verbose = verbose;
     }
 
-    public String getJvmOptions() {
-        return jvmOptions;
+    public int getJvmMaxMem() {
+        return jvmMaxMem;
     }
 
-    public void setJvmOptions(String jvmOptions) {
-        this.jvmOptions = jvmOptions;
-    }
-
-    public boolean isNonZeroVarianceValidation() {
-        return nonZeroVarianceValidation;
-    }
-
-    public void setNonZeroVarianceValidation(boolean nonZeroVarianceValidation) {
-        this.nonZeroVarianceValidation = nonZeroVarianceValidation;
-    }
-
-    public boolean isUniqueVarNameValidation() {
-        return uniqueVarNameValidation;
-    }
-
-    public void setUniqueVarNameValidation(boolean uniqueVarNameValidation) {
-        this.uniqueVarNameValidation = uniqueVarNameValidation;
+    public void setJvmMaxMem(int jvmMaxMem) {
+        this.jvmMaxMem = jvmMaxMem;
     }
 
 }

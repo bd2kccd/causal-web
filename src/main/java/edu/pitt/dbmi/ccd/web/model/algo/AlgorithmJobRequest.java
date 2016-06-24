@@ -36,6 +36,8 @@ public class AlgorithmJobRequest {
 
     private List<String> dataset;
 
+    private List<String> priorKnowledge;
+
     private List<String> jvmOptions;
 
     private List<String> parameters;
@@ -51,7 +53,7 @@ public class AlgorithmJobRequest {
 
     @Override
     public String toString() {
-        return "AlgorithmJobRequest{" + "algorithmName=" + algorithmName + ", algorithmJar=" + algorithmJar + ", algorithm=" + algorithm + ", dataset=" + dataset + ", jvmOptions=" + jvmOptions + ", parameters=" + parameters + '}';
+        return "AlgorithmJobRequest{" + "algorithmName=" + algorithmName + ", algorithmJar=" + algorithmJar + ", algorithm=" + algorithm + ", dataset=" + dataset + ", priorKnowledge=" + priorKnowledge + ", jvmOptions=" + jvmOptions + ", parameters=" + parameters + '}';
     }
 
     public String getAlgorithmName() {
@@ -84,6 +86,14 @@ public class AlgorithmJobRequest {
 
     public void setDataset(List<String> dataset) {
         this.dataset = dataset;
+    }
+
+    public List<String> getPriorKnowledge() {
+        return priorKnowledge;
+    }
+
+    public void setPriorKnowledge(List<String> priorKnowledge) {
+        this.priorKnowledge = priorKnowledge;
     }
 
     public List<String> getJvmOptions() {

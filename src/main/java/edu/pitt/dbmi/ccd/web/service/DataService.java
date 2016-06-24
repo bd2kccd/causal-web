@@ -104,7 +104,7 @@ public class DataService {
             if (dataFileInfo != null) {
                 FileDelimiter fileDelimiter = dataFileInfo.getFileDelimiter();
                 if (fileDelimiter != null) {
-                    delimiter = fileDelimiter.getValue();
+                    delimiter = fileDelimiter.getName();
                 }
             }
         }
@@ -142,6 +142,25 @@ public class DataService {
                 }
             });
         }
+
+        return map;
+    }
+
+    public Map<String, String> listPriorKnowledge(String username) {
+        Map<String, String> map = new TreeMap<>();
+        map.put("", "");
+
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        List<DataFile> dbDataFiles = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
+        dbDataFiles.forEach(dataFile -> {
+            String fileName = dataFile.getName();
+            if (fileName.endsWith(".prior")) {
+                String size = FilePrint.humanReadableSize(dataFile.getFileSize(), true);
+                String description = String.format("%s (%s)", fileName, size);
+
+                map.put(fileName, description);
+            }
+        });
 
         return map;
     }
@@ -192,20 +211,25 @@ public class DataService {
         } else {
             dataSummary.setFileName(fileName);
 
+            FileDelimiter defaultDelimiter = fileName.endsWith(".csv")
+                    ? fileDelimiterService.getFileDelimiterRepository().findByName("comma")
+                    : fileDelimiterService.getFileDelimiterRepository().findByName("tab");
+            VariableType defaultVarType = variableTypeService.findByName("continuous");
+
             DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
             if (dataFileInfo == null) {
-                dataSummary.setVariableType(variableTypeService.findByName("continuous"));
-                dataSummary.setFileDelimiter(fileDelimiterService.getFileDelimiterRepository().findByName("tab"));
+                dataSummary.setVariableType(defaultVarType);
+                dataSummary.setFileDelimiter(defaultDelimiter);
             } else {
-                VariableType variableType = dataFileInfo.getVariableType();
-                if (variableType == null) {
-                    variableType = variableTypeService.findByName("continuous");
+                VariableType varType = dataFileInfo.getVariableType();
+                if (varType == null) {
+                    varType = defaultVarType;
                 }
-                dataSummary.setVariableType(variableType);
+                dataSummary.setVariableType(varType);
 
                 FileDelimiter delimiter = dataFileInfo.getFileDelimiter();
                 if (delimiter == null) {
-                    delimiter = fileDelimiterService.getFileDelimiterRepository().findByName("tab");
+                    delimiter = defaultDelimiter;
                 }
                 dataSummary.setFileDelimiter(delimiter);
             }
@@ -279,6 +303,36 @@ public class DataService {
         return list;
     }
 
+    public List<DatasetFileInfo> listDataPriorFiles(final String username) {
+        List<DatasetFileInfo> datasetFileInfos = new LinkedList<>();
+
+        refreshLocalFileDatabase(Paths.get(workspace, username, dataFolder), username);
+
+        UserAccount userAccount = userAccountService.findByUsername(username);
+        List<DataFile> dataFileList = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
+        DataFile[] dataFiles = dataFileList.toArray(new DataFile[dataFileList.size()]);
+        Arrays.sort(dataFiles, (dataFile1, dataFile2) -> {
+            return dataFile2.getCreationTime().compareTo(dataFile1.getCreationTime());
+        });
+
+        for (DataFile dataFile : dataFiles) {
+            String fileName = dataFile.getName();
+            if (fileName.endsWith(".prior")) {
+                DatasetFileInfo datasetFileInfo = new DatasetFileInfo();
+                datasetFileInfo.setCreationDate(dataFile.getCreationTime());
+                datasetFileInfo.setFileName(dataFile.getName());
+                datasetFileInfo.setFileSize(dataFile.getFileSize());
+
+                DataFileInfo dataFileInfo = dataFile.getDataFileInfo();
+                datasetFileInfo.setSummarized(dataFileInfo.getFileDelimiter() != null);
+
+                datasetFileInfos.add(datasetFileInfo);
+            }
+        }
+
+        return datasetFileInfos;
+    }
+
     public List<DatasetFileInfo> listDataFiles(final String username) {
         List<DatasetFileInfo> datasetFileInfos = new LinkedList<>();
 
@@ -292,6 +346,13 @@ public class DataService {
         });
 
         for (DataFile dataFile : dataFiles) {
+            String fileName = dataFile.getName();
+
+            // skip prior file
+            if (fileName.endsWith(".prior")) {
+                continue;
+            }
+
             DatasetFileInfo datasetFileInfo = new DatasetFileInfo();
             datasetFileInfo.setCreationDate(dataFile.getCreationTime());
             datasetFileInfo.setFileName(dataFile.getName());
@@ -312,7 +373,7 @@ public class DataService {
         try {
             Path dir = Paths.get(workspace, username, dataFolder);
             List<Path> list = FileInfos.listDirectory(dir, false);
-            List<Path> files = list.stream().filter(path -> Files.isRegularFile(path)).collect(Collectors.toList());
+            List<Path> files = list.stream().filter(path -> (Files.isRegularFile(path) && !path.getFileName().toString().endsWith(".prior"))).collect(Collectors.toList());
             count = files.size();
         } catch (IOException exception) {
             LOGGER.error(exception.getMessage());

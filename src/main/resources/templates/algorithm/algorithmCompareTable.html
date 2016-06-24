@@ -51,9 +51,9 @@
                                 <thead>
                                     <tr>
                                         <th>No.</th>
-                                        <th>Edges</th>
+                                        <th>Edge</th>
                                         <th>In All</th>
-                                        <th>Same End Point</th>
+                                        <th>Same Edge Type</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -61,7 +61,7 @@
                                         <td th:text="${item.countIndex}"></td>
                                         <td th:text="${item.edge}"></td>
                                         <td><span th:class="${item.inAll} ? 'glyphicon glyphicon-ok' : ''"></span></td>
-                                        <td><span th:class="${item.similarEndPoint} ? 'glyphicon glyphicon-ok' : ''"></span></td>
+                                        <td><span th:class="${item.sameEdgeType} ? 'glyphicon glyphicon-ok' : ''"></span></td>
                                     </tr>
                                 </tbody>
                             </table>
