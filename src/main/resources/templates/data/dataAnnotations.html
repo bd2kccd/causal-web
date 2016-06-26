@@ -24,7 +24,7 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <h3 class="page-header" th:text="'Annotations: ' + ${fileName}">file name</h3>
-                        <div class="annotations"></div>
+                        <div id="annotations"></div>
                         <script type="text/javascript" th:inline="javascript">
                             /*<![CDATA[*/
                             console.log("Showing annotations");
@@ -46,8 +46,33 @@
                                 success: function(data) {
                                     console.log("Success fetching annotations\nCount: " + data['page']['totalElements']);
                                     var annotations = data['_embedded']['annotations'];
-                                    $.each(annotations, function(index) {
-                                        $('.annotations').eq(index).html(this.data[0].value);
+                                    $.each(annotations, function(index, anno) {
+                                        // create collapsible panel
+                                        var panel = document.createElement('div');
+                                        panel.className = 'annotation panel panel-default';
+
+                                        // panel header
+                                        var header = document.createElement('div');
+                                        header.className = 'panel-heading';
+                                        var title = document.createElement('h5');
+                                        title.className = 'panel-title';
+                                        title.innerHTML = anno.user;
+                                        var collapseButton = document.createElement('span');
+                                        collapseButton.className = 'pull-right clickable';
+                                        collapseButton.innerHTML = '<i class="glyphicon glyphicon-chevron-up"></i>';
+                                        header.appendChild(title);
+                                        header.appendChild(collapseButton);
+                                        panel.appendChild(header);
+
+                                        // panel body
+                                        var body = document.createElement('div');
+                                        body.className = 'panel-body';
+                                        body.style.display = 'block';
+                                        body.innerHTML = anno.data[0].value;
+                                        panel.appendChild(body);
+
+                                        // add to page
+                                        $('#annotations').append(panel);
                                     });
                                 },
                                 error: function(data) {
