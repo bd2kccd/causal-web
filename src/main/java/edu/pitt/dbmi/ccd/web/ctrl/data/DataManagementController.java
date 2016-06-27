@@ -25,6 +25,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import edu.pitt.dbmi.ccd.db.entity.AnnotationTarget;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.model.AppUser;
 import edu.pitt.dbmi.ccd.web.model.data.DataSummary;
@@ -83,6 +84,8 @@ public class DataManagementController implements ViewPath {
         String username = appUser.getUsername();
         model.addAttribute("username", username);
         model.addAttribute("fileName", fileName);
+        AnnotationTarget target = dataService.getAnnotationTarget(fileName, username);
+        model.addAttribute("annotationTargetID", target.getId());
 
         return DATA_ANNOTATIONS_VIEW;
     }
