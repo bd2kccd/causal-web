@@ -18,9 +18,10 @@ const refreshGrant = "refresh_token";
  * @return  ajax
  */
 function getRequest(url, parameters, async, beforeSendCallback) {
-    var a = (typeof async === 'undefined') ? true : async;
     // get HTTP parameters
     var params = (typeof parameters === 'undefined') ? '' : '?' + $.param(parameters);
+    // get async setting
+    var a = (typeof async === 'undefined') ? true : async;
     return $.ajax({
         url: apiURL + url + params,
         type: 'get',
@@ -89,7 +90,6 @@ function requestAnnotationsTokens() {
         success: function(data) {
             storeAccessToken(data['access_token'], data['expires_in']);
             storeRefreshToken(data['refresh_token']);
-            getUser();
         }
     });
 }
@@ -135,7 +135,6 @@ function storeAccessToken(token, expires) {
     //  set expiration date to current time + expiration
     date.setTime(date.getTime() + expires*1000);
     date = date.toGMTString();
-    console.log("expiration: " + date);
     document.cookie = "access_token=" + token + "; expires=" + date + "; max_age=" + date;
 }
 

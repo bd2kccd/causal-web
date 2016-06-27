@@ -13,6 +13,7 @@
         <link rel="stylesheet" href="../../static/vendors/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.min.css}" />
         <link rel="stylesheet" href="../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{/vendors/font-awesome/css/font-awesome.min.css}"/>
         <link rel="stylesheet" href="../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
+        <link rel="stylesheet" href="../../static/css/data/dataAnnotations.min.css" th:href="@{/css/data/dataAnnotations.min.css}" />
         <script src="../../static/js/annotations.js" th:src="@{/js/annotations.js}"></script>
         <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
     </head>
@@ -24,63 +25,208 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <h3 class="page-header" th:text="'Annotations: ' + ${fileName}">file name</h3>
-                        <div id="annotations"></div>
+                        <button type="button" class="btn btn-default" id="new-annotation" data-toggle="modal" data-target="#createAnnotation">New annotation</button>
+                        <ul id="annotations" class="media-list"></ul>
                         <script type="text/javascript" th:inline="javascript">
                             /*<![CDATA[*/
-                            console.log("Showing annotations");
-                            console.log("In thymeleaf template");
+                            /* begin thymeleaf templating */
+
                             var fileName = /*[[${fileName}]]*/ null;
-                            console.log(fileName);
                             var username = /*[[${username}]]*/ null;
-                            console.log(username);
+                            var annotationTargetID = /*[[${annotationTargetID}]]*/ null;
 
+                            /* end thymeleaf templating */
+                            /*]]>*/
 
+                            var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+                            var params = $.param({user: username, target: annotationTargetID, parentless: true});
                             $.ajax({
-                                //url: "http://localhost:8000/api/annotations?user="+username+"&upload=3",
-                                url: "http://localhost:8000/api/annotations",
+                                url: 'http://localhost:8000/api/annotations?' + params,
                                 type: 'get',
                                 beforeSend: function (xhr) {
                                     xhr.setRequestHeader('Authorization', 'Bearer ' + getAccessToken());
                                 },
                                 dataType: 'json',
                                 success: function(data) {
-                                    console.log("Success fetching annotations\nCount: " + data['page']['totalElements']);
-                                    var annotations = data['_embedded']['annotations'];
-                                    $.each(annotations, function(index, anno) {
-                                        // create collapsible panel
-                                        var panel = document.createElement('div');
-                                        panel.className = 'annotation panel panel-default';
+                                    if (data.hasOwnProperty('_embedded')) {
+                                        var annotations = data['_embedded']['annotations'];
 
-                                        // panel header
-                                        var header = document.createElement('div');
-                                        header.className = 'panel-heading';
-                                        var title = document.createElement('h5');
-                                        title.className = 'panel-title';
-                                        title.innerHTML = anno.user;
-                                        var collapseButton = document.createElement('span');
-                                        collapseButton.className = 'pull-right clickable';
-                                        collapseButton.innerHTML = '<i class="glyphicon glyphicon-chevron-up"></i>';
-                                        header.appendChild(title);
-                                        header.appendChild(collapseButton);
-                                        panel.appendChild(header);
+                                        // create nested media elements
+                                        var media = document.createElement('li');
+                                        media.className = 'media';
+                                        media.id = 'annotations-media';
+                                        $('#annotations').append(media);
 
-                                        // panel body
-                                        var body = document.createElement('div');
-                                        body.className = 'panel-body';
-                                        body.style.display = 'block';
-                                        body.innerHTML = anno.data[0].value;
-                                        panel.appendChild(body);
+                                        $.each(annotations, function(index, anno) {
+                                            var date = new Date(Date.parse(anno.created));
+                                            var hour;
+                                            var period;
+                                            if (date.getHours() % 12 == 0) {
+                                                hour = date.getHours();
+                                                period = 'AM';
+                                            } else {
+                                                hour = date.getHours() % 12;
+                                                period = 'PM';
+                                            }
+                                            var dateString = months[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear() + ' at ' + hour + ':' + date.getMinutes() + ' ' + period;
+                                            // create media element
+                                            var annotation = document.createElement('div');
+                                            annotation.className = 'media';
 
-                                        // add to page
-                                        $('#annotations').append(panel);
-                                    });
+                                            // annotation data
+                                            var mediaBody = document.createElement('div');
+                                            mediaBody.className = 'media-body';
+
+                                            // create collapsible panel
+                                            var panel = document.createElement('div');
+                                            panel.className = 'annotation panel panel-default';
+
+                                            // panel header
+                                            var header = document.createElement('div');
+                                            header.className = 'panel-heading';
+                                            var title = document.createElement('h5');
+                                            title.className = 'panel-title';
+                                            title.innerHTML = anno.user + '&nbsp; <span class="anno-date">' + dateString + '</span>';
+                                            var collapseButton = document.createElement('span');
+                                            collapseButton.className = 'pull-right clickable';
+                                            collapseButton.innerHTML = '<i class="glyphicon glyphicon-chevron-up"></i>';
+                                            header.appendChild(title);
+                                            header.appendChild(collapseButton);
+                                            panel.appendChild(header);
+
+                                            // panel body
+                                            var body = document.createElement('div');
+                                            body.className = 'panel-body';
+                                            body.style.display = 'block';
+                                            body.innerHTML = anno.data[0].value;
+                                            panel.appendChild(body);
+
+                                            // new child annotation button
+                                            var panelFooter = document.createElement('div');
+                                            panelFooter.className = 'panel-footer';
+
+                                            var newChildAnnotationButton = document.createElement('button');
+                                            newChildAnnotationButton.setAttribute('type', 'button');
+                                            newChildAnnotationButton.className = 'bnt btn-link';
+                                            newChildAnnotationButton.innerHTML = 'Annotate';
+                                            panelFooter.appendChild(newChildAnnotationButton);
+                                            panel.appendChild(panelFooter);
+
+                                            // add media element to annotation
+                                            mediaBody.appendChild(panel);
+                                            annotation.appendChild(mediaBody);
+
+                                            // get annotation children
+                                            var childrenURL = anno['_links'].children.href;
+                                            $.ajax({
+                                                url: childrenURL,
+                                                type: 'get',
+                                                beforeSend: function (xhr) {
+                                                    xhr.setRequestHeader('Authorization', 'Bearer ' + getAccessToken());
+                                                },
+                                                dataType: 'json',
+                                                success: function(childData) {
+                                                    if (childData.hasOwnProperty('_embedded')) {
+                                                        var children = childData['_embedded']['annotations'];
+
+                                                        $.each(children, function(i, child) {
+                                                            var date = new Date(Date.parse(child.created));
+                                                            var hour;
+                                                            var period;
+                                                            if (date.getHours() % 12 == 0) {
+                                                                hour = date.getHours();
+                                                                period = 'AM';
+                                                            } else {
+                                                                hour = date.getHours() % 12;
+                                                                period = 'PM';
+                                                            }
+                                                            var dateString = months[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear() + ' at ' + hour + ':' + date.getMinutes() + ' ' + period;
+
+                                                            // child media
+                                                            var childMedia = document.createElement('div');
+                                                            childMedia.className = 'media';
+
+                                                            // child media left
+                                                            var childMediaLeft = document.createElement('div');
+                                                            childMediaLeft.className = 'media-left';
+
+                                                            // child annotation data
+                                                            var childMediaBody = document.createElement('div');
+                                                            childMediaBody.className = 'media-body';
+
+                                                            // add to media
+                                                            childMedia.appendChild(childMediaLeft);
+                                                            childMedia.appendChild(childMediaBody);
+
+                                                            // create collapsible panel
+                                                            var childPanel = document.createElement('div');
+                                                            childPanel.className = 'annotation panel panel-default';
+
+                                                            // panel header
+                                                            var childHeader = document.createElement('div');
+                                                            childHeader.className = 'panel-heading';
+                                                            var childTitle = document.createElement('h5');
+                                                            childTitle.className = 'panel-title';
+                                                            childTitle.innerHTML = child.user + '&nbsp; <span class="anno-date">' + dateString + '</span>';
+                                                            var childCollapseButton = document.createElement('span');
+                                                            childCollapseButton.className = 'pull-right clickable';
+                                                            childCollapseButton.innerHTML = '<i class="glyphicon glyphicon-chevron-up"></i>';
+                                                            childHeader.appendChild(childTitle);
+                                                            childHeader.appendChild(childCollapseButton);
+                                                            childPanel.appendChild(childHeader);
+
+                                                            // panel body
+                                                            var childPanelBody = document.createElement('div');
+                                                            childPanelBody.className = 'panel-body';
+                                                            childPanelBody.style.display = 'block';
+                                                            childPanelBody.innerHTML = child.data[0].value;
+                                                            childPanel.appendChild(childPanelBody);
+
+                                                            // new child annotation button
+                                                            var childPanelFooter = document.createElement('div');
+                                                            childPanelFooter.className = 'panel-footer';
+
+                                                            var childAnnotationButton = document.createElement('button');
+                                                            childAnnotationButton.setAttribute('type', 'button');
+                                                            childAnnotationButton.className = 'bnt btn-link';
+                                                            childAnnotationButton.innerHTML = 'Annotate';
+                                                            childPanelFooter.appendChild(childAnnotationButton);
+                                                            childPanel.appendChild(childPanelFooter);
+
+                                                            // append to media
+                                                            childMediaBody.appendChild(childPanel);
+                                                            mediaBody.appendChild(childMedia);
+                                                        });
+                                                    }
+                                                }
+                                            });
+                                            // add to page
+                                            $('#annotations-media').append(annotation);
+                                        });
+                                    }
                                 },
                                 error: function(data) {
                                     console.log("Failed to fetch annotations");
                                 }
                             });
-                            /*]]>*/
                         </script>
+                    </div>
+                </div>
+            </div>
+            <div id="createAnnotation" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="createAnnotationLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="createAnnotationLabel">Create annotation</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p>This is some example text.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
                     </div>
                 </div>
             </div>
