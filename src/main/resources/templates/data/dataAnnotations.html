@@ -35,9 +35,6 @@
                             var username = /*[[${username}]]*/ null;
                             var annotationTargetID = /*[[${annotationTargetID}]]*/ null;
 
-                            /* end thymeleaf templating */
-                            /*]]>*/
-
                             var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
                             var params = $.param({user: username, target: annotationTargetID, parentless: true});
@@ -133,6 +130,7 @@
                                                         $.each(children, function(i, child) {
                                                             var date = new Date(Date.parse(child.created));
                                                             var hour;
+                                                            var minutes = ((date.getMinutes() < 10) ? '0' : '') + date.getMinutes();
                                                             var period;
                                                             if (date.getHours() % 12 == 0) {
                                                                 hour = date.getHours();
@@ -141,7 +139,7 @@
                                                                 hour = date.getHours() % 12;
                                                                 period = 'PM';
                                                             }
-                                                            var dateString = months[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear() + ' at ' + hour + ':' + date.getMinutes() + ' ' + period;
+                                                            var dateString = months[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear() + ' at ' + hour + ':' + minutes + ' ' + period;
 
                                                             // child media
                                                             var childMedia = document.createElement('div');
@@ -210,6 +208,9 @@
                                     console.log("Failed to fetch annotations");
                                 }
                             });
+
+                            /* end thymeleaf templating */
+                            /*]]>*/
                         </script>
                     </div>
                 </div>
@@ -222,7 +223,80 @@
                             <h4 class="modal-title" id="createAnnotationLabel">Create annotation</h4>
                         </div>
                         <div class="modal-body">
-                            <p>This is some example text.</p>
+                            <form role="form">
+                                <div class="form-group">
+                                    <h5>Vocabulary</h5>
+                                    <select id="vocabulary-select" class="form-control" onchange="selectVocabulary(value);">
+                                        <optgroup id="vocabulary-optgroup" label="Select one">
+                                        </optgroup>
+                                    </select>
+                                    <h5>Attribute level</h5>
+                                    <select id="attribute-level-select" class="form-control" onchange="selectAttributeLevel(value)">
+                                        <optgroup id="attribute-level-optgroup" label="Select one">
+                                        </optgroup>
+                                    </select>
+                                    <h5>Attribute</h5>
+                                    <select id="attribute-select" class="form-control">
+                                        <optgroup id="attribute-optgroup" label="Select one">
+                                        </optgroup>
+                                    </select>
+                                    <script type="text/javascript" th:inline="javascript">
+                                        selectVocabulary(1);
+                                        var levels = new Array();
+                                        var attributes;
+
+                                        // Vocabulary request
+                                        getRequest("/vocabularies").done(function(data) {
+                                            var vocabularies = data['_embedded']['vocabularies'];
+                                            $.each(vocabularies, function(index, vocabulary) {
+                                                var option = document.createElement('option');
+                                                option.setAttribute('value', Number(vocabulary.id));
+                                                option.setAttribute('data-subtext', vocabulary.description);
+                                                option.innerHTML = vocabulary.name;
+                                                $('#vocabulary-optgroup').append(option);
+                                            });
+                                        });
+
+                                        function selectVocabulary(value) {
+                                            fetchAttributes(value);
+                                            $('#attribute-optgroup').empty();
+                                        }
+
+                                        function fetchAttributes(vocabularyID) {
+                                            // Attribute request
+                                            getRequest('/vocabularies/' + vocabularyID + '/attributes').done(function(data) {
+                                                attributes = data['_embedded']['attributes'];
+                                                $('#attribute-level-optgroup').empty();
+                                                $.each(attributes, function(index, attribute) {
+                                                    console.log("Is " + attribute.level + " in levels: ");
+                                                    if ($.inArray(attribute.level, levels) === -1) {
+                                                        console.log("No\nNew level is: " + attribute.level);
+                                                        levels.push(attribute.level);
+                                                        var option = document.createElement('option');
+                                                        option.setAttribute('value', attribute.level);
+                                                        option.innerHTML = attribute.level;
+                                                        $('#attribute-level-optgroup').append(option);
+                                                    } else {
+                                                        console.log("Yes");
+                                                    }
+                                                });
+                                            });
+                                        }
+
+                                        function selectAttributeLevel(level) {
+                                            $('#attribute-optgroup').empty();
+                                            $.each(attributes, function(index, attribute) {
+                                                if (attribute.level === level) {
+                                                    var option = document.createElement('option');
+                                                    option.setAttribute('value', Number(attribute.id));
+                                                    option.innerHTML = attribute.name;
+                                                    $('#attribute-optgroup').append(option);
+                                                }
+                                            });
+                                        }
+                                    </script>
+                                </div>
+                            </form>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
