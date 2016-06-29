@@ -13,7 +13,7 @@
         <link rel="stylesheet" href="../../static/vendors/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.min.css}" />
         <link rel="stylesheet" href="../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{/vendors/font-awesome/css/font-awesome.min.css}"/>
         <link rel="stylesheet" href="../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
-        <link rel="stylesheet" href="../../static/css/data/dataAnnotations.min.css" th:href="@{/css/data/dataAnnotations.min.css}" />
+        <link rel="stylesheet" href="../../static/css/data/dataAnnotations.css" th:href="@{/css/data/dataAnnotations.css}" />
         <script src="../../static/js/annotations.js" th:src="@{/js/annotations.js}"></script>
         <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
     </head>
@@ -25,11 +25,26 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <h3 class="page-header" th:text="'Annotations: ' + ${fileName}">file name</h3>
-                        <button type="button" class="btn btn-default" id="new-annotation" data-toggle="modal" data-target="#createAnnotation">New annotation</button>
+                        <button type="button" class="btn btn-default" id="new-annotation" data-toggle="modal" data-target="#create-annotation">New annotation</button>
+                        <div class="pull-right" id="anno-search-form">
+                            <form class="form-inline" role="search">
+                                <div class="btn-group">
+                                    <input type="search" class="form-control" placeholder="Search" name="search" id="anno-search-terms"/>
+                                    <span id="anno-search-clear" class="glyphicon glyphicon-remove-circle"></span>
+                                </div>
+                                <button type="submit" class="btn btn-default" id="anno-search-btn"><i class="glyphicon glyphicon-search"></i></button>
+                            </form>
+                            <button type="button" class="btn btn-link pull-right" id="anno-adv-search-btn" data-toggle="modal" data-target="#anno-adv-search">Advanced search</button>
+                        </div>
                         <ul id="annotations" class="media-list"></ul>
                         <script type="text/javascript" th:inline="javascript">
                             /*<![CDATA[*/
                             /* begin thymeleaf templating */
+
+                            // set clear button
+                            $("#anno-search-clear").click(function() {
+                                $("#anno-search-terms").val('');
+                            });
 
                             var fileName = /*[[${fileName}]]*/ null;
                             var username = /*[[${username}]]*/ null;
@@ -215,19 +230,19 @@
                     </div>
                 </div>
             </div>
-            <div id="createAnnotation" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="createAnnotationLabel" aria-hidden="true">
+            <div id="create-annotation" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="create-annotation-label" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                            <h4 class="modal-title" id="createAnnotationLabel">Create annotation</h4>
+                            <h4 class="modal-title" id="create-annotation-label">Create annotation</h4>
                         </div>
                         <div class="modal-body">
                             <form role="form">
                                 <div class="form-group">
                                     <h5>Vocabulary</h5>
-                                    <select id="vocabulary-select" class="form-control" onchange="selectVocabulary(value);">
-                                        <optgroup id="vocabulary-optgroup" label="Select one">
+                                    <select id="create-anno-vocabulary-select" class="form-control" onchange="selectVocabulary(value);">
+                                        <optgroup id="create-anno-vocabulary-optgroup" label="Select one">
                                         </optgroup>
                                     </select>
                                     <h5>Attribute level</h5>
@@ -253,7 +268,7 @@
                                                 option.setAttribute('value', Number(vocabulary.id));
                                                 option.setAttribute('data-subtext', vocabulary.description);
                                                 option.innerHTML = vocabulary.name;
-                                                $('#vocabulary-optgroup').append(option);
+                                                $('#create-anno-vocabulary-optgroup').append(option);
                                             });
                                         });
 
@@ -268,16 +283,12 @@
                                                 attributes = data['_embedded']['attributes'];
                                                 $('#attribute-level-optgroup').empty();
                                                 $.each(attributes, function(index, attribute) {
-                                                    console.log("Is " + attribute.level + " in levels: ");
                                                     if ($.inArray(attribute.level, levels) === -1) {
-                                                        console.log("No\nNew level is: " + attribute.level);
                                                         levels.push(attribute.level);
                                                         var option = document.createElement('option');
                                                         option.setAttribute('value', attribute.level);
                                                         option.innerHTML = attribute.level;
                                                         $('#attribute-level-optgroup').append(option);
-                                                    } else {
-                                                        console.log("Yes");
                                                     }
                                                 });
                                             });
@@ -300,6 +311,51 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="anno-adv-search" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="anno-adv-search-label" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="anno-adv-search-label">Advanced search</h4>
+                        </div>
+                        <div class="modal-body">
+                            <form role="form">
+                                <div class="form-group">
+                                    <fieldset>
+                                        <legend>Vocabulary</legend>
+                                        <select id="anno-adv-search-vocabulary-select" class="form-control" onchange="selectVocabulary(value);">
+                                            <optgroup id="anno-adv-search-vocabulary-optgroup" label="Select one">
+                                                <option value="1">HCLS</option>
+                                                <option value="2">Plaintext</option>
+                                            </optgroup>
+                                        </select>
+                                    </fieldset>
+                                    <fieldset>
+                                        <legend>Text</legend>
+                                        <div class="control-group">
+                                            <label class="control-label" for="anno-adv-search-terms">All of these words</label>
+                                            <input type="search" class="form-control" name="search" id="anno-adv-search-terms"/>
+                                        </div>
+                                        <div class="control-group">
+                                            <label class="control-label" for="anno-adv-search-string">This exact phrase</label>
+                                            <input type="search" class="form-control" name="search" id="anno-adv-search-string"/>
+                                        </div>
+                                        <div class="control-group">
+                                            <label class="control-label" for="anno-adv-search-none">None of these words</label>
+                                            <input type="search" class="form-control" name="search" id="anno-adv-search-none"/>
+                                        </div>
+
+                                    </fieldset>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">Search</button>
                         </div>
                     </div>
                 </div>
