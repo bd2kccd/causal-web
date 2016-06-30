@@ -27,12 +27,13 @@
                         <h3 class="page-header" th:text="'Annotations: ' + ${fileName}">file name</h3>
                         <button type="button" class="btn btn-default" id="new-annotation" data-toggle="modal" data-target="#create-annotation">New annotation</button>
                         <div class="pull-right" id="anno-search-form">
-                            <form class="form-inline" role="search">
+                            <form class="form-inline" role="search" onsubmit="return false;" action="">
                                 <div class="btn-group">
-                                    <input type="search" class="form-control" placeholder="Search" name="search" id="anno-search-terms"/>
-                                    <span id="anno-search-clear" class="glyphicon glyphicon-remove-circle"></span>
+                                    <!-- Clicking enter on input box submits search query -->
+                                    <input type="text" class="form-control" id="anno-search-terms" placeholder="Search" onkeypress="if (event.keyCode == 13) document.getElementById('anno-search-btn').click()"/>
                                 </div>
-                                <button type="submit" class="btn btn-default" id="anno-search-btn"><i class="glyphicon glyphicon-search"></i></button>
+                                <button type="button" class="btn btn-default" id="anno-search-btn" onclick="submitSearch()" title="Submit"><i class="glyphicon glyphicon-search"></i></button>
+                                <button type="button" class="btn btn-danger" id="anno-search-clear" onclick="clearSearch()" title="Clear" disabled="disabled"><i class="glyphicon glyphicon-remove-sign"></i></button>
                             </form>
                             <button type="button" class="btn btn-link pull-right" id="anno-adv-search-btn" data-toggle="modal" data-target="#anno-adv-search">Advanced search</button>
                         </div>
@@ -41,188 +42,186 @@
                             /*<![CDATA[*/
                             /* begin thymeleaf templating */
 
-                            // set clear button
-                            $("#anno-search-clear").click(function() {
-                                $("#anno-search-terms").val('');
-                            });
+                            const searchURL = annoURL + "/search";
+                            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
+                            var vocabularies = {};
+                            var attributes = {};
+
+                            // get values from server
                             var fileName = /*[[${fileName}]]*/ null;
                             var username = /*[[${username}]]*/ null;
                             var annotationTargetID = /*[[${annotationTargetID}]]*/ null;
 
-                            var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                            // start by showing all annotations for file and user
+                            fetchAllAnnotations();
 
-                            var params = $.param({user: username, target: annotationTargetID, parentless: true});
-                            $.ajax({
-                                url: 'http://localhost:8000/api/annotations?' + params,
-                                type: 'get',
-                                beforeSend: function (xhr) {
-                                    xhr.setRequestHeader('Authorization', 'Bearer ' + getAccessToken());
-                                },
-                                dataType: 'json',
-                                success: function(data) {
-                                    if (data.hasOwnProperty('_embedded')) {
-                                        var annotations = data['_embedded']['annotations'];
+                            // parameters always included in request
+                            function defaultParams() {
+                                return {
+                                    user: username,
+                                    target: annotationTargetID
+                                };
+                            }
 
-                                        // create nested media elements
-                                        var media = document.createElement('li');
-                                        media.className = 'media';
-                                        media.id = 'annotations-media';
-                                        $('#annotations').append(media);
+                            // submit search
+                            function submitSearch() {
+                                // get search terms
+                                var terms = $("#anno-search-terms").val();
 
-                                        $.each(annotations, function(index, anno) {
-                                            var date = new Date(Date.parse(anno.created));
-                                            var hour;
-                                            var period;
-                                            if (date.getHours() % 12 == 0) {
-                                                hour = date.getHours();
-                                                period = 'AM';
-                                            } else {
-                                                hour = date.getHours() % 12;
-                                                period = 'PM';
-                                            }
-                                            var dateString = months[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear() + ' at ' + hour + ':' + date.getMinutes() + ' ' + period;
-                                            // create media element
-                                            var annotation = document.createElement('div');
-                                            annotation.className = 'media';
+                                // submit search if terms is filled
+                                if (terms) {
+                                    terms = terms.replace(/\s+/g, '+').toLowerCase();
 
-                                            // annotation data
-                                            var mediaBody = document.createElement('div');
-                                            mediaBody.className = 'media-body';
+                                    // add search terms to parameters
+                                    var params = defaultParams();
+                                    params.terms = terms;
 
-                                            // create collapsible panel
-                                            var panel = document.createElement('div');
-                                            panel.className = 'annotation panel panel-default';
+                                    // enable clear button
+                                    $("#anno-search-clear").prop("disabled", false);
 
-                                            // panel header
-                                            var header = document.createElement('div');
-                                            header.className = 'panel-heading';
-                                            var title = document.createElement('h5');
-                                            title.className = 'panel-title';
-                                            title.innerHTML = anno.user + '&nbsp; <span class="anno-date">' + dateString + '</span>';
-                                            var collapseButton = document.createElement('span');
-                                            collapseButton.className = 'pull-right clickable';
-                                            collapseButton.innerHTML = '<i class="glyphicon glyphicon-chevron-up"></i>';
-                                            header.appendChild(title);
-                                            header.appendChild(collapseButton);
-                                            panel.appendChild(header);
-
-                                            // panel body
-                                            var body = document.createElement('div');
-                                            body.className = 'panel-body';
-                                            body.style.display = 'block';
-                                            body.innerHTML = anno.data[0].value;
-                                            panel.appendChild(body);
-
-                                            // new child annotation button
-                                            var panelFooter = document.createElement('div');
-                                            panelFooter.className = 'panel-footer';
-
-                                            var newChildAnnotationButton = document.createElement('button');
-                                            newChildAnnotationButton.setAttribute('type', 'button');
-                                            newChildAnnotationButton.className = 'bnt btn-link';
-                                            newChildAnnotationButton.innerHTML = 'Annotate';
-                                            panelFooter.appendChild(newChildAnnotationButton);
-                                            panel.appendChild(panelFooter);
-
-                                            // add media element to annotation
-                                            mediaBody.appendChild(panel);
-                                            annotation.appendChild(mediaBody);
-
-                                            // get annotation children
-                                            var childrenURL = anno['_links'].children.href;
-                                            $.ajax({
-                                                url: childrenURL,
-                                                type: 'get',
-                                                beforeSend: function (xhr) {
-                                                    xhr.setRequestHeader('Authorization', 'Bearer ' + getAccessToken());
-                                                },
-                                                dataType: 'json',
-                                                success: function(childData) {
-                                                    if (childData.hasOwnProperty('_embedded')) {
-                                                        var children = childData['_embedded']['annotations'];
-
-                                                        $.each(children, function(i, child) {
-                                                            var date = new Date(Date.parse(child.created));
-                                                            var hour;
-                                                            var minutes = ((date.getMinutes() < 10) ? '0' : '') + date.getMinutes();
-                                                            var period;
-                                                            if (date.getHours() % 12 == 0) {
-                                                                hour = date.getHours();
-                                                                period = 'AM';
-                                                            } else {
-                                                                hour = date.getHours() % 12;
-                                                                period = 'PM';
-                                                            }
-                                                            var dateString = months[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear() + ' at ' + hour + ':' + minutes + ' ' + period;
-
-                                                            // child media
-                                                            var childMedia = document.createElement('div');
-                                                            childMedia.className = 'media';
-
-                                                            // child media left
-                                                            var childMediaLeft = document.createElement('div');
-                                                            childMediaLeft.className = 'media-left';
-
-                                                            // child annotation data
-                                                            var childMediaBody = document.createElement('div');
-                                                            childMediaBody.className = 'media-body';
-
-                                                            // add to media
-                                                            childMedia.appendChild(childMediaLeft);
-                                                            childMedia.appendChild(childMediaBody);
-
-                                                            // create collapsible panel
-                                                            var childPanel = document.createElement('div');
-                                                            childPanel.className = 'annotation panel panel-default';
-
-                                                            // panel header
-                                                            var childHeader = document.createElement('div');
-                                                            childHeader.className = 'panel-heading';
-                                                            var childTitle = document.createElement('h5');
-                                                            childTitle.className = 'panel-title';
-                                                            childTitle.innerHTML = child.user + '&nbsp; <span class="anno-date">' + dateString + '</span>';
-                                                            var childCollapseButton = document.createElement('span');
-                                                            childCollapseButton.className = 'pull-right clickable';
-                                                            childCollapseButton.innerHTML = '<i class="glyphicon glyphicon-chevron-up"></i>';
-                                                            childHeader.appendChild(childTitle);
-                                                            childHeader.appendChild(childCollapseButton);
-                                                            childPanel.appendChild(childHeader);
-
-                                                            // panel body
-                                                            var childPanelBody = document.createElement('div');
-                                                            childPanelBody.className = 'panel-body';
-                                                            childPanelBody.style.display = 'block';
-                                                            childPanelBody.innerHTML = child.data[0].value;
-                                                            childPanel.appendChild(childPanelBody);
-
-                                                            // new child annotation button
-                                                            var childPanelFooter = document.createElement('div');
-                                                            childPanelFooter.className = 'panel-footer';
-
-                                                            var childAnnotationButton = document.createElement('button');
-                                                            childAnnotationButton.setAttribute('type', 'button');
-                                                            childAnnotationButton.className = 'bnt btn-link';
-                                                            childAnnotationButton.innerHTML = 'Annotate';
-                                                            childPanelFooter.appendChild(childAnnotationButton);
-                                                            childPanel.appendChild(childPanelFooter);
-
-                                                            // append to media
-                                                            childMediaBody.appendChild(childPanel);
-                                                            mediaBody.appendChild(childMedia);
-                                                        });
-                                                    }
-                                                }
-                                            });
-                                            // add to page
-                                            $('#annotations-media').append(annotation);
-                                        });
-                                    }
-                                },
-                                error: function(data) {
-                                    console.log("Failed to fetch annotations");
+                                    // get annotations
+                                    searchAnnotations(params);
                                 }
-                            });
+                            }
+
+                            // clear search
+                            function clearSearch() {
+                                // empty search boxes
+                                $("#anno-search-terms").val('');
+                                $("#anno-adv-search-terms").val('');
+                                $("#anno-adv-search-string").val('');
+                                $("#anno-adv-search-none").val('');
+
+                                // clear search annotations
+                                $("#annotations").empty();
+
+                                // disable clear button
+                                $("#anno-search-clear").prop("disabled", true);
+
+                                // fetch annotations
+                                fetchAllAnnotations();
+                            }
+
+                            function searchAnnotations(params) {
+                                params.sort = "created,desc";
+                                getRequest(searchURL, params)
+                                    .done(function(result) {
+                                        displayAnnotations(result);
+                                    });
+                            }
+
+                            function fetchAnnotations(params) {
+                                params.sort = "created,desc";
+                                getRequest(annoURL, params)
+                                    .done(function(result) {
+                                        displayAnnotations(result);
+                                    });
+                            }
+
+                            function fetchAllAnnotations() {
+                                // add parentless flag to parameters
+                                var params = defaultParams();
+                                params.parentless = true;
+                                fetchAnnotations(params);
+                            }
+
+                            function displayAnnotations(data) {
+                                if (data.hasOwnProperty('_embedded')) {
+                                    var annotations = data['_embedded']['annotations'];
+
+                                    // clear current annotations
+                                    $("#annotations").empty();
+
+                                    // create nested media elements
+                                    var media = document.createElement('li');
+                                    media.className = 'media';
+                                    media.id = 'annotations-media';
+                                    $('#annotations').append(media);
+
+                                    // create elements for each annotation
+                                    $.each(annotations, function(index, anno) {
+                                        var date = formatDate(anno.created);
+                                        var user = anno.user;
+
+                                        // create media element
+                                        var annotation = document.createElement('div');
+                                        annotation.className = 'media';
+
+                                        // annotation data
+                                        var mediaBody = document.createElement('div');
+                                        mediaBody.className = 'media-body';
+
+                                        // create collapsible panel
+                                        var panel = document.createElement('div');
+                                        panel.className = 'annotation panel panel-default';
+
+                                        // panel header
+                                        var header = document.createElement('div');
+                                        header.className = 'panel-heading';
+                                        var title = document.createElement('h5');
+                                        title.className = 'panel-title';
+                                        title.innerHTML = user + '&nbsp; <span class="anno-date">' + date + '</span>';
+                                        var collapseButton = document.createElement('span');
+                                        collapseButton.className = 'pull-right clickable';
+                                        collapseButton.innerHTML = '<i class="glyphicon glyphicon-chevron-up"></i>';
+                                        header.appendChild(title);
+                                        header.appendChild(collapseButton);
+                                        panel.appendChild(header);
+
+                                        // panel body
+                                        var body = document.createElement('div');
+                                        body.className = 'panel-body';
+                                        body.style.display = 'block';
+                                        body.innerHTML = anno.data[0].value;
+                                        panel.appendChild(body);
+
+                                        // new child annotation button
+                                        var panelFooter = document.createElement('div');
+                                        panelFooter.className = 'panel-footer';
+
+                                        var newChildAnnotationButton = document.createElement('button');
+                                        newChildAnnotationButton.setAttribute('type', 'button');
+                                        newChildAnnotationButton.className = 'bnt btn-link';
+                                        newChildAnnotationButton.innerHTML = 'Annotate';
+                                        panelFooter.appendChild(newChildAnnotationButton);
+                                        panel.appendChild(panelFooter);
+
+                                        // add media element to annotation
+                                        mediaBody.appendChild(panel);
+                                        annotation.appendChild(mediaBody);
+
+                                        // add annotation to page
+                                        $("#annotations-media").append(annotation);
+                                    });
+                                } else {
+                                    $("#annotations").empty();
+                                    $("#annotations").append("<h4>No annotations found</h4>");
+                                }
+                            }
+
+                            function formatDate(date) {
+                                // parse date
+                                date = new Date(Date.parse(date));
+                                var year, month, day, hour, minute, period;
+                                year = date.getFullYear();
+                                month = months[date.getMonth()];
+                                day = date.getDate();
+
+                                // calculate period based on hour
+                                if (date.getHours() % 12 == 0) {
+                                    hour = date.getHours();
+                                    period = 'AM';
+                                } else {
+                                    hour = date.getHours() % 12;
+                                    period = 'PM';
+                                }
+
+                                // prepend 0 to minute if under 10
+                                minute = ((date.getMinutes() < 10) ? '0' : '') + date.getMinutes()
+
+                                return month + ' ' + day + ', ' + year + ' at ' + hour + ':' + minute + ' ' + period;
+                            }
 
                             /* end thymeleaf templating */
                             /*]]>*/

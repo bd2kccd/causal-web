@@ -4,6 +4,8 @@
 
 const apiURL = "http://localhost:8000/api";
 const tokenURL = "/oauth/token";
+const annoURL = "/annotations";
+const vocabURL = "/vocabularies";
 const client = "causal-web";
 const clientPassword = "";
 const passwordGrant = "password";
@@ -20,6 +22,9 @@ const refreshGrant = "refresh_token";
 function getRequest(url, parameters, async, beforeSendCallback) {
     // get HTTP parameters
     var params = (typeof parameters === 'undefined') ? '' : '?' + $.param(parameters);
+    params = params.replace(/%2B/g, '+');  // replace %2B with +
+    params = params.replace(/%5F/g, '_');  // replace %5F with _
+
     // get async setting
     var a = (typeof async === 'undefined') ? true : async;
     return $.ajax({
@@ -56,6 +61,7 @@ function postRequest(url, parameters, async, beforeSendCallback) {
         async: a,
         beforeSend: function(xhr) {
             xhr.setRequestHeader('Authorization', 'Bearer ' + getAccessToken());
+            xhr.setRequestHeader('Content-Type', 'application/json');
             typeof beforeSendCallback === 'function' && beforeSendCallback();
         },
         data: JSON.stringify(parameters),
