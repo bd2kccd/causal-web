@@ -331,8 +331,17 @@
                                             var params = {
                                                 target: annotationTargetID,
                                                 access: 'private',
-                                                vocabulary: $('#create-anno-vocabulary-select option:selected').text()
+                                                vocabulary: $('#create-anno-vocabulary-select option:selected').text(),
+                                                data : [{
+                                                    attribute: (attributes.length == 1) ? Number(attributes[0].id) : $('#attribute-select option:selected').val(),
+                                                    value: $('#create-anno-text').val()
+                                                }]
                                             }
+                                            // submit annotation
+                                            postRequest(annoURL, params).done(function() {
+                                                fetchAllAnnotations();
+                                            });
+                                            clearCreateAnno();
                                         }
 
                                         function clearCreateAnno() {
@@ -345,7 +354,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-default" data-dismiss="modal" onclick="clearCreateAnno()">Cancel</button>
-                            <button type="button" class="btn btn-primary" onclick="createAnnotation()">Submit</button>
+                            <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="createAnnotation()">Submit</button>
                         </div>
                     </div>
                 </div>
