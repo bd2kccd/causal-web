@@ -199,7 +199,7 @@
                                             .append($('<div></div>')
                                                 .addClass('panel-body')
                                                 .css('display', 'block')
-                                                .text(annotation.data[0].value))
+                                                .html(annotationElementData(annotation)))
                                             .append($('<div></div>')
                                                 .addClass('panel-footer')
                                                 .append($('<button></button>')
@@ -207,6 +207,43 @@
                                                     .addClass('btn btn-link')
                                                     .text('Annotate')))));
                                     return annotationElement;
+                            }
+
+                            function annotationElementData(annotation) {
+                                var vocab = annotation.vocabularyResource.name;
+                                
+                                var annoData = $('<div></div>').addClass('annotation-data');
+
+                                if (vocab !== 'Plaintext') {
+                                    // append vocabulary
+                                    annoData.append($('<dl></dl')
+                                        .append($('<dt></dt>')
+                                            .text('Vocabulary'))
+                                        .append($('<dd></dd>')
+                                            .text(annotation.vocabularyResource.name))
+                                        .append($('<br>')));
+
+                                    $.each(annotation.data, function(index, data) {
+                                        // append attribute
+                                        annoData.append($('<dl></dl>')
+                                            .append($('<dt></dt>')
+                                                .text('Attribute Level'))
+                                            .append($('<dd></dd>')
+                                                .text(data.attributeResource.level))
+                                            .append($('<dt></dt>')
+                                                .text('Attribute Name'))
+                                            .append($('<dd></dd>')
+                                                .text(data.attributeResource.name))
+                                            .append($('<dt></dt>')
+                                                .text('Value'))
+                                            .append($('<dd></dd>')
+                                                .text(data.value)));
+                                    });
+                                } else {
+                                    annoData.text(annotation.data[0].value);
+                                }
+
+                                return annoData;
                             }
 
                             function childAnnotationElement(annotation) {
