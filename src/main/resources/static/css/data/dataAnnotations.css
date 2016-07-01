@@ -25,3 +25,17 @@ form .control-group {
 .anno-date{
     font-size:12px
 }
+.media {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.media-left {
+    padding-left: 10px;
+}
+.annotation {
+    margin-bottom: 10px;
+}
+.error {
+    color: rgb(180, 101, 106);
+    display: none;
+}

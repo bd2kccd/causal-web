@@ -25,7 +25,7 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <h3 class="page-header" th:text="'Annotations: ' + ${fileName}">file name</h3>
-                        <button type="button" class="btn btn-default" id="new-annotation" data-toggle="modal" data-target="#create-annotation">New annotation</button>
+                        <button type="button" class="btn btn-default" id="new-annotation" data-toggle="modal" data-target="#create-annotation" onclick="prepareCreateAnnotation()">New annotation</button>
                         <div class="pull-right" id="anno-search-form">
                             <form class="form-inline" role="search" onsubmit="return false;" action="">
                                 <div class="btn-group">
@@ -35,7 +35,7 @@
                                 <button type="button" class="btn btn-default" id="anno-search-btn" onclick="submitSearch()" title="Submit"><i class="glyphicon glyphicon-search"></i></button>
                                 <button type="button" class="btn btn-danger" id="anno-search-clear" onclick="clearSearch()" title="Clear" disabled="disabled"><i class="glyphicon glyphicon-remove-sign"></i></button>
                             </form>
-                            <button type="button" class="btn btn-link pull-right" id="anno-adv-search-btn" data-toggle="modal" data-target="#anno-adv-search">Advanced search</button>
+                            <button type="button" class="btn btn-link pull-right" id="anno-adv-search-btn" onclick="prepareAdvSearchForm()" data-toggle="modal" data-target="#anno-adv-search">Advanced search</button>
                         </div>
                         <ul id="annotations" class="media-list"></ul>
                         <script type="text/javascript" th:inline="javascript">
@@ -45,8 +45,8 @@
                             const searchURL = annoURL + "/search";
                             const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-                            var vocabularies = {};
-                            var attributes = {};
+                            // var vocabularies = {};
+                            // var attributes = {};
 
                             // get values from server
                             var fileName = /*[[${fileName}]]*/ null;
@@ -60,7 +60,8 @@
                             function defaultParams() {
                                 return {
                                     user: username,
-                                    target: annotationTargetID
+                                    target: annotationTargetID,
+                                    sort: 'created,desc'
                                 };
                             }
 
@@ -89,9 +90,7 @@
                             function clearSearch() {
                                 // empty search boxes
                                 $("#anno-search-terms").val('');
-                                $("#anno-adv-search-terms").val('');
-                                $("#anno-adv-search-string").val('');
-                                $("#anno-adv-search-none").val('');
+                                clearAdvSearch();
 
                                 // clear search annotations
                                 $("#annotations").empty();
@@ -103,8 +102,15 @@
                                 fetchAllAnnotations();
                             }
 
+                            function clearAdvSearch() {
+                                $('#anno-adv-search-vocabulary-select').val('None');
+                                $("#anno-adv-search-terms").val('');
+                                $("#anno-adv-search-string").val('');
+                                $("#anno-adv-search-none").val('');
+                                $('#adv-search-param-error').hide();                           
+                            }
+
                             function searchAnnotations(params) {
-                                params.sort = "created,desc";
                                 getRequest(searchURL, params)
                                     .done(function(result) {
                                         displayAnnotations(result);
@@ -112,7 +118,6 @@
                             }
 
                             function fetchAnnotations(params) {
-                                params.sort = "created,desc";
                                 getRequest(annoURL, params)
                                     .done(function(result) {
                                         displayAnnotations(result);
@@ -124,6 +129,15 @@
                                 var params = defaultParams();
                                 params.parentless = true;
                                 fetchAnnotations(params);
+                            }
+
+                            function fetchChildAnnotations(parent, params) {
+                                if (parent['_links'].hasOwnProperty('children')) {
+                                    getRequest(annoURL+'/'+parent.id+'/children', params)
+                                        .done(function(result) {
+                                            displayChildAnnotations(parent.id, result);
+                                        });
+                                }
                             }
 
                             function displayAnnotations(data) {
@@ -141,58 +155,9 @@
 
                                     // create elements for each annotation
                                     $.each(annotations, function(index, anno) {
-                                        var date = formatDate(anno.created);
-                                        var user = anno.user;
-
-                                        // create media element
-                                        var annotation = document.createElement('div');
-                                        annotation.className = 'media';
-
-                                        // annotation data
-                                        var mediaBody = document.createElement('div');
-                                        mediaBody.className = 'media-body';
-
-                                        // create collapsible panel
-                                        var panel = document.createElement('div');
-                                        panel.className = 'annotation panel panel-default';
-
-                                        // panel header
-                                        var header = document.createElement('div');
-                                        header.className = 'panel-heading';
-                                        var title = document.createElement('h5');
-                                        title.className = 'panel-title';
-                                        title.innerHTML = user + '&nbsp; <span class="anno-date">' + date + '</span>';
-                                        var collapseButton = document.createElement('span');
-                                        collapseButton.className = 'pull-right clickable';
-                                        collapseButton.innerHTML = '<i class="glyphicon glyphicon-chevron-up"></i>';
-                                        header.appendChild(title);
-                                        header.appendChild(collapseButton);
-                                        panel.appendChild(header);
-
-                                        // panel body
-                                        var body = document.createElement('div');
-                                        body.className = 'panel-body';
-                                        body.style.display = 'block';
-                                        body.innerHTML = anno.data[0].value;
-                                        panel.appendChild(body);
-
-                                        // new child annotation button
-                                        var panelFooter = document.createElement('div');
-                                        panelFooter.className = 'panel-footer';
-
-                                        var newChildAnnotationButton = document.createElement('button');
-                                        newChildAnnotationButton.setAttribute('type', 'button');
-                                        newChildAnnotationButton.className = 'bnt btn-link';
-                                        newChildAnnotationButton.innerHTML = 'Annotate';
-                                        panelFooter.appendChild(newChildAnnotationButton);
-                                        panel.appendChild(panelFooter);
-
-                                        // add media element to annotation
-                                        mediaBody.appendChild(panel);
-                                        annotation.appendChild(mediaBody);
-
-                                        // add annotation to page
-                                        $("#annotations-media").append(annotation);
+                                        var annotation = annotationElement(anno);
+                                        $('#annotations-media').append(annotation);
+                                        fetchChildAnnotations(anno, defaultParams());
                                     });
                                 } else {
                                     $("#annotations").empty();
@@ -200,25 +165,70 @@
                                 }
                             }
 
+                            function displayChildAnnotations(parentId, data) {
+                                if (data.hasOwnProperty('_embedded')) {
+                                    var annotations = data['_embedded']['annotations'];
+                                    $.each(annotations, function(index, anno) {
+                                        var annotation = childAnnotationElement(anno);
+                                        $('#annotation-' + parentId + ' .media-body').append(annotation);
+                                        fetchChildAnnotations(anno, defaultParams());
+                                    });
+                                }
+                            } 
+
+                            function annotationElement(annotation) {
+                                var date = formatDate(annotation.created);
+                                var user = annotation.user;
+
+                                // create annotation element
+                                var annotationElement = $('<div></div>')
+                                    .addClass('media')
+                                    .attr('id', 'annotation-' + annotation.id)
+                                    .append($('<div></div>')
+                                        .addClass('media-body')
+                                        .append($('<div></div>')
+                                            .addClass('annotation panel panel-default')
+                                            .append($('<div></div>')
+                                                .addClass('panel-heading')
+                                                .append($('<h5></h5>')
+                                                    .addClass('panel-title')
+                                                    .html(user + '&nbsp; <span class="anno-date">' + date + '</span>'))
+                                                .append($('<span></span>')
+                                                    .addClass('pull-right clickable')
+                                                    .html('<i class="glyphicon glyphicon-chevron-up"></i>')))
+                                            .append($('<div></div>')
+                                                .addClass('panel-body')
+                                                .css('display', 'block')
+                                                .text(annotation.data[0].value))
+                                            .append($('<div></div>')
+                                                .addClass('panel-footer')
+                                                .append($('<button></button>')
+                                                    .attr('type', 'button')
+                                                    .addClass('btn btn-link')
+                                                    .text('Annotate')))));
+                                    return annotationElement;
+                            }
+
+                            function childAnnotationElement(annotation) {
+                                var childAnnotation = annotationElement(annotation);
+                                childAnnotation.prepend($('<div></div>')
+                                    .addClass('media-left'));
+                                return childAnnotation;
+                            }
+
                             function formatDate(date) {
                                 // parse date
                                 date = new Date(Date.parse(date));
-                                var year, month, day, hour, minute, period;
-                                year = date.getFullYear();
-                                month = months[date.getMonth()];
-                                day = date.getDate();
 
-                                // calculate period based on hour
-                                if (date.getHours() % 12 == 0) {
-                                    hour = date.getHours();
-                                    period = 'AM';
-                                } else {
-                                    hour = date.getHours() % 12;
-                                    period = 'PM';
-                                }
-
+                                var year = date.getFullYear();
+                                var month = months[date.getMonth()];
+                                var day = date.getDate();
+                                // convert hours to 12 hr time
+                                var hour = (date.getHours() == 0 || date.getHours() == 12) ? 12 : date.getHours() % 12;
                                 // prepend 0 to minute if under 10
-                                minute = ((date.getMinutes() < 10) ? '0' : '') + date.getMinutes()
+                                var minute = ((date.getMinutes() < 10) ? '0' : '') + date.getMinutes()
+                                // calculate period based on hour
+                                var period = (date.getHours() > 11) ? 'PM' : 'AM';
 
                                 return month + ' ' + day + ', ' + year + ' at ' + hour + ':' + minute + ' ' + period;
                             }
@@ -233,7 +243,7 @@
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="clearCreateAnno()"><span aria-hidden="true">&times;</span></button>
                             <h4 class="modal-title" id="create-annotation-label">Create annotation</h4>
                         </div>
                         <div class="modal-body">
@@ -244,57 +254,69 @@
                                         <optgroup id="create-anno-vocabulary-optgroup" label="Select one">
                                         </optgroup>
                                     </select>
-                                    <h5>Attribute level</h5>
-                                    <select id="attribute-level-select" class="form-control" onchange="selectAttributeLevel(value)">
-                                        <optgroup id="attribute-level-optgroup" label="Select one">
-                                        </optgroup>
-                                    </select>
-                                    <h5>Attribute</h5>
-                                    <select id="attribute-select" class="form-control">
-                                        <optgroup id="attribute-optgroup" label="Select one">
-                                        </optgroup>
-                                    </select>
+                                    <div id='create-anno-attribute-select'>
+                                        <h5>Attribute level</h5>
+                                        <select id="attribute-level-select" class="form-control" onchange="selectAttributeLevel(value)">
+                                            <optgroup id="attribute-level-optgroup" label="Select one">
+                                            </optgroup>
+                                        </select>
+                                        <h5>Attribute</h5>
+                                        <select id="attribute-select" class="form-control">
+                                            <optgroup id="attribute-optgroup" label="Select one">
+                                            </optgroup>
+                                        </select>
+                                    </div>
+                                    <div id='create-anno-text-input'>
+                                        <h5>Text</h5>
+                                        <textarea class="form-control" rows="5" id="create-anno-text"></textarea>
+                                    </div>
                                     <script type="text/javascript" th:inline="javascript">
-                                        selectVocabulary(1);
-                                        var levels = new Array();
-                                        var attributes;
-
-                                        // Vocabulary request
-                                        getRequest("/vocabularies").done(function(data) {
-                                            var vocabularies = data['_embedded']['vocabularies'];
-                                            $.each(vocabularies, function(index, vocabulary) {
-                                                var option = document.createElement('option');
-                                                option.setAttribute('value', Number(vocabulary.id));
-                                                option.setAttribute('data-subtext', vocabulary.description);
-                                                option.innerHTML = vocabulary.name;
-                                                $('#create-anno-vocabulary-optgroup').append(option);
+                                        var attributes = [];
+                                        function prepareCreateAnnotation() {
+                                            getRequest(vocabURL).done(function(data) {
+                                                $('#create-anno-vocabulary-optgroup').empty();
+                                                var vocabularies = data['_embedded']['vocabularies'];
+                                                $.each(vocabularies, function(index, vocabulary) {
+                                                    $('#create-anno-vocabulary-optgroup')
+                                                        .append($('<option></option>')
+                                                            .attr('value', Number(vocabulary.id))
+                                                            .attr('data-subtext', vocabulary.description)
+                                                            .text(vocabulary.name));
+                                                    });
                                             });
-                                        });
+                                        }
 
                                         function selectVocabulary(value) {
-                                            fetchAttributes(value);
                                             $('#attribute-optgroup').empty();
+                                            $('#attribute-level-optgroup').empty();
+                                            attributes = [];
+                                            fetchAttributes(value);
                                         }
 
                                         function fetchAttributes(vocabularyID) {
                                             // Attribute request
-                                            getRequest('/vocabularies/' + vocabularyID + '/attributes').done(function(data) {
+                                            getRequest(vocabURL + '/' + vocabularyID + '/attributes').done(function(data) {
                                                 attributes = data['_embedded']['attributes'];
-                                                $('#attribute-level-optgroup').empty();
-                                                $.each(attributes, function(index, attribute) {
-                                                    if ($.inArray(attribute.level, levels) === -1) {
-                                                        levels.push(attribute.level);
-                                                        var option = document.createElement('option');
-                                                        option.setAttribute('value', attribute.level);
-                                                        option.innerHTML = attribute.level;
-                                                        $('#attribute-level-optgroup').append(option);
-                                                    }
-                                                });
+                                                if (attributes.length > 1) {
+                                                    $('#create-anno-attribute-select').show();
+                                                    $('#attribute-level-optgroup').empty();
+                                                    var levels = [];
+                                                    $.each(attributes, function(index, attribute) {
+                                                        if ($.inArray(attribute.level, levels) === -1) {
+                                                            levels.push(attribute.level);
+                                                            var option = document.createElement('option');
+                                                            option.setAttribute('value', attribute.level);
+                                                            option.innerHTML = attribute.level;
+                                                            $('#attribute-level-optgroup').append(option);
+                                                        }
+                                                    });
+                                                } else {
+                                                    $('#create-anno-attribute-select').hide();
+                                                }
                                             });
                                         }
 
                                         function selectAttributeLevel(level) {
-                                            $('#attribute-optgroup').empty();
                                             $.each(attributes, function(index, attribute) {
                                                 if (attribute.level === level) {
                                                     var option = document.createElement('option');
@@ -304,12 +326,26 @@
                                                 }
                                             });
                                         }
+
+                                        function createAnnotation() {
+                                            var params = {
+                                                target: annotationTargetID,
+                                                access: 'private',
+                                                vocabulary: $('#create-anno-vocabulary-select option:selected').text()
+                                            }
+                                        }
+
+                                        function clearCreateAnno() {
+                                            $('#create-anno-attribute-select').show();
+                                            $('#create-anno-text').val('');
+                                        }
                                     </script>
                                 </div>
                             </form>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-default" data-dismiss="modal" onclick="clearCreateAnno()">Cancel</button>
+                            <button type="button" class="btn btn-primary" onclick="createAnnotation()">Submit</button>
                         </div>
                     </div>
                 </div>
@@ -326,10 +362,8 @@
                                 <div class="form-group">
                                     <fieldset>
                                         <legend>Vocabulary</legend>
-                                        <select id="anno-adv-search-vocabulary-select" class="form-control" onchange="selectVocabulary(value);">
-                                            <optgroup id="anno-adv-search-vocabulary-optgroup" label="Select one">
-                                                <option value="1">HCLS</option>
-                                                <option value="2">Plaintext</option>
+                                        <select id="anno-adv-search-vocabulary-select" class="form-control">
+                                            <optgroup id="anno-adv-search-vocabulary-optgroup">
                                             </optgroup>
                                         </select>
                                     </fieldset>
@@ -351,10 +385,64 @@
                                     </fieldset>
                                 </div>
                             </form>
+                            <script type="text/javascript" th:inline="javascript">
+                                function prepareAdvSearchForm() {
+                                    getRequest(vocabURL).done(function(data) {
+                                        $('#anno-adv-search-vocabulary-optgroup').empty();
+                                        $('#anno-adv-search-vocabulary-optgroup').append($('<option></option>')
+                                            .attr('value', 'None')
+                                            .attr('selected', 'true')
+                                            .text('Select'));
+                                        var vocabularies = data['_embedded']['vocabularies'];
+                                        $.each(vocabularies, function(index, vocabulary) {
+                                            $('#anno-adv-search-vocabulary-optgroup')
+                                                .append($('<option></option>')
+                                                    .attr('value', vocabulary.name)
+                                                    .attr('data-subtext', vocabulary.description)
+                                                    .text(vocabulary.name));
+                                            });
+                                    });                                    
+                                }
+                                function advSearchAnnotations() {
+                                    var params = defaultParams();
+
+                                    // vocabulary params
+                                    var selectedVocab = $('#anno-adv-search-vocabulary-select').find(":selected").val();
+
+                                    // text params
+                                    var words = $('#anno-adv-search-terms').val();
+                                    var string = $('#anno-adv-search-string').val();
+                                    var not = $('#anno-adv-search-none').val();
+
+                                    if (words || string || not) {
+                                        if (words || string) {
+                                            words = words.replace(/\s+/g, '+').toLowerCase();
+                                            string = string.replace(/\s+/g, '_').toLowerCase();
+                                            params.terms = string + '+' + words;
+                                        }
+                                        if (not) {
+                                            not = not.replace(/\s+/g, '+').toLowerCase();
+                                            params.not = not;
+                                        }
+                                        if (selectedVocab !== 'None') {
+                                            params.vocab = selectedVocab;
+                                        }
+
+                                        // enable clear button
+                                        $("#anno-search-clear").prop("disabled", false);
+                                        searchAnnotations(params);
+                                        $('#adv-search-param-error').hide();
+                                        $('#anno-adv-search').modal('toggle');
+                                    } else {
+                                        $('#adv-search-param-error').show();
+                                    }
+                                }
+                            </script>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-primary" data-dismiss="modal">Search</button>
+                            <div id='adv-search-param-error' class='error pull-left'>At least one parameter is required</div>
+                            <button type="button" class="btn btn-default" data-dismiss="modal" onclick="clearAdvSearch()">Cancel</button>
+                            <button type="button" class="btn btn-primary" onclick="advSearchAnnotations()">Search</button>
                         </div>
                     </div>
                 </div>

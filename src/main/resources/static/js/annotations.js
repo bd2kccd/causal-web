@@ -24,6 +24,7 @@ function getRequest(url, parameters, async, beforeSendCallback) {
     var params = (typeof parameters === 'undefined') ? '' : '?' + $.param(parameters);
     params = params.replace(/%2B/g, '+');  // replace %2B with +
     params = params.replace(/%5F/g, '_');  // replace %5F with _
+    params = params.replace(/%2C/g, ',');  // replace %2C with ,
 
     // get async setting
     var a = (typeof async === 'undefined') ? true : async;
@@ -49,8 +50,8 @@ function getRequest(url, parameters, async, beforeSendCallback) {
  * Generic ajax POST request to CCD Annotations API
  * @param  {string} url request url
  * @param  {object} parameters HTTP body parameters
- * @param  {boolean} async asynchronous request (default true)
- * @param  {closure} beforeSendCallback function performed before sending
+ * @param  {boolean} async asynchronous request (optional, default true)
+ * @param  {closure} beforeSendCallback function performed before sending (optional)
  * @return ajax
  */
 function postRequest(url, parameters, async, beforeSendCallback) {
