@@ -39,8 +39,32 @@ function getRequest(url, parameters, async, beforeSendCallback) {
         dataType: 'json',
         error: function(xhr) {
             if(xhr.responseText.error_description.startsWith("Access token expired")) {
+                console.log('Access token expired. Fetching a new one.')
                 requestAccessToken(false);
                 return getRequest(url, parameters, false, beforeSendCallback);
+            }
+        }
+    });
+}
+
+/**
+ * ajax GET request where entire link is supplied
+ * @param  {string} link link to request
+ * @return  ajax
+ */
+function getRequestByLink(link) {
+    return $.ajax({
+        url: link,
+        type: 'get',
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader('Authorization', 'Bearer ' + getAccessToken());
+        },
+        dataType: 'json',
+        error: function(xhr) {
+            if (xhr.responseText.error_description.startsWith("Access token expired")) {
+                console.log('Access token expired. Fetching a new one.')
+                requestAccessToken(false);
+                return getRequestByLink(link);
             }
         }
     });
@@ -142,7 +166,10 @@ function storeAccessToken(token, expires) {
     //  set expiration date to current time + expiration
     date.setTime(date.getTime() + expires*1000);
     date = date.toGMTString();
-    document.cookie = "access_token=" + token + "; expires=" + date + "; max_age=" + date;
+    // delete old cookie
+    document.cookie = 'access_token=; Path=/ccd; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    // save new cookie
+    document.cookie = 'access_token=' + token + "; Path=/ccd; expires=" + date + "; max_age=" + date;
 }
 
 /**

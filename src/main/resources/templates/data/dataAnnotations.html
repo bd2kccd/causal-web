@@ -47,6 +47,7 @@
 
                             // var vocabularies = {};
                             // var attributes = {};
+                            var annotations = [];
 
                             // get values from server
                             var fileName = /*[[${fileName}]]*/ null;
@@ -61,7 +62,8 @@
                                 return {
                                     user: username,
                                     dataset: annotationTargetID,
-                                    sort: 'created,desc'
+                                    sort: 'created,desc',
+                                    size: 10
                                 };
                             }
 
@@ -142,39 +144,146 @@
 
                             function displayAnnotations(data) {
                                 if (data.hasOwnProperty('_embedded')) {
-                                    var annotations = data['_embedded']['annotations'];
-
                                     // clear current annotations
                                     $("#annotations").empty();
 
                                     // create nested media elements
-                                    var media = document.createElement('li');
-                                    media.className = 'media';
-                                    media.id = 'annotations-media';
+                                    var media = $('<li>', {id: 'annotations-media', class: 'media'});
                                     $('#annotations').append(media);
 
-                                    // create elements for each annotation
-                                    $.each(annotations, function(index, anno) {
-                                        var annotation = annotationElement(anno);
-                                        $('#annotations-media').append(annotation);
-                                        fetchChildAnnotations(anno, defaultParams());
-                                    });
+                                    // add annotations to view
+                                    appendAnnotations(data);
                                 } else {
                                     $("#annotations").empty();
                                     $("#annotations").append("<h4>No annotations found</h4>");
                                 }
                             }
 
-                            function displayChildAnnotations(parentId, data) {
+                            function showMoreButton(appendTo, link, amount) {
+                                // add show more button
+                                appendTo.append($('<button></button>')
+                                    .attr('type', 'button')
+                                    .addClass('btn btn-link')
+                                    .text('Show more (' + amount + ')...')
+                                    .click(function() {
+                                        $(this).remove();
+                                        getRequestByLink(link)
+                                            .done(function (result) {
+                                                appendAnnotations(result, appendTo);
+                                            });
+                                    })
+                                );
+                            }
+
+                           function displayChildAnnotations(parentId, data) {
                                 if (data.hasOwnProperty('_embedded')) {
                                     var annotations = data['_embedded']['annotations'];
+                                    var parentMediaBody = $('#annotation-' + parentId + ' .media-body');
                                     $.each(annotations, function(index, anno) {
                                         var annotation = childAnnotationElement(anno);
-                                        $('#annotation-' + parentId + ' .media-body').append(annotation);
-                                        fetchChildAnnotations(anno, defaultParams());
+                                        parentMediaBody.append(annotation);
+                                        var params = defaultParams();
+                                        params.size = 5;
+                                        fetchChildAnnotations(anno, params);
                                     });
+                                    if (data['_links'].hasOwnProperty('next')) {
+                                        var next = data['_links']['next']['href'];
+                                        var totalElements = data['page']['totalElements'];
+                                        var numberOnPage = data['page']['size'];
+                                        var pageNumber = data['page']['number'];
+                                        var seen = (pageNumber + 1) * numberOnPage;
+                                        var left = totalElements - seen;
+                                        showMoreButton(parentMediaBody, next, left);
+                                    }
                                 }
                             } 
+
+                            function prependAnnotations(data, prependTo) {
+                                var annotations = data['_embedded']['annotations'];
+                                // create elements for each annotation
+                                $.each(annotations, function(index, anno) {
+                                    var annotation = annotationElement(anno);
+                                    if (prependTo) {
+                                        prependTo.prepend(annotation);
+                                    } else {
+                                        $('#annotations-media').prepend(annotation);                                    
+                                    }
+                                    var params = defaultParams();
+                                    params.size = 5;
+                                    fetchChildAnnotations(anno, params);
+                                });
+                                if (data['_links'].hasOwnProperty('next')) {
+                                    var next = data['_links']['next']['href'];
+                                    var totalElements = data['page']['totalElements'];
+                                    var numberOnPage = data['page']['size'];
+                                    var pageNumber = data['page']['number'];
+                                    var seen = (pageNumber + 1) * numberOnPage;
+                                    var left = totalElements - seen;
+                                    if (prependTo) {
+                                        showMoreButton(prependTo, next, left);
+                                    } else {
+                                        showMoreButton($('#annotations-media'), next, left);
+                                    }
+                                }
+                            }
+
+                            function appendAnnotations(data, appendTo) {
+                                var annotations = data['_embedded']['annotations'];
+                                // create elements for each annotation
+                                $.each(annotations, function(index, anno) {
+                                    var annotation = annotationElement(anno);
+                                    if (appendTo) {
+                                        appendTo.append(annotation);
+                                    } else {
+                                        $('#annotations-media').append(annotation);                                       
+                                    }
+                                    var params = defaultParams();
+                                    params.size = 5;
+                                    fetchChildAnnotations(anno, params);
+                                });
+                                if (data['_links'].hasOwnProperty('next')) {
+                                    var next = data['_links']['next']['href'];
+                                    var totalElements = data['page']['totalElements'];
+                                    var numberOnPage = data['page']['size'];
+                                    var pageNumber = data['page']['number'];
+                                    var seen = (pageNumber + 1) * numberOnPage;
+                                    var left = totalElements - seen;
+                                    if (appendTo) {
+                                        showMoreButton(appendTo, next, left);
+                                    } else {
+                                        showMoreButton($('#annotations-media'), next, left);
+                                    }
+                                }
+                            }
+
+                            function appendChildAnnotations(data, appendTo) {
+                                var annotations = data['_embedded']['annotations'];
+                                // create elements for each annotation
+                                $.each(annotations, function(index, anno) {
+                                    var annotation = childAnnotationElement(anno);
+                                    if (appendTo) {
+                                        appendTo.append(annotation);
+                                    } else {
+                                        $('#annotations-media').append(annotation);                                       
+                                    }
+                                    var params = defaultParams();
+                                    params.size = 5;
+                                    fetchChildAnnotations(anno, params);
+                                });
+                                if (data['_links'].hasOwnProperty('next')) {
+                                    var next = data['_links']['next']['href'];
+                                    var totalElements = data['page']['totalElements'];
+                                    var numberOnPage = data['page']['size'];
+                                    var pageNumber = data['page']['number'];
+                                    var seen = (pageNumber + 1) * numberOnPage;
+                                    var left = totalElements - seen;
+                                    if (appendTo) {
+                                        showMoreButton(appendTo, next, left);
+                                    } else {
+                                        showMoreButton($('#annotations-media'), next, left);
+                                    }
+                                }
+                            }
 
                             function annotationElement(annotation) {
                                 var date = formatDate(annotation.created);
@@ -195,7 +304,7 @@
                                                     .html(user + '&nbsp; <span class="anno-date">' + date + '</span>'))
                                                 .append($('<span></span>')
                                                     .addClass('pull-right clickable')
-                                                    .html('<i class="glyphicon glyphicon-chevron-up"></i>')))
+                                                    .html('<i class="glyphicon glyphicon-chevron-down"></i>')))
                                             .append($('<div></div>')
                                                 .addClass('panel-body')
                                                 .css('display', 'block')
@@ -205,7 +314,19 @@
                                                 .append($('<button></button>')
                                                     .attr('type', 'button')
                                                     .addClass('btn btn-link')
-                                                    .text('Annotate')))));
+                                                    .text('Annotate')
+                                                    .attr('data-toggle', 'modal')
+                                                    .attr('data-target', '#create-annotation')
+                                                    .click(function() {
+                                                        prepareCreateAnnotation(annotation.id);
+                                                    }))
+                                                .append($('<button></button>')
+                                                    .attr('type', 'button')
+                                                    .addClass('btn btn-link')
+                                                    .text('Redact')
+                                                    .click(function() {
+                                                        redactAnnotation(annotation.id);
+                                                })))));
                                     return annotationElement;
                             }
 
@@ -214,33 +335,27 @@
                                 
                                 var annoData = $('<div></div>').addClass('annotation-data');
 
-                                if (vocab !== 'Plaintext') {
+                                if (vocab === 'Plaintext') {
+                                    // if Plaintext vocabulary, only show first anno data
+                                    annoData.text(annotation.data[0].value);
+
+                                } else {
                                     // append vocabulary
-                                    annoData.append($('<dl></dl')
-                                        .append($('<dt></dt>')
-                                            .text('Vocabulary'))
-                                        .append($('<dd></dd>')
-                                            .text(annotation.vocabularyResource.name))
-                                        .append($('<br>')));
+                                    annoData.append($('<div></div>')
+                                        .addClass('anno-vocab')
+                                        .html('<b>Vocabulary</b> ' + annotation.vocabularyResource.name));
 
                                     $.each(annotation.data, function(index, data) {
                                         // append attribute
-                                        annoData.append($('<dl></dl>')
-                                            .append($('<dt></dt>')
-                                                .text('Attribute Level'))
-                                            .append($('<dd></dd>')
-                                                .text(data.attributeResource.level))
-                                            .append($('<dt></dt>')
-                                                .text('Attribute Name'))
-                                            .append($('<dd></dd>')
-                                                .text(data.attributeResource.name))
-                                            .append($('<dt></dt>')
-                                                .text('Value'))
-                                            .append($('<dd></dd>')
-                                                .text(data.value)));
+                                        annoData.append($('<div></div>')
+                                            .addClass('anno-data-attribute')
+                                            .append('<p><b>Attribute</b></p>')
+                                            .append('<p><b>Level</b> ' + data.attributeResource.level + '</p>')
+                                            .append('<p><b>Name</b> ' + data.attributeResource.name + '</p>'));
+                                        annoData.append($('<div></div>')
+                                            .addClass('anno-data-value')
+                                            .text(data.value));
                                     });
-                                } else {
-                                    annoData.text(annotation.data[0].value);
                                 }
 
                                 return annoData;
@@ -270,6 +385,36 @@
                                 return month + ' ' + day + ', ' + year + ' at ' + hour + ':' + minute + ' ' + period;
                             }
 
+                            function redactAnnotation(id, verify) {
+                                if (verify) {
+                                    postRequest('/annotations/' + id + '/redact').done(function() {
+                                        fetchAllAnnotations()
+                                    });
+                                } else {
+                                    $('#anno-redact-verification').modal('toggle');
+                                    $('#anno-redact-button').on('click', function() {
+                                        redactAnnotation(id, true);
+                                    });
+                                }
+                            }
+
+                            // collapsible button
+                            $(document).on('click', '.panel-heading', function (e) {
+                                var $this = $(this);
+                                if (!$this.hasClass('panel-collapsed')) {
+                                    $this.parents('.panel').find('.panel-body').slideUp(200);
+                                    $this.parents('.panel').find('.panel-footer').slideUp(200);
+                                    $this.closest('.media-body').children('.media').slideUp(200);
+                                    $this.addClass('panel-collapsed');
+                                    $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-left');
+                                } else {
+                                    $this.parents('.panel').find('.panel-body').slideDown(200);
+                                    $this.parents('.panel').find('.panel-footer').slideDown(200);
+                                    $this.closest('.media-body').children('.media').slideDown(200);
+                                    $this.removeClass('panel-collapsed');
+                                    $this.find('i').removeClass('glyphicon-chevron-left').addClass('glyphicon-chevron-down');
+                                }
+                            });
                             /* end thymeleaf templating */
                             /*]]>*/
                         </script>
@@ -309,7 +454,11 @@
                                     </div>
                                     <script type="text/javascript" th:inline="javascript">
                                         var attributes = [];
-                                        function prepareCreateAnnotation() {
+                                        var parent = null;
+                                        function prepareCreateAnnotation(parentId) {
+                                            if (parentId) {
+                                                parent = parentId;
+                                            }
                                             getRequest(vocabURL).done(function(data) {
                                                 $('#create-anno-vocabulary-optgroup').empty();
                                                 var vocabularies = data['_embedded']['vocabularies'];
@@ -374,8 +523,17 @@
                                                     value: $('#create-anno-text').val()
                                                 }]
                                             }
+                                            if (parent !== null) {
+                                                params.parent = parent;                                                
+                                            }
                                             // submit annotation
-                                            postRequest(annoURL, params).done(function() {
+                                            postRequest(annoURL, params).done(function(data) {
+                                                // var annotations = [];
+                                                // annotations.push(data);
+                                                // prependAnnotations(annotations);
+
+                                                // bug in API
+                                                // use until fixed
                                                 fetchAllAnnotations();
                                             });
                                             clearCreateAnno();
@@ -384,6 +542,7 @@
                                         function clearCreateAnno() {
                                             $('#create-anno-attribute-select').show();
                                             $('#create-anno-text').val('');
+                                            parent = null;
                                         }
                                     </script>
                                 </div>
@@ -489,6 +648,23 @@
                             <div id='adv-search-param-error' class='error pull-left'>At least one parameter is required</div>
                             <button type="button" class="btn btn-default" data-dismiss="modal" onclick="clearAdvSearch()">Cancel</button>
                             <button type="button" class="btn btn-primary" onclick="advSearchAnnotations()">Search</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="anno-redact-verification" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="anno-redact-label" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="anno-redact-verification">Are you sure?</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p>Redacting an annotation permanently removes it.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Cancel">Cancel</button>
+                            <button type="button" id="anno-redact-button" data-dismiss="modal" class="btn btn-danger" aria-label="Redact">Redact</button>
                         </div>
                     </div>
                 </div>
