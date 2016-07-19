@@ -36,12 +36,16 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 
 /**
  *
  * Nov 17, 2015 11:46:21 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @author Chirayu (Kong) Wongchokprasitti, PhD (chw20@pitt.edu)
  */
 public abstract class AbstractAlgorithmService {
 
@@ -61,6 +65,16 @@ public abstract class AbstractAlgorithmService {
     protected final UserAccountService userAccountService;
     protected final JobQueueInfoService jobQueueInfoService;
 
+    @Autowired
+    private Environment env;
+        
+    @Autowired
+    @Value("${ccd.remote.server.dataspace}") 
+    private String remotedataspace;
+    @Autowired
+    @Value("${ccd.remote.server.workspace}") 
+    private String remoteworkspace;
+    
     public AbstractAlgorithmService(
             String workspace,
             String dataFolder,
@@ -118,6 +132,12 @@ public abstract class AbstractAlgorithmService {
         Path userResultDir = Paths.get(workspace, username, resultFolder, algorithmResultFolder);
         Path userTempDir = Paths.get(workspace, username, tmpFolder);
 
+        // Different configurations for the remote Slurm-based HPC environment
+        if(env.acceptsProfiles("slurm")){
+        	//userResultDir = Paths.get(remoteworkspace, username, resultFolder, algorithmResultFolder);
+        	userTempDir = Paths.get(remoteworkspace, username, tmpFolder);
+        }
+        
         List<String> commands = new LinkedList<>();
         commands.add("java");
 
@@ -126,6 +146,9 @@ public abstract class AbstractAlgorithmService {
 
         // add classpath
         Path classPath = Paths.get(workspace, libFolder, algorithmJar);
+        if(env.acceptsProfiles("slurm")){
+        	classPath = Paths.get(remoteworkspace, libFolder, algorithmJar);
+        }
         commands.add("-jar");
         commands.add(classPath.toString());
 
@@ -137,6 +160,10 @@ public abstract class AbstractAlgorithmService {
         List<String> datasetPath = new LinkedList<>();
         dataset.forEach(dataFile -> {
             Path dataPath = Paths.get(workspace, username, dataFolder, dataFile);
+            // Algorithm job will be run on the cluster nodes
+            if(env.acceptsProfiles("slurm")){ // remotedataspace = /pylon1/$(id -Gn)/$(whoami)/
+            	dataPath = Paths.get(remotedataspace, username, dataFolder, dataFile);
+            }
             datasetPath.add(dataPath.toAbsolutePath().toString());
         });
         String datasetList = listToSeperatedValues(datasetPath, ",");
