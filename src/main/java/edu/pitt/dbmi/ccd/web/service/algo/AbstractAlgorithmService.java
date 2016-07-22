@@ -69,10 +69,10 @@ public abstract class AbstractAlgorithmService {
     private Environment env;
         
     @Autowired
-    @Value("${ccd.remote.server.dataspace}") 
+    @Value("${ccd.remote.server.dataspace:}") 
     private String remotedataspace;
     @Autowired
-    @Value("${ccd.remote.server.workspace}") 
+    @Value("${ccd.remote.server.workspace:}") 
     private String remoteworkspace;
     
     public AbstractAlgorithmService(
