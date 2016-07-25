@@ -27,6 +27,7 @@
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
+                        <h2>From My Computer</h2>
                         <h4>Dataset</h4>
                         <p>Only tabular dataset is supported with either of the following delimiters:</p>
                         <ul>
@@ -103,6 +104,34 @@
                         </div>
                     </div>
                 </div>
+                
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h2>From PIC-SURE API</h2>
+                        
+                        <p>Separate multiple fields with "!!" sign</p>
+                        
+                        <span id="apiUsername" th:text="${appUser.username}"></span>
+                        
+                        <div class="form-group">
+                        <label for="apiKey">API Key </label>(generated from <a href="https://ssc.hms.harvard.edu/transmart" target="_blank">https://ssc.hms.harvard.edu/transmart</a>)
+                        <input id="apiKey" class="form-control"></input>
+                        </div>
+                        
+                        <div class="form-group">
+                        <label for="selectFields">Query JSON</label>
+                        <textarea id="queryJson" class="form-control" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="btn btn-primary" id="apiBtn"><span class="glyphicon glyphicon-transfer"></span>&nbsp;&nbsp;Load data from PIC-SURE API</div>
+                    </div>
+                    
+                    <div class="col-lg-12">
+                        <p id="apiMsg" class="alert alert-success">The PIC-SURE API data has been loaded successfully.</p>
+                    </div>
+                </div>
+                
+                
                 <footer th:replace="fragments/footer :: footer">
                     <div class="row">
                         <div class="col-lg-12">
@@ -194,5 +223,6 @@ addtemporal
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
         <script src="../../static/vendors/resumable-js/resumable.min.js" th:src="@{/vendors/resumable-js/resumable.min.js}"></script>
         <script src="../../static/js/data/dataUpload.min.js" th:src="@{/js/data/dataUpload.min.js}"></script>
+        <script src="../../static/js/data/dataUploadViaApi.min.js" th:src="@{/js/data/dataUploadViaApi.min.js}"></script>
     </body>
 </html>
