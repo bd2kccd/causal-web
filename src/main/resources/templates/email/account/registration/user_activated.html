@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>Account Activated</title>
+        <meta name="description" content="" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+    </head>
+    <body>
+        <p>
+            Dear <span th:text="${username}">username</span>,
+        </p>
+        <p>Congratulations!</p>
+        <p>
+            Your account has been activated.  You can <a href="#" th:href="${url}">sign in</a>.
+        </p>
+        <p>
+            Thanks again for your registration,<br />
+            Causal Web administrator
+        </p>
+    </body>
+</html>

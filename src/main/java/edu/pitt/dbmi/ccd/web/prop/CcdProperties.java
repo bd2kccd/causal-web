@@ -32,20 +32,11 @@ import org.springframework.stereotype.Component;
 @PropertySource("classpath:ccd.properties")
 public class CcdProperties {
 
-    @Value("${ccd.callback.server.name}")
-    private String callbackServerName;
+    @Value("${ccd.server.hostname:}")
+    private String serverHostName;
 
-    @Value("${ccd.callback.server.port}")
-    private String callbackServerPort;
-
-    @Value("${ccd.app.title}")
-    private String title;
-
-    @Value("${ccd.app.copyright}")
-    private String copyright;
-
-    @Value("${ccd.app.agreement}")
-    private String agreement;
+    @Value("${ccd.server.port:}")
+    private String serverPort;
 
     @Value("${ccd.dir.workspace}")
     private String workspaceDir;
@@ -62,47 +53,35 @@ public class CcdProperties {
     @Value("${ccd.folder.result}")
     private String resultFolder;
 
+    @Value("${ccd.app.title}")
+    private String title;
+
+    @Value("${ccd.app.copyright}")
+    private String copyright;
+
+    @Value("${ccd.app.agreement}")
+    private String agreement;
+
+    @Value("${ccd.acct.reg.activ.self:false}")
+    private boolean accountSelfActivation;
+
     public CcdProperties() {
     }
 
-    public String getCallbackServerName() {
-        return callbackServerName;
+    public String getServerHostName() {
+        return serverHostName;
     }
 
-    public void setCallbackServerName(String callbackServerName) {
-        this.callbackServerName = callbackServerName;
+    public void setServerHostName(String serverHostName) {
+        this.serverHostName = serverHostName;
     }
 
-    public String getCallbackServerPort() {
-        return callbackServerPort;
+    public String getServerPort() {
+        return serverPort;
     }
 
-    public void setCallbackServerPort(String callbackServerPort) {
-        this.callbackServerPort = callbackServerPort;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getCopyright() {
-        return copyright;
-    }
-
-    public void setCopyright(String copyright) {
-        this.copyright = copyright;
-    }
-
-    public String getAgreement() {
-        return agreement;
-    }
-
-    public void setAgreement(String agreement) {
-        this.agreement = agreement;
+    public void setServerPort(String serverPort) {
+        this.serverPort = serverPort;
     }
 
     public String getWorkspaceDir() {
@@ -143,6 +122,38 @@ public class CcdProperties {
 
     public void setResultFolder(String resultFolder) {
         this.resultFolder = resultFolder;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getCopyright() {
+        return copyright;
+    }
+
+    public void setCopyright(String copyright) {
+        this.copyright = copyright;
+    }
+
+    public String getAgreement() {
+        return agreement;
+    }
+
+    public void setAgreement(String agreement) {
+        this.agreement = agreement;
+    }
+
+    public boolean isAccountSelfActivation() {
+        return accountSelfActivation;
+    }
+
+    public void setAccountSelfActivation(boolean accountSelfActivation) {
+        this.accountSelfActivation = accountSelfActivation;
     }
 
 }

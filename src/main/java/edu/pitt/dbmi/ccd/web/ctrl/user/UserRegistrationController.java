@@ -18,28 +18,21 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.user;
 
-import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import edu.pitt.dbmi.ccd.web.exception.UserActivationException;
-import edu.pitt.dbmi.ccd.web.model.AppUser;
-import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
-import edu.pitt.dbmi.ccd.web.service.AppUserService;
-import edu.pitt.dbmi.ccd.web.service.user.UserService;
+import edu.pitt.dbmi.ccd.web.domain.user.UserRegistration;
+import edu.pitt.dbmi.ccd.web.service.user.UserRegistrationService;
 import java.util.Base64;
-import java.util.Collections;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.apache.shiro.web.subject.WebSubject;
+import javax.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.SessionAttributes;
-import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
@@ -49,76 +42,30 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @Controller
-@SessionAttributes("appUser")
-@RequestMapping(value = "user/registration")
+@RequestMapping(value = "user/account/registration")
 public class UserRegistrationController implements ViewPath {
 
-    private static final String[] REGISTRATION_SUCCESS = {
-        "Thank you for registering!",
-        "You should receive an email from us shortly."
-    };
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserRegistrationController.class);
 
-    private final UserAccountService userAccountService;
-
-    private final UserService userService;
-
-    private final AppUserService appUserService;
+    private final UserRegistrationService userRegistrationService;
 
     @Autowired
-    public UserRegistrationController(UserAccountService userAccountService, UserService userService, AppUserService appUserService) {
-        this.userAccountService = userAccountService;
-        this.userService = userService;
-        this.appUserService = appUserService;
-    }
-
-    @RequestMapping(value = "federated", method = RequestMethod.POST)
-    public String processTermsAndConditions(
-            @RequestParam("agree") boolean agree,
-            @ModelAttribute("appUser") final AppUser appUser,
-            final HttpServletRequest request,
-            final HttpServletResponse response,
-            final SessionStatus sessionStatus,
-            final RedirectAttributes redirectAttributes,
-            final Model model) {
-        if (agree) {
-            if (userService.registerNewFederatedUser(appUser, request)) {
-                String username = appUser.getEmail();
-                UserAccount userAccount = userAccountService.findByUsername(username);
-                model.addAttribute("appUser", appUserService.createAppUser(userAccount, false));
-
-                new WebSubject.Builder(request, response)
-                        .authenticated(true)
-                        .sessionCreationEnabled(true)
-                        .buildSubject();
-                return REDIRECT_HOME;
-            } else {
-                sessionStatus.setComplete();
-                redirectAttributes.addFlashAttribute("errorMsg", Collections.singletonList("Sorry, registration is unavailable at this time."));
-                return REDIRECT_LOGIN;
-            }
-        } else {
-            return REDIRECT_TERMS;
-        }
+    public UserRegistrationController(UserRegistrationService userRegistrationService) {
+        this.userRegistrationService = userRegistrationService;
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public String registerWebUser(
-            final UserRegistration userRegistration,
+    public String registerNewUser(
+            @Valid @ModelAttribute("userRegistration") final UserRegistration userRegistration,
+            final BindingResult bindingResult,
             final RedirectAttributes redirectAttributes,
             final HttpServletRequest request) {
-        if (userRegistration.isAgree()) {
-            String username = userRegistration.getUsername();
-            if (userAccountService.findByUsername(username) == null) {
-                if (userService.registerNewUser(userRegistration, request)) {
-                    redirectAttributes.addFlashAttribute("successMsg", REGISTRATION_SUCCESS);
-                } else {
-                    redirectAttributes.addFlashAttribute("errorMsg", Collections.singletonList("Sorry, registration is unavailable at this time."));
-                }
-            } else {
-                redirectAttributes.addFlashAttribute("errorMsg", Collections.singletonList(username + " has already been registered."));
-            }
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.userRegistration", bindingResult);
+            redirectAttributes.addFlashAttribute("userRegistration", userRegistration);
+            redirectAttributes.addFlashAttribute("errorMsg", "Registration failed!");
         } else {
-            redirectAttributes.addFlashAttribute("errorMsg", Collections.singletonList("You must accept the terms and conditions."));
+            userRegistrationService.registerNewUser(userRegistration, redirectAttributes, request);
         }
 
         return REDIRECT_LOGIN;
@@ -126,20 +73,13 @@ public class UserRegistrationController implements ViewPath {
 
     @RequestMapping(value = "activate", method = RequestMethod.GET)
     public String activateNewUser(
-            @RequestParam(value = "account", required = true) final String account,
-            final Model model) {
-        String accountId = new String(Base64.getUrlDecoder().decode(account));
-        UserAccount userAccount = userAccountService.findByAccount(accountId);
-        if (userAccount == null || userAccount.isActive()) {
-            throw new UserActivationException();
-        } else {
-            userAccount.setActive(Boolean.TRUE);
-            userAccountService.saveUserAccount(userAccount);
+            @RequestParam(value = "activation", required = true) final String activation,
+            final HttpServletRequest request,
+            final RedirectAttributes redirectAttributes) {
+        String activationKey = new String(Base64.getUrlDecoder().decode(activation));
+        userRegistrationService.activateNewUser(activationKey, request, redirectAttributes);
 
-            model.addAttribute("username", userAccount.getUsername());
-
-            return USER_ACTIVATION_SUCCESS_VIEW;
-        }
+        return REDIRECT_MESSAGE;
     }
 
 }

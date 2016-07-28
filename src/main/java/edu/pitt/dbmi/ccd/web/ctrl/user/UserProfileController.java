@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 University of Pittsburgh.
+ * Copyright (C) 2016 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,19 +18,17 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.user;
 
-import edu.pitt.dbmi.ccd.db.entity.Person;
-import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import edu.pitt.dbmi.ccd.web.model.AppUser;
-import edu.pitt.dbmi.ccd.web.model.user.PasswordChange;
-import edu.pitt.dbmi.ccd.web.model.user.UserInfo;
-import edu.pitt.dbmi.ccd.web.service.AppUserService;
-import org.apache.shiro.authc.credential.DefaultPasswordService;
+import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.domain.user.PasswordChange;
+import edu.pitt.dbmi.ccd.web.domain.user.UserInfo;
+import edu.pitt.dbmi.ccd.web.service.user.UserProfileService;
+import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -41,7 +39,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  *
- * Jul 28, 2015 10:50:40 AM
+ * Jun 30, 2016 3:48:46 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
@@ -50,20 +48,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping(value = "secured/user/profile")
 public class UserProfileController implements ViewPath {
 
-    private final UserAccountService userAccountService;
-
-    private final AppUserService appUserService;
-
-    private final DefaultPasswordService passwordService;
+    private final UserProfileService userProfileService;
 
     @Autowired
-    public UserProfileController(
-            UserAccountService userAccountService,
-            AppUserService appUserService,
-            DefaultPasswordService passwordService) {
-        this.userAccountService = userAccountService;
-        this.appUserService = appUserService;
-        this.passwordService = passwordService;
+    public UserProfileController(UserProfileService userProfileService) {
+        this.userProfileService = userProfileService;
     }
 
     @InitBinder
@@ -71,25 +60,18 @@ public class UserProfileController implements ViewPath {
         binder.registerCustomEditor(String.class, new StringTrimmerEditor(false));
     }
 
-    @RequestMapping(value = "pwd", method = RequestMethod.POST)
-    public String updateUserPassword(
-            @ModelAttribute("userWorkspace") final PasswordChange passwordChange,
+    @RequestMapping(method = RequestMethod.GET)
+    public String showUserProfilePage(
             @ModelAttribute("appUser") final AppUser appUser,
-            final RedirectAttributes redirectAttributes,
             final Model model) {
-        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
-        String currentPwd = passwordChange.getCurrentPassword();
-        String encryptedPwd = userAccount.getPassword();
-
-        if (passwordService.passwordsMatch(currentPwd, encryptedPwd)) {
-            String newPwd = passwordChange.getNewPassword();
-            userAccount.setPassword(passwordService.encryptPassword(newPwd));
-            userAccountService.saveUserAccount(userAccount);
-        } else {
-            redirectAttributes.addFlashAttribute("pwdChangeErr", "Invalid password.");
+        if (!model.containsAttribute("userInfo")) {
+            model.addAttribute("userInfo", userProfileService.createUserInfo(appUser));
+        }
+        if (!model.containsAttribute("passwordChange")) {
+            model.addAttribute("passwordChange", new PasswordChange());
         }
 
-        return REDIRECT_USER_PROFILE;
+        return USER_PROFILE_VIEW;
     }
 
     @RequestMapping(value = "info", method = RequestMethod.POST)
@@ -97,44 +79,26 @@ public class UserProfileController implements ViewPath {
             @ModelAttribute("userInfo") final UserInfo userInfo,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
-
-        // update person information
-        Person person = userAccount.getPerson();
-        person.setFirstName(userInfo.getFirstName());
-        person.setMiddleName(userInfo.getMiddleName());
-        person.setLastName(userInfo.getLastName());
-
-        userAccount = userAccountService.saveUserAccount(userAccount);
-
-        AppUser user = appUserService.createAppUser(userAccount, appUser.getLocalAccount());
-        user.setLastLogin(appUser.getLastLogin());
-        model.addAttribute("appUser", user);
+        userProfileService.updateUserInfo(userInfo, appUser, model);
 
         return REDIRECT_USER_PROFILE;
     }
 
-    @RequestMapping(method = RequestMethod.GET)
-    public String showUserProfilePage(
+    @RequestMapping(value = "pwd", method = RequestMethod.POST)
+    public String updateUserPassword(
+            @Valid @ModelAttribute("passwordChange") final PasswordChange passwordChange,
+            final BindingResult bindingResult,
             @ModelAttribute("appUser") final AppUser appUser,
-            final Model model) {
-        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
-        Person person = userAccount.getPerson();
+            final RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.passwordChange", bindingResult);
+            redirectAttributes.addFlashAttribute("passwordChange", passwordChange);
+            redirectAttributes.addFlashAttribute("pwdChangeErr", true);
+        } else {
+            userProfileService.updateUserPassword(passwordChange, appUser, redirectAttributes);
+        }
 
-        UserInfo userInfo = new UserInfo();
-        userInfo.setEmail(person.getEmail());
-        userInfo.setFirstName(person.getFirstName());
-        userInfo.setMiddleName(person.getMiddleName());
-        userInfo.setLastName(person.getLastName());
-        model.addAttribute("userInfo", userInfo);
-
-        PasswordChange passwordChange = new PasswordChange();
-        passwordChange.setCurrentPassword("");
-        passwordChange.setNewPassword("");
-        passwordChange.setConfirmPassword("");
-        model.addAttribute("passwordChange", passwordChange);
-
-        return USER_PROFILE_VIEW;
+        return REDIRECT_USER_PROFILE;
     }
 
 }

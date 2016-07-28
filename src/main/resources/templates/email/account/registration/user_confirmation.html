@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>User Registration Confirmation</title>
+        <meta name="description" content="" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+    </head>
+    <body>
+        <p>
+            Dear <span th:text="${username}">username</span>,
+        </p>
+        <p>Thank you for registering!</p>
+        <p>We will review your registration and notify you when your account is activated.</p>
+        <p>
+            Thanks again for your registration,<br />
+            Causal Web administrator
+        </p>
+    </body>
+</html>

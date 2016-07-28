@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 University of Pittsburgh.
+ * Copyright (C) 2016 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,7 @@ package edu.pitt.dbmi.ccd.web.service;
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.entity.UserLogin;
-import edu.pitt.dbmi.ccd.web.model.AppUser;
+import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -51,7 +51,7 @@ public class AppUserService {
         this.ccdProperties = ccdProperties;
     }
 
-    public AppUser createAppUser(final UserAccount userAccount, final boolean localAccount) {
+    public AppUser createAppUser(final UserAccount userAccount, final boolean federatedUser) {
         UserLogin userLogin = userAccount.getUserLogin();
         Date lastLoginDate = userLogin.getLastLoginDate();
 
@@ -90,7 +90,7 @@ public class AppUserService {
         appUser.setLastName(lastName == null ? "" : lastName);
         appUser.setEmail(email);
         appUser.setLastLogin(lastLoginDate == null ? new Date(System.currentTimeMillis()) : lastLoginDate);
-        appUser.setLocalAccount(localAccount);
+        appUser.setFederatedUser(federatedUser);
 
         return appUser;
     }

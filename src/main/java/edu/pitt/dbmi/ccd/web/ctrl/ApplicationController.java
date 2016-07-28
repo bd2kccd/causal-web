@@ -18,12 +18,27 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.HOME;
+import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.HOME_VIEW;
+import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.LOGIN;
+import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.LOGOUT;
+import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.REDIRECT_HOME;
+import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.REDIRECT_LOGIN;
+import edu.pitt.dbmi.ccd.web.domain.LoginCredentials;
+import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
+import edu.pitt.dbmi.ccd.web.service.ShiroLoginService;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  *
@@ -35,10 +50,57 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @SessionAttributes("appUser")
 public class ApplicationController implements ViewPath {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationController.class);
+    private final ShiroLoginService loginService;
+
+    @Autowired
+    public ApplicationController(ShiroLoginService loginService) {
+        this.loginService = loginService;
+    }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String showIndexPage() {
+        return REDIRECT_LOGIN;
+    }
+
+    @RequestMapping(value = MESSAGE, method = RequestMethod.GET)
+    public String showMessage(final Model model) {
+        if (!model.containsAttribute("header")) {
+            throw new ResourceNotFoundException();
+        }
+
+        return MESSAGE_VIEW;
+    }
+
+    @RequestMapping(value = HOME, method = RequestMethod.GET)
+    public String showHomePage(final Model model) {
+        return HOME_VIEW;
+    }
+
+    @RequestMapping(value = LOGIN, method = RequestMethod.POST)
+    public String processLogin(
+            @Valid @ModelAttribute("loginCredentials") final LoginCredentials loginCredentials,
+            final BindingResult bindingResult,
+            final RedirectAttributes redirectAttributes,
+            final Model model,
+            final HttpServletRequest request) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.loginCredentials", bindingResult);
+            redirectAttributes.addFlashAttribute("loginCredentials", loginCredentials);
+            return REDIRECT_LOGIN;
+        }
+
+        boolean loginSuccess = loginService.loginUser(loginCredentials, redirectAttributes, model, request);
+
+        return loginSuccess ? REDIRECT_HOME : REDIRECT_LOGIN;
+    }
+
+    @RequestMapping(value = LOGOUT, method = RequestMethod.GET)
+    public String logOut(
+            final SessionStatus sessionStatus,
+            final RedirectAttributes redirectAttributes,
+            final HttpServletRequest request) {
+        loginService.logoutUser(sessionStatus, redirectAttributes, request);
+
         return REDIRECT_LOGIN;
     }
 

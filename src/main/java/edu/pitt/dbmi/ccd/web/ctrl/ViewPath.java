@@ -26,22 +26,44 @@ package edu.pitt.dbmi.ccd.web.ctrl;
  */
 public interface ViewPath {
 
-    public static final String LOGIN = "login";
+    public static final String MESSAGE_VIEW = "message";
+    public static final String MESSAGE = "/message";
+    public static final String REDIRECT_MESSAGE = "redirect:/message";
+
+    public static final String LOGIN = "/login";
     public static final String REDIRECT_LOGIN = "redirect:/login";
 
-    public static final String LOGOUT = "logout";
+    public static final String LOGOUT = "/secured/logout";
 
-    public static final String HOME = "home";
-    public static final String HOME_VIEW = "secured/home";
+    public static final String HOME_VIEW = "home";
+    public static final String HOME = "/secured/home";
     public static final String REDIRECT_HOME = "redirect:/secured/home";
 
-    public static final String USER_ACTIVATION_SUCCESS_VIEW = "user/userActivationSuccess";
+    public static final String USER_PASSWORD_RESET_VIEW = "user/account/recovery/password_reset";
 
-    public static final String TERMS = "terms";
     public static final String TERMS_VIEW = "terms";
-    public static final String REDIRECT_TERMS = "redirect:/terms";
 
-    public static final String USER_PROFILE_VIEW = "secured/user/userProfile";
+    public static final String USER_PROFILE_VIEW = "user/account/userProfile";
     public static final String REDIRECT_USER_PROFILE = "redirect:/secured/user/profile";
+
+    public static final String FILE_UPLOAD_VIEW = "file/fileUpload";
+    public static final String FILE_LIST_VIEW = "file/fileList";
+
+    public static final String REDIRECT_NEW_UPLOAD = "redirect:/secured/file/upload/new";
+    public static final String REDIRECT_DATA_INPUT = "redirect:/secured/file/input/data";
+    public static final String REDIRECT_VARIABLE_INPUT = "redirect:/secured/file/input/variable";
+    public static final String REDIRECT_PRIOR_KNOWLEDGE_INPUT = "redirect:/secured/file/input/prior";
+
+    public static final String REDIRECT_ALGO_RESULT_FILE = "redirect:/secured/file/output/algorithm/result/run";
+
+    public static final String CATEGORIZE = "categorize";
+    public static final String FILE_INFO_VIEW = "file/fileInfo";
+
+    public static final String INFO = "info";
+    public static final String INFO_CATEGORIZE = "info/categorize";
+
+    public static final String RESULT_LIST_VIEW = "result/algorithm/run/resultList";
+    public static final String RESULT_INFO_VIEW = "result/algorithm/run/algoResultInfo";
+    public static final String D3_GRAPH_VIEW = "graph/d3graph";
 
 }

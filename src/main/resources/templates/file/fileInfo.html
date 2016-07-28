@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="description" content="Center for Causal Discovery" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>CCD: Categorize</title>
+        <link rel="apple-touch-icon" href="../../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
+        <link rel="icon" href="../../static/favicon.ico" th:href="@{/favicon.ico}" />
+        <link rel="stylesheet" href="../../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{/vendors/bootstrap/css/bootstrap.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/bootstrap/css/bootstrap-theme.min.css" th:href="@{/vendors/bootstrap/css/bootstrap-theme.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/metisMenu/metisMenu.min.css" th:href="@{/vendors/metisMenu/metisMenu.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{/vendors/font-awesome/css/font-awesome.min.css}" />
+        <link rel="stylesheet" href="../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
+        <link rel="stylesheet" href="../../static/css/file/categorize.min.css" th:href="@{/css/file/categorize.min.css}" />
+    </head>
+    <body>
+        <div id="wrapper">
+            <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0" th:replace="fragments/navigation :: nav"></nav>
+            <div id="page-wrapper">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h3 class="page-header" th:text="${fileName}">File Name</h3>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Basic Information</h3>
+                            </div>
+                            <div class="panel-body">
+                                <table class="table table-striped table-condensed">
+                                    <tbody>
+                                        <tr th:each="info : ${basicInfo}">
+                                            <td th:text="${info.attribute}"></td>
+                                            <td th:text="${info.value}"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" th:if="${additionalInfo}">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Additional Information</h3>
+                            </div>
+                            <div class="panel-body">
+                                <table class="table table-striped table-condensed">
+                                    <tbody>
+                                        <tr th:each="info : ${additionalInfo}">
+                                            <td th:text="${info.attribute}"></td>
+                                            <td th:text="${info.value}"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel-group" id="categorize">
+                            <div class="panel panel-primary">
+                                <a id="collapseLink" class="panel-primary" data-toggle="collapse" data-parent="#categorize" href="#collapseCategory">
+                                    <div class="panel-heading">
+                                        <h3 class="panel-title">Categorize File<span class="pull-right"><i class="glyphicon glyphicon-chevron-down" th:class="${collapse} ? 'glyphicon glyphicon-chevron-down' : 'glyphicon glyphicon-chevron-up'"></i></span></h3>
+                                    </div>
+                                </a>
+                                <div id="collapseCategory" class="panel-collapse collapse" th:class="${collapse} ? 'panel-collapse collapse' : 'panel-collapse collapse in'">
+                                    <div class="panel-body">
+                                        <div class="alert alert-danger" role="alert" th:if="${errorMsg}">
+                                            <div class="text-center" th:each="msg : ${errorMsg}" th:text="${msg}"></div>
+                                        </div>
+                                        <form id="categorizeFile" method="post" action="" th:action="@{/secured/file/management/categorize(id=${fileId})}" role="form" th:object="${categorizeFile}">
+                                            <div class="form-group" th:class="${#fields.hasErrors('fileTypeId')} ? 'form-group has-error' : 'form-group'">
+                                                <label>File Type:</label>
+                                                <div class="radio-inline">
+                                                    <label class="radio-inline" th:each="opt : ${fileTypes}">
+                                                        <input type="radio" th:field="*{fileTypeId}" th:value="${opt.id}" onclick="fileTypeAction(this);" required="required" /> <span th:text="${#strings.capitalizeWords(opt.name)}">dataset</span>
+                                                    </label>
+                                                </div>
+                                                <span class="help-block" th:if="${#fields.hasErrors('fileTypeId')}" th:errors="*{fileTypeId}">File ID is required.</span>
+                                            </div>
+                                            <div id="datasetOptions" class="well">
+                                                <div class="form-group" th:class="${#fields.hasErrors('fileDelimiterId')} ? 'form-group has-error' : 'form-group'">
+                                                    <label>Delimiter:</label>
+                                                    <div class="radio-inline">
+                                                        <label class="radio-inline" th:each="opt : ${fileDelimiters}">
+                                                            <input type="radio" th:field="*{fileDelimiterId}" th:value="${opt.id}" /> <span th:text="${#strings.capitalizeWords(opt.name)}">tab</span>
+                                                        </label>
+                                                    </div>
+                                                    <span class="help-block" th:if="${#fields.hasErrors('fileDelimiterId')}" th:errors="*{fileDelimiterId}">File ID is required.</span>
+                                                </div>
+                                                <div class="form-group" th:class="${#fields.hasErrors('variableTypeId')} ? 'form-group has-error' : 'form-group'">
+                                                    <label>Variable Type:</label>
+                                                    <div class="radio-inline">
+                                                        <label class="radio-inline" th:each="opt : ${variableTypes}">
+                                                            <input type="radio" th:field="*{variableTypeId}" th:value="${opt.id}" /> <span th:text="${#strings.capitalizeWords(opt.name)}">continuous</span>
+                                                        </label>
+                                                    </div>
+                                                    <span class="help-block" th:if="${#fields.hasErrors('variableTypeId')}" th:errors="*{variableTypeId}">File ID is required.</span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <input type="submit" class="btn btn-lg btn-block btn-success" value="Save" />
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
+        <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
+        <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
+        <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
+        <script src="../../static/js/file/categorize.min.js" th:src="@{/js/file/categorize.min.js}"></script>
+    </body>
+</html>
