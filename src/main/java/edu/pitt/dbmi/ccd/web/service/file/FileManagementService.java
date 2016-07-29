@@ -72,22 +72,30 @@ public class FileManagementService {
     private static final String ADDITIONAL_INFO = "additionalInfo";
 
     private final CcdProperties ccdProperties;
-
     private final UserAccountService userAccountService;
     private final FileService fileService;
     private final DataFileService dataFileService;
     private final VariableFileService variableFileService;
-
     private final CategorizeFileService categorizeFileService;
 
+    private final FileType dataFileType;
+    private final FileType variableFileType;
+    private final FileType priorFileType;
+    private final FileType algoResultFileType;
+
     @Autowired
-    public FileManagementService(CcdProperties ccdProperties, UserAccountService userAccountService, FileService fileService, DataFileService dataFileService, VariableFileService variableFileService, CategorizeFileService categorizeFileService) {
+    public FileManagementService(CcdProperties ccdProperties, UserAccountService userAccountService, FileService fileService, DataFileService dataFileService, VariableFileService variableFileService, CategorizeFileService categorizeFileService, FileTypeService fileTypeService) {
         this.ccdProperties = ccdProperties;
         this.userAccountService = userAccountService;
         this.fileService = fileService;
         this.dataFileService = dataFileService;
         this.variableFileService = variableFileService;
         this.categorizeFileService = categorizeFileService;
+
+        this.dataFileType = fileTypeService.findByName(FileTypeService.DATA_TYPE_NAME);
+        this.variableFileType = fileTypeService.findByName(FileTypeService.VAR_TYPE_NAME);
+        this.priorFileType = fileTypeService.findByName(FileTypeService.PRIOR_TYPE_NAME);
+        this.algoResultFileType = fileTypeService.findByName(FileTypeService.ALGO_RESULT_TYPE_NAME);
     }
 
     public void showSummaryCounts(AppUser appUser, Model model) {
@@ -96,10 +104,18 @@ public class FileManagementService {
             throw new ResourceNotFoundException();
         }
 
-        List<SummaryCount> summaryCounts = new LinkedList<>();
+        syncDatabaseWithDirectory(userAccount);
 
-        Long numOfNewUploads = fileService.countUntypedFileByUserAccount(userAccount);
-        summaryCounts.add(new SummaryCount("New Uploads", numOfNewUploads, "panel panel-primary", "fa fa-file fa-5x white", ViewPath.NEW_UPLOAD));
+        Long newUploadCounts = fileService.countUntypedFileByUserAccount(userAccount);
+        Long dataCounts = fileService.countByFileTypeAndUserAccount(dataFileType, userAccount);
+        Long varCounts = fileService.countByFileTypeAndUserAccount(variableFileType, userAccount);
+        Long priorCounts = fileService.countByFileTypeAndUserAccount(priorFileType, userAccount);
+
+        List<SummaryCount> summaryCounts = new LinkedList<>();
+        summaryCounts.add(new SummaryCount("New Uploads", newUploadCounts, "panel panel-primary", "fa fa-file fa-5x white", ViewPath.NEW_UPLOAD));
+        summaryCounts.add(new SummaryCount("Data", dataCounts, "panel panel-green", "fa fa-file fa-5x white", ViewPath.DATA_INPUT));
+        summaryCounts.add(new SummaryCount("Prior Knowledge", priorCounts, "panel panel-green", "fa fa-file fa-5x white", ViewPath.PRIOR_KNOWLEDGE_INPUT));
+        summaryCounts.add(new SummaryCount("Variable", varCounts, "panel panel-green", "fa fa-file fa-5x white", ViewPath.VARIABLE_INPUT));
 
         model.addAttribute("summaryCounts", summaryCounts);
     }
