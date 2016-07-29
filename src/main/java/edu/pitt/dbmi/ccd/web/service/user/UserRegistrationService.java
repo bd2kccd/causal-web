@@ -54,6 +54,7 @@ public class UserRegistrationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserRegistrationService.class);
 
+    private static final String[] REGISTRATION_SUCCESS_NO_ACTIVATION = {"Registration Success!", "You may now sign in."};
     private static final String[] REGISTRATION_SUCCESS = {"Registration Success!", "You will receive a confirmation email soon."};
     private static final String[] REGISTRATION_FAILED = {"Registration Failed!", "Unable to register new user."};
     private static final String[] USERNAME_EXISTED = {"Registration Failed!", "Account already existed for that email."};
@@ -104,17 +105,16 @@ public class UserRegistrationService {
 
     public void registerNewUser(UserRegistration userRegistration, RedirectAttributes redirectAttributes, HttpServletRequest request) {
         if (userAccountService.findByUsername(userRegistration.getUsername()) == null) {
-            String userIPAddress = request.getRemoteAddr();
-
-            // create a user account in the database
-            UserAccount userAccount = createUserAccount(userRegistration, userIPAddress);
             try {
-                userAccount = userAccountService.saveUserAccount(userAccount);
+                UserAccount userAccount = createUserAccountInDB(userRegistration, request);
+                if (userAccount.isActive()) {
+                    redirectAttributes.addFlashAttribute("successMsg", REGISTRATION_SUCCESS_NO_ACTIVATION);
+                } else {
+                    String activationLink = createActivationLink(userAccount, request);
+                    sendOutActivationLink(userAccount, activationLink);
 
-                String activationLink = createActivationLink(userAccount, request);
-                sendOutActivationLink(userAccount, activationLink);
-
-                redirectAttributes.addFlashAttribute("successMsg", REGISTRATION_SUCCESS);
+                    redirectAttributes.addFlashAttribute("successMsg", REGISTRATION_SUCCESS);
+                }
             } catch (Exception exception) {
                 LOGGER.error(exception.getMessage());
                 redirectAttributes.addFlashAttribute("errorMsg", REGISTRATION_FAILED);
@@ -144,36 +144,37 @@ public class UserRegistrationService {
         }
     }
 
-    protected UserAccount createUserAccount(UserRegistration userRegistration, String userIPAddress) {
+    protected UserAccount createUserAccountInDB(UserRegistration userRegistration, HttpServletRequest request) {
         String username = userRegistration.getUsername();
         String password = userRegistration.getPassword();
         String account = UUID.randomUUID().toString();
-        String activationKey = UUID.randomUUID().toString();
-        Person person = createPerson(userRegistration, account);
+        String userIPAddress = request.getRemoteAddr();
 
-        Long registrationLocation;
-        try {
-            registrationLocation = UriTool.InetNTOA(userIPAddress);
-        } catch (UnknownHostException exception) {
-            LOGGER.error(exception.getLocalizedMessage());
-            registrationLocation = null;
-        }
+        Person person = createPerson(userRegistration, account);
 
         UserAccount userAccount = new UserAccount();
         userAccount.setAccount(account);
-        userAccount.setActivationKey(activationKey);
-        userAccount.setActive(false);
-        userAccount.setDisabled(false);
+        userAccount.setActive(true);
         userAccount.setPassword(passwordService.encryptPassword(password));
         userAccount.setPerson(person);
         userAccount.setRegistrationDate(new Date(System.currentTimeMillis()));
-        userAccount.setRegistrationLocation(registrationLocation);
         userAccount.setUserLogin(new UserLogin());
         userAccount.setUserLoginAttempt(new UserLoginAttempt());
         userAccount.setUserRole(userRoleService.findByName("user"));
         userAccount.setUsername(username);
 
-        return userAccount;
+        if (ccdProperties.isRequireActivation()) {
+            userAccount.setActivationKey(UUID.randomUUID().toString());
+            userAccount.setActive(false);
+        }
+
+        try {
+            userAccount.setRegistrationLocation(UriTool.InetNTOA(userIPAddress));
+        } catch (UnknownHostException exception) {
+            LOGGER.error(exception.getLocalizedMessage());
+        }
+
+        return userAccountService.saveUserAccount(userAccount);
     }
 
     protected Person createPerson(UserRegistration userRegistration, String account) {

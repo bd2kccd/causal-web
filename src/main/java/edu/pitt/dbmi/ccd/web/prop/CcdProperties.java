@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.prop;
 
+import java.nio.file.Paths;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
@@ -38,7 +39,7 @@ public class CcdProperties {
     @Value("${ccd.server.port:}")
     private String serverPort;
 
-    @Value("${ccd.dir.workspace}")
+    @Value("${ccd.dir.workspace:}")
     private String workspaceDir;
 
     @Value("${ccd.folder.data}")
@@ -61,6 +62,9 @@ public class CcdProperties {
 
     @Value("${ccd.app.agreement}")
     private String agreement;
+
+    @Value("${ccd.acct.reg.activ.required:false}")
+    private boolean requireActivation;
 
     @Value("${ccd.acct.reg.activ.self:false}")
     private boolean accountSelfActivation;
@@ -85,6 +89,10 @@ public class CcdProperties {
     }
 
     public String getWorkspaceDir() {
+        if (workspaceDir == null || workspaceDir.isEmpty()) {
+            workspaceDir = Paths.get(System.getProperty("user.home"), "workspace").toAbsolutePath().toString();
+        }
+
         return workspaceDir;
     }
 
@@ -146,6 +154,14 @@ public class CcdProperties {
 
     public void setAgreement(String agreement) {
         this.agreement = agreement;
+    }
+
+    public boolean isRequireActivation() {
+        return requireActivation;
+    }
+
+    public void setRequireActivation(boolean requireActivation) {
+        this.requireActivation = requireActivation;
     }
 
     public boolean isAccountSelfActivation() {
