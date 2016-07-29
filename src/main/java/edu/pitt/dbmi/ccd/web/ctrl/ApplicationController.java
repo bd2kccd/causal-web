@@ -18,15 +18,11 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl;
 
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.HOME;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.HOME_VIEW;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.LOGIN;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.LOGOUT;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.REDIRECT_HOME;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.REDIRECT_LOGIN;
+import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.LoginCredentials;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.ccd.web.service.ShiroLoginService;
+import edu.pitt.dbmi.ccd.web.service.file.FileManagementService;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,9 +48,12 @@ public class ApplicationController implements ViewPath {
 
     private final ShiroLoginService loginService;
 
+    private final FileManagementService fileManagementService;
+
     @Autowired
-    public ApplicationController(ShiroLoginService loginService) {
+    public ApplicationController(ShiroLoginService loginService, FileManagementService fileManagementService) {
         this.loginService = loginService;
+        this.fileManagementService = fileManagementService;
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
@@ -72,7 +71,9 @@ public class ApplicationController implements ViewPath {
     }
 
     @RequestMapping(value = HOME, method = RequestMethod.GET)
-    public String showHomePage(final Model model) {
+    public String showHomePage(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+        fileManagementService.showSummaryCounts(appUser, model);
+
         return HOME_VIEW;
     }
 

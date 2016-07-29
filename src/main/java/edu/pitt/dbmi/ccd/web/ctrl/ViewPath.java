@@ -49,9 +49,16 @@ public interface ViewPath {
     public static final String FILE_UPLOAD_VIEW = "file/fileUpload";
     public static final String FILE_LIST_VIEW = "file/fileList";
 
+    public static final String NEW_UPLOAD = "/secured/file/upload/new";
     public static final String REDIRECT_NEW_UPLOAD = "redirect:/secured/file/upload/new";
+
+    public static final String DATA_INPUT = "/secured/file/input/data";
     public static final String REDIRECT_DATA_INPUT = "redirect:/secured/file/input/data";
+
+    public static final String VARIABLE_INPUT = "/secured/file/input/variable";
     public static final String REDIRECT_VARIABLE_INPUT = "redirect:/secured/file/input/variable";
+
+    public static final String PRIOR_KNOWLEDGE_INPUT = "/secured/file/input/prior";
     public static final String REDIRECT_PRIOR_KNOWLEDGE_INPUT = "redirect:/secured/file/input/prior";
 
     public static final String REDIRECT_ALGO_RESULT_FILE = "redirect:/secured/file/output/algorithm/result/run";

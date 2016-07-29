@@ -32,8 +32,10 @@ import edu.pitt.dbmi.ccd.db.service.FileService;
 import edu.pitt.dbmi.ccd.db.service.FileTypeService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.db.service.VariableFileService;
+import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.AttributeValue;
+import edu.pitt.dbmi.ccd.web.domain.SummaryCount;
 import edu.pitt.dbmi.ccd.web.domain.file.CategorizeFile;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
@@ -86,6 +88,20 @@ public class FileManagementService {
         this.dataFileService = dataFileService;
         this.variableFileService = variableFileService;
         this.categorizeFileService = categorizeFileService;
+    }
+
+    public void showSummaryCounts(AppUser appUser, Model model) {
+        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+        if (userAccount == null) {
+            throw new ResourceNotFoundException();
+        }
+
+        List<SummaryCount> summaryCounts = new LinkedList<>();
+
+        Long numOfNewUploads = fileService.countUntypedFileByUserAccount(userAccount);
+        summaryCounts.add(new SummaryCount("New Uploads", numOfNewUploads, "panel panel-primary", "fa fa-file fa-5x white", ViewPath.NEW_UPLOAD));
+
+        model.addAttribute("summaryCounts", summaryCounts);
     }
 
     public void showFileInfo(Long id, AppUser appUser, Model model) {
