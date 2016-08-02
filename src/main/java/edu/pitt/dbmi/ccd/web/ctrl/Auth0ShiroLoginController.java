@@ -20,6 +20,7 @@ package edu.pitt.dbmi.ccd.web.ctrl;
 
 import com.auth0.web.Auth0User;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.LoginCredentials;
 import edu.pitt.dbmi.ccd.web.domain.user.PasswordRecovery;
 import edu.pitt.dbmi.ccd.web.domain.user.UserRegistration;
@@ -112,7 +113,11 @@ public class Auth0ShiroLoginController implements ViewPath {
             return TERMS_VIEW;
         } else if (userAccount.isActive()) {
             auth0ShiroLoginService.recordUserLogin(userAccount, model, request);
-            model.addAttribute("appUser", appUserService.createAppUser(userAccount, false));
+
+            AppUser appUser = appUserService.createAppUser(userAccount, true);
+            appUser.setFirstName(auth0User.getGivenName());
+            appUser.setLastName(auth0User.getFamilyName());
+            model.addAttribute("appUser", appUser);
 
             new WebSubject.Builder(request, response)
                     .authenticated(true)

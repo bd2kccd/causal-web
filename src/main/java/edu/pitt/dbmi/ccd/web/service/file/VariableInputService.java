@@ -18,7 +18,6 @@
  */
 package edu.pitt.dbmi.ccd.web.service.file;
 
-import edu.pitt.dbmi.ccd.db.entity.FileType;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileService;
 import edu.pitt.dbmi.ccd.db.service.FileTypeService;
@@ -42,15 +41,11 @@ public class VariableInputService {
     private final FileManagementService fileManagementService;
     private final FileService fileService;
 
-    private final FileType variableFileType;
-
     @Autowired
-    public VariableInputService(UserAccountService userAccountService, FileManagementService fileManagementService, FileService fileService, FileTypeService fileTypeService) {
+    public VariableInputService(UserAccountService userAccountService, FileManagementService fileManagementService, FileService fileService) {
         this.userAccountService = userAccountService;
         this.fileManagementService = fileManagementService;
         this.fileService = fileService;
-
-        this.variableFileType = fileTypeService.findByName(FileTypeService.VAR_TYPE_NAME);
     }
 
     public void listFiles(AppUser appUser, Model model) {
@@ -59,10 +54,10 @@ public class VariableInputService {
             throw new ResourceNotFoundException();
         }
 
-        fileManagementService.syncDatabaseWithDirectory(variableFileType, userAccount);
+        fileManagementService.syncDatabaseWithDirectory(fileManagementService.getFileType(FileTypeService.VAR_TYPE_NAME), userAccount);
 
         model.addAttribute("pageTitle", "Variable Files");
-        model.addAttribute("itemList", fileService.findByFileTypeAndUserAccount(variableFileType, userAccount));
+        model.addAttribute("itemList", fileService.findByFileTypeAndUserAccount(fileManagementService.getFileType(FileTypeService.VAR_TYPE_NAME), userAccount));
     }
 
     public void showFileInfo(Long id, AppUser appUser, Model model) {

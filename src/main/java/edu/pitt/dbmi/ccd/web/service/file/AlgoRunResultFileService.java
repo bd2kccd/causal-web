@@ -18,7 +18,6 @@
  */
 package edu.pitt.dbmi.ccd.web.service.file;
 
-import edu.pitt.dbmi.ccd.db.entity.FileType;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileService;
 import edu.pitt.dbmi.ccd.db.service.FileTypeService;
@@ -42,15 +41,11 @@ public class AlgoRunResultFileService {
     private final FileManagementService fileManagementService;
     private final FileService fileService;
 
-    private final FileType algoResultFileType;
-
     @Autowired
-    public AlgoRunResultFileService(UserAccountService userAccountService, FileManagementService fileManagementService, FileService fileService, FileTypeService fileTypeService) {
+    public AlgoRunResultFileService(UserAccountService userAccountService, FileManagementService fileManagementService, FileService fileService) {
         this.userAccountService = userAccountService;
         this.fileManagementService = fileManagementService;
         this.fileService = fileService;
-
-        this.algoResultFileType = fileTypeService.findByName(FileTypeService.ALGO_RESULT_TYPE_NAME);
     }
 
     public void listFiles(AppUser appUser, Model model) {
@@ -59,10 +54,10 @@ public class AlgoRunResultFileService {
             throw new ResourceNotFoundException();
         }
 
-        fileManagementService.syncDatabaseWithDirectory(algoResultFileType, userAccount);
+        fileManagementService.syncDatabaseWithDirectory(fileManagementService.getFileType(FileTypeService.ALGO_RESULT_TYPE_NAME), userAccount);
 
         model.addAttribute("pageTitle", "Algorithm Run Result Files");
-        model.addAttribute("itemList", fileService.findByFileTypeAndUserAccount(algoResultFileType, userAccount));
+        model.addAttribute("itemList", fileService.findByFileTypeAndUserAccount(fileManagementService.getFileType(FileTypeService.ALGO_RESULT_TYPE_NAME), userAccount));
     }
 
     public void showFileInfo(Long id, AppUser appUser, Model model) {

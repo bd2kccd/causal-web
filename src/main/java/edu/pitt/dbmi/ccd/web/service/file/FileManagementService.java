@@ -78,10 +78,7 @@ public class FileManagementService {
     private final VariableFileService variableFileService;
     private final CategorizeFileService categorizeFileService;
 
-    private final FileType dataFileType;
-    private final FileType variableFileType;
-    private final FileType priorFileType;
-    private final FileType algoResultFileType;
+    private final Map<String, FileType> fileTypeMap = new HashMap<>();
 
     @Autowired
     public FileManagementService(CcdProperties ccdProperties, UserAccountService userAccountService, FileService fileService, DataFileService dataFileService, VariableFileService variableFileService, CategorizeFileService categorizeFileService, FileTypeService fileTypeService) {
@@ -92,10 +89,14 @@ public class FileManagementService {
         this.variableFileService = variableFileService;
         this.categorizeFileService = categorizeFileService;
 
-        this.dataFileType = fileTypeService.findByName(FileTypeService.DATA_TYPE_NAME);
-        this.variableFileType = fileTypeService.findByName(FileTypeService.VAR_TYPE_NAME);
-        this.priorFileType = fileTypeService.findByName(FileTypeService.PRIOR_TYPE_NAME);
-        this.algoResultFileType = fileTypeService.findByName(FileTypeService.ALGO_RESULT_TYPE_NAME);
+        List<FileType> fileTypes = fileTypeService.findAll();
+        fileTypes.forEach(fileType -> {
+            fileTypeMap.put(fileType.getName(), fileType);
+        });
+    }
+
+    public FileType getFileType(String fileTypeName) {
+        return fileTypeMap.get(fileTypeName);
     }
 
     public void showSummaryCounts(AppUser appUser, Model model) {
@@ -107,9 +108,9 @@ public class FileManagementService {
         syncDatabaseWithDirectory(userAccount);
 
         Long newUploadCounts = fileService.countUntypedFileByUserAccount(userAccount);
-        Long dataCounts = fileService.countByFileTypeAndUserAccount(dataFileType, userAccount);
-        Long varCounts = fileService.countByFileTypeAndUserAccount(variableFileType, userAccount);
-        Long priorCounts = fileService.countByFileTypeAndUserAccount(priorFileType, userAccount);
+        Long dataCounts = fileService.countByFileTypeAndUserAccount(fileTypeMap.get(FileTypeService.DATA_TYPE_NAME), userAccount);
+        Long varCounts = fileService.countByFileTypeAndUserAccount(fileTypeMap.get(FileTypeService.VAR_TYPE_NAME), userAccount);
+        Long priorCounts = fileService.countByFileTypeAndUserAccount(fileTypeMap.get(FileTypeService.PRIOR_TYPE_NAME), userAccount);
 
         List<SummaryCount> summaryCounts = new LinkedList<>();
         summaryCounts.add(new SummaryCount("New Uploads", newUploadCounts, "panel panel-primary", "fa fa-file fa-5x white", ViewPath.NEW_UPLOAD));
@@ -336,6 +337,10 @@ public class FileManagementService {
         if (!filesToSave.isEmpty()) {
             fileService.save(filesToSave);
         }
+    }
+
+    public void syncDatabaseWithDirectory(String fileTypeName, UserAccount userAccount) {
+        syncDatabaseWithDirectory(fileTypeMap.get(fileTypeName), userAccount);
     }
 
     public void syncDatabaseWithDirectory(FileType fileType, UserAccount userAccount) {

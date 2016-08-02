@@ -73,4 +73,6 @@ public interface ViewPath {
     public static final String RESULT_INFO_VIEW = "result/algorithm/run/algoResultInfo";
     public static final String D3_GRAPH_VIEW = "graph/d3graph";
 
+    public static final String FGS_CONTINUOUS_VIEW = "algo/causal/fgs/fgsContinuous";
+
 }

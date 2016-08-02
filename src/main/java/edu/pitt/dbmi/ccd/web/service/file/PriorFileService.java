@@ -18,7 +18,6 @@
  */
 package edu.pitt.dbmi.ccd.web.service.file;
 
-import edu.pitt.dbmi.ccd.db.entity.FileType;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileService;
 import edu.pitt.dbmi.ccd.db.service.FileTypeService;
@@ -46,15 +45,11 @@ public class PriorFileService {
     private final FileManagementService fileManagementService;
     private final FileService fileService;
 
-    private final FileType priorFileType;
-
     @Autowired
-    public PriorFileService(UserAccountService userAccountService, FileManagementService fileManagementService, FileService fileService, FileTypeService fileTypeService) {
+    public PriorFileService(UserAccountService userAccountService, FileManagementService fileManagementService, FileService fileService) {
         this.userAccountService = userAccountService;
         this.fileManagementService = fileManagementService;
         this.fileService = fileService;
-
-        this.priorFileType = fileTypeService.findByName(FileTypeService.PRIOR_TYPE_NAME);
     }
 
     public void listFiles(AppUser appUser, Model model) {
@@ -63,10 +58,10 @@ public class PriorFileService {
             throw new ResourceNotFoundException();
         }
 
-        fileManagementService.syncDatabaseWithDirectory(priorFileType, userAccount);
+        fileManagementService.syncDatabaseWithDirectory(fileManagementService.getFileType(FileTypeService.PRIOR_TYPE_NAME), userAccount);
 
         model.addAttribute("pageTitle", "Prior Knowledge Files");
-        model.addAttribute("itemList", fileService.findByFileTypeAndUserAccount(priorFileType, userAccount));
+        model.addAttribute("itemList", fileService.findByFileTypeAndUserAccount(fileManagementService.getFileType(FileTypeService.PRIOR_TYPE_NAME), userAccount));
     }
 
     public void showFileInfo(Long id, AppUser appUser, Model model) {

@@ -20,6 +20,10 @@ package edu.pitt.dbmi.ccd.web.ctrl.algo.causal;
 
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.domain.algo.FgscRunInfo;
+import edu.pitt.dbmi.ccd.web.service.algo.causal.FgsService;
+import javax.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -35,12 +39,33 @@ import org.springframework.web.bind.annotation.SessionAttributes;
  */
 @Controller
 @SessionAttributes("appUser")
-@RequestMapping(value = "algorithm/causal/fgs")
-public class FGSController implements ViewPath {
+@RequestMapping(value = "/secured/algorithm/causal/fgs")
+public class FgsController implements ViewPath {
+
+    private final FgsService fgsService;
+
+    @Autowired
+    public FgsController(FgsService fgsService) {
+        this.fgsService = fgsService;
+    }
 
     @RequestMapping(value = "fgsc", method = RequestMethod.GET)
     public String showFgsContinuousView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        return HOME_VIEW;
+        fgsService.showFgsContinuousView(appUser, model);
+
+        return FGS_CONTINUOUS_VIEW;
+    }
+
+    @RequestMapping(value = "fgsc", method = RequestMethod.POST)
+    public String runFgsContinuous(
+            @Valid @ModelAttribute("fgscRunInfo") final FgscRunInfo fgscRunInfo,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        System.out.println("================================================================================");
+        System.out.println(fgscRunInfo);
+        System.out.println("================================================================================");
+
+        return FGS_CONTINUOUS_VIEW;
     }
 
     @RequestMapping(value = "fgsd", method = RequestMethod.GET)
