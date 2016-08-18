@@ -18,11 +18,11 @@
  */
 package edu.pitt.dbmi.ccd.web.service.result.algo.run;
 
+import edu.pitt.dbmi.ccd.db.domain.FileTypeName;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileType;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileService;
-import edu.pitt.dbmi.ccd.db.service.FileTypeService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.d3.Node;
@@ -64,16 +64,12 @@ public class AlgoRunResultService {
     private final FileManagementService fileManagementService;
     private final FileService fileService;
 
-    private final FileType algoResultFileType;
-
     @Autowired
-    public AlgoRunResultService(CcdAlgoProperties ccdAlgoProperties, UserAccountService userAccountService, FileManagementService fileManagementService, FileService fileService, FileTypeService fileTypeService) {
+    public AlgoRunResultService(CcdAlgoProperties ccdAlgoProperties, UserAccountService userAccountService, FileManagementService fileManagementService, FileService fileService) {
         this.ccdAlgoProperties = ccdAlgoProperties;
         this.userAccountService = userAccountService;
         this.fileManagementService = fileManagementService;
         this.fileService = fileService;
-
-        this.algoResultFileType = fileTypeService.findByName(FileTypeService.ALGO_RESULT_TYPE_NAME);
     }
 
     public void listResults(AppUser appUser, Model model) {
@@ -82,10 +78,12 @@ public class AlgoRunResultService {
             throw new ResourceNotFoundException();
         }
 
-        fileManagementService.syncDatabaseWithDirectory(algoResultFileType, userAccount);
+        FileType fileType = fileManagementService.findFileType(FileTypeName.ALGORITHM_RESULT);
+
+        fileManagementService.syncDatabaseWithDirectory(fileType, userAccount);
 
         model.addAttribute("pageTitle", "Algorithm Run Result Files");
-        model.addAttribute("itemList", fileService.findByFileTypeAndUserAccount(algoResultFileType, userAccount));
+        model.addAttribute("files", fileService.findByFileTypeAndUserAccount(fileType, userAccount));
     }
 
     public void showResultInfo(Long id, AppUser appUser, Model model) {

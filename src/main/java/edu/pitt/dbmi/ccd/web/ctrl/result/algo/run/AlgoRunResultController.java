@@ -19,7 +19,6 @@
 package edu.pitt.dbmi.ccd.web.ctrl.result.algo.run;
 
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.INFO;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.result.algo.run.AlgoRunResultService;
 import org.springframework.beans.factory.annotation.Autowired;

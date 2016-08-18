@@ -51,6 +51,11 @@ public class UserRegistration {
     public UserRegistration() {
     }
 
+    @Override
+    public String toString() {
+        return "UserRegistration{" + "username=" + username + ", password=" + password + ", confirmPassword=" + confirmPassword + ", agree=" + agree + ", firstName=" + firstName + ", lastName=" + lastName + '}';
+    }
+
     public String getUsername() {
         return username;
     }

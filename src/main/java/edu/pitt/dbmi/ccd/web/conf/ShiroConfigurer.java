@@ -18,7 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.conf;
 
-import edu.pitt.dbmi.ccd.web.shiro.CCDAuthorizingRealm;
+import edu.pitt.dbmi.ccd.web.shiro.CcdAuthorizingRealm;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
@@ -59,8 +59,8 @@ public class ShiroConfigurer {
 
     @Bean(name = "realm")
     @DependsOn("lifecycleBeanPostProcessor")
-    public CCDAuthorizingRealm realm() {
-        CCDAuthorizingRealm realm = new CCDAuthorizingRealm();
+    public CcdAuthorizingRealm realm() {
+        CcdAuthorizingRealm realm = new CcdAuthorizingRealm();
         realm.setCredentialsMatcher(credentialsMatcher());
 
         return realm;

@@ -37,7 +37,7 @@
                             </li>
                             <li class="divider"></li>
                             <li>
-                                <a href="../shiroLogin.html" th:href="@{/secured/logout}"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
+                                <a href="../shiroLogin.html" th:href="${appUser.federatedUser} ? ${@environment.getProperty('auth0.logout.redirect')} : @{/secured/logout}"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
                             </li>
                         </ul>
                     </li>
@@ -100,6 +100,9 @@
                                 <ul class="nav nav-second-level">
                                     <li>
                                         <a href="../result/algorithm/run/algorithmRunResultList.html" th:href="@{/secured/algorithm/result/run}"><i class="fa fa-fw fa-square-o"></i> Run Results</a>
+                                    </li>
+                                    <li>
+                                        <a href="../algoResultGraphComparison.html" th:href="@{/secured/algorithm/result/graph/comparison}"><i class="fa fa-random fa-fw"></i>Graph Comparisons</a>
                                     </li>
                                 </ul>
                             </li>

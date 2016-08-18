@@ -22,6 +22,8 @@ import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import javax.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -32,7 +34,21 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 public class UriTool {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(UriTool.class);
+
     private UriTool() {
+    }
+
+    public static Long getInetNTOA(String host) {
+        Long location = null;
+
+        try {
+            location = InetNTOA(host);
+        } catch (UnknownHostException exception) {
+            LOGGER.error(exception.getMessage());
+        }
+
+        return location;
     }
 
     /**

@@ -32,6 +32,9 @@
                             </div>
                         </div>
                         <div class="panel-body">
+                            <div class="alert alert-danger" role="alert" th:if="${profileChangeError}">
+                                <div class="text-center" th:each="msg : ${profileChangeError}" th:text="${msg}"></div>
+                            </div>
                             <table class="table table-striped table-hover table-responsive table-condensed">
                                 <tbody>
                                     <tr>

@@ -19,6 +19,7 @@
 package edu.pitt.dbmi.ccd.web.shiro;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.entity.UserRole;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -33,6 +34,7 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  *
@@ -40,7 +42,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class CCDAuthorizingRealm extends AuthorizingRealm {
+@Component
+public class CcdAuthorizingRealm extends AuthorizingRealm {
 
     @Autowired
     private UserAccountService userAccountService;
@@ -54,7 +57,11 @@ public class CCDAuthorizingRealm extends AuthorizingRealm {
         }
 
         Set<String> roles = new LinkedHashSet<>();
-        roles.add("user");
+        Set<UserRole> userRoles = userAccount.getUserRoles();
+        userRoles.forEach(userRole -> {
+            roles.add(userRole.getName());
+        });
+
         Set<String> permissions = new LinkedHashSet<>();
         permissions.add("*");
 

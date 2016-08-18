@@ -21,6 +21,7 @@ package edu.pitt.dbmi.ccd.web.service;
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.entity.UserLogin;
+import edu.pitt.dbmi.ccd.db.service.UserLoginService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import java.io.IOException;
@@ -45,14 +46,28 @@ public class AppUserService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AppUserService.class);
 
     private final CcdProperties ccdProperties;
+    private final UserLoginService userLoginService;
 
     @Autowired
-    public AppUserService(CcdProperties ccdProperties) {
+    public AppUserService(CcdProperties ccdProperties, UserLoginService userLoginService) {
         this.ccdProperties = ccdProperties;
+        this.userLoginService = userLoginService;
+    }
+
+    public AppUser updateUserProfile(AppUser appUser, Person person) {
+        String firstName = person.getFirstName();
+        String middleName = person.getMiddleName();
+        String lastName = person.getLastName();
+
+        appUser.setFirstName(firstName == null ? "" : firstName);
+        appUser.setMiddleName(middleName == null ? "" : middleName);
+        appUser.setLastName(lastName == null ? "" : lastName);
+
+        return appUser;
     }
 
     public AppUser createAppUser(final UserAccount userAccount, final boolean federatedUser) {
-        UserLogin userLogin = userAccount.getUserLogin();
+        UserLogin userLogin = userLoginService.findByUserAccount(userAccount);
         Date lastLoginDate = userLogin.getLastLoginDate();
 
         Person person = userAccount.getPerson();

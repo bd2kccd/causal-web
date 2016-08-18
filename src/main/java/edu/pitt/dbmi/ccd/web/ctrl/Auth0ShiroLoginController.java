@@ -25,8 +25,8 @@ import edu.pitt.dbmi.ccd.web.domain.LoginCredentials;
 import edu.pitt.dbmi.ccd.web.domain.user.PasswordRecovery;
 import edu.pitt.dbmi.ccd.web.domain.user.UserRegistration;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
-import edu.pitt.dbmi.ccd.web.service.Auth0ShiroLoginService;
-import edu.pitt.dbmi.ccd.web.service.ShiroLoginService;
+import edu.pitt.dbmi.ccd.web.service.Auth0ShiroAuthService;
+import edu.pitt.dbmi.ccd.web.service.ShiroAuthService;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.shiro.SecurityUtils;
@@ -59,13 +59,13 @@ public class Auth0ShiroLoginController implements ViewPath {
 
     private static final String LOGIN_VIEW = "auth0ShiroLogin";
 
-    private final Auth0ShiroLoginService auth0ShiroLoginService;
+    private final Auth0ShiroAuthService auth0ShiroAuthService;
 
     private final AppUserService appUserService;
 
     @Autowired
-    public Auth0ShiroLoginController(Auth0ShiroLoginService auth0ShiroLoginService, AppUserService appUserService) {
-        this.auth0ShiroLoginService = auth0ShiroLoginService;
+    public Auth0ShiroLoginController(Auth0ShiroAuthService auth0ShiroAuthService, AppUserService appUserService) {
+        this.auth0ShiroAuthService = auth0ShiroAuthService;
         this.appUserService = appUserService;
     }
 
@@ -94,26 +94,24 @@ public class Auth0ShiroLoginController implements ViewPath {
             model.addAttribute("passwordRecovery", new PasswordRecovery());
         }
 
-        auth0ShiroLoginService.setAuth0LockProperties(request, model);
+        auth0ShiroAuthService.setAuth0LockProperties(request, model);
 
         return LOGIN_VIEW;
     }
 
     @RequestMapping(value = "${auth0.loginCallback}", method = RequestMethod.GET)
     public String callback(final Model model, final RedirectAttributes redirectAttributes, final HttpServletRequest request, final HttpServletResponse response) {
-        Auth0User auth0User = auth0ShiroLoginService.handleCallback(redirectAttributes, request, response);
+        Auth0User auth0User = auth0ShiroAuthService.handleCallback(redirectAttributes, request, response);
         if (auth0User == null) {
             return REDIRECT_LOGIN;
         }
 
-        UserAccount userAccount = auth0ShiroLoginService.findUserAccount(auth0User);
+        UserAccount userAccount = auth0ShiroAuthService.findUserAccount(auth0User);
         if (userAccount == null) {
-            model.addAttribute("appUser", auth0ShiroLoginService.createAppUser(auth0User));
+            model.addAttribute("appUser", auth0ShiroAuthService.createAppUser(auth0User));
 
             return TERMS_VIEW;
-        } else if (userAccount.isActive()) {
-            auth0ShiroLoginService.recordUserLogin(userAccount, model, request);
-
+        } else if (userAccount.isActivated()) {
             AppUser appUser = appUserService.createAppUser(userAccount, true);
             appUser.setFirstName(auth0User.getGivenName());
             appUser.setLastName(auth0User.getFamilyName());
@@ -126,7 +124,7 @@ public class Auth0ShiroLoginController implements ViewPath {
 
             return REDIRECT_HOME;
         } else {
-            redirectAttributes.addFlashAttribute("errorMsg", ShiroLoginService.UNACTIVATED_ACCOUNT);
+            redirectAttributes.addFlashAttribute("errorMsg", ShiroAuthService.UNACTIVATED_ACCOUNT);
 
             return REDIRECT_LOGIN;
         }

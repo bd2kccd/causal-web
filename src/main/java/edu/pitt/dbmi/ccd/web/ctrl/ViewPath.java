@@ -30,6 +30,8 @@ public interface ViewPath {
     public static final String MESSAGE = "/message";
     public static final String REDIRECT_MESSAGE = "redirect:/message";
 
+    public static final String TERMS_VIEW = "terms";
+
     public static final String LOGIN = "/login";
     public static final String REDIRECT_LOGIN = "redirect:/login";
 
@@ -39,12 +41,10 @@ public interface ViewPath {
     public static final String HOME = "/secured/home";
     public static final String REDIRECT_HOME = "redirect:/secured/home";
 
-    public static final String USER_PASSWORD_RESET_VIEW = "user/account/recovery/password_reset";
-
-    public static final String TERMS_VIEW = "terms";
-
     public static final String USER_PROFILE_VIEW = "user/account/userProfile";
     public static final String REDIRECT_USER_PROFILE = "redirect:/secured/user/profile";
+
+    public static final String USER_PASSWORD_RESET_VIEW = "user/account/recovery/password_reset";
 
     public static final String FILE_UPLOAD_VIEW = "file/fileUpload";
     public static final String FILE_LIST_VIEW = "file/fileList";
@@ -63,11 +63,10 @@ public interface ViewPath {
 
     public static final String REDIRECT_ALGO_RESULT_FILE = "redirect:/secured/file/output/algorithm/result/run";
 
-    public static final String CATEGORIZE = "categorize";
+    public static final String INFO = "info";
     public static final String FILE_INFO_VIEW = "file/fileInfo";
 
-    public static final String INFO = "info";
-    public static final String INFO_CATEGORIZE = "info/categorize";
+    public static final String CATEGORIZE = "categorize";
 
     public static final String RESULT_LIST_VIEW = "result/algorithm/run/resultList";
     public static final String RESULT_INFO_VIEW = "result/algorithm/run/algoResultInfo";

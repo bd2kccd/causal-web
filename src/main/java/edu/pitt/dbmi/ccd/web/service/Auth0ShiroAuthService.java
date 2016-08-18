@@ -20,20 +20,14 @@ package edu.pitt.dbmi.ccd.web.service;
 
 import com.auth0.Auth0Exception;
 import com.auth0.web.Auth0Client;
-import com.auth0.web.Auth0Config;
 import com.auth0.web.Auth0User;
 import com.auth0.web.NonceUtils;
 import com.auth0.web.SessionUtils;
 import com.auth0.web.Tokens;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.entity.UserLogin;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
-import edu.pitt.dbmi.ccd.web.util.UriTool;
 import java.io.IOException;
-import java.net.UnknownHostException;
-import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -52,37 +46,18 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  */
 @Profile("auth0")
 @Service
-public class Auth0ShiroLoginService {
+public class Auth0ShiroAuthService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Auth0ShiroLoginService.class);
-
-    private final CcdProperties ccdProperties;
+    private static final Logger LOGGER = LoggerFactory.getLogger(Auth0ShiroAuthService.class);
 
     private final UserAccountService userAccountService;
-
-    private final Auth0Config auth0Config;
 
     protected final Auth0Client auth0Client;
 
     @Autowired
-    public Auth0ShiroLoginService(CcdProperties ccdProperties, UserAccountService userAccountService, Auth0Config auth0Config, Auth0Client auth0Client) {
-        this.ccdProperties = ccdProperties;
+    public Auth0ShiroAuthService(UserAccountService userAccountService, Auth0Client auth0Client) {
         this.userAccountService = userAccountService;
-        this.auth0Config = auth0Config;
         this.auth0Client = auth0Client;
-    }
-
-    public void recordUserLogin(UserAccount userAccount, Model model, HttpServletRequest request) {
-        UserLogin userLogin = userAccount.getUserLogin();
-        userLogin.setLastLoginDate(userLogin.getLoginDate());
-        userLogin.setLastLoginLocation(userLogin.getLoginLocation());
-        userLogin.setLoginDate(new Date(System.currentTimeMillis()));
-        try {
-            userLogin.setLoginLocation(UriTool.InetNTOA(request.getRemoteAddr()));
-        } catch (UnknownHostException exception) {
-            LOGGER.info(exception.getLocalizedMessage());
-        }
-        userAccountService.saveUserAccount(userAccount);
     }
 
     public AppUser createAppUser(Auth0User auth0User) {

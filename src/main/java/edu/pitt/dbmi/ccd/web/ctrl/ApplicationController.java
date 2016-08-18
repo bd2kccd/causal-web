@@ -21,7 +21,7 @@ package edu.pitt.dbmi.ccd.web.ctrl;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.LoginCredentials;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
-import edu.pitt.dbmi.ccd.web.service.ShiroLoginService;
+import edu.pitt.dbmi.ccd.web.service.ShiroAuthService;
 import edu.pitt.dbmi.ccd.web.service.file.FileManagementService;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -46,35 +46,19 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @SessionAttributes("appUser")
 public class ApplicationController implements ViewPath {
 
-    private final ShiroLoginService loginService;
+    private final ShiroAuthService shiroAuthService;
 
     private final FileManagementService fileManagementService;
 
     @Autowired
-    public ApplicationController(ShiroLoginService loginService, FileManagementService fileManagementService) {
-        this.loginService = loginService;
+    public ApplicationController(ShiroAuthService shiroAuthService, FileManagementService fileManagementService) {
+        this.shiroAuthService = shiroAuthService;
         this.fileManagementService = fileManagementService;
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String showIndexPage() {
         return REDIRECT_LOGIN;
-    }
-
-    @RequestMapping(value = MESSAGE, method = RequestMethod.GET)
-    public String showMessage(final Model model) {
-        if (!model.containsAttribute("header")) {
-            throw new ResourceNotFoundException();
-        }
-
-        return MESSAGE_VIEW;
-    }
-
-    @RequestMapping(value = HOME, method = RequestMethod.GET)
-    public String showHomePage(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        fileManagementService.showSummaryCounts(appUser, model);
-
-        return HOME_VIEW;
     }
 
     @RequestMapping(value = LOGIN, method = RequestMethod.POST)
@@ -90,19 +74,36 @@ public class ApplicationController implements ViewPath {
             return REDIRECT_LOGIN;
         }
 
-        boolean loginSuccess = loginService.loginUser(loginCredentials, redirectAttributes, model, request);
+        boolean loginSuccess = shiroAuthService.logInUser(loginCredentials, redirectAttributes, model, request);
 
         return loginSuccess ? REDIRECT_HOME : REDIRECT_LOGIN;
     }
 
     @RequestMapping(value = LOGOUT, method = RequestMethod.GET)
     public String logOut(
+            @ModelAttribute("appUser") final AppUser appUser,
             final SessionStatus sessionStatus,
             final RedirectAttributes redirectAttributes,
             final HttpServletRequest request) {
-        loginService.logoutUser(sessionStatus, redirectAttributes, request);
+        shiroAuthService.logOutUser(appUser, sessionStatus, redirectAttributes, request);
 
         return REDIRECT_LOGIN;
+    }
+
+    @RequestMapping(value = HOME, method = RequestMethod.GET)
+    public String showHomePage(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+        fileManagementService.showSummaryCounts(appUser, model);
+
+        return HOME_VIEW;
+    }
+
+    @RequestMapping(value = MESSAGE, method = RequestMethod.GET)
+    public String showMessage(final Model model) {
+        if (!model.containsAttribute("header")) {
+            throw new ResourceNotFoundException();
+        }
+
+        return MESSAGE_VIEW;
     }
 
 }

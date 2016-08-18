@@ -57,13 +57,11 @@ public class UserProfileController implements ViewPath {
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {
-        binder.registerCustomEditor(String.class, new StringTrimmerEditor(false));
+        binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public String showUserProfilePage(
-            @ModelAttribute("appUser") final AppUser appUser,
-            final Model model) {
+    public String showUserProfilePage(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         if (!model.containsAttribute("userInfo")) {
             model.addAttribute("userInfo", userProfileService.createUserInfo(appUser));
         }
@@ -78,8 +76,9 @@ public class UserProfileController implements ViewPath {
     public String updateUserInfo(
             @ModelAttribute("userInfo") final UserInfo userInfo,
             @ModelAttribute("appUser") final AppUser appUser,
-            final Model model) {
-        userProfileService.updateUserInfo(userInfo, appUser, model);
+            final Model model,
+            final RedirectAttributes redirectAttributes) {
+        userProfileService.updateUserProfile(userInfo, appUser, model, redirectAttributes);
 
         return REDIRECT_USER_PROFILE;
     }

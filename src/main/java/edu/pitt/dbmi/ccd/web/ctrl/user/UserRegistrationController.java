@@ -24,8 +24,6 @@ import edu.pitt.dbmi.ccd.web.service.user.UserRegistrationService;
 import java.util.Base64;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -42,10 +40,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @Controller
-@RequestMapping(value = "user/account/registration")
+@RequestMapping(value = "/user/account/registration")
 public class UserRegistrationController implements ViewPath {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserRegistrationController.class);
 
     private final UserRegistrationService userRegistrationService;
 
@@ -55,7 +51,7 @@ public class UserRegistrationController implements ViewPath {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public String registerNewUser(
+    public String registerNewRegularUser(
             @Valid @ModelAttribute("userRegistration") final UserRegistration userRegistration,
             final BindingResult bindingResult,
             final RedirectAttributes redirectAttributes,
@@ -65,7 +61,7 @@ public class UserRegistrationController implements ViewPath {
             redirectAttributes.addFlashAttribute("userRegistration", userRegistration);
             redirectAttributes.addFlashAttribute("errorMsg", "Registration failed!");
         } else {
-            userRegistrationService.registerNewUser(userRegistration, redirectAttributes, request);
+            userRegistrationService.registerNewRegularUser(userRegistration, redirectAttributes, request);
         }
 
         return REDIRECT_LOGIN;

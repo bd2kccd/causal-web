@@ -18,7 +18,6 @@
  */
 package edu.pitt.dbmi.ccd.web.prop;
 
-import java.nio.file.Paths;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
@@ -89,10 +88,6 @@ public class CcdProperties {
     }
 
     public String getWorkspaceDir() {
-        if (workspaceDir == null || workspaceDir.isEmpty()) {
-            workspaceDir = Paths.get(System.getProperty("user.home"), "workspace").toAbsolutePath().toString();
-        }
-
         return workspaceDir;
     }
 

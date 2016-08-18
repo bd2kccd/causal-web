@@ -58,7 +58,7 @@ public class Auth0UserRegistrationService {
         userRegistration.setPassword(password);
         userRegistration.setUsername(username);
 
-        userRegistrationService.registerNewUser(userRegistration, redirectAttributes, request);
+        userRegistrationService.registerNewRegularUser(userRegistration, redirectAttributes, request);
     }
 
 }

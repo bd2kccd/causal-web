@@ -18,14 +18,17 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.file;
 
+import edu.pitt.dbmi.ccd.db.domain.FileTypeName;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileType;
-import edu.pitt.dbmi.ccd.db.service.FileTypeService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.file.CategorizeFile;
+import edu.pitt.dbmi.ccd.web.domain.file.FileInfoUpdate;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.ccd.web.service.file.FileManagementService;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -55,6 +58,34 @@ public class FileManagementController implements ViewPath {
         this.fileManagementService = fileManagementService;
     }
 
+    @RequestMapping(value = "info/update", method = RequestMethod.POST)
+    public String updateFileInfo(
+            @Valid @ModelAttribute("fileInfoUpdate") final FileInfoUpdate fileInfoUpdate,
+            final BindingResult bindingResult,
+            @RequestParam(value = "id") final Long id,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final RedirectAttributes redirectAttributes) {
+        FileType fileType = fileManagementService.getFileType(id, appUser);
+        String redirectUrl = String.format("%s/%s?id=%d", getRedirect(fileType), INFO, id);
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.fileInfoUpdate", bindingResult);
+            redirectAttributes.addFlashAttribute("fileInfoUpdate", fileInfoUpdate);
+        } else {
+            fileManagementService.updateFileInfo(id, fileInfoUpdate, appUser);
+        }
+
+        return redirectUrl;
+    }
+
+    @RequestMapping(value = "download", method = RequestMethod.GET)
+    public void downloadResultFile(
+            @RequestParam(value = "file") final Long id,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final HttpServletRequest request,
+            final HttpServletResponse response) {
+        fileManagementService.downloadFile(id, appUser, request, response);
+    }
+
     @RequestMapping(value = "delete", method = RequestMethod.GET)
     public String delete(@RequestParam(value = "id") final Long id, @ModelAttribute("appUser") final AppUser appUser) {
         File file = fileManagementService.deleteFile(id, appUser);
@@ -73,33 +104,36 @@ public class FileManagementController implements ViewPath {
             @ModelAttribute("appUser") final AppUser appUser,
             final RedirectAttributes redirectAttributes) {
         FileType fileType = fileManagementService.getFileType(id, appUser);
-        String url = getRedirect(fileType);
+        String redirectUrl = getRedirect(fileType);
         if (bindingResult.hasErrors()) {
             redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.categorizeFile", bindingResult);
             redirectAttributes.addFlashAttribute("categorizeFile", categorizeFile);
             redirectAttributes.addFlashAttribute("collapse", Boolean.FALSE);
-
-            return String.format("%s/%s?id=%d", url, INFO, id);
+            return String.format("%s/%s?id=%d", redirectUrl, INFO, id);
         }
 
         if (fileManagementService.categorizeFile(id, categorizeFile, appUser, redirectAttributes)) {
-            return url;
+            return redirectUrl;
         } else {
-            return String.format("%s/%s?id=%d", url, INFO, id);
+            return String.format("%s/%s?id=%d", redirectUrl, INFO, id);
         }
 
     }
 
     private String getRedirect(FileType fileType) {
-        String fileTypeName = (fileType == null) ? "" : fileType.getName();
+        if (fileType == null) {
+            return REDIRECT_NEW_UPLOAD;
+        }
+
+        FileTypeName fileTypeName = FileTypeName.valueOf(fileType.getName());
         switch (fileTypeName) {
-            case FileTypeService.ALGO_RESULT_TYPE_NAME:
+            case ALGORITHM_RESULT:
                 return REDIRECT_ALGO_RESULT_FILE;
-            case FileTypeService.DATA_TYPE_NAME:
+            case DATASET:
                 return REDIRECT_DATA_INPUT;
-            case FileTypeService.PRIOR_TYPE_NAME:
+            case PRIOR_KNOWLEDGE:
                 return REDIRECT_PRIOR_KNOWLEDGE_INPUT;
-            case FileTypeService.VAR_TYPE_NAME:
+            case VARIABLE:
                 return REDIRECT_VARIABLE_INPUT;
             default:
                 return REDIRECT_NEW_UPLOAD;

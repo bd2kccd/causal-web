@@ -22,26 +22,30 @@ import edu.pitt.dbmi.ccd.commons.file.FilePrint;
 
 /**
  *
- * Jul 20, 2016 2:06:07 PM
+ * Aug 7, 2016 9:34:46 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class BeanUtility {
+public class WebUtility {
 
-    private BeanUtility() {
+    private WebUtility() {
     }
 
     public String printSizeWithUnit(Long size) {
         return FilePrint.humanReadableSize(size, true);
     }
 
-    public static BeanUtility getInstance() {
-        return BeanUtilityHolder.INSTANCE;
+    public String printEnumName(String enumName) {
+        return enumName.replaceAll("_", " ").toLowerCase();
     }
 
-    private static class BeanUtilityHolder {
+    public static WebUtility getInstance() {
+        return WebUtilityHolder.INSTANCE;
+    }
 
-        private static final BeanUtility INSTANCE = new BeanUtility();
+    private static class WebUtilityHolder {
+
+        private static final WebUtility INSTANCE = new WebUtility();
 
     }
 

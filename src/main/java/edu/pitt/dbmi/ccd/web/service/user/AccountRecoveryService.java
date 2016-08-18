@@ -73,7 +73,7 @@ public class AccountRecoveryService {
         userAccount.setPassword(passwordService.encryptPassword(password));
         userAccount.setActivationKey(null);
         try {
-            userAccountService.saveUserAccount(userAccount);
+            userAccountService.save(userAccount);
 
             redirectAttributes.addFlashAttribute("header", "Password Reset Success!");
             redirectAttributes.addFlashAttribute("successMsg", "You have successfully reset your password.");
@@ -95,7 +95,7 @@ public class AccountRecoveryService {
         if (userAccount == null) {
             redirectAttributes.addFlashAttribute("passwordRecovery", passwordRecovery);
             redirectAttributes.addFlashAttribute("errorMsg", USER_NOT_FOUND);
-        } else if (!userAccount.isActive()) {
+        } else if (!userAccount.isActivated()) {
             redirectAttributes.addFlashAttribute("passwordRecovery", passwordRecovery);
             redirectAttributes.addFlashAttribute("errorMsg", UNACTIVATED_ACCOUNT);
         } else {
@@ -106,7 +106,7 @@ public class AccountRecoveryService {
                     .build().toString();
             try {
                 userAccount.setActivationKey(activationKey);
-                userAccount = userAccountService.saveUserAccount(userAccount);
+                userAccount = userAccountService.save(userAccount);
 
                 accountRecoveryMailService.sendUserPasswordRecovery(email, resetPasswordURL);
 

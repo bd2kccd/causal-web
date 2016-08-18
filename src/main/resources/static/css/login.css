@@ -26,6 +26,9 @@ hr {
     border: 0;
     border-top: 1px solid #797979;
 }
+.fa {
+    color: #111150;
+}
 .registration {
     text-align: center;
 }

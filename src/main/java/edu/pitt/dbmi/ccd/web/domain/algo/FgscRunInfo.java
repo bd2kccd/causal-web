@@ -18,6 +18,8 @@
  */
 package edu.pitt.dbmi.ccd.web.domain.algo;
 
+import javax.validation.constraints.Min;
+
 /**
  * FGS continuous run information,
  *
@@ -27,12 +29,75 @@ package edu.pitt.dbmi.ccd.web.domain.algo;
  */
 public class FgscRunInfo extends AlgorithmRunInfo {
 
+    @Min(-1)
+    protected int depth;
+
+    @Min(0)
+    protected double penaltyDiscount;
+
+    protected boolean heuristicSpeedup;
+
+    protected boolean ignoreLinearDependence;
+
+    // data validation
+    protected boolean nonZeroVarianceValidation;
+
+    protected boolean uniqueVarNameValidation;
+
     public FgscRunInfo() {
     }
 
     @Override
     public String toString() {
-        return "FgscRunInfo{" + super.toString() + '}';
+        return "FgscRunInfo{" + "depth=" + depth + ", penaltyDiscount=" + penaltyDiscount + ", heuristicSpeedup=" + heuristicSpeedup + ", ignoreLinearDependence=" + ignoreLinearDependence + ", nonZeroVarianceValidation=" + nonZeroVarianceValidation + ", uniqueVarNameValidation=" + uniqueVarNameValidation + '}' + super.toString();
+    }
+
+    public int getDepth() {
+        return depth;
+    }
+
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
+
+    public double getPenaltyDiscount() {
+        return penaltyDiscount;
+    }
+
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
+    }
+
+    public boolean isHeuristicSpeedup() {
+        return heuristicSpeedup;
+    }
+
+    public void setHeuristicSpeedup(boolean heuristicSpeedup) {
+        this.heuristicSpeedup = heuristicSpeedup;
+    }
+
+    public boolean isIgnoreLinearDependence() {
+        return ignoreLinearDependence;
+    }
+
+    public void setIgnoreLinearDependence(boolean ignoreLinearDependence) {
+        this.ignoreLinearDependence = ignoreLinearDependence;
+    }
+
+    public boolean isNonZeroVarianceValidation() {
+        return nonZeroVarianceValidation;
+    }
+
+    public void setNonZeroVarianceValidation(boolean nonZeroVarianceValidation) {
+        this.nonZeroVarianceValidation = nonZeroVarianceValidation;
+    }
+
+    public boolean isUniqueVarNameValidation() {
+        return uniqueVarNameValidation;
+    }
+
+    public void setUniqueVarNameValidation(boolean uniqueVarNameValidation) {
+        this.uniqueVarNameValidation = uniqueVarNameValidation;
     }
 
 }

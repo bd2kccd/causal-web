@@ -18,9 +18,10 @@
  */
 package edu.pitt.dbmi.ccd.web.service.file;
 
+import edu.pitt.dbmi.ccd.db.domain.FileTypeName;
+import edu.pitt.dbmi.ccd.db.entity.FileType;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileService;
-import edu.pitt.dbmi.ccd.db.service.FileTypeService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
@@ -54,10 +55,12 @@ public class VariableInputService {
             throw new ResourceNotFoundException();
         }
 
-        fileManagementService.syncDatabaseWithDirectory(fileManagementService.getFileType(FileTypeService.VAR_TYPE_NAME), userAccount);
+        FileType fileType = fileManagementService.findFileType(FileTypeName.VARIABLE);
+
+        fileManagementService.syncDatabaseWithDirectory(fileType, userAccount);
 
         model.addAttribute("pageTitle", "Variable Files");
-        model.addAttribute("itemList", fileService.findByFileTypeAndUserAccount(fileManagementService.getFileType(FileTypeService.VAR_TYPE_NAME), userAccount));
+        model.addAttribute("files", fileService.findByFileTypeAndUserAccount(fileType, userAccount));
     }
 
     public void showFileInfo(Long id, AppUser appUser, Model model) {

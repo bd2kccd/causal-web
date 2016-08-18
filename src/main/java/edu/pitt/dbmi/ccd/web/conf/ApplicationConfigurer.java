@@ -18,7 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.conf;
 
-import edu.pitt.dbmi.ccd.web.util.BeanUtility;
+import edu.pitt.dbmi.ccd.web.util.WebUtility;
 import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
 import org.springframework.boot.context.embedded.ErrorPage;
@@ -38,8 +38,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 public class ApplicationConfigurer extends WebMvcConfigurerAdapter {
 
     @Bean
-    public BeanUtility beanUtility() {
-        return BeanUtility.getInstance();
+    public WebUtility webUtility() {
+        return WebUtility.getInstance();
     }
 
     @Bean

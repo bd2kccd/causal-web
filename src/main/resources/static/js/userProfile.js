@@ -1,3 +1,6 @@
+$(document).on('click', '#collapse_link', function (e) {
+    collapseAction(this);
+});
 $(document).ready(function () {
     $("#view_info_panel").show();
     $("#edit_info_panel").hide();

@@ -18,18 +18,19 @@
  */
 package edu.pitt.dbmi.ccd.web.service.user;
 
+import edu.pitt.dbmi.ccd.db.domain.AccountRegistration;
+import edu.pitt.dbmi.ccd.db.domain.UserRoleName;
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.entity.UserLogin;
-import edu.pitt.dbmi.ccd.db.entity.UserLoginAttempt;
+import edu.pitt.dbmi.ccd.db.entity.UserRole;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.db.service.UserRoleService;
 import edu.pitt.dbmi.ccd.web.domain.user.UserRegistration;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
+import edu.pitt.dbmi.ccd.web.service.EventLogService;
 import edu.pitt.dbmi.ccd.web.service.mail.UserRegistrationMailService;
 import edu.pitt.dbmi.ccd.web.util.UriTool;
-import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
@@ -64,30 +65,30 @@ public class UserRegistrationService {
     private final DefaultPasswordService passwordService;
 
     private final UserAccountService userAccountService;
-
     private final UserRoleService userRoleService;
-
     private final UserRegistrationMailService userRegistrationMailService;
+    private final EventLogService eventLogService;
 
     @Autowired
-    public UserRegistrationService(CcdProperties ccdProperties, DefaultPasswordService passwordService, UserAccountService userAccountService, UserRoleService userRoleService, UserRegistrationMailService userRegistrationMailService) {
+    public UserRegistrationService(CcdProperties ccdProperties, DefaultPasswordService passwordService, UserAccountService userAccountService, UserRoleService userRoleService, UserRegistrationMailService userRegistrationMailService, EventLogService eventLogService) {
         this.ccdProperties = ccdProperties;
         this.passwordService = passwordService;
         this.userAccountService = userAccountService;
         this.userRoleService = userRoleService;
         this.userRegistrationMailService = userRegistrationMailService;
+        this.eventLogService = eventLogService;
     }
 
     public void activateNewUser(String activationKey, HttpServletRequest request, RedirectAttributes redirectAttributes) throws ResourceNotFoundException {
         UserAccount userAccount = userAccountService.findByActivationKey(activationKey);
-        if (userAccount == null || userAccount.isActive()) {
+        if (userAccount == null || userAccount.isActivated()) {
             throw new ResourceNotFoundException();
         }
-        userAccount.setActive(true);
+        userAccount.setActivated(true);
         userAccount.setActivationKey(null);
 
         try {
-            userAccountService.saveUserAccount(userAccount);
+            userAccountService.save(userAccount);
 
             // send e-mail notification to user
             String url = UriTool.buildURI(request, ccdProperties).build().toString();
@@ -103,21 +104,48 @@ public class UserRegistrationService {
         }
     }
 
-    public void registerNewUser(UserRegistration userRegistration, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+    public void registerNewRegularUser(UserRegistration userRegistration, RedirectAttributes redirectAttributes, HttpServletRequest request) {
         if (userAccountService.findByUsername(userRegistration.getUsername()) == null) {
+            String username = userRegistration.getUsername();
+            String password = passwordService.encryptPassword(userRegistration.getPassword());
+            boolean activated = !ccdProperties.isRequireActivation();
+            Long location = UriTool.getInetNTOA(request.getRemoteAddr());
+            String email = userRegistration.getUsername();
+            String workspace = ccdProperties.getWorkspaceDir();
+
+            AccountRegistration registration = new AccountRegistration();
+            registration.setActivated(activated);
+            registration.setEmail(email);
+            registration.setLocation(location);
+            registration.setPassword(password);
+            registration.setUsername(username);
+            registration.setWorkspace(workspace);
+
+            UserRole userRole = userRoleService.findByUserRoleName(UserRoleName.USER);
+
+            UserAccount userAccount = null;
             try {
-                UserAccount userAccount = createUserAccountInDB(userRegistration, request);
-                if (userAccount.isActive()) {
+                userAccount = userAccountService.createNewAccount(registration, userRole);
+            } catch (Exception exception) {
+                LOGGER.error("Failed to register new user.", exception);
+            }
+
+            if (userAccount == null) {
+                redirectAttributes.addFlashAttribute("errorMsg", REGISTRATION_FAILED);
+            } else {
+                eventLogService.logUserRegistration(userAccount);
+                if (userAccount.isActivated()) {
                     redirectAttributes.addFlashAttribute("successMsg", REGISTRATION_SUCCESS_NO_ACTIVATION);
                 } else {
+                    // send e-mail notification to user
                     String activationLink = createActivationLink(userAccount, request);
-                    sendOutActivationLink(userAccount, activationLink);
-
+                    try {
+                        sendOutActivationLink(userAccount, activationLink);
+                    } catch (Exception exception) {
+                        LOGGER.error("Failed to send new-user-registration notifications.", exception);
+                    }
                     redirectAttributes.addFlashAttribute("successMsg", REGISTRATION_SUCCESS);
                 }
-            } catch (Exception exception) {
-                LOGGER.error(exception.getMessage());
-                redirectAttributes.addFlashAttribute("errorMsg", REGISTRATION_FAILED);
             }
         } else {
             redirectAttributes.addFlashAttribute("userRegistration", userRegistration);
@@ -144,37 +172,28 @@ public class UserRegistrationService {
         }
     }
 
-    protected UserAccount createUserAccountInDB(UserRegistration userRegistration, HttpServletRequest request) {
+    protected UserAccount createUserAccount(UserRegistration userRegistration, HttpServletRequest request) {
         String username = userRegistration.getUsername();
         String password = userRegistration.getPassword();
+
+        boolean activated = !ccdProperties.isRequireActivation();
+        String activationKey = activated ? null : UUID.randomUUID().toString();
         String account = UUID.randomUUID().toString();
-        String userIPAddress = request.getRemoteAddr();
+        String encodePassword = passwordService.encryptPassword(password);
 
         Person person = createPerson(userRegistration, account);
 
         UserAccount userAccount = new UserAccount();
         userAccount.setAccount(account);
-        userAccount.setActive(true);
-        userAccount.setPassword(passwordService.encryptPassword(password));
+        userAccount.setActivationKey(activationKey);
+        userAccount.setActivated(activated);
+        userAccount.setPassword(encodePassword);
         userAccount.setPerson(person);
         userAccount.setRegistrationDate(new Date(System.currentTimeMillis()));
-        userAccount.setUserLogin(new UserLogin());
-        userAccount.setUserLoginAttempt(new UserLoginAttempt());
-        userAccount.setUserRole(userRoleService.findByName("user"));
+        userAccount.setRegistrationLocation(UriTool.getInetNTOA(request.getRemoteAddr()));
         userAccount.setUsername(username);
 
-        if (ccdProperties.isRequireActivation()) {
-            userAccount.setActivationKey(UUID.randomUUID().toString());
-            userAccount.setActive(false);
-        }
-
-        try {
-            userAccount.setRegistrationLocation(UriTool.InetNTOA(userIPAddress));
-        } catch (UnknownHostException exception) {
-            LOGGER.error(exception.getLocalizedMessage());
-        }
-
-        return userAccountService.saveUserAccount(userAccount);
+        return userAccount;
     }
 
     protected Person createPerson(UserRegistration userRegistration, String account) {

@@ -19,6 +19,9 @@
 package edu.pitt.dbmi.ccd.web.service.file;
 
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
+import edu.pitt.dbmi.ccd.db.domain.FileDelimiterName;
+import edu.pitt.dbmi.ccd.db.domain.FileTypeName;
+import edu.pitt.dbmi.ccd.db.domain.VariableTypeName;
 import edu.pitt.dbmi.ccd.db.entity.DataFile;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileDelimiter;
@@ -63,11 +66,6 @@ public class CategorizeFileService {
     private final DataFileService dataFileService;
     private final VariableFileService variableFileService;
 
-    private final FileType defaultFileType;
-    private final FileDelimiter tabDelimiter;
-    private final FileDelimiter commaDelimiter;
-    private final VariableType defaultVariableType;
-
     @Autowired
     public CategorizeFileService(UserAccountService userAccountService, FileService fileService, FileTypeService fileTypeService, FileDelimiterService fileDelimiterService, VariableTypeService variableTypeService, DataFileService dataFileService, VariableFileService variableFileService) {
         this.userAccountService = userAccountService;
@@ -77,11 +75,20 @@ public class CategorizeFileService {
         this.variableTypeService = variableTypeService;
         this.dataFileService = dataFileService;
         this.variableFileService = variableFileService;
+    }
 
-        this.defaultFileType = fileTypeService.findByName(FileTypeService.DATA_TYPE_NAME);
-        this.tabDelimiter = fileDelimiterService.findByName(FileDelimiterService.TAB_DELIM_NAME);
-        this.commaDelimiter = fileDelimiterService.findByName(FileDelimiterService.COMMA_DELIM_NAME);
-        this.defaultVariableType = variableTypeService.findByName(VariableTypeService.CONTINUOUS_VAR_NAME);
+    public void showFileCategorizationOptions(File file, Model model) {
+        if (!model.containsAttribute("categorizeFile")) {
+            model.addAttribute("categorizeFile", createCategorizeFile(file));
+        }
+        if (!model.containsAttribute("collapse")) {
+            model.addAttribute("collapse", Boolean.FALSE);
+        }
+
+        model.addAttribute("fileTypes", fileTypeService.findAll());
+        model.addAttribute("fileDelimiters", fileDelimiterService.findAll());
+        model.addAttribute("variableTypes", variableTypeService.findAll());
+        model.addAttribute("dataTypeId", fileTypeService.findByFileTypeName(FileTypeName.DATASET).getId());
     }
 
     public boolean categorizeFile(Long fileId, AppUser appUser, CategorizeFile categorizeFile) {
@@ -98,16 +105,16 @@ public class CategorizeFileService {
             throw new ResourceNotFoundException();
         }
 
-        String fileTypeName = fileType.getName();
+        FileTypeName fileTypeName = FileTypeName.valueOf(fileType.getName());
         switch (fileTypeName) {
-            case FileTypeService.DATA_TYPE_NAME:
+            case DATASET:
                 FileDelimiter fileDelimiter = fileDelimiterService.findById(categorizeFile.getFileDelimiterId());
                 VariableType variableType = variableTypeService.findById(categorizeFile.getVariableTypeId());
                 if (fileDelimiter == null || variableType == null) {
                     throw new ResourceNotFoundException();
                 }
                 return changeToDataFileType(file, fileDelimiter, variableType);
-            case FileTypeService.VAR_TYPE_NAME:
+            case VARIABLE:
                 return changeToVariableFileType(file);
             default:
                 return changeFileType(file, fileType);
@@ -148,7 +155,7 @@ public class CategorizeFileService {
     private boolean changeToDataFileType(File file, FileDelimiter fileDelimiter, VariableType variableType) {
         boolean success = true;
         try {
-            char delimiter = FileInfos.delimiterNameToChar(fileDelimiter.getName());
+            char delimiter = fileDelimiter.getDelimiter();
             Path localFile = Paths.get(file.getAbsolutePath(), file.getName());
             int numOfRows = FileInfos.countLine(localFile.toFile());
             int numOfCols = FileInfos.countColumn(localFile.toFile(), delimiter);
@@ -162,38 +169,29 @@ public class CategorizeFileService {
         return success;
     }
 
-    public void showFileCategorizationOptions(File file, Model model) {
-        if (!model.containsAttribute("categorizeFile")) {
-            model.addAttribute("categorizeFile", createCategorizeFile(file));
-        }
-        if (!model.containsAttribute("collapse")) {
-            model.addAttribute("collapse", Boolean.FALSE);
-        }
-
-        model.addAttribute("fileTypes", fileTypeService.findAll());
-        model.addAttribute("fileDelimiters", fileDelimiterService.findAll());
-        model.addAttribute("variableTypes", variableTypeService.findAll());
-    }
-
     private CategorizeFile createCategorizeFile(File file) {
         FileType fileType = file.getFileType();
-        FileDelimiter fileDelimiter = null;
-        VariableType variableType = null;
+        if (fileType == null) {
+            fileType = fileTypeService.findByFileTypeName(FileTypeName.DATASET);
+        }
 
-        FileDelimiter defaultDelimiter = file.getName().endsWith(".csv")
-                ? commaDelimiter
-                : tabDelimiter;
-
+        FileDelimiter fileDelimiter;
+        VariableType variableType;
         DataFile dataFile = dataFileService.findByFile(file);
-        if (dataFile != null) {
+        if (dataFile == null) {
+            fileDelimiter = file.getName().endsWith(".csv")
+                    ? fileDelimiterService.findByFileDelimiterName(FileDelimiterName.COMMA)
+                    : fileDelimiterService.findByFileDelimiterName(FileDelimiterName.TAB);
+            variableType = variableTypeService.findByVariableTypeName(VariableTypeName.CONTINUOUS);
+        } else {
             fileDelimiter = dataFile.getFileDelimiter();
             variableType = dataFile.getVariableType();
         }
 
         CategorizeFile categorizeFile = new CategorizeFile();
-        categorizeFile.setFileTypeId((fileType == null) ? defaultFileType.getId() : fileType.getId());
-        categorizeFile.setFileDelimiterId((fileDelimiter == null) ? defaultDelimiter.getId() : fileDelimiter.getId());
-        categorizeFile.setVariableTypeId((variableType == null) ? defaultVariableType.getId() : variableType.getId());
+        categorizeFile.setFileTypeId(fileType.getId());
+        categorizeFile.setVariableTypeId(variableType.getId());
+        categorizeFile.setFileDelimiterId(fileDelimiter.getId());
 
         return categorizeFile;
     }

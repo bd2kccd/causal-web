@@ -18,59 +18,70 @@
  */
 package edu.pitt.dbmi.ccd.web.domain.algo;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
 /**
  *
  * Jul 29, 2016 5:16:23 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class AlgorithmRunInfo {
+public abstract class AlgorithmRunInfo {
 
-    @NotNull
-    @Min(1)
-    protected Long dataFileId;
+    protected long dataFileId;
 
-    @NotNull
-    @Min(0)
-    protected Long varFileId;
+    protected long excludeVarFileId;
 
-    @NotNull
-    @Min(0)
-    protected Long priorFileId;
+    protected long priorFileId;
+
+    protected boolean verbose;
+
+    protected int jvmMaxMem;
 
     public AlgorithmRunInfo() {
     }
 
     @Override
     public String toString() {
-        return "AlgorithmRunInfo{" + "dataFileId=" + dataFileId + ", varFileId=" + varFileId + ", priorFileId=" + priorFileId + '}';
+        return "AlgorithmRunInfo{" + "dataFileId=" + dataFileId + ", excludeVarFileId=" + excludeVarFileId + ", priorFileId=" + priorFileId + ", verbose=" + verbose + ", jvmMaxMem=" + jvmMaxMem + '}';
     }
 
-    public Long getDataFileId() {
+    public long getDataFileId() {
         return dataFileId;
     }
 
-    public void setDataFileId(Long dataFileId) {
+    public void setDataFileId(long dataFileId) {
         this.dataFileId = dataFileId;
     }
 
-    public Long getVarFileId() {
-        return varFileId;
+    public long getExcludeVarFileId() {
+        return excludeVarFileId;
     }
 
-    public void setVarFileId(Long varFileId) {
-        this.varFileId = varFileId;
+    public void setExcludeVarFileId(long excludeVarFileId) {
+        this.excludeVarFileId = excludeVarFileId;
     }
 
-    public Long getPriorFileId() {
+    public long getPriorFileId() {
         return priorFileId;
     }
 
-    public void setPriorFileId(Long priorFileId) {
+    public void setPriorFileId(long priorFileId) {
         this.priorFileId = priorFileId;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    public int getJvmMaxMem() {
+        return jvmMaxMem;
+    }
+
+    public void setJvmMaxMem(int jvmMaxMem) {
+        this.jvmMaxMem = jvmMaxMem;
     }
 
 }

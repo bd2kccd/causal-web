@@ -19,12 +19,11 @@
 package edu.pitt.dbmi.ccd.web.service;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.entity.UserLogin;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
+import edu.pitt.dbmi.ccd.db.service.UserLoginService;
+import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.LoginCredentials;
 import edu.pitt.dbmi.ccd.web.util.UriTool;
-import java.net.UnknownHostException;
-import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -40,38 +39,42 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  *
- * May 27, 2016 3:04:12 PM
+ * Aug 9, 2016 1:49:43 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @Service
-public class ShiroLoginService {
+public class ShiroAuthService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ShiroLoginService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ShiroAuthService.class);
 
     public static final String INVALID_CREDENTIALS = "Invalid username and/or password.";
     public static final String UNACTIVATED_ACCOUNT = "Your account has not been activated.";
     public static final String LOGOUT_SUCCESS = "You Have Successfully Logged Out.";
 
     private final UserAccountService userAccountService;
-
     private final AppUserService appUserService;
+    private final EventLogService eventLogService;
+    private final UserLoginService userLoginService;
 
     @Autowired
-    public ShiroLoginService(UserAccountService userAccountService, AppUserService appUserService) {
+    public ShiroAuthService(UserAccountService userAccountService, AppUserService appUserService, EventLogService eventLogService, UserLoginService userLoginService) {
         this.userAccountService = userAccountService;
         this.appUserService = appUserService;
+        this.eventLogService = eventLogService;
+        this.userLoginService = userLoginService;
     }
 
-    public void logoutUser(
-            SessionStatus sessionStatus,
-            RedirectAttributes redirectAttributes,
-            HttpServletRequest request) {
+    public void logOutUser(AppUser appUser, SessionStatus sessionStatus, RedirectAttributes redirectAttributes, HttpServletRequest request) {
         Subject currentUser = SecurityUtils.getSubject();
         if (currentUser.isAuthenticated()) {
             currentUser.logout();
             sessionStatus.setComplete();
             redirectAttributes.addFlashAttribute("successMsg", LOGOUT_SUCCESS);
+
+            String username = appUser.getUsername();
+            UserAccount userAccount = userAccountService.findByUsername(username);
+            eventLogService.logUserSignOut(userAccount, UriTool.getInetNTOA(request.getRemoteAddr()));
         }
 
         if (request.getSession() != null) {
@@ -79,7 +82,7 @@ public class ShiroLoginService {
         }
     }
 
-    public boolean loginUser(
+    public boolean logInUser(
             final LoginCredentials loginCredentials,
             final RedirectAttributes redirectAttributes,
             final Model model,
@@ -87,6 +90,8 @@ public class ShiroLoginService {
         String username = loginCredentials.getLoginUsername();
         String password = loginCredentials.getLoginPassword();
         boolean rememberMe = loginCredentials.isRememberMe();
+
+        Long location = UriTool.getInetNTOA(request.getRemoteAddr());
 
         // shiro login
         Subject currentUser = SecurityUtils.getSubject();
@@ -97,26 +102,16 @@ public class ShiroLoginService {
             redirectAttributes.addFlashAttribute("errorMsg", INVALID_CREDENTIALS);
             redirectAttributes.addFlashAttribute("loginCredentials", loginCredentials);
 
+            eventLogService.logUserSignInFailed(username, location);
+
             return false;
         }
 
         UserAccount userAccount = userAccountService.findByUsername(username);
-        if (userAccount.isActive()) {
-            UserLogin userLogin = userAccount.getUserLogin();
-            userLogin.setLastLoginDate(userLogin.getLoginDate());
-            userLogin.setLastLoginLocation(userLogin.getLoginLocation());
-            userLogin.setLoginDate(new Date(System.currentTimeMillis()));
-            try {
-                userLogin.setLoginLocation(UriTool.InetNTOA(request.getRemoteAddr()));
-            } catch (UnknownHostException exception) {
-                LOGGER.info(exception.getLocalizedMessage());
-            }
-            // remove any previous activation request
-            userAccount.setActivationKey(null);
-
-            userAccountService.saveUserAccount(userAccount);
-
+        if (userAccount.isActivated()) {
+            updateInfoOnLogIn(userAccount, location);
             model.addAttribute("appUser", appUserService.createAppUser(userAccount, false));
+            eventLogService.logUserSignIn(userAccount, location);
         } else {
             currentUser.logout();
             redirectAttributes.addFlashAttribute("errorMsg", UNACTIVATED_ACCOUNT);
@@ -125,6 +120,17 @@ public class ShiroLoginService {
         }
 
         return true;
+    }
+
+    private void updateInfoOnLogIn(UserAccount userAccount, Long location) {
+        // update login date and location
+        userLoginService.logUserSignIn(userAccount, location);
+
+        // reset data after success login
+        userAccount.setActivationKey(null);
+        userAccount.getUserLoginAttempts().clear();
+
+        userAccountService.save(userAccount);
     }
 
 }

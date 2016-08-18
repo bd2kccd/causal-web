@@ -25,6 +25,7 @@ import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.user.PasswordChange;
 import edu.pitt.dbmi.ccd.web.domain.user.UserInfo;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
+import edu.pitt.dbmi.ccd.web.service.EventLogService;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,15 +45,20 @@ public class UserProfileService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserProfileService.class);
 
+    private static final String[] USER_PROFILE_UPDATE_FAILED = {"User Profile Update Failed!", "Unable to update user information."};
+    private static final String[] PASSWORD_UPDATE_FAILED = {"Password Update Failed!", "Unable to change password."};
+
     private final UserAccountService userAccountService;
+    private final EventLogService eventLogService;
 
     private final AppUserService appUserService;
 
     private final DefaultPasswordService passwordService;
 
     @Autowired
-    public UserProfileService(UserAccountService userAccountService, AppUserService appUserService, DefaultPasswordService passwordService) {
+    public UserProfileService(UserAccountService userAccountService, EventLogService eventLogService, AppUserService appUserService, DefaultPasswordService passwordService) {
         this.userAccountService = userAccountService;
+        this.eventLogService = eventLogService;
         this.appUserService = appUserService;
         this.passwordService = passwordService;
     }
@@ -70,24 +76,21 @@ public class UserProfileService {
         return userInfo;
     }
 
-    public void updateUserInfo(UserInfo userInfo, AppUser appUser, Model model) {
+    public void updateUserProfile(UserInfo userInfo, AppUser appUser, Model model, RedirectAttributes redirectAttributes) {
         String username = appUser.getUsername();
         UserAccount userAccount = userAccountService.findByUsername(username);
         if (userAccount != null) {
-            // update person information
-            Person person = userAccount.getPerson();
-            person.setFirstName(userInfo.getFirstName());
-            person.setMiddleName(userInfo.getMiddleName());
-            person.setLastName(userInfo.getLastName());
-
             try {
-                userAccount = userAccountService.saveUserAccount(userAccount);
+                Person person = userAccount.getPerson();
+                person.setFirstName(userInfo.getFirstName());
+                person.setMiddleName(userInfo.getMiddleName());
+                person.setLastName(userInfo.getLastName());
+                person = userAccountService.updatePerson(userAccount);
 
-                AppUser newAppUser = appUserService.createAppUser(userAccount, appUser.getFederatedUser());
-                newAppUser.setLastLogin(appUser.getLastLogin());
-                model.addAttribute("appUser", newAppUser);
+                model.addAttribute("appUser", appUserService.updateUserProfile(appUser, person));
             } catch (Exception exception) {
                 LOGGER.error(String.format("Unable to update user '%s' information.", username), exception);
+                redirectAttributes.addFlashAttribute("profileChangeError", USER_PROFILE_UPDATE_FAILED);
             }
         }
     }
@@ -100,12 +103,11 @@ public class UserProfileService {
             String encryptedPwd = userAccount.getPassword();
             if (passwordService.passwordsMatch(currentPwd, encryptedPwd)) {
                 userAccount.setPassword(passwordService.encryptPassword(passwordChange.getNewPassword()));
-
                 try {
-                    userAccountService.saveUserAccount(userAccount);
+                    userAccountService.updateAccount(userAccount);
                 } catch (Exception exception) {
                     LOGGER.error(String.format("Unable to update user '%s' password.", username), exception);
-                    redirectAttributes.addFlashAttribute("pwdChangeErrMsg", "Unable to update password.");
+                    redirectAttributes.addFlashAttribute("pwdChangeErrMsg", PASSWORD_UPDATE_FAILED);
                     redirectAttributes.addFlashAttribute("pwdChangeErr", true);
                 }
             } else {

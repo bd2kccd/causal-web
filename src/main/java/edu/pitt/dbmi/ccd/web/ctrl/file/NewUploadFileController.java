@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
  */
 @Controller
 @SessionAttributes("appUser")
-@RequestMapping(value = "secured/file/upload/new")
+@RequestMapping(value = "/secured/file/upload/new")
 public class NewUploadFileController implements ViewPath {
 
     private final NewUploadFileService newUploadFileService;

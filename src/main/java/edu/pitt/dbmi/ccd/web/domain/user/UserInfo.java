@@ -16,7 +16,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-
 package edu.pitt.dbmi.ccd.web.domain.user;
 
 /**
@@ -26,7 +25,7 @@ package edu.pitt.dbmi.ccd.web.domain.user;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class UserInfo {
-    
+
     private String firstName;
 
     private String middleName;

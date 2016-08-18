@@ -56,7 +56,7 @@ public class NewUploadFileService {
         fileManagementService.syncDatabaseWithDirectory(userAccount);
 
         model.addAttribute("pageTitle", "New Uploaded Files");
-        model.addAttribute("itemList", fileService.findUntypedFileByUserAccount(userAccount));
+        model.addAttribute("files", fileService.findUntypedFileByUserAccount(userAccount));
     }
 
     public void showFileInfo(Long id, AppUser appUser, Model model) {

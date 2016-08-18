@@ -18,11 +18,11 @@
  */
 package edu.pitt.dbmi.ccd.web.service.algo.causal;
 
+import edu.pitt.dbmi.ccd.db.domain.FileTypeName;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileType;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileService;
-import edu.pitt.dbmi.ccd.db.service.FileTypeService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.algo.FgscRunInfo;
@@ -59,22 +59,33 @@ public class FgsService {
             throw new ResourceNotFoundException();
         }
 
-        FileType fileType = fileManagementService.getFileType(FileTypeService.DATA_TYPE_NAME);
+        FileType fileType = fileManagementService.findFileType(FileTypeName.DATASET);
         List<File> datasetList = fileService.findByFileTypeAndUserAccount(fileType, userAccount);
 
-        fileType = fileManagementService.getFileType(FileTypeService.VAR_TYPE_NAME);
+        fileType = fileManagementService.findFileType(FileTypeName.VARIABLE);
         List<File> varList = fileService.findByFileTypeAndUserAccount(fileType, userAccount);
 
-        fileType = fileManagementService.getFileType(FileTypeService.PRIOR_TYPE_NAME);
+        fileType = fileManagementService.findFileType(FileTypeName.PRIOR_KNOWLEDGE);
         List<File> priorList = fileService.findByFileTypeAndUserAccount(fileType, userAccount);
 
         FgscRunInfo fgscRunInfo = new FgscRunInfo();
-        fgscRunInfo.setVarFileId(0L);
-        fgscRunInfo.setPriorFileId(0L);
         // set the default dataset
         if (!datasetList.isEmpty()) {
             fgscRunInfo.setDataFileId(datasetList.get(0).getId());  // get one element
         }
+        // set default data validations
+        fgscRunInfo.setNonZeroVarianceValidation(true);
+        fgscRunInfo.setUniqueVarNameValidation(true);
+        // set default parameters
+        fgscRunInfo.setDepth(-1);
+        fgscRunInfo.setPenaltyDiscount(4.0);
+        // set algorithm run optons
+        fgscRunInfo.setHeuristicSpeedup(true);
+        fgscRunInfo.setIgnoreLinearDependence(true);
+        fgscRunInfo.setVerbose(true);
+        // set additional data options
+        fgscRunInfo.setExcludeVarFileId(0);
+        fgscRunInfo.setPriorFileId(0);
 
         model.addAttribute("datasetList", datasetList);
         model.addAttribute("varList", varList);
