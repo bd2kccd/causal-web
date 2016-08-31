@@ -41,6 +41,8 @@ import edu.pitt.dbmi.ccd.web.domain.file.CategorizeFile;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedList;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +59,8 @@ import org.springframework.ui.Model;
 public class CategorizeFileService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CategorizeFileService.class);
+
+    private final List<FileType> fileTypeOpts = new LinkedList<>();
 
     private final UserAccountService userAccountService;
     private final FileService fileService;
@@ -75,6 +79,13 @@ public class CategorizeFileService {
         this.variableTypeService = variableTypeService;
         this.dataFileService = dataFileService;
         this.variableFileService = variableFileService;
+
+        List<FileType> fileTypes = fileTypeService.findAll();
+        fileTypes.forEach(fileType -> {
+            if (FileTypeName.valueOf(fileType.getName()) != FileTypeName.ALGORITHM_RESULT_COMPARISON) {
+                fileTypeOpts.add(fileType);
+            }
+        });
     }
 
     public void showFileCategorizationOptions(File file, Model model) {
@@ -85,7 +96,7 @@ public class CategorizeFileService {
             model.addAttribute("collapse", Boolean.FALSE);
         }
 
-        model.addAttribute("fileTypes", fileTypeService.findAll());
+        model.addAttribute("fileTypes", fileTypeOpts);
         model.addAttribute("fileDelimiters", fileDelimiterService.findAll());
         model.addAttribute("variableTypes", variableTypeService.findAll());
         model.addAttribute("dataTypeId", fileTypeService.findByFileTypeName(FileTypeName.DATASET).getId());

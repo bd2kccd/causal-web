@@ -71,7 +71,7 @@ public class FgsService {
         FgscRunInfo fgscRunInfo = new FgscRunInfo();
         // set the default dataset
         if (!datasetList.isEmpty()) {
-            fgscRunInfo.setDataFileId(datasetList.get(0).getId());  // get one element
+            fgscRunInfo.setDataFileTitle(datasetList.get(0).getTitle());  // get one element
         }
         // set default data validations
         fgscRunInfo.setNonZeroVarianceValidation(true);
@@ -79,13 +79,13 @@ public class FgsService {
         // set default parameters
         fgscRunInfo.setDepth(-1);
         fgscRunInfo.setPenaltyDiscount(4.0);
-        // set algorithm run optons
+        // set algorithm run options
         fgscRunInfo.setHeuristicSpeedup(true);
         fgscRunInfo.setIgnoreLinearDependence(true);
         fgscRunInfo.setVerbose(true);
         // set additional data options
-        fgscRunInfo.setExcludeVarFileId(0);
-        fgscRunInfo.setPriorFileId(0);
+        fgscRunInfo.setExcludeVarFileTitle("none");
+        fgscRunInfo.setPriorFileTitle("none");
 
         model.addAttribute("datasetList", datasetList);
         model.addAttribute("varList", varList);

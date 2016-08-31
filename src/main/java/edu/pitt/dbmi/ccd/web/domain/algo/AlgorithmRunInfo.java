@@ -26,11 +26,11 @@ package edu.pitt.dbmi.ccd.web.domain.algo;
  */
 public abstract class AlgorithmRunInfo {
 
-    protected long dataFileId;
+    protected String dataFileTitle;
 
-    protected long excludeVarFileId;
+    protected String excludeVarFileTitle;
 
-    protected long priorFileId;
+    protected String priorFileTitle;
 
     protected boolean verbose;
 
@@ -39,33 +39,28 @@ public abstract class AlgorithmRunInfo {
     public AlgorithmRunInfo() {
     }
 
-    @Override
-    public String toString() {
-        return "AlgorithmRunInfo{" + "dataFileId=" + dataFileId + ", excludeVarFileId=" + excludeVarFileId + ", priorFileId=" + priorFileId + ", verbose=" + verbose + ", jvmMaxMem=" + jvmMaxMem + '}';
+    public String getDataFileTitle() {
+        return dataFileTitle;
     }
 
-    public long getDataFileId() {
-        return dataFileId;
+    public void setDataFileTitle(String dataFileTitle) {
+        this.dataFileTitle = dataFileTitle;
     }
 
-    public void setDataFileId(long dataFileId) {
-        this.dataFileId = dataFileId;
+    public String getExcludeVarFileTitle() {
+        return excludeVarFileTitle;
     }
 
-    public long getExcludeVarFileId() {
-        return excludeVarFileId;
+    public void setExcludeVarFileTitle(String excludeVarFileTitle) {
+        this.excludeVarFileTitle = excludeVarFileTitle;
     }
 
-    public void setExcludeVarFileId(long excludeVarFileId) {
-        this.excludeVarFileId = excludeVarFileId;
+    public String getPriorFileTitle() {
+        return priorFileTitle;
     }
 
-    public long getPriorFileId() {
-        return priorFileId;
-    }
-
-    public void setPriorFileId(long priorFileId) {
-        this.priorFileId = priorFileId;
+    public void setPriorFileTitle(String priorFileTitle) {
+        this.priorFileTitle = priorFileTitle;
     }
 
     public boolean isVerbose() {

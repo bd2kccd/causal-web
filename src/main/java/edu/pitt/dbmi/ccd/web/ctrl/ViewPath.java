@@ -20,19 +20,19 @@ package edu.pitt.dbmi.ccd.web.ctrl;
 
 /**
  *
- * May 14, 2015 12:40:49 PM
+ * Aug 22, 2016 7:17:37 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public interface ViewPath {
 
+    public static final String TERMS_VIEW = "terms";
+
     public static final String MESSAGE_VIEW = "message";
     public static final String MESSAGE = "/message";
     public static final String REDIRECT_MESSAGE = "redirect:/message";
 
-    public static final String TERMS_VIEW = "terms";
-
-    public static final String LOGIN = "/login";
+    public static final String LOGIN = "login";
     public static final String REDIRECT_LOGIN = "redirect:/login";
 
     public static final String LOGOUT = "/secured/logout";
@@ -41,37 +41,44 @@ public interface ViewPath {
     public static final String HOME = "/secured/home";
     public static final String REDIRECT_HOME = "redirect:/secured/home";
 
-    public static final String USER_PROFILE_VIEW = "user/account/userProfile";
-    public static final String REDIRECT_USER_PROFILE = "redirect:/secured/user/profile";
-
-    public static final String USER_PASSWORD_RESET_VIEW = "user/account/recovery/password_reset";
-
     public static final String FILE_UPLOAD_VIEW = "file/fileUpload";
     public static final String FILE_LIST_VIEW = "file/fileList";
 
     public static final String NEW_UPLOAD = "/secured/file/upload/new";
     public static final String REDIRECT_NEW_UPLOAD = "redirect:/secured/file/upload/new";
 
-    public static final String DATA_INPUT = "/secured/file/input/data";
-    public static final String REDIRECT_DATA_INPUT = "redirect:/secured/file/input/data";
+    public static final String DATASET_FILE = "/secured/file/input/data";
+    public static final String REDIRECT_DATASET_FILE = "redirect:/secured/file/input/data";
 
-    public static final String VARIABLE_INPUT = "/secured/file/input/variable";
-    public static final String REDIRECT_VARIABLE_INPUT = "redirect:/secured/file/input/variable";
+    public static final String DATA_VARIABLE_FILE = "/secured/file/input/variable";
+    public static final String REDIRECT_DATA_VARIABLE_FILE = "redirect:/secured/file/input/variable";
 
-    public static final String PRIOR_KNOWLEDGE_INPUT = "/secured/file/input/prior";
-    public static final String REDIRECT_PRIOR_KNOWLEDGE_INPUT = "redirect:/secured/file/input/prior";
+    public static final String PRIOR_KNOWLEDGE_FILE = "/secured/file/input/prior";
+    public static final String REDIRECT_PRIOR_KNOWLEDGE_FILE = "redirect:/secured/file/input/prior";
 
-    public static final String REDIRECT_ALGO_RESULT_FILE = "redirect:/secured/file/output/algorithm/result/run";
+    public static final String REDIRECT_RESULT_FILE = "redirect:/secured/file/output/algorithm/result";
+    public static final String REDIRECT_RESULT_COMPARISON_FILE = "redirect:/secured/file/output/algorithm/result/comparison";
+
+    public static final String USER_PROFILE_VIEW = "user/account/userProfile";
+    public static final String REDIRECT_USER_PROFILE = "redirect:/secured/user/profile";
+
+    public static final String USER_PASSWORD_RESET_VIEW = "user/account/recovery/password_reset";
 
     public static final String INFO = "info";
     public static final String FILE_INFO_VIEW = "file/fileInfo";
 
     public static final String CATEGORIZE = "categorize";
 
-    public static final String RESULT_LIST_VIEW = "result/algorithm/run/resultList";
-    public static final String RESULT_INFO_VIEW = "result/algorithm/run/algoResultInfo";
-    public static final String D3_GRAPH_VIEW = "graph/d3graph";
+    public static final String RESULT_LIST_VIEW = "algorithm/result/resultList";
+    public static final String RESULT_INFO_VIEW = "algorithm/result/algoResultInfo";
+    public static final String D3_GRAPH_VIEW = "algorithm/graph/d3graph";
 
-    public static final String FGS_CONTINUOUS_VIEW = "algo/causal/fgs/fgsContinuous";
+    public static final String REDIRECT_ALGO_RESULT = "redirect:/secured/algorithm/result";
+
+    public static final String RESULT_COMPARISON_LIST_VIEW = "algorithm/result/resultComparisonList";
+    public static final String RESULT_COMPARISON_VIEW = "algorithm/result/algoResultComparison";
+    public static final String REDIRECT_RESULT_COMPARISON = "redirect:/secured/algorithm/result/comparison";
+
+    public static final String FGS_CONTINUOUS_VIEW = "algorithm/causal/fgs/fgsc";
 
 }

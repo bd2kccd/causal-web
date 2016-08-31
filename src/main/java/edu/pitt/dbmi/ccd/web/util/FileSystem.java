@@ -24,6 +24,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -32,6 +34,8 @@ import java.nio.file.attribute.BasicFileAttributes;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class FileSystem {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileSystem.class);
 
     private FileSystem() {
     }
@@ -61,6 +65,18 @@ public class FileSystem {
                 return FileVisitResult.CONTINUE;
             }
         });
+    }
+
+    public static void createDirectories(Path[] directories) {
+        for (Path directory : directories) {
+            if (Files.notExists(directory)) {
+                try {
+                    Files.createDirectories(directory);
+                } catch (IOException exception) {
+                    LOGGER.error(String.format("Unable to create directory '%s'.", directory), exception);
+                }
+            }
+        }
     }
 
 }

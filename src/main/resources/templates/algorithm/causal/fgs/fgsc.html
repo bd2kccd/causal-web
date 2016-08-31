@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="description" content="Center for Causal Discovery" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>CCD: FGS</title>
+        <link rel="apple-touch-icon" href="../../../../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
+        <link rel="icon" href="../../../../static/favicon.ico" th:href="@{/favicon.ico}" />
+        <link rel="stylesheet" href="../../../../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{/vendors/bootstrap/css/bootstrap.min.css}" />
+        <link rel="stylesheet" href="../../../../static/vendors/bootstrap/css/bootstrap-theme.min.css" th:href="@{/vendors/bootstrap/css/bootstrap-theme.min.css}" />
+        <link rel="stylesheet" href="../../../../static/vendors/metisMenu/metisMenu.min.css" th:href="@{/vendors/metisMenu/metisMenu.min.css}" />
+        <link rel="stylesheet" href="../../../../static/vendors/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.min.css}" />
+        <link rel="stylesheet" href="../../../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{/vendors/font-awesome/css/font-awesome.min.css}"/>
+        <link rel="stylesheet" href="../../../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
+        <link rel="stylesheet" href="../../../../static/css/algo/stepwizard.min.css" th:href="@{/css/algo/stepwizard.min.css}" />
+        <script src="../../../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
+        <script src="../../../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
+        <script src="../../../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
+        <script src="../../../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
+        <script src="../../../../static/js/algo/stepwizard.min.js" th:src="@{/js/algo/stepwizard.min.js}"></script>
+    </head>
+    <body ng-app="">
+        <div id="wrapper">
+            <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0" th:replace="fragments/navigation :: nav"></nav>
+            <div id="page-wrapper">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h1 class="page-header">FGS Continuous</h1>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="stepwizard">
+                            <div class="stepwizard-row setup-panel">
+                                <div class="stepwizard-step">
+                                    <button id="step1btn" class="btn btn-primary btn-circle" onclick="window.location.href = '#step1'">1</button>
+                                    <p>Select Data</p>
+                                </div>
+                                <div class="stepwizard-step">
+                                    <button id="step2btn" class="btn btn-default btn-circle" onclick="window.location.href = '#step2'" disabled="disabled">2</button>
+                                    <p>Set Parameters</p>
+                                </div>
+                                <div class="stepwizard-step">
+                                    <button id="step3btn" class="btn btn-default btn-circle" onclick="window.location.href = '#step3'" disabled="disabled">3</button>
+                                    <p>Set Options</p>
+                                </div>
+                                <div class="stepwizard-step">
+                                    <button id="step4btn" class="btn btn-default btn-circle" onclick="window.location.href = '#step4'" disabled="disabled">4</button>
+                                    <p>Run Algorithm</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <form id="algoForm" method="post" action="" role="form" th:object="${fgscRunInfo}">
+                            <div class="row setup-content" id="step1">
+                                <div class="col-md-12">
+                                    <h3>Step 1: Select Data</h3>
+                                    <div class="panel panel-primary">
+                                        <div class="panel-heading">
+                                            <h3 class="panel-title">Dataset</h3>
+                                        </div>
+                                        <div class="panel-body">
+                                            <div class="form-group">
+                                                <label for="dataset">Dataset: (Data must be categorized before appearing here. Only continuous data is analyzable by this algorithm.)</label>
+                                                <select id="dataset" name="dataset" class="form-control" ng-model="dataset" required="required"
+                                                        th:field="*{dataFileTitle}"
+                                                        th:attr="ng-init='dataset = \'' + *{dataFileTitle} + '\''"
+                                                        th:disabled="${#lists.isEmpty(datasetList)}">
+                                                    <option value=""
+                                                            th:each="file : ${datasetList}"
+                                                            th:value="${file.title}"
+                                                            th:text="${file.title} + ' (' + ${@webUtility.printSizeWithUnit(file.fileSize)} + ')'">data.txt</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="panel panel-primary">
+                                        <div class="panel-heading">
+                                            <h3 class="panel-title">Data Validations</h3>
+                                        </div>
+                                        <div class="panel-body">
+                                            <div class="form-group">
+                                                <div class="checkbox">
+                                                    <label for="nonZeroVarianceValidation" class="control-label">
+                                                        <input type="checkbox" id="nonZeroVarianceValidation" name="nonZeroVarianceValidation" ng-model="nonZeroVarianceValidation" th:attr="ng-init='nonZeroVarianceValidation=' + *{nonZeroVarianceValidation}" th:field="*{nonZeroVarianceValidation}" /> Non-zero Variance - ensure that each variable has non-zero variance
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="checkbox">
+                                                    <label for="uniqueVarNameValidation" class="control-label">
+                                                        <input type="checkbox" id="uniqueVarNameValidation" name="uniqueVarNameValidation" ng-model="uniqueVarNameValidation" th:attr="ng-init='uniqueVarNameValidation=' + *{uniqueVarNameValidation}" th:field="*{uniqueVarNameValidation}" /> Unique Variable Name - ensure that there are no duplicated variable names
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-primary btn-lg btn-block nextBtn" th:disabled="*{dataFileTitle == null}">Next</button>
+                                </div>
+                            </div>
+                            <div class="row setup-content" id="step2">
+                                <div class="col-md-12">
+                                    <h3> Step 2: Set Parameters</h3>
+                                    <div class="panel panel-primary">
+                                        <div class="panel-heading">
+                                            <h3 class="panel-title">Algorithm Parameters</h3>
+                                        </div>
+                                        <div class="panel-body">
+                                            <div class="form-group">
+                                                <label for="penaltyDiscount" class="control-label">Penalty Discount - multiplier on the penalty term of the BIC score for continuous data. We suggest 2 for &lt;50 variables and 4 for &gt;50 variables.</label>
+                                                <input type="number" id="penaltyDiscount" name="penaltyDiscount" maxlength="10" class="form-control" placeholder="Penalty Discount" ng-model="penaltyDiscount" th:attr="ng-init='penaltyDiscount=' + *{penaltyDiscount}" th:field="*{penaltyDiscount}" required="required" />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="depth" class="control-label">Search Depth - the maximum number of edges to orient into a node during a single orientation step. A value of -1 indicates no limit.</label>
+                                                <input type="number" id="depth" name="depth" maxlength="10" class="form-control" placeholder="Depth" ng-model="depth" th:attr="ng-init='depth=' + *{depth}" th:field="*{depth}" required="required" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-primary btn-lg btn-block nextBtn">Next</button>
+                                </div>
+                            </div>
+                            <div class="row setup-content" id="step3">
+                                <div class="col-md-12">
+                                    <h3> Step 3: Set Options</h3>
+                                    <div class="panel panel-primary">
+                                        <div class="panel-heading">
+                                            <h3 class="panel-title">Algorithm Run Options</h3>
+                                        </div>
+                                        <div class="panel-body">
+                                            <div class="form-group">
+                                                <div class="checkbox">
+                                                    <label for="heuristicSpeedup" class="control-label">
+                                                        <input type="checkbox" id="heuristicSpeedup" name="heuristicSpeedup" ng-model="heuristicSpeedup" th:attr="ng-init='heuristicSpeedup=' + *{heuristicSpeedup}" th:field="*{heuristicSpeedup}" /> Heuristic Speedup - in the large sample limit, all conditional independence relations that hold in the distribution are entailed by the Causal Markov Assumption
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="checkbox">
+                                                    <label for="ignoreLinearDependence" class="control-label">
+                                                        <input type="checkbox" id="ignoreLinearDependence" name="ignoreLinearDependence" ng-model="ignoreLinearDependence" th:attr="ng-init='ignoreLinearDependence=' + *{ignoreLinearDependence}" th:field="*{ignoreLinearDependence}" /> Ignore Linear Dependence - one variable is the result of some combination of other variables
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="checkbox">
+                                                    <label for="verbose" class="control-label">
+                                                        <input type="checkbox" id="verbose" name="verbose" ng-model="verbose" th:attr="ng-init='verbose=' + *{verbose}" th:field="*{verbose}" /> Verbose Output - output includes extra information about the run
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="panel panel-yellow">
+                                        <a id="optInputData" class="panel-yellow" data-toggle="collapse" href="#collapseOptInputData">
+                                            <div class="panel-heading">
+                                                <h3 class="panel-title">Additional Data Options<span class="pull-right"><i class="glyphicon glyphicon-chevron-down"></i></span></h3>
+                                            </div>
+                                        </a>
+                                        <div id="collapseOptInputData" class="panel-collapse collapse">
+                                            <div class="panel-body">
+                                                <div class="form-group">
+                                                    <label for="excludeVars">Variable Exclusion: (Variables in dataset to exclude from run.)</label>
+                                                    <select id="excludeVars" name="excludeVars" class="form-control" ng-model="excludeVars"
+                                                            th:field="*{excludeVarFileTitle}"
+                                                            th:attr="ng-init='excludeVars = \'' + *{excludeVarFileTitle} + '\''">
+                                                        <option value="none">None</option>
+                                                        <option value=""
+                                                                th:each="file : ${varList}"
+                                                                th:value="${file.title}"
+                                                                th:text="${file.title} + ' (' + ${@webUtility.printSizeWithUnit(file.fileSize)} + ')'">vars.txt</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="priors">Prior Knowledge:</label>
+                                                    <select id="priors" name="priors" class="form-control" ng-model="priors"
+                                                            th:field="*{priorFileTitle}"
+                                                            th:attr="ng-init='priors = \'' + *{priorFileTitle} + '\''">
+                                                        <option value="none">None</option>
+                                                        <option value=""
+                                                                th:each="file : ${priorList}"
+                                                                th:value="${file.title}"
+                                                                th:text="${file.title} + ' (' + ${@webUtility.printSizeWithUnit(file.fileSize)} + ')'">priors.txt</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="panel panel-yellow">
+                                        <a id="optJvm" class="panel-yellow" data-toggle="collapse" href="#collapseOptJvm">
+                                            <div class="panel-heading">
+                                                <h3 class="panel-title">JVM Options<span class="pull-right"><i class="glyphicon glyphicon-chevron-down"></i></span></h3>
+                                            </div>
+                                        </a>
+                                        <div id="collapseOptJvm" class="panel-collapse collapse">
+                                            <div class="panel-body">
+                                                <div class="form-group">
+                                                    <label for="jvmMaxMem" class="control-label">Maximum memory allocation for the JVM. Enter 0 for default.</label>
+                                                    <div class="input-group">
+                                                        <input type="number" min="0" max="128" class="form-control" id="jvmMaxMem" name="jvmMaxMem" aria-describedby="mem_unit" ng-model="jvmMaxMem" th:attr="ng-init='jvmMaxMem=' + *{jvmMaxMem}" th:field="*{jvmMaxMem}" />
+                                                        <span class="input-group-addon" id="mem_unit">Gigabyte</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-primary btn-lg btn-block nextBtn">Next</button>
+                                </div>
+                            </div>
+                            <div class="row setup-content" id="step4">
+                                <div class="col-md-12">
+                                    <h3> Step 4: Run Algorithm</h3>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <caption>Dataset</caption>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="col-md-3">File:</td><td ng-bind="dataset"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <caption>Data Validations</caption>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="col-md-3">Non-zero Variance:</td>
+                                                    <td ng-bind="nonZeroVarianceValidation"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="col-md-3">Unique Variable Name:</td>
+                                                    <td ng-bind="uniqueVarNameValidation"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <caption>Parameters</caption>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="col-md-3">Penalty Discount:</td>
+                                                    <td ng-bind="penaltyDiscount"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="col-md-3">Depth:</td>
+                                                    <td ng-bind="depth"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <caption>Algorithm Run Options</caption>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="col-md-3">Heuristic Speedup</td>
+                                                    <td ng-bind="heuristicSpeedup"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="col-md-3">Ignore Linear Dependence:</td>
+                                                    <td ng-bind="ignoreLinearDependence"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="col-md-3">Verbose:</td>
+                                                    <td ng-bind="verbose"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <caption>Additional Data Options</caption>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="col-md-3">Variable Exclusion</td>
+                                                    <td ng-bind="excludeVars"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="col-md-3">Prior Knowledge</td>
+                                                    <td ng-bind="priors"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <caption>JVM Options</caption>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="col-md-3">Advanced JVM Options:</td>
+                                                    <td>{{(jvmMaxMem == 0) ? 'JVM default' : '-Xmx' + jvmMaxMem + 'G'}}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <button type="submit" class="btn btn-success btn-lg btn-block nextBtn">Run Algorithm!</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <footer th:replace="fragments/footer :: footer">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="page-header"></div>
+                            <p class="text-muted">Copyright &copy; 1900 University of Pittsburgh Department of Biomedical Informatics</p>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+
+        <script src="../../../../static/vendors/angularjs/angular.min.js" th:src="@{/vendors/angularjs/angular.min.js}"></script>
+        <script src="../../../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
+        <script src="../../../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
+        <script src="../../../../static/js/collapse_panel.min.js" th:src="@{/js/collapse_panel.min.js}"></script>
+        <script src="../../../../static/js/algo/option_panel.min.js" th:src="@{/js/algo/option_panel.min.js}"></script>
+    </body>
+</html>

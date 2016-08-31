@@ -19,8 +19,8 @@
 package edu.pitt.dbmi.ccd.web.ctrl;
 
 import edu.pitt.dbmi.ccd.web.domain.LoginCredentials;
-import edu.pitt.dbmi.ccd.web.domain.user.PasswordRecovery;
-import edu.pitt.dbmi.ccd.web.domain.user.UserRegistration;
+import edu.pitt.dbmi.ccd.web.domain.PasswordRecovery;
+import edu.pitt.dbmi.ccd.web.domain.account.UserRegistration;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.springframework.context.annotation.Profile;

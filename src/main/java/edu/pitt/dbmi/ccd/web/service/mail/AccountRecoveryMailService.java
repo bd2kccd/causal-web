@@ -18,7 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.service.mail;
 
-import edu.pitt.dbmi.ccd.web.prop.CcdEmailProperties;
+import edu.pitt.dbmi.ccd.web.conf.prop.CcdEmailProperties;
 import java.util.HashMap;
 import java.util.Map;
 import javax.mail.MessagingException;

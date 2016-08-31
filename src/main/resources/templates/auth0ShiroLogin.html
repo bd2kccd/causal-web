@@ -35,7 +35,7 @@
                                     <div class="form-group" th:class="${#fields.hasErrors('loginUsername')} ? 'form-group has-error' : 'form-group'">
                                         <div class="input-group">
                                             <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
-                                            <input type="text" class="form-control" placeholder="Email" name="loginUsername" value="" required="required" th:field="*{loginUsername}" autofocus="autofocus" />
+                                            <input type="email" class="form-control" placeholder="Email" name="loginUsername" value="" required="required" th:field="*{loginUsername}" autofocus="autofocus" />
                                         </div>
                                         <span class="help-block" th:if="${#fields.hasErrors('loginUsername')}" th:errors="*{loginUsername}">Please enter a valid e-mail.</span>
                                     </div>

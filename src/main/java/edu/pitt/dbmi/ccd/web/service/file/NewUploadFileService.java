@@ -60,7 +60,7 @@ public class NewUploadFileService {
     }
 
     public void showFileInfo(Long id, AppUser appUser, Model model) {
-        fileManagementService.showFileInfo(id, appUser, model);
+        fileManagementService.showFileInfo(id, appUser, model, true);
     }
 
 }

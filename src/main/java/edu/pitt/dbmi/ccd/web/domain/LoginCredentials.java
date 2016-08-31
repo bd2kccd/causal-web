@@ -45,11 +45,6 @@ public class LoginCredentials {
         this.rememberMe = rememberMe;
     }
 
-    @Override
-    public String toString() {
-        return "LoginCredential{" + "loginUsername=" + loginUsername + ", loginPassword=" + loginPassword + ", rememberMe=" + rememberMe + '}';
-    }
-
     public String getLoginUsername() {
         return loginUsername;
     }

@@ -19,7 +19,7 @@
 package edu.pitt.dbmi.ccd.web.service.mail;
 
 import edu.pitt.dbmi.ccd.mail.AbstractBasicMail;
-import edu.pitt.dbmi.ccd.web.prop.CcdEmailProperties;
+import edu.pitt.dbmi.ccd.web.conf.prop.CcdEmailProperties;
 import edu.pitt.dbmi.ccd.web.util.UriTool;
 import java.net.UnknownHostException;
 import java.text.DateFormat;

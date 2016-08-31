@@ -128,13 +128,15 @@ public class FileManagementController implements ViewPath {
         FileTypeName fileTypeName = FileTypeName.valueOf(fileType.getName());
         switch (fileTypeName) {
             case ALGORITHM_RESULT:
-                return REDIRECT_ALGO_RESULT_FILE;
+                return REDIRECT_RESULT_FILE;
+            case ALGORITHM_RESULT_COMPARISON:
+                return REDIRECT_RESULT_COMPARISON_FILE;
             case DATASET:
-                return REDIRECT_DATA_INPUT;
+                return REDIRECT_DATASET_FILE;
             case PRIOR_KNOWLEDGE:
-                return REDIRECT_PRIOR_KNOWLEDGE_INPUT;
+                return REDIRECT_PRIOR_KNOWLEDGE_FILE;
             case VARIABLE:
-                return REDIRECT_VARIABLE_INPUT;
+                return REDIRECT_DATA_VARIABLE_FILE;
             default:
                 return REDIRECT_NEW_UPLOAD;
         }

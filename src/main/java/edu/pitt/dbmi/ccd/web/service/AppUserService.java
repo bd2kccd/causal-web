@@ -23,14 +23,7 @@ import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.entity.UserLogin;
 import edu.pitt.dbmi.ccd.db.service.UserLoginService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Date;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,14 +36,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class AppUserService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AppUserService.class);
-
-    private final CcdProperties ccdProperties;
     private final UserLoginService userLoginService;
 
     @Autowired
-    public AppUserService(CcdProperties ccdProperties, UserLoginService userLoginService) {
-        this.ccdProperties = ccdProperties;
+    public AppUserService(UserLoginService userLoginService) {
         this.userLoginService = userLoginService;
     }
 
@@ -66,37 +55,15 @@ public class AppUserService {
         return appUser;
     }
 
-    public AppUser createAppUser(final UserAccount userAccount, final boolean federatedUser) {
-        UserLogin userLogin = userLoginService.findByUserAccount(userAccount);
-        Date lastLoginDate = userLogin.getLastLoginDate();
-
+    public AppUser createAppUser(UserAccount userAccount, boolean federatedUser) {
         Person person = userAccount.getPerson();
         String firstName = person.getFirstName();
         String middleName = person.getMiddleName();
         String lastName = person.getLastName();
         String email = person.getEmail();
-        String workspace = person.getWorkspace();
 
-        String dataFolder = ccdProperties.getDataFolder();
-        String tmpFolder = ccdProperties.getTmpFolder();
-        String resultFolder = ccdProperties.getResultFolder();
-
-        Path[] directories = {
-            Paths.get(workspace, dataFolder),
-            Paths.get(workspace, resultFolder),
-            Paths.get(workspace, tmpFolder),
-            Paths.get(workspace, resultFolder, "algorithm"),
-            Paths.get(workspace, resultFolder, "comparison")
-        };
-        for (Path directory : directories) {
-            if (Files.notExists(directory)) {
-                try {
-                    Files.createDirectories(directory);
-                } catch (IOException exception) {
-                    LOGGER.error(String.format("Unable to create directory '%s'.", directory), exception);
-                }
-            }
-        }
+        UserLogin userLogin = userLoginService.findByUserAccount(userAccount);
+        Date lastLoginDate = userLogin.getLastLoginDate();
 
         AppUser appUser = new AppUser();
         appUser.setUsername(email);

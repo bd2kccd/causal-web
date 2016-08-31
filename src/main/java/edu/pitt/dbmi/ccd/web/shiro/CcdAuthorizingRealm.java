@@ -33,12 +33,13 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
  *
- * May 14, 2015 1:57:20 PM
+ * Aug 22, 2016 1:21:02 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
@@ -83,7 +84,7 @@ public class CcdAuthorizingRealm extends AuthorizingRealm {
             throw new UnknownAccountException("Account does not exist");
         }
 
-        return new SimpleAuthenticationInfo(username, userAccount.getPassword().toCharArray(), getName());
+        return new SimpleAuthenticationInfo(username, userAccount.getPassword().toCharArray(), ByteSource.Util.bytes(username), getName());
     }
 
 }

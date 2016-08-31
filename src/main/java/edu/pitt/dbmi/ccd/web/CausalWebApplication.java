@@ -19,7 +19,6 @@
 package edu.pitt.dbmi.ccd.web;
 
 import edu.pitt.dbmi.ccd.db.CcdDbApplication;
-import edu.pitt.dbmi.ccd.mail.CcdMailApplication;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
@@ -33,7 +32,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @SpringBootApplication
-@Import({CcdDbApplication.class, CcdMailApplication.class})
+@Import({CcdDbApplication.class})
 @EnableAsync
 @EnableCaching
 public class CausalWebApplication {

@@ -26,6 +26,7 @@ import edu.pitt.dbmi.ccd.db.domain.FileTypeName;
 import edu.pitt.dbmi.ccd.db.entity.DataFile;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileType;
+import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.entity.VariableFile;
 import edu.pitt.dbmi.ccd.db.service.DataFileService;
@@ -33,14 +34,14 @@ import edu.pitt.dbmi.ccd.db.service.FileService;
 import edu.pitt.dbmi.ccd.db.service.FileTypeService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.db.service.VariableFileService;
+import edu.pitt.dbmi.ccd.web.conf.prop.CcdProperties;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.AttributeValue;
-import edu.pitt.dbmi.ccd.web.domain.SummaryCount;
 import edu.pitt.dbmi.ccd.web.domain.file.CategorizeFile;
 import edu.pitt.dbmi.ccd.web.domain.file.FileInfoUpdate;
+import edu.pitt.dbmi.ccd.web.domain.file.SummaryCount;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
-import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -57,7 +58,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
@@ -65,7 +65,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  *
- * Jul 8, 2016 11:36:05 AM
+ * Aug 23, 2016 2:19:05 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
@@ -84,7 +84,6 @@ public class FileManagementService {
     private final VariableFileService variableFileService;
     private final CategorizeFileService categorizeFileService;
 
-    @Autowired
     public FileManagementService(CcdProperties ccdProperties, UserAccountService userAccountService, FileService fileService, FileTypeService fileTypeService, DataFileService dataFileService, VariableFileService variableFileService, CategorizeFileService categorizeFileService) {
         this.ccdProperties = ccdProperties;
         this.userAccountService = userAccountService;
@@ -95,17 +94,22 @@ public class FileManagementService {
         this.categorizeFileService = categorizeFileService;
     }
 
-    private File retrieveFile(Long id, AppUser appUser) {
-        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
-        if (userAccount == null) {
-            throw new ResourceNotFoundException();
-        }
-        File file = fileService.findByIdAndUserAccount(id, userAccount);
-        if (file == null) {
-            throw new ResourceNotFoundException();
+    public File deleteFile(Long id, AppUser appUser) {
+        File file = retrieveFile(id, appUser);
+        try {
+            fileService.delete(file);
+            Files.deleteIfExists(Paths.get(file.getAbsolutePath(), file.getName()));
+        } catch (Exception exception) {
+            LOGGER.error(exception.getMessage());
         }
 
         return file;
+    }
+
+    public void deleteFiles(List<Long> fileIds, AppUser appUser) {
+        fileIds.forEach(id -> {
+            deleteFile(id, appUser);
+        });
     }
 
     public void downloadFile(Long id, AppUser appUser, HttpServletRequest request, HttpServletResponse response) {
@@ -125,25 +129,6 @@ public class FileManagementService {
         }
     }
 
-    public File updateFileInfo(Long id, FileInfoUpdate fileInfoUpdate, AppUser appUser) {
-        File file = retrieveFile(id, appUser);
-        file.setTitle(fileInfoUpdate.getTitle());
-
-        return fileService.save(file);
-    }
-
-    public File deleteFile(Long id, AppUser appUser) {
-        File file = retrieveFile(id, appUser);
-        try {
-            fileService.delete(file);
-            Files.deleteIfExists(Paths.get(file.getAbsolutePath(), file.getName()));
-        } catch (Exception exception) {
-            LOGGER.error(exception.getMessage());
-        }
-
-        return file;
-    }
-
     public boolean categorizeFile(Long id, CategorizeFile categorizeFile, AppUser appUser, RedirectAttributes redirectAttributes) {
         boolean success = categorizeFileService.categorizeFile(id, appUser, categorizeFile);
         if (!success) {
@@ -154,8 +139,11 @@ public class FileManagementService {
         return success;
     }
 
-    public FileType findFileType(FileTypeName fileTypeName) {
-        return fileTypeService.findByFileTypeName(fileTypeName);
+    public File updateFileInfo(Long id, FileInfoUpdate fileInfoUpdate, AppUser appUser) {
+        File file = retrieveFile(id, appUser);
+        file.setTitle(fileInfoUpdate.getTitle());
+
+        return fileService.save(file);
     }
 
     public FileType getFileType(Long id, AppUser appUser) {
@@ -164,7 +152,33 @@ public class FileManagementService {
         return file.getFileType();
     }
 
-    public void showSummaryCounts(AppUser appUser, Model model) {
+    public FileType findFileType(FileTypeName fileTypeName) {
+        return fileTypeService.findByFileTypeName(fileTypeName);
+    }
+
+    public void createUserDirectories(UserAccount userAccount) {
+        if (userAccount == null) {
+            return;
+        }
+
+        Person person = userAccount.getPerson();
+        String workspace = person.getWorkspace();
+        String dataFolder = ccdProperties.getDataFolder();
+        Path[] directories = {
+            Paths.get(workspace, dataFolder)
+        };
+        for (Path directory : directories) {
+            if (Files.notExists(directory)) {
+                try {
+                    Files.createDirectories(directory);
+                } catch (IOException exception) {
+                    LOGGER.error(String.format("Unable to create directory '%s'.", directory), exception);
+                }
+            }
+        }
+    }
+
+    public void retrieveFileCountSummary(AppUser appUser, Model model) {
         UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
         if (userAccount == null) {
             throw new ResourceNotFoundException();
@@ -178,15 +192,15 @@ public class FileManagementService {
         Long priorCounts = fileService.countByFileTypeAndUserAccount(fileTypeService.findByFileTypeName(FileTypeName.PRIOR_KNOWLEDGE), userAccount);
 
         List<SummaryCount> summaryCounts = new LinkedList<>();
-        summaryCounts.add(new SummaryCount("New Uploads", newUploadCounts, "panel panel-primary", "fa fa-file fa-5x white", ViewPath.NEW_UPLOAD));
-        summaryCounts.add(new SummaryCount("Data", dataCounts, "panel panel-green", "fa fa-file fa-5x white", ViewPath.DATA_INPUT));
-        summaryCounts.add(new SummaryCount("Prior Knowledge", priorCounts, "panel panel-green", "fa fa-file fa-5x white", ViewPath.PRIOR_KNOWLEDGE_INPUT));
-        summaryCounts.add(new SummaryCount("Variable", varCounts, "panel panel-green", "fa fa-file fa-5x white", ViewPath.VARIABLE_INPUT));
+        summaryCounts.add(new SummaryCount("Uncategorized File", newUploadCounts, "panel panel-primary", "fa fa-file fa-5x white", ViewPath.NEW_UPLOAD));
+        summaryCounts.add(new SummaryCount("Data", dataCounts, "panel panel-green", "fa fa-file fa-5x white", ViewPath.DATASET_FILE));
+        summaryCounts.add(new SummaryCount("Prior Knowledge", priorCounts, "panel panel-green", "fa fa-file fa-5x white", ViewPath.PRIOR_KNOWLEDGE_FILE));
+        summaryCounts.add(new SummaryCount("Variable", varCounts, "panel panel-green", "fa fa-file fa-5x white", ViewPath.DATA_VARIABLE_FILE));
 
         model.addAttribute("summaryCounts", summaryCounts);
     }
 
-    public void showFileInfo(Long id, AppUser appUser, Model model) {
+    public void showFileInfo(Long id, AppUser appUser, Model model, boolean categorize) {
         File file = retrieveFile(id, appUser);
 
         model.addAttribute("file", file);
@@ -213,9 +227,40 @@ public class FileManagementService {
             }
         }
 
-        categorizeFileService.showFileCategorizationOptions(file, model);
+        if (categorize) {
+            categorizeFileService.showFileCategorizationOptions(file, model);
+        }
     }
 
+//    public void showFileInfo(Long id, AppUser appUser, Model model) {
+//        File file = retrieveFile(id, appUser);
+//
+//        model.addAttribute("file", file);
+//        if (!model.containsAttribute("fileInfoUpdate")) {
+//            model.addAttribute("fileInfoUpdate", new FileInfoUpdate(file.getTitle()));
+//        }
+//
+//        FileType fileType = file.getFileType();
+//        FileTypeName fileTypeName = (fileType == null) ? null : FileTypeName.valueOf(fileType.getName());
+//        if (fileTypeName == null) {
+//            model.addAttribute("collapse", Boolean.FALSE);
+//        } else {
+//            model.addAttribute("collapse", Boolean.TRUE);
+//            switch (fileTypeName) {
+//                case DATASET:
+//                    model.addAttribute(ADDITIONAL_INFO, getDataFileAdditionalInfo(file));
+//                    break;
+//                case PRIOR_KNOWLEDGE:
+//                    model.addAttribute(ADDITIONAL_INFO, getPriorFileAdditionalInfo(file));
+//                    break;
+//                case VARIABLE:
+//                    model.addAttribute(ADDITIONAL_INFO, getVariableFileAdditionalInfo(file));
+//                    break;
+//            }
+//        }
+//
+//        categorizeFileService.showFileCategorizationOptions(file, model);
+//    }
     private List<AttributeValue> getPriorFileAdditionalInfo(File file) {
         Map<String, Integer> counts = new HashMap<>();
         counts.put("forbiddirect", 0);
@@ -414,6 +459,19 @@ public class FileManagementService {
         fileEntity.setUserAccount(userAccount);
 
         return fileEntity;
+    }
+
+    public File retrieveFile(Long id, AppUser appUser) {
+        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+        if (userAccount == null) {
+            throw new ResourceNotFoundException();
+        }
+        File file = fileService.findByIdAndUserAccount(id, userAccount);
+        if (file == null) {
+            throw new ResourceNotFoundException();
+        }
+
+        return file;
     }
 
 }

@@ -37,7 +37,7 @@
                             </li>
                             <li class="divider"></li>
                             <li>
-                                <a href="../shiroLogin.html" th:href="${appUser.federatedUser} ? ${@environment.getProperty('auth0.logout.redirect')} : @{/secured/logout}"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
+                                <a href="../shiroLogin.html" th:href="${appUser.federatedUser} ? ${@environment.getProperty('auth0.issuer') + 'v2/logout?returnTo='}+${#strings.replace(#httpServletRequest.getRequestURL(), #httpServletRequest.getRequestURI(), #httpServletRequest.getContextPath())}+${'/secured/logout&amp;client_id='+@environment.getProperty('auth0.clientId')} : @{/secured/logout}"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
                             </li>
                         </ul>
                     </li>
@@ -56,7 +56,7 @@
                                         <a href="../file/fileUpload.html" th:href="@{/secured/file/upload}"><i class="fa fa-upload fa-fw"></i>File Upload</a>
                                     </li>
                                     <li>
-                                        <a href="#" th:href="@{/secured/file/upload/new}"><i class="fa fa-file-text-o fa-fw"></i> New Upload</a>
+                                        <a href="#" th:href="@{/secured/file/upload/new}"><i class="fa fa-file-text-o fa-fw"></i> Uncategorized File</a>
                                     </li>
                                     <li>
                                         <a href="#"><i class="fa fa-folder fa-fw"></i> Algorithm Input<span class="fa arrow"></span></a>
@@ -76,7 +76,10 @@
                                         <a href="#"><i class="fa fa-folder fa-fw"></i> Algorithm Output<span class="fa arrow"></span></a>
                                         <ul class="nav nav-third-level">
                                             <li>
-                                                <a href="#" th:href="@{/secured/file/output/algorithm/result/run}"><i class="fa fa-file-text-o fa-fw"></i> Run Result</a>
+                                                <a href="#" th:href="@{/secured/file/output/algorithm/result}"><i class="fa fa-file-text-o fa-fw"></i> Run Result</a>
+                                            </li>
+                                            <li>
+                                                <a href="#" th:href="@{/secured/file/output/algorithm/result/comparison}"><i class="fa fa-file-text-o fa-fw"></i> Result Comparison</a>
                                             </li>
                                         </ul>
                                     </li>
@@ -99,10 +102,10 @@
                                 <a href="#"><i class="fa fa-tasks fa-square"></i> Algorithm Results<span class="fa arrow"></span></a>
                                 <ul class="nav nav-second-level">
                                     <li>
-                                        <a href="../result/algorithm/run/algorithmRunResultList.html" th:href="@{/secured/algorithm/result/run}"><i class="fa fa-fw fa-square-o"></i> Run Results</a>
+                                        <a href="../result/algorithm/run/algoResultInfo.html" th:href="@{/secured/algorithm/result}"><i class="fa fa-fw fa-square-o"></i> Run Results</a>
                                     </li>
                                     <li>
-                                        <a href="../algoResultGraphComparison.html" th:href="@{/secured/algorithm/result/graph/comparison}"><i class="fa fa-random fa-fw"></i>Graph Comparisons</a>
+                                        <a href="../algoResultGraphComparison.html" th:href="@{/secured/algorithm/result/comparison}"><i class="fa fa-random fa-fw"></i>Result Comparisons</a>
                                     </li>
                                 </ul>
                             </li>

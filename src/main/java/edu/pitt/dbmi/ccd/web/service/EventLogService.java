@@ -51,17 +51,12 @@ public class EventLogService {
         this.userAccountService = userAccountService;
     }
 
-    public void logUserEvent(EventTypeName eventTypeName, UserAccount userAccount, Long eventLocation) {
-        if (eventTypeName == null || userAccount == null) {
-            return;
-        }
+    public void logUserProfileChange(UserAccount userAccount, Long location) {
+        logUserEvent(EventTypeName.USER_PROFILE_CHANGE, userAccount, location);
+    }
 
-        try {
-            EventType eventType = eventTypeService.findByEventTypeName(eventTypeName);
-            userEventLogService.logUserEvent(eventType, userAccount, eventLocation);
-        } catch (Exception exception) {
-            LOGGER.error(exception.getMessage());
-        }
+    public void logUserPasswordChange(UserAccount userAccount, Long location) {
+        logUserEvent(EventTypeName.USER_PASSWORD_CHANGE, userAccount, location);
     }
 
     public void logUserSignIn(UserAccount userAccount, Long location) {
@@ -81,6 +76,19 @@ public class EventLogService {
 
     public void logUserRegistration(UserAccount userAccount) {
         logUserEvent(EventTypeName.USER_REGISTRATION, userAccount, userAccount.getRegistrationLocation());
+    }
+
+    public void logUserEvent(EventTypeName eventTypeName, UserAccount userAccount, Long eventLocation) {
+        if (eventTypeName == null || userAccount == null) {
+            return;
+        }
+
+        try {
+            EventType eventType = eventTypeService.findByEventTypeName(eventTypeName);
+            userEventLogService.logUserEvent(eventType, userAccount, eventLocation);
+        } catch (Exception exception) {
+            LOGGER.error(exception.getMessage());
+        }
     }
 
 }

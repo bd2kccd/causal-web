@@ -18,7 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.util;
 
-import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
+import edu.pitt.dbmi.ccd.web.conf.prop.CcdProperties;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import javax.servlet.http.HttpServletRequest;
