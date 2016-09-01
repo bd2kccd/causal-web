@@ -81,4 +81,7 @@ public interface ViewPath {
 
     public static final String FGS_CONTINUOUS_VIEW = "algorithm/causal/fgs/fgsc";
 
+    public static final String FEEDBACK_VIEW = "feedback";
+    public static final String REDIRECT_FEEDBACK_VIEW = "redirect:/secured/feedback";
+
 }
