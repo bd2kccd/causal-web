@@ -97,6 +97,12 @@
             <artifactId>ccd-commons</artifactId>
             <version>0.3.1</version>
         </dependency>
+        <!-- Auth0 JTW -->
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>2.2.0</version>
+        </dependency>
     </dependencies>
 
     <build>

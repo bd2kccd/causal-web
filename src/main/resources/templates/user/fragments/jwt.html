@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <title>CCD: Navigator</title>
+        <meta name="description" content="" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="apple-touch-icon" href="../../../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
+        <link rel="icon" href="../../../static/favicon.ico" th:href="@{/favicon.ico}" />
+        <link rel="stylesheet" href="../../../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{/vendors/bootstrap/css/bootstrap.min.css}" />
+        <link rel="stylesheet" href="../../../static/vendors/bootstrap/css/bootstrap-theme.min.css" th:href="@{/vendors/bootstrap/css/bootstrap-theme.min.css}" />
+        <link rel="stylesheet" href="../../../static/vendors/metisMenu/metisMenu.min.css" th:href="@{/vendors/metisMenu/metisMenu.min.css}" />
+        <link rel="stylesheet" href="../../../static/vendors/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.min.css}" />
+        <link rel="stylesheet" href="../../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{/vendors/font-awesome/css/font-awesome.min.css}"/>
+    </head>
+    <body>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading clearfix">
+                        <div class="pull-left">
+                            <h4><i class="fa fa-user fa-fw"></i> JWT(JSON Web Token) for API Authentication</h4>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-sm-12" th:text="*{jwt}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="../../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
+        <script src="../../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
+        <script src="../../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
+        <script src="../../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
+        <script>
+            $(document).ready(function () {
+                $("#view_usqa_panel").show();
+                $("#edit_usqa_panel").hide();
+
+                $("#edit_usqa").click(function () {
+                    $("#view_usqa_panel").hide();
+                    $("#edit_usqa_panel").show();
+                });
+                $("#cancel_usqa").click(function () {
+                    $("#view_usqa_panel").show();
+                    $("#edit_usqa_panel").hide();
+                });
+            });
+            $('#securityQA').validate({
+                rules: {
+                    secureQues: {
+                        nowhitespace: true,
+                        required: true
+                    },
+                    secureAnsw: {
+                        minlength: 1,
+                        maxlength: 25,
+                        nowhitespace: true,
+                        required: true
+                    }
+                },
+                messages: {
+                    currentPassword: "Please Select a security question.",
+                    secureAnsw: "Please enter valid a password (1-25 chars). No space"
+                },
+                highlight: function (element) {
+                    $(element).closest('.form-group').addClass('has-error');
+                },
+                unhighlight: function (element) {
+                    $(element).closest('.form-group').removeClass('has-error');
+                },
+                errorElement: 'span',
+                errorClass: 'help-block',
+                errorPlacement: function (error, element) {
+                    if (element.parent('.input-group').length) {
+                        error.insertAfter(element.parent());
+                    } else {
+                        error.insertAfter(element);
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>

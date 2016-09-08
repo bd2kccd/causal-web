@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.user;
 
+import com.auth0.jwt.JWTSigner;
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.SecurityAnswer;
 import edu.pitt.dbmi.ccd.db.entity.SecurityQuestion;
@@ -33,6 +34,7 @@ import edu.pitt.dbmi.ccd.web.model.user.UserInfo;
 import edu.pitt.dbmi.ccd.web.model.user.UserSecurityQuestionAnswer;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -189,6 +191,25 @@ public class UserProfileController implements ViewPath {
         }
         model.addAttribute("usqa", usqa);
         model.addAttribute("securityQuestions", securityQuestionService.findAllSecurityQuestion());
+
+        // Generate JWT and show it
+        final String issuer = "https://mydomain.com/";
+        final String secret = "causal";
+
+        final long iat = System.currentTimeMillis() / 1000l; // issued at claim
+        final long exp = iat + 60L; // expires claim. In this case the token expires in 60 seconds
+
+        final JWTSigner signer = new JWTSigner(secret);
+        final HashMap<String, Object> claims = new HashMap<String, Object>();
+        claims.put("iss", issuer);
+        claims.put("exp", exp);
+        claims.put("iat", iat);
+
+        final String jwt = signer.sign(claims);
+
+        System.out.println("JWT-----" + jwt);
+
+        model.addAttribute("jwt", jwt);
 
         return USER_PROFILE_VIEW;
     }
