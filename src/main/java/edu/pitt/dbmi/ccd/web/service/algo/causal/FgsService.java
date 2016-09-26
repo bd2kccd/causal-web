@@ -18,7 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.service.algo.causal;
 
-import edu.pitt.dbmi.ccd.db.domain.FileTypeName;
+import edu.pitt.dbmi.ccd.db.domain.FileTypeEnum;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileType;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
@@ -59,13 +59,13 @@ public class FgsService {
             throw new ResourceNotFoundException();
         }
 
-        FileType fileType = fileManagementService.findFileType(FileTypeName.DATASET);
+        FileType fileType = fileManagementService.findByFileTypeEnum(FileTypeEnum.DATASET);
         List<File> datasetList = fileService.findByFileTypeAndUserAccount(fileType, userAccount);
 
-        fileType = fileManagementService.findFileType(FileTypeName.VARIABLE);
+        fileType = fileManagementService.findByFileTypeEnum(FileTypeEnum.VARIABLE);
         List<File> varList = fileService.findByFileTypeAndUserAccount(fileType, userAccount);
 
-        fileType = fileManagementService.findFileType(FileTypeName.PRIOR_KNOWLEDGE);
+        fileType = fileManagementService.findByFileTypeEnum(FileTypeEnum.PRIOR_KNOWLEDGE);
         List<File> priorList = fileService.findByFileTypeAndUserAccount(fileType, userAccount);
 
         FgscRunInfo fgscRunInfo = new FgscRunInfo();

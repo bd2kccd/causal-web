@@ -9,12 +9,12 @@
     <packaging>jar</packaging>
 
     <name>causal-web</name>
-    <description>Causal Web Application</description>
+    <description>Causal Web</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.4.0.RELEASE</version>
+        <version>1.4.1.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -22,9 +22,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
-        <shiro.version>1.3.0</shiro.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <shiro.version>1.3.2</shiro.version>
     </properties>
 
     <dependencies>
@@ -84,17 +84,11 @@
             <artifactId>ccd-db</artifactId>
             <version>1.0.0</version>
         </dependency>
-
-        <dependency>
-            <groupId>javax.el</groupId>
-            <artifactId>javax.el-api</artifactId>
-            <version>3.0.0</version>
-        </dependency>
-
+        
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>auth0-spring-mvc</artifactId>
-            <version>0.2.0</version>
+            <version>1.1.0</version>
         </dependency>
 
         <dependency>

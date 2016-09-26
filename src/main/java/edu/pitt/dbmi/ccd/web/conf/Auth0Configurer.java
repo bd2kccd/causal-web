@@ -18,7 +18,11 @@
  */
 package edu.pitt.dbmi.ccd.web.conf;
 
+import com.auth0.web.Auth0Config;
+import com.auth0.web.Auth0Filter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -34,5 +38,16 @@ import org.springframework.context.annotation.Profile;
 @ComponentScan(basePackages = {"com.auth0.web"})
 @EnableAutoConfiguration
 public class Auth0Configurer {
+
+    @Bean
+    public FilterRegistrationBean filterRegistration(Auth0Config auth0Config) {
+        final FilterRegistrationBean registration = new FilterRegistrationBean();
+        registration.setFilter(new Auth0Filter(auth0Config));
+        registration.addUrlPatterns(auth0Config.getSecuredRoute());
+        registration.addInitParameter("redirectOnAuthError", auth0Config.getLoginRedirectOnFail());
+        registration.setName("Auth0Filter");
+
+        return registration;
+    }
 
 }

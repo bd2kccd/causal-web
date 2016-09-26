@@ -18,7 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.file;
 
-import edu.pitt.dbmi.ccd.db.domain.FileTypeName;
+import edu.pitt.dbmi.ccd.db.domain.FileTypeEnum;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileType;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
@@ -125,8 +125,8 @@ public class FileManagementController implements ViewPath {
             return REDIRECT_NEW_UPLOAD;
         }
 
-        FileTypeName fileTypeName = FileTypeName.valueOf(fileType.getName());
-        switch (fileTypeName) {
+        FileTypeEnum fileTypeEnum = FileTypeEnum.valueOf(fileType.getName());
+        switch (fileTypeEnum) {
             case ALGORITHM_RESULT:
                 return REDIRECT_RESULT_FILE;
             case ALGORITHM_RESULT_COMPARISON:

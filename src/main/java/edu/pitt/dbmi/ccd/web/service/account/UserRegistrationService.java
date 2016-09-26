@@ -19,7 +19,7 @@
 package edu.pitt.dbmi.ccd.web.service.account;
 
 import edu.pitt.dbmi.ccd.db.domain.AccountRegistration;
-import edu.pitt.dbmi.ccd.db.domain.UserRoleName;
+import edu.pitt.dbmi.ccd.db.domain.UserRoleEnum;
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.entity.UserRole;
@@ -109,7 +109,6 @@ public class UserRegistrationService {
             String username = userRegistration.getUsername();
             String password = passwordService.encryptPassword(userRegistration.getPassword());
             boolean activated = !ccdProperties.isRequireActivation();
-            Long location = UriTool.getInetNTOA(request.getRemoteAddr());
             String email = userRegistration.getUsername();
             String firstName = userRegistration.getFirstName();
             String lastName = userRegistration.getLastName();
@@ -120,12 +119,11 @@ public class UserRegistrationService {
             registration.setEmail(email);
             registration.setFirstName(firstName);
             registration.setLastName(lastName);
-            registration.setLocation(location);
             registration.setPassword(password);
             registration.setUsername(username);
             registration.setWorkspace(workspace);
 
-            UserRole userRole = userRoleService.findByUserRoleName(UserRoleName.USER);
+            UserRole userRole = userRoleService.findByEnum(UserRoleEnum.USER);
 
             UserAccount userAccount = null;
             try {
@@ -137,7 +135,7 @@ public class UserRegistrationService {
             if (userAccount == null) {
                 redirectAttributes.addFlashAttribute("errorMsg", REGISTRATION_FAILED);
             } else {
-                eventLogService.logUserRegistration(userAccount);
+                eventLogService.userRegistration(userAccount);
                 if (userAccount.isActivated()) {
                     redirectAttributes.addFlashAttribute("successMsg", REGISTRATION_SUCCESS_NO_ACTIVATION);
                 } else {
@@ -194,7 +192,6 @@ public class UserRegistrationService {
         userAccount.setPassword(encodePassword);
         userAccount.setPerson(person);
         userAccount.setRegistrationDate(new Date(System.currentTimeMillis()));
-        userAccount.setRegistrationLocation(UriTool.getInetNTOA(request.getRemoteAddr()));
         userAccount.setUsername(username);
 
         return userAccount;

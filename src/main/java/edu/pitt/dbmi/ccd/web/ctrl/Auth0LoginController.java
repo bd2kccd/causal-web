@@ -18,19 +18,18 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl;
 
-import com.auth0.web.Auth0User;
+import com.auth0.Auth0User;
+import com.auth0.SessionUtils;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.domain.LoginCredentials;
-import edu.pitt.dbmi.ccd.web.domain.PasswordRecovery;
-import edu.pitt.dbmi.ccd.web.domain.account.UserRegistration;
 import edu.pitt.dbmi.ccd.web.service.ApplicationService;
 import edu.pitt.dbmi.ccd.web.service.Auth0LoginService;
+import java.io.IOException;
+import java.security.Principal;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
-import org.apache.shiro.web.subject.WebSubject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Controller;
@@ -76,48 +75,33 @@ public class Auth0LoginController implements ViewPath {
             sessionStatus.setComplete();
         }
 
-        if (!model.containsAttribute("loginCredentials")) {
-            model.addAttribute("loginCredentials", new LoginCredentials(true));
-        }
-        if (!model.containsAttribute("userRegistration")) {
-            model.addAttribute("userRegistration", new UserRegistration());
-        }
-        if (!model.containsAttribute("passwordRecovery")) {
-            model.addAttribute("passwordRecovery", new PasswordRecovery());
-        }
-
-        auth0LoginService.setAuth0LockProperties(request, model);
+        auth0LoginService.showLoginPage(model, request);
 
         return LOGIN_VIEW;
     }
 
     @RequestMapping(value = "${auth0.loginCallback}", method = RequestMethod.GET)
-    public String callback(final Model model, final RedirectAttributes redirectAttributes, final HttpServletRequest request, final HttpServletResponse response) {
-        Auth0User auth0User = auth0LoginService.handleCallback(redirectAttributes, request, response);
-        if (auth0User == null) {
-            return REDIRECT_LOGIN;
-        }
+    protected void callback(final HttpServletRequest req, final HttpServletResponse res) throws ServletException, IOException {
+        auth0LoginService.handleCallback(req, res);
+    }
 
-        UserAccount userAccount = auth0LoginService.findExistingAccount(auth0User);
+    @RequestMapping(value = "/portal/home", method = RequestMethod.GET)
+    protected String home(final Principal principal, final Model model, final RedirectAttributes redirectAttributes, final HttpServletRequest req, final HttpServletResponse res) {
+        final Auth0User auth0User = (Auth0User) principal;
+
+        UserAccount userAccount = auth0LoginService.retrieveUserAccount(auth0User);
         if (userAccount == null) {
             model.addAttribute("appUser", auth0LoginService.createTempAppUser(auth0User));
 
             return TERMS_VIEW;
         } else if (userAccount.isActivated()) {
-            AppUser appUser = auth0LoginService.logInUser(userAccount, request);
-            appUser.setFirstName(auth0User.getGivenName());
-            appUser.setLastName(auth0User.getFamilyName());
-
-            new WebSubject.Builder(request, response)
-                    .authenticated(true)
-                    .sessionCreationEnabled(true)
-                    .buildSubject();
-
-            model.addAttribute("appUser", appUser);
+            auth0LoginService.logInUser(userAccount, auth0User, req, res, model);
 
             return REDIRECT_HOME;
         } else {
             redirectAttributes.addFlashAttribute("errorMsg", ApplicationService.UNACTIVATED_ACCOUNT);
+            SessionUtils.setTokens(req, null);
+            SessionUtils.setAuth0User(req, null);
 
             return REDIRECT_LOGIN;
         }

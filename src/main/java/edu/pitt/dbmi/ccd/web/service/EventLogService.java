@@ -18,76 +18,52 @@
  */
 package edu.pitt.dbmi.ccd.web.service;
 
-import edu.pitt.dbmi.ccd.db.domain.EventTypeName;
-import edu.pitt.dbmi.ccd.db.entity.EventType;
+import edu.pitt.dbmi.ccd.db.domain.EventTypeEnum;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.service.EventTypeService;
+import edu.pitt.dbmi.ccd.db.entity.UserEventLog;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.db.service.UserEventLogService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
  *
- * Aug 10, 2016 3:53:37 PM
+ * Aug 9, 2016 2:15:36 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @Service
 public class EventLogService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventLogService.class);
-
-    private final EventTypeService eventTypeService;
     private final UserEventLogService userEventLogService;
     private final UserAccountService userAccountService;
 
     @Autowired
-    public EventLogService(EventTypeService eventTypeService, UserEventLogService userEventLogService, UserAccountService userAccountService) {
-        this.eventTypeService = eventTypeService;
+    public EventLogService(UserEventLogService userEventLogService, UserAccountService userAccountService) {
         this.userEventLogService = userEventLogService;
         this.userAccountService = userAccountService;
     }
 
-    public void logUserProfileChange(UserAccount userAccount, Long location) {
-        logUserEvent(EventTypeName.USER_PROFILE_CHANGE, userAccount, location);
+    public UserEventLog userProfileUpdate(UserAccount userAccount) {
+        return userEventLogService.logUserEvent(EventTypeEnum.USER_PROFILE_UPDATE, userAccount);
     }
 
-    public void logUserPasswordChange(UserAccount userAccount, Long location) {
-        logUserEvent(EventTypeName.USER_PASSWORD_CHANGE, userAccount, location);
+    public UserEventLog userRegistration(UserAccount userAccount) {
+        return userEventLogService.logUserEvent(EventTypeEnum.USER_REGISTRATION, userAccount);
     }
 
-    public void logUserSignIn(UserAccount userAccount, Long location) {
-        logUserEvent(EventTypeName.USER_LOGIN, userAccount, location);
+    public UserEventLog userLogIn(UserAccount userAccount) {
+        return userEventLogService.logUserEvent(EventTypeEnum.USER_LOGIN, userAccount);
     }
 
-    public void logUserSignInFailed(String username, Long location) {
+    public UserEventLog userLogOut(UserAccount userAccount) {
+        return userEventLogService.logUserEvent(EventTypeEnum.USER_LOGOUT, userAccount);
+    }
+
+    public void userLogInFailed(String username) {
         UserAccount userAccount = userAccountService.findByUsername(username);
         if (userAccount != null) {
-            logUserEvent(EventTypeName.USER_LOGIN_FAILED, userAccount, location);
-        }
-    }
-
-    public void logUserSignOut(UserAccount userAccount, Long location) {
-        logUserEvent(EventTypeName.USER_LOGOUT, userAccount, location);
-    }
-
-    public void logUserRegistration(UserAccount userAccount) {
-        logUserEvent(EventTypeName.USER_REGISTRATION, userAccount, userAccount.getRegistrationLocation());
-    }
-
-    public void logUserEvent(EventTypeName eventTypeName, UserAccount userAccount, Long eventLocation) {
-        if (eventTypeName == null || userAccount == null) {
-            return;
-        }
-
-        try {
-            EventType eventType = eventTypeService.findByEventTypeName(eventTypeName);
-            userEventLogService.logUserEvent(eventType, userAccount, eventLocation);
-        } catch (Exception exception) {
-            LOGGER.error(exception.getMessage());
+            userEventLogService.logUserEvent(EventTypeEnum.USER_LOGIN_FAILED, userAccount);
         }
     }
 

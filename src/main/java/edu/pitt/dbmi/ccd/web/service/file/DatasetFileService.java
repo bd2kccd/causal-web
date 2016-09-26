@@ -18,7 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.service.file;
 
-import edu.pitt.dbmi.ccd.db.domain.FileTypeName;
+import edu.pitt.dbmi.ccd.db.domain.FileTypeEnum;
 import edu.pitt.dbmi.ccd.db.entity.FileType;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileService;
@@ -55,7 +55,7 @@ public class DatasetFileService {
             throw new ResourceNotFoundException();
         }
 
-        FileType fileType = fileManagementService.findFileType(FileTypeName.DATASET);
+        FileType fileType = fileManagementService.findByFileTypeEnum(FileTypeEnum.DATASET);
         fileManagementService.syncDatabaseWithDirectory(fileType, userAccount);
 
         model.addAttribute("pageTitle", "Data Files");

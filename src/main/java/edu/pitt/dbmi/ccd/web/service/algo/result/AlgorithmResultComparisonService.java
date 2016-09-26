@@ -21,7 +21,7 @@ package edu.pitt.dbmi.ccd.web.service.algo.result;
 import edu.pitt.dbmi.ccd.commons.graph.SimpleGraph;
 import edu.pitt.dbmi.ccd.commons.graph.SimpleGraphComparison;
 import edu.pitt.dbmi.ccd.commons.graph.SimpleGraphUtil;
-import edu.pitt.dbmi.ccd.db.domain.FileTypeName;
+import edu.pitt.dbmi.ccd.db.domain.FileTypeEnum;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileType;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
@@ -103,7 +103,7 @@ public class AlgorithmResultComparisonService {
                 File file = fileService.findById(comparedFile.getId());
                 if (file == null) {
                     comparedFile.setId(null);
-                } else if (FileTypeName.valueOf(file.getFileType().getName()) != FileTypeName.ALGORITHM_RESULT) {
+                } else if (FileTypeEnum.valueOf(file.getFileType().getName()) != FileTypeEnum.ALGORITHM_RESULT) {
                     comparedFile.setId(null);
                 } else if (!file.getMd5checkSum().equals(comparedFile.getMd5checkSum())) {
                     comparedFile.setId(null);
@@ -144,7 +144,7 @@ public class AlgorithmResultComparisonService {
         if (success) {
             try {
                 File file = fileManagementService.createFileEntity(xmlFile, userAccount);
-                file.setFileType(fileManagementService.findFileType(FileTypeName.ALGORITHM_RESULT_COMPARISON));
+                file.setFileType(fileManagementService.findByFileTypeEnum(FileTypeEnum.ALGORITHM_RESULT_COMPARISON));
                 fileService.save(file);
             } catch (Exception exception) {
                 LOGGER.error(exception.getMessage());
@@ -207,7 +207,7 @@ public class AlgorithmResultComparisonService {
             throw new ResourceNotFoundException();
         }
 
-        FileType fileType = fileManagementService.findFileType(FileTypeName.ALGORITHM_RESULT_COMPARISON);
+        FileType fileType = fileManagementService.findByFileTypeEnum(FileTypeEnum.ALGORITHM_RESULT_COMPARISON);
 
         fileManagementService.syncDatabaseWithDirectory(fileType, userAccount);
 

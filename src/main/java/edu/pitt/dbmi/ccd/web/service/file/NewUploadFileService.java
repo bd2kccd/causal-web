@@ -55,7 +55,7 @@ public class NewUploadFileService {
 
         fileManagementService.syncDatabaseWithDirectory(userAccount);
 
-        model.addAttribute("pageTitle", "New Uploaded Files");
+        model.addAttribute("pageTitle", "Uncategorized Files");
         model.addAttribute("files", fileService.findUntypedFileByUserAccount(userAccount));
     }
 

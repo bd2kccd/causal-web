@@ -18,13 +18,15 @@
  */
 package edu.pitt.dbmi.ccd.web.service;
 
+import com.auth0.SessionUtils;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.db.service.UserLoginService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.LoginCredentials;
+import edu.pitt.dbmi.ccd.web.domain.file.SummaryCount;
 import edu.pitt.dbmi.ccd.web.service.file.FileManagementService;
-import edu.pitt.dbmi.ccd.web.util.UriTool;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.apache.shiro.SecurityUtils;
@@ -57,21 +59,24 @@ public class ApplicationService {
     private final UserAccountService userAccountService;
 
     private final AppUserService appUserService;
+    private final UserLoginService userLoginService;
     private final EventLogService eventLogService;
     private final FileManagementService fileManagementService;
-    private final UserLoginService userLoginService;
 
     @Autowired
-    public ApplicationService(UserAccountService userAccountService, AppUserService appUserService, EventLogService eventLogService, FileManagementService fileManagementService, UserLoginService userLoginService) {
+    public ApplicationService(UserAccountService userAccountService, AppUserService appUserService, UserLoginService userLoginService, EventLogService eventLogService, FileManagementService fileManagementService) {
         this.userAccountService = userAccountService;
         this.appUserService = appUserService;
+        this.userLoginService = userLoginService;
         this.eventLogService = eventLogService;
         this.fileManagementService = fileManagementService;
-        this.userLoginService = userLoginService;
     }
 
     public void retrieveFileCounts(final AppUser appUser, final Model model) {
-        fileManagementService.retrieveFileCountSummary(appUser, model);
+        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
+        List<SummaryCount> summaryCounts = fileManagementService.retrieveFileCountSummary(userAccount);
+
+        model.addAttribute("summaryCounts", summaryCounts);
     }
 
     public boolean logInUser(
@@ -93,12 +98,12 @@ public class ApplicationService {
         if (!currentUser.isAuthenticated()) {
             redirectAttributes.addFlashAttribute("errorMsg", INVALID_CREDENTIALS);
             redirectAttributes.addFlashAttribute("loginCredentials", loginCredentials);
-            eventLogService.logUserSignInFailed(loginCredentials.getLoginUsername(), UriTool.getInetNTOA(request.getRemoteAddr()));
+            eventLogService.userLogInFailed(username);
 
             return false;
         }
 
-        UserAccount userAccount = userAccountService.findByUsername(loginCredentials.getLoginUsername());
+        UserAccount userAccount = userAccountService.findByUsername(username);
         if (!userAccount.isActivated()) {
             currentUser.logout();
             redirectAttributes.addFlashAttribute("errorMsg", UNACTIVATED_ACCOUNT);
@@ -106,13 +111,11 @@ public class ApplicationService {
             return false;
         }
 
-        Long location = UriTool.getInetNTOA(request.getRemoteAddr());
-        eventLogService.logUserSignIn(userAccount, location);
-        userLoginService.logUserSignIn(userAccount, location);
+        eventLogService.userLogIn(userAccount);
+        userLoginService.logUserSignIn(userAccount);
 
         // reset data after successful login
         userAccount.setActivationKey(null);
-        userAccount.getUserLoginAttempts().clear();
         userAccountService.save(userAccount);
 
         // create user directories if not existed
@@ -127,7 +130,7 @@ public class ApplicationService {
             AppUser appUser,
             SessionStatus sessionStatus,
             RedirectAttributes redirectAttributes,
-            HttpServletRequest request) {
+            HttpServletRequest req) {
         Subject currentUser = SecurityUtils.getSubject();
         if (currentUser.isAuthenticated()) {
             currentUser.logout();
@@ -136,10 +139,15 @@ public class ApplicationService {
 
             String username = appUser.getUsername();
             UserAccount userAccount = userAccountService.findByUsername(username);
-            eventLogService.logUserSignOut(userAccount, UriTool.getInetNTOA(request.getRemoteAddr()));
+            eventLogService.userLogOut(userAccount);
+
+            if (appUser.getFederatedUser()) {
+                SessionUtils.setTokens(req, null);
+                SessionUtils.setAuth0User(req, null);
+            }
         }
 
-        HttpSession httpSession = request.getSession();
+        HttpSession httpSession = req.getSession();
         if (httpSession != null) {
             httpSession.invalidate();
         }

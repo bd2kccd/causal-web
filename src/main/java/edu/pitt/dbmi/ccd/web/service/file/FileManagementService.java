@@ -18,11 +18,13 @@
  */
 package edu.pitt.dbmi.ccd.web.service.file;
 
-import edu.pitt.dbmi.ccd.commons.file.FilePrint;
 import edu.pitt.dbmi.ccd.commons.file.MessageDigestHash;
 import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
-import edu.pitt.dbmi.ccd.db.domain.FileTypeName;
+import edu.pitt.dbmi.ccd.db.domain.FileTypeEnum;
+import static edu.pitt.dbmi.ccd.db.domain.FileTypeEnum.DATASET;
+import static edu.pitt.dbmi.ccd.db.domain.FileTypeEnum.PRIOR_KNOWLEDGE;
+import static edu.pitt.dbmi.ccd.db.domain.FileTypeEnum.VARIABLE;
 import edu.pitt.dbmi.ccd.db.entity.DataFile;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileType;
@@ -58,6 +60,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
@@ -77,21 +80,32 @@ public class FileManagementService {
     private static final String ADDITIONAL_INFO = "additionalInfo";
 
     private final CcdProperties ccdProperties;
-    private final UserAccountService userAccountService;
     private final FileService fileService;
     private final FileTypeService fileTypeService;
     private final DataFileService dataFileService;
     private final VariableFileService variableFileService;
     private final CategorizeFileService categorizeFileService;
+    private final UserAccountService userAccountService;
 
-    public FileManagementService(CcdProperties ccdProperties, UserAccountService userAccountService, FileService fileService, FileTypeService fileTypeService, DataFileService dataFileService, VariableFileService variableFileService, CategorizeFileService categorizeFileService) {
+    @Autowired
+    public FileManagementService(CcdProperties ccdProperties, FileService fileService, FileTypeService fileTypeService, DataFileService dataFileService, VariableFileService variableFileService, CategorizeFileService categorizeFileService, UserAccountService userAccountService) {
         this.ccdProperties = ccdProperties;
-        this.userAccountService = userAccountService;
         this.fileService = fileService;
         this.fileTypeService = fileTypeService;
         this.dataFileService = dataFileService;
         this.variableFileService = variableFileService;
         this.categorizeFileService = categorizeFileService;
+        this.userAccountService = userAccountService;
+    }
+
+    public FileType findByFileTypeEnum(FileTypeEnum fileTypeEnum) {
+        return fileTypeService.findByEnum(fileTypeEnum);
+    }
+
+    public FileType getFileType(Long id, AppUser appUser) {
+        File file = retrieveFile(id, appUser);
+
+        return file.getFileType();
     }
 
     public File deleteFile(Long id, AppUser appUser) {
@@ -146,121 +160,31 @@ public class FileManagementService {
         return fileService.save(file);
     }
 
-    public FileType getFileType(Long id, AppUser appUser) {
-        File file = retrieveFile(id, appUser);
-
-        return file.getFileType();
-    }
-
-    public FileType findFileType(FileTypeName fileTypeName) {
-        return fileTypeService.findByFileTypeName(fileTypeName);
-    }
-
-    public void createUserDirectories(UserAccount userAccount) {
-        if (userAccount == null) {
-            return;
-        }
-
-        Person person = userAccount.getPerson();
-        String workspace = person.getWorkspace();
-        String dataFolder = ccdProperties.getDataFolder();
-        Path[] directories = {
-            Paths.get(workspace, dataFolder)
-        };
-        for (Path directory : directories) {
-            if (Files.notExists(directory)) {
-                try {
-                    Files.createDirectories(directory);
-                } catch (IOException exception) {
-                    LOGGER.error(String.format("Unable to create directory '%s'.", directory), exception);
-                }
-            }
-        }
-    }
-
-    public void retrieveFileCountSummary(AppUser appUser, Model model) {
+    public File retrieveFile(Long id, AppUser appUser) {
         UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
         if (userAccount == null) {
             throw new ResourceNotFoundException();
         }
+        File file = fileService.findByIdAndUserAccount(id, userAccount);
+        if (file == null) {
+            throw new ResourceNotFoundException();
+        }
 
-        syncDatabaseWithDirectory(userAccount);
-
-        Long newUploadCounts = fileService.countUntypedFileByUserAccount(userAccount);
-        Long dataCounts = fileService.countByFileTypeAndUserAccount(fileTypeService.findByFileTypeName(FileTypeName.DATASET), userAccount);
-        Long varCounts = fileService.countByFileTypeAndUserAccount(fileTypeService.findByFileTypeName(FileTypeName.VARIABLE), userAccount);
-        Long priorCounts = fileService.countByFileTypeAndUserAccount(fileTypeService.findByFileTypeName(FileTypeName.PRIOR_KNOWLEDGE), userAccount);
-
-        List<SummaryCount> summaryCounts = new LinkedList<>();
-        summaryCounts.add(new SummaryCount("Uncategorized File", newUploadCounts, "panel panel-primary", "fa fa-file fa-5x white", ViewPath.NEW_UPLOAD));
-        summaryCounts.add(new SummaryCount("Data", dataCounts, "panel panel-green", "fa fa-file fa-5x white", ViewPath.DATASET_FILE));
-        summaryCounts.add(new SummaryCount("Prior Knowledge", priorCounts, "panel panel-green", "fa fa-file fa-5x white", ViewPath.PRIOR_KNOWLEDGE_FILE));
-        summaryCounts.add(new SummaryCount("Variable", varCounts, "panel panel-green", "fa fa-file fa-5x white", ViewPath.DATA_VARIABLE_FILE));
-
-        model.addAttribute("summaryCounts", summaryCounts);
+        return file;
     }
 
-    public void showFileInfo(Long id, AppUser appUser, Model model, boolean categorize) {
-        File file = retrieveFile(id, appUser);
+    private List<AttributeValue> getDataFileAdditionalInfo(File file) {
+        List<AttributeValue> infos = new LinkedList<>();
 
-        model.addAttribute("file", file);
-        if (!model.containsAttribute("fileInfoUpdate")) {
-            model.addAttribute("fileInfoUpdate", new FileInfoUpdate(file.getTitle()));
-        }
+        DataFile dataFile = dataFileService.findByFile(file);
+        infos.add(new AttributeValue("Delimiter:", dataFile.getFileDelimiter().getName()));
+        infos.add(new AttributeValue("Variable:", dataFile.getVariableType().getName()));
+        infos.add(new AttributeValue("Number of Columns:", dataFile.getNumOfColumns().toString()));
+        infos.add(new AttributeValue("Number of Rows:", dataFile.getNumOfRows().toString()));
 
-        FileType fileType = file.getFileType();
-        FileTypeName fileTypeName = (fileType == null) ? null : FileTypeName.valueOf(fileType.getName());
-        if (fileTypeName == null) {
-            model.addAttribute("collapse", Boolean.FALSE);
-        } else {
-            model.addAttribute("collapse", Boolean.TRUE);
-            switch (fileTypeName) {
-                case DATASET:
-                    model.addAttribute(ADDITIONAL_INFO, getDataFileAdditionalInfo(file));
-                    break;
-                case PRIOR_KNOWLEDGE:
-                    model.addAttribute(ADDITIONAL_INFO, getPriorFileAdditionalInfo(file));
-                    break;
-                case VARIABLE:
-                    model.addAttribute(ADDITIONAL_INFO, getVariableFileAdditionalInfo(file));
-                    break;
-            }
-        }
-
-        if (categorize) {
-            categorizeFileService.showFileCategorizationOptions(file, model);
-        }
+        return infos;
     }
 
-//    public void showFileInfo(Long id, AppUser appUser, Model model) {
-//        File file = retrieveFile(id, appUser);
-//
-//        model.addAttribute("file", file);
-//        if (!model.containsAttribute("fileInfoUpdate")) {
-//            model.addAttribute("fileInfoUpdate", new FileInfoUpdate(file.getTitle()));
-//        }
-//
-//        FileType fileType = file.getFileType();
-//        FileTypeName fileTypeName = (fileType == null) ? null : FileTypeName.valueOf(fileType.getName());
-//        if (fileTypeName == null) {
-//            model.addAttribute("collapse", Boolean.FALSE);
-//        } else {
-//            model.addAttribute("collapse", Boolean.TRUE);
-//            switch (fileTypeName) {
-//                case DATASET:
-//                    model.addAttribute(ADDITIONAL_INFO, getDataFileAdditionalInfo(file));
-//                    break;
-//                case PRIOR_KNOWLEDGE:
-//                    model.addAttribute(ADDITIONAL_INFO, getPriorFileAdditionalInfo(file));
-//                    break;
-//                case VARIABLE:
-//                    model.addAttribute(ADDITIONAL_INFO, getVariableFileAdditionalInfo(file));
-//                    break;
-//            }
-//        }
-//
-//        categorizeFileService.showFileCategorizationOptions(file, model);
-//    }
     private List<AttributeValue> getPriorFileAdditionalInfo(File file) {
         Map<String, Integer> counts = new HashMap<>();
         counts.put("forbiddirect", 0);
@@ -316,34 +240,91 @@ public class FileManagementService {
         return infos;
     }
 
-    private List<AttributeValue> getDataFileAdditionalInfo(File file) {
-        List<AttributeValue> infos = new LinkedList<>();
+    public void showFileInfo(Long id, AppUser appUser, Model model, boolean categorize) {
+        File file = retrieveFile(id, appUser);
 
-        DataFile dataFile = dataFileService.findByFile(file);
-        infos.add(new AttributeValue("Delimiter:", dataFile.getFileDelimiter().getName()));
-        infos.add(new AttributeValue("Variable:", dataFile.getVariableType().getName()));
-        infos.add(new AttributeValue("Number of Columns:", dataFile.getNumOfColumns().toString()));
-        infos.add(new AttributeValue("Number of Rows:", dataFile.getNumOfRows().toString()));
-
-        return infos;
-    }
-
-    public List<AttributeValue> getFileBasicInfo(File fileEntity) {
-        List<AttributeValue> basicInfos = new LinkedList<>();
-
-        Path localFile = Paths.get(fileEntity.getAbsolutePath(), fileEntity.getName());
-        try {
-            BasicFileInfo info = FileInfos.basicPathInfo(localFile);
-            basicInfos.add(new AttributeValue("Size:", FilePrint.humanReadableSize(info.getSize(), true)));
-            basicInfos.add(new AttributeValue("Creation Time:", FilePrint.fileTimestamp(info.getCreationTime())));
-            basicInfos.add(new AttributeValue("Last Access Time:", FilePrint.fileTimestamp(info.getLastAccessTime())));
-            basicInfos.add(new AttributeValue("Last Modified Time:", FilePrint.fileTimestamp(info.getLastModifiedTime())));
-            basicInfos.add(new AttributeValue("MD5:", fileEntity.getMd5checkSum()));
-        } catch (IOException exception) {
-            LOGGER.error(exception.getMessage());
+        model.addAttribute("file", file);
+        if (!model.containsAttribute("fileInfoUpdate")) {
+            model.addAttribute("fileInfoUpdate", new FileInfoUpdate(file.getTitle()));
         }
 
-        return basicInfos;
+        FileType fileType = file.getFileType();
+        FileTypeEnum fileTypeEnum = (fileType == null) ? null : FileTypeEnum.valueOf(fileType.getName());
+        if (fileTypeEnum == null) {
+            model.addAttribute("collapse", Boolean.FALSE);
+        } else {
+            model.addAttribute("collapse", Boolean.TRUE);
+            switch (fileTypeEnum) {
+                case DATASET:
+                    model.addAttribute(ADDITIONAL_INFO, getDataFileAdditionalInfo(file));
+                    break;
+                case PRIOR_KNOWLEDGE:
+                    model.addAttribute(ADDITIONAL_INFO, getPriorFileAdditionalInfo(file));
+                    break;
+                case VARIABLE:
+                    model.addAttribute(ADDITIONAL_INFO, getVariableFileAdditionalInfo(file));
+                    break;
+            }
+        }
+
+        if (categorize) {
+            categorizeFileService.showFileCategorizationOptions(file, model);
+        }
+    }
+
+    public List<SummaryCount> retrieveFileCountSummary(UserAccount userAccount) {
+        syncDatabaseWithDirectory(userAccount);
+
+        Long newUploadCounts = fileService.countUntypedFileByUserAccount(userAccount);
+        Long dataCounts = fileService.countByFileTypeAndUserAccount(fileTypeService.findByEnum(FileTypeEnum.DATASET), userAccount);
+        Long varCounts = fileService.countByFileTypeAndUserAccount(fileTypeService.findByEnum(FileTypeEnum.VARIABLE), userAccount);
+        Long priorCounts = fileService.countByFileTypeAndUserAccount(fileTypeService.findByEnum(FileTypeEnum.PRIOR_KNOWLEDGE), userAccount);
+
+        List<SummaryCount> summaryCounts = new LinkedList<>();
+        summaryCounts.add(new SummaryCount("Uncategorized File", newUploadCounts, "panel panel-primary", "fa fa-file fa-5x white", ViewPath.NEW_UPLOAD));
+        summaryCounts.add(new SummaryCount("Data", dataCounts, "panel panel-green", "fa fa-file fa-5x white", ViewPath.DATASET_FILE));
+        summaryCounts.add(new SummaryCount("Prior Knowledge", priorCounts, "panel panel-green", "fa fa-file fa-5x white", ViewPath.PRIOR_KNOWLEDGE_FILE));
+        summaryCounts.add(new SummaryCount("Variable", varCounts, "panel panel-green", "fa fa-file fa-5x white", ViewPath.DATA_VARIABLE_FILE));
+
+        return summaryCounts;
+    }
+
+    public void createUserDirectories(UserAccount userAccount) {
+        Person person = userAccount.getPerson();
+        String workspace = person.getWorkspace();
+        String dataFolder = ccdProperties.getDataFolder();
+        Path[] directories = {
+            Paths.get(workspace, dataFolder)
+        };
+        for (Path directory : directories) {
+            if (Files.notExists(directory)) {
+                try {
+                    Files.createDirectories(directory);
+                } catch (IOException exception) {
+                    LOGGER.error(String.format("Unable to create directory '%s'.", directory), exception);
+                }
+            }
+        }
+    }
+
+    public File createFileEntity(Path file, UserAccount userAccount) throws IOException {
+        BasicFileInfo fileInfo = FileInfos.basicPathInfo(file);
+        String name = fileInfo.getFilename();
+        String absolutePath = fileInfo.getAbsolutePath().toString();
+        String md5checkSum = MessageDigestHash.computeMD5Hash(file);
+        Date creationTime = new Date(fileInfo.getCreationTime());
+        long fileSize = fileInfo.getSize();
+
+        File fileEntity = new File();
+        fileEntity.setAbsolutePath(absolutePath);
+        fileEntity.setCreationTime(creationTime);
+        fileEntity.setFileSize(fileSize);
+        fileEntity.setMd5checkSum(md5checkSum);
+        fileEntity.setName(name);
+        fileEntity.setTitle(name);
+        fileEntity.setUserAccount(userAccount);
+
+        return fileEntity;
     }
 
     public void syncDatabaseWithDirectory(UserAccount userAccount) {
@@ -439,39 +420,6 @@ public class FileManagementService {
             });
             fileService.delete(files);
         }
-    }
-
-    public File createFileEntity(Path file, UserAccount userAccount) throws IOException {
-        BasicFileInfo fileInfo = FileInfos.basicPathInfo(file);
-        String name = fileInfo.getFilename();
-        String absolutePath = fileInfo.getAbsolutePath().toString();
-        String md5checkSum = MessageDigestHash.computeMD5Hash(file);
-        Date creationTime = new Date(fileInfo.getCreationTime());
-        long fileSize = fileInfo.getSize();
-
-        File fileEntity = new File();
-        fileEntity.setAbsolutePath(absolutePath);
-        fileEntity.setCreationTime(creationTime);
-        fileEntity.setFileSize(fileSize);
-        fileEntity.setMd5checkSum(md5checkSum);
-        fileEntity.setName(name);
-        fileEntity.setTitle(name);
-        fileEntity.setUserAccount(userAccount);
-
-        return fileEntity;
-    }
-
-    public File retrieveFile(Long id, AppUser appUser) {
-        UserAccount userAccount = userAccountService.findByUsername(appUser.getUsername());
-        if (userAccount == null) {
-            throw new ResourceNotFoundException();
-        }
-        File file = fileService.findByIdAndUserAccount(id, userAccount);
-        if (file == null) {
-            throw new ResourceNotFoundException();
-        }
-
-        return file;
     }
 
 }

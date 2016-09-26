@@ -19,9 +19,9 @@
 package edu.pitt.dbmi.ccd.web.service.file;
 
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
-import edu.pitt.dbmi.ccd.db.domain.FileDelimiterName;
-import edu.pitt.dbmi.ccd.db.domain.FileTypeName;
-import edu.pitt.dbmi.ccd.db.domain.VariableTypeName;
+import edu.pitt.dbmi.ccd.db.domain.FileDelimiterEnum;
+import edu.pitt.dbmi.ccd.db.domain.FileTypeEnum;
+import edu.pitt.dbmi.ccd.db.domain.VariableTypeEnum;
 import edu.pitt.dbmi.ccd.db.entity.DataFile;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileDelimiter;
@@ -82,7 +82,7 @@ public class CategorizeFileService {
 
         List<FileType> fileTypes = fileTypeService.findAll();
         fileTypes.forEach(fileType -> {
-            if (FileTypeName.valueOf(fileType.getName()) != FileTypeName.ALGORITHM_RESULT_COMPARISON) {
+            if (FileTypeEnum.valueOf(fileType.getName()) != FileTypeEnum.ALGORITHM_RESULT_COMPARISON) {
                 fileTypeOpts.add(fileType);
             }
         });
@@ -99,7 +99,7 @@ public class CategorizeFileService {
         model.addAttribute("fileTypes", fileTypeOpts);
         model.addAttribute("fileDelimiters", fileDelimiterService.findAll());
         model.addAttribute("variableTypes", variableTypeService.findAll());
-        model.addAttribute("dataTypeId", fileTypeService.findByFileTypeName(FileTypeName.DATASET).getId());
+        model.addAttribute("dataTypeId", fileTypeService.findByEnum(FileTypeEnum.DATASET).getId());
     }
 
     public boolean categorizeFile(Long fileId, AppUser appUser, CategorizeFile categorizeFile) {
@@ -116,7 +116,7 @@ public class CategorizeFileService {
             throw new ResourceNotFoundException();
         }
 
-        FileTypeName fileTypeName = FileTypeName.valueOf(fileType.getName());
+        FileTypeEnum fileTypeName = FileTypeEnum.valueOf(fileType.getName());
         switch (fileTypeName) {
             case DATASET:
                 FileDelimiter fileDelimiter = fileDelimiterService.findById(categorizeFile.getFileDelimiterId());
@@ -183,7 +183,7 @@ public class CategorizeFileService {
     private CategorizeFile createCategorizeFile(File file) {
         FileType fileType = file.getFileType();
         if (fileType == null) {
-            fileType = fileTypeService.findByFileTypeName(FileTypeName.DATASET);
+            fileType = fileTypeService.findByEnum(FileTypeEnum.DATASET);
         }
 
         FileDelimiter fileDelimiter;
@@ -191,9 +191,9 @@ public class CategorizeFileService {
         DataFile dataFile = dataFileService.findByFile(file);
         if (dataFile == null) {
             fileDelimiter = file.getName().endsWith(".csv")
-                    ? fileDelimiterService.findByFileDelimiterName(FileDelimiterName.COMMA)
-                    : fileDelimiterService.findByFileDelimiterName(FileDelimiterName.TAB);
-            variableType = variableTypeService.findByVariableTypeName(VariableTypeName.CONTINUOUS);
+                    ? fileDelimiterService.findByEnum(FileDelimiterEnum.COMMA)
+                    : fileDelimiterService.findByEnum(FileDelimiterEnum.TAB);
+            variableType = variableTypeService.findByEnum(VariableTypeEnum.CONTINUOUS);
         } else {
             fileDelimiter = dataFile.getFileDelimiter();
             variableType = dataFile.getVariableType();

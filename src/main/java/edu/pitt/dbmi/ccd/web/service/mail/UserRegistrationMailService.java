@@ -110,12 +110,10 @@ public class UserRegistrationMailService extends AbstractMailService {
     private Map<String, String> createUserActivationMsgVariables(UserAccount userAccount, String activationLink) {
         String email = userAccount.getPerson().getEmail();
         String registrationDate = EMAIL_DATE_FORMAT.format(userAccount.getRegistrationDate());
-        String registrationLocation = toInetATON(userAccount.getRegistrationLocation());
 
         Map<String, String> variables = new HashMap<>();
         variables.put("email", email);
         variables.put("registrationDate", registrationDate);
-        variables.put("registrationLocation", registrationLocation);
         variables.put("activationLink", activationLink);
 
         return variables;

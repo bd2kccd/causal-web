@@ -26,7 +26,6 @@ import edu.pitt.dbmi.ccd.web.domain.account.PasswordChange;
 import edu.pitt.dbmi.ccd.web.domain.account.UserInfo;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.EventLogService;
-import edu.pitt.dbmi.ccd.web.util.UriTool;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.slf4j.Logger;
@@ -91,7 +90,7 @@ public class UserProfileService {
 
                 model.addAttribute("appUser", appUserService.updateUserProfile(appUser, person));
 
-                eventLogService.logUserProfileChange(userAccount, UriTool.getInetNTOA(request.getRemoteAddr()));
+                eventLogService.userProfileUpdate(userAccount);
             } catch (Exception exception) {
                 LOGGER.error(String.format("Unable to update user '%s' information.", username), exception);
                 redirectAttributes.addFlashAttribute("profileChangeError", USER_PROFILE_UPDATE_FAILED);
@@ -109,8 +108,7 @@ public class UserProfileService {
                 userAccount.setPassword(passwordService.encryptPassword(passwordChange.getNewPassword()));
                 try {
                     userAccountService.updateAccount(userAccount);
-
-                    eventLogService.logUserPasswordChange(userAccount, UriTool.getInetNTOA(request.getRemoteAddr()));
+                    eventLogService.userProfileUpdate(userAccount);
                 } catch (Exception exception) {
                     LOGGER.error(String.format("Unable to update user '%s' password.", username), exception);
                     redirectAttributes.addFlashAttribute("pwdChangeErrMsg", PASSWORD_UPDATE_FAILED);
