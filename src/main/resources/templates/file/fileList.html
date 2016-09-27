@@ -43,7 +43,7 @@
                                         <td>
                                             <a href="#" th:href="@{${#httpServletRequest.getServletPath() + '/info'}(id=${file.id})}" th:text="${file.title}"></a>
                                         </td>
-                                        <td th:text="${file.fileSize} ? ${@webUtility.printSizeWithUnit(file.fileSize)} : '--'"></td>
+                                        <td th:text="${file.fileSize} ? ${@appTool.printSizeWithUnit(file.fileSize)} : '--'"></td>
                                         <td th:text="${#dates.format(file.creationTime,'MMM dd, yyyy hh:mm aaa')}"></td>
                                         <td>
                                             <p data-placement="top" data-toggle="tooltip" title="Delete File">

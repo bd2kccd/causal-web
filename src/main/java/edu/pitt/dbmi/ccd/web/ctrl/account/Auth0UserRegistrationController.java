@@ -18,13 +18,18 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.account;
 
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
+import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.REDIRECT_HOME;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.service.Auth0LoginService;
 import edu.pitt.dbmi.ccd.web.service.account.Auth0UserRegistrationService;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -46,10 +51,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class Auth0UserRegistrationController implements ViewPath {
 
     private final Auth0UserRegistrationService auth0UserRegistrationService;
+    private final Auth0LoginService auth0LoginService;
 
     @Autowired
-    public Auth0UserRegistrationController(Auth0UserRegistrationService auth0UserRegistrationService) {
+    public Auth0UserRegistrationController(Auth0UserRegistrationService auth0UserRegistrationService, Auth0LoginService auth0LoginService) {
         this.auth0UserRegistrationService = auth0UserRegistrationService;
+        this.auth0LoginService = auth0LoginService;
     }
 
     @RequestMapping(method = RequestMethod.POST)
@@ -57,16 +64,21 @@ public class Auth0UserRegistrationController implements ViewPath {
             @RequestParam("agree") boolean agree,
             @ModelAttribute("appUser") final AppUser appUser,
             final SessionStatus sessionStatus,
-            final HttpServletRequest request,
-            final RedirectAttributes redirectAttributes) {
+            final HttpServletRequest req,
+            final HttpServletResponse res,
+            final RedirectAttributes redirectAttributes,
+            final Model model) {
         if (agree) {
-            auth0UserRegistrationService.registerNewUser(appUser, redirectAttributes, request);
-            sessionStatus.setComplete();
+            UserAccount userAccount = auth0UserRegistrationService.registerNewUser(appUser, redirectAttributes, req);
+            auth0LoginService.logInUser(userAccount, null, req, res, model);
+
+            return REDIRECT_HOME;
         } else {
             redirectAttributes.addFlashAttribute("errorMsg", "You must accept the terms.");
-        }
+            sessionStatus.setComplete();
 
-        return REDIRECT_LOGIN;
+            return REDIRECT_LOGIN;
+        }
     }
 
 }

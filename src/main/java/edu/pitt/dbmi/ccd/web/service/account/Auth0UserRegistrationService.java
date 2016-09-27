@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.service.account;
 
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.account.UserRegistration;
 import edu.pitt.dbmi.ccd.web.util.PasswordTool;
@@ -44,7 +45,7 @@ public class Auth0UserRegistrationService {
         this.userRegistrationService = userRegistrationService;
     }
 
-    public void registerNewUser(AppUser appUser, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+    public UserAccount registerNewUser(AppUser appUser, RedirectAttributes redirectAttributes, HttpServletRequest request) {
         String username = appUser.getEmail();
         String firstName = appUser.getFirstName();
         String lastName = appUser.getLastName();
@@ -58,7 +59,7 @@ public class Auth0UserRegistrationService {
         userRegistration.setPassword(password);
         userRegistration.setUsername(username);
 
-        userRegistrationService.registerNewRegularUser(userRegistration, redirectAttributes, request);
+        return userRegistrationService.registerNewRegularUser(userRegistration, redirectAttributes, request);
     }
 
 }

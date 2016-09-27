@@ -16,37 +16,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.util;
+package edu.pitt.dbmi.ccd.web.bean;
 
 import edu.pitt.dbmi.ccd.commons.file.FilePrint;
+import org.springframework.stereotype.Component;
 
 /**
  *
- * Aug 7, 2016 9:34:46 AM
+ * Sep 27, 2016 3:28:42 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class WebUtility {
+@Component
+public class AppTool {
 
-    private WebUtility() {
+    public AppTool() {
     }
 
     public String printSizeWithUnit(Long size) {
         return FilePrint.humanReadableSize(size, true);
-    }
-
-    public String printEnumName(String enumName) {
-        return enumName.replaceAll("_", " ").toLowerCase();
-    }
-
-    public static WebUtility getInstance() {
-        return WebUtilityHolder.INSTANCE;
-    }
-
-    private static class WebUtilityHolder {
-
-        private static final WebUtility INSTANCE = new WebUtility();
-
     }
 
 }

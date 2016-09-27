@@ -61,7 +61,7 @@
                                         </tr>
                                         <tr>
                                             <td><b>Size:</b></td>
-                                            <td th:text="${@webUtility.printSizeWithUnit(file.fileSize)}"></td>
+                                            <td th:text="${@appTool.printSizeWithUnit(file.fileSize)}"></td>
                                         </tr>
                                         <tr>
                                             <td><b>MD5 Checksum:</b></td>
@@ -101,7 +101,7 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="fileSize">Size</label>
-                                        <input id="fileSize" class="form-control" type="text" value="" th:value="${@webUtility.printSizeWithUnit(file.fileSize)}" disabled="disabled" />
+                                        <input id="fileSize" class="form-control" type="text" value="" th:value="${@appTool.printSizeWithUnit(file.fileSize)}" disabled="disabled" />
                                     </div>
                                     <div class="form-group">
                                         <label for="md5checkSum">MD5 Checksum</label>
@@ -126,7 +126,7 @@
                                     <tbody>
                                         <tr th:each="info : ${additionalInfo}">
                                             <td th:text="${info.attribute}"></td>
-                                            <td th:text="${#strings.capitalizeWords(@webUtility.printEnumName(info.value))}"></td>
+                                            <td th:text="${#strings.capitalizeWords(@appTool.printEnumName(info.value))}"></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -153,7 +153,7 @@
                                                 <label>File Type:</label>
                                                 <div class="radio-inline">
                                                     <label class="radio-inline" th:each="opt : ${fileTypes}">
-                                                        <input type="radio" th:field="*{fileTypeId}" th:value="${opt.id}" onclick="fileTypeAction(this);" required="required" /> <span th:text="${#strings.capitalizeWords(@webUtility.printEnumName(opt.name))}">dataset</span>
+                                                        <input type="radio" th:field="*{fileTypeId}" th:value="${opt.id}" onclick="fileTypeAction(this);" required="required" /> <span th:text="${#strings.capitalizeWords(@appTool.printEnumName(opt.name))}">dataset</span>
                                                     </label>
                                                 </div>
                                                 <span class="help-block" th:if="${#fields.hasErrors('fileTypeId')}" th:errors="*{fileTypeId}">File ID is required.</span>
@@ -163,7 +163,7 @@
                                                     <label>Delimiter:</label>
                                                     <div class="radio-inline">
                                                         <label class="radio-inline" th:each="opt : ${fileDelimiters}">
-                                                            <input type="radio" th:field="*{fileDelimiterId}" th:value="${opt.id}" /> <span th:text="${#strings.capitalizeWords(@webUtility.printEnumName(opt.name))}">tab</span>
+                                                            <input type="radio" th:field="*{fileDelimiterId}" th:value="${opt.id}" /> <span th:text="${#strings.capitalizeWords(@appTool.printEnumName(opt.name))}">tab</span>
                                                         </label>
                                                     </div>
                                                     <span class="help-block" th:if="${#fields.hasErrors('fileDelimiterId')}" th:errors="*{fileDelimiterId}">File ID is required.</span>
@@ -172,7 +172,7 @@
                                                     <label>Variable Type:</label>
                                                     <div class="radio-inline">
                                                         <label class="radio-inline" th:each="opt : ${variableTypes}">
-                                                            <input type="radio" th:field="*{variableTypeId}" th:value="${opt.id}" /> <span th:text="${#strings.capitalizeWords(@webUtility.printEnumName(opt.name))}">continuous</span>
+                                                            <input type="radio" th:field="*{variableTypeId}" th:value="${opt.id}" /> <span th:text="${#strings.capitalizeWords(@appTool.printEnumName(opt.name))}">continuous</span>
                                                         </label>
                                                     </div>
                                                     <span class="help-block" th:if="${#fields.hasErrors('variableTypeId')}" th:errors="*{variableTypeId}">File ID is required.</span>

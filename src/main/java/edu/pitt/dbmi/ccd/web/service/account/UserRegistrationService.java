@@ -20,7 +20,6 @@ package edu.pitt.dbmi.ccd.web.service.account;
 
 import edu.pitt.dbmi.ccd.db.domain.AccountRegistration;
 import edu.pitt.dbmi.ccd.db.domain.UserRoleEnum;
-import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.entity.UserRole;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
@@ -31,11 +30,7 @@ import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.ccd.web.service.EventLogService;
 import edu.pitt.dbmi.ccd.web.service.mail.UserRegistrationMailService;
 import edu.pitt.dbmi.ccd.web.util.UriTool;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Base64;
-import java.util.Date;
-import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.slf4j.Logger;
@@ -104,7 +99,8 @@ public class UserRegistrationService {
         }
     }
 
-    public void registerNewRegularUser(UserRegistration userRegistration, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+    public UserAccount registerNewRegularUser(UserRegistration userRegistration, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+        UserAccount userAccount = null;
         if (userAccountService.findByUsername(userRegistration.getUsername()) == null) {
             String username = userRegistration.getUsername();
             String password = passwordService.encryptPassword(userRegistration.getPassword());
@@ -125,7 +121,6 @@ public class UserRegistrationService {
 
             UserRole userRole = userRoleService.findByEnum(UserRoleEnum.USER);
 
-            UserAccount userAccount = null;
             try {
                 userAccount = userAccountService.createNewAccount(registration, userRole);
             } catch (Exception exception) {
@@ -153,6 +148,8 @@ public class UserRegistrationService {
             redirectAttributes.addFlashAttribute("userRegistration", userRegistration);
             redirectAttributes.addFlashAttribute("errorMsg", USERNAME_EXISTED);
         }
+
+        return userAccount;
     }
 
     protected String createActivationLink(UserAccount userAccount, HttpServletRequest request) {
@@ -172,44 +169,6 @@ public class UserRegistrationService {
             userRegistrationMailService.sendUserNewAccountConfirmation(userAccount);
             userRegistrationMailService.sendAdminUserActivation(userAccount, activationLink);
         }
-    }
-
-    protected UserAccount createUserAccount(UserRegistration userRegistration, HttpServletRequest request) {
-        String username = userRegistration.getUsername();
-        String password = userRegistration.getPassword();
-
-        boolean activated = !ccdProperties.isRequireActivation();
-        String activationKey = activated ? null : UUID.randomUUID().toString();
-        String account = UUID.randomUUID().toString();
-        String encodePassword = passwordService.encryptPassword(password);
-
-        Person person = createPerson(userRegistration, account);
-
-        UserAccount userAccount = new UserAccount();
-        userAccount.setAccount(account);
-        userAccount.setActivationKey(activationKey);
-        userAccount.setActivated(activated);
-        userAccount.setPassword(encodePassword);
-        userAccount.setPerson(person);
-        userAccount.setRegistrationDate(new Date(System.currentTimeMillis()));
-        userAccount.setUsername(username);
-
-        return userAccount;
-    }
-
-    protected Person createPerson(UserRegistration userRegistration, String account) {
-        String firstName = userRegistration.getFirstName();
-        String lastName = userRegistration.getLastName();
-        String email = userRegistration.getUsername();
-        Path workspace = Paths.get(ccdProperties.getWorkspaceDir(), account.replace("-", "_"));
-
-        Person person = new Person();
-        person.setFirstName((firstName == null) ? "" : firstName);
-        person.setLastName((lastName == null) ? "" : lastName);
-        person.setEmail(email);
-        person.setWorkspace(workspace.toAbsolutePath().toString());
-
-        return person;
     }
 
 }

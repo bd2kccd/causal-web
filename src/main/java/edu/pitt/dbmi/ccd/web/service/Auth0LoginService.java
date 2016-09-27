@@ -21,6 +21,7 @@ package edu.pitt.dbmi.ccd.web.service;
 import com.auth0.Auth0User;
 import com.auth0.NonceUtils;
 import com.auth0.SessionUtils;
+import com.auth0.Tokens;
 import com.auth0.web.Auth0CallbackHandler;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
@@ -52,11 +53,9 @@ import org.springframework.ui.Model;
  */
 @Profile("auth0")
 @Service
-public class Auth0LoginService {
+public class Auth0LoginService extends Auth0CallbackHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Auth0LoginService.class);
-
-    private final Auth0CallbackHandler callback;
 
     private final CcdProperties ccdProperties;
     private final UserAccountService userAccountService;
@@ -65,8 +64,7 @@ public class Auth0LoginService {
     private final AppUserService appUserService;
 
     @Autowired
-    public Auth0LoginService(Auth0CallbackHandler callback, CcdProperties ccdProperties, UserAccountService userAccountService, UserLoginService userLoginService, EventLogService eventLogService, AppUserService appUserService) {
-        this.callback = callback;
+    public Auth0LoginService(CcdProperties ccdProperties, UserAccountService userAccountService, UserLoginService userLoginService, EventLogService eventLogService, AppUserService appUserService) {
         this.ccdProperties = ccdProperties;
         this.userAccountService = userAccountService;
         this.userLoginService = userLoginService;
@@ -85,8 +83,10 @@ public class Auth0LoginService {
         // create user directories if not existed
 //        fileManagementService.createUserDirectories(userAccount);
         AppUser appUser = appUserService.createAppUser(userAccount, true);
-        appUser.setFirstName(auth0User.getGivenName());
-        appUser.setLastName(auth0User.getFamilyName());
+        if (auth0User != null) {
+            appUser.setFirstName(auth0User.getGivenName());
+            appUser.setLastName(auth0User.getFamilyName());
+        }
 
         new WebSubject.Builder(req, res)
                 .authenticated(true)
@@ -131,13 +131,20 @@ public class Auth0LoginService {
         detectError(model);
         NonceUtils.addNonceToStorage(request);
         String host = UriTool.buildURI(request, ccdProperties).build().toString();
-//        String host = request.getRequestURL().toString().replace(request.getRequestURI(), request.getContextPath());
         model.addAttribute("host", host);
         model.addAttribute("state", SessionUtils.getState(request));
     }
 
     public void handleCallback(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
-        callback.handle(req, res);
+        handle(req, res);
+    }
+
+    @Override
+    protected Tokens fetchTokens(HttpServletRequest req) {
+        final String authorizationCode = req.getParameter("code");
+        final String redirectUri = UriTool.buildURI(req, ccdProperties).build().toString();
+
+        return auth0Client.getTokens(authorizationCode, redirectUri);
     }
 
     private void detectError(Model model) {

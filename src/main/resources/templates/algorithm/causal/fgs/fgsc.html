@@ -73,7 +73,7 @@
                                                     <option value=""
                                                             th:each="file : ${datasetList}"
                                                             th:value="${file.title}"
-                                                            th:text="${file.title} + ' (' + ${@webUtility.printSizeWithUnit(file.fileSize)} + ')'">data.txt</option>
+                                                            th:text="${file.title} + ' (' + ${@appTool.printSizeWithUnit(file.fileSize)} + ')'">data.txt</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -171,7 +171,7 @@
                                                         <option value=""
                                                                 th:each="file : ${varList}"
                                                                 th:value="${file.title}"
-                                                                th:text="${file.title} + ' (' + ${@webUtility.printSizeWithUnit(file.fileSize)} + ')'">vars.txt</option>
+                                                                th:text="${file.title} + ' (' + ${@appTool.printSizeWithUnit(file.fileSize)} + ')'">vars.txt</option>
                                                     </select>
                                                 </div>
                                                 <div class="form-group">
@@ -183,7 +183,7 @@
                                                         <option value=""
                                                                 th:each="file : ${priorList}"
                                                                 th:value="${file.title}"
-                                                                th:text="${file.title} + ' (' + ${@webUtility.printSizeWithUnit(file.fileSize)} + ')'">priors.txt</option>
+                                                                th:text="${file.title} + ' (' + ${@appTool.printSizeWithUnit(file.fileSize)} + ')'">priors.txt</option>
                                                     </select>
                                                 </div>
                                             </div>

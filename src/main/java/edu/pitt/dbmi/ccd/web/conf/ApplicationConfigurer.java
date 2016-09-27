@@ -18,7 +18,6 @@
  */
 package edu.pitt.dbmi.ccd.web.conf;
 
-import edu.pitt.dbmi.ccd.web.util.WebUtility;
 import org.springframework.boot.web.servlet.ErrorPage;
 import org.springframework.boot.web.servlet.ErrorPageRegistrar;
 import org.springframework.context.annotation.Bean;
@@ -35,11 +34,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
  */
 @Configuration
 public class ApplicationConfigurer extends WebMvcConfigurerAdapter {
-
-    @Bean
-    public WebUtility webUtility() {
-        return WebUtility.getInstance();
-    }
 
     @Bean
     public ErrorPageRegistrar errorPageRegistrar() {
