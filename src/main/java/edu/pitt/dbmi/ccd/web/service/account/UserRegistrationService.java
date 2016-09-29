@@ -54,7 +54,7 @@ public class UserRegistrationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserRegistrationService.class);
 
-    private static final String[] LOGIN_FAILED = {"Login Failed!", "Unable to log in at this time."};
+    public static final String[] LOGIN_FAILED = {"Login Failed!", "Unable to log in at this time."};
     private static final String[] REGISTRATION_SUCCESS = {"Registration Success!", "You will receive a confirmation email soon."};
     private static final String[] REGISTRATION_FAILED = {"Registration Failed!", "Unable to register new user."};
     private static final String[] USERNAME_EXISTED = {"Registration Failed!", "Account already existed for that email."};

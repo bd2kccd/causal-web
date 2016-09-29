@@ -95,14 +95,14 @@ public class Auth0LoginController implements ViewPath {
 
             return TERMS_VIEW;
         } else if (userAccount.isActivated()) {
-            auth0LoginService.logInUser(userAccount, auth0User, req, res, model);
+            auth0LoginService.logInUser(userAccount, auth0User, redirectAttributes, req, res, model);
 
             return REDIRECT_HOME;
         } else {
             redirectAttributes.addFlashAttribute("errorMsg", ApplicationService.UNACTIVATED_ACCOUNT);
             SessionUtils.setTokens(req, null);
             SessionUtils.setAuth0User(req, null);
-
+            
             return REDIRECT_LOGIN;
         }
     }

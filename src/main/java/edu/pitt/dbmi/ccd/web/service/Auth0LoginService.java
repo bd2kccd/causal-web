@@ -31,19 +31,21 @@ import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.LoginCredentials;
 import edu.pitt.dbmi.ccd.web.domain.PasswordRecovery;
 import edu.pitt.dbmi.ccd.web.domain.account.UserRegistration;
+import edu.pitt.dbmi.ccd.web.service.account.UserRegistrationService;
 import edu.pitt.dbmi.ccd.web.util.UriTool;
 import java.io.IOException;
 import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.shiro.web.subject.WebSubject;
+import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  *
@@ -62,38 +64,32 @@ public class Auth0LoginService extends Auth0CallbackHandler {
     private final UserLoginService userLoginService;
     private final EventLogService eventLogService;
     private final AppUserService appUserService;
+    private final LoginService loginService;
 
     @Autowired
-    public Auth0LoginService(CcdProperties ccdProperties, UserAccountService userAccountService, UserLoginService userLoginService, EventLogService eventLogService, AppUserService appUserService) {
+    public Auth0LoginService(CcdProperties ccdProperties, UserAccountService userAccountService, UserLoginService userLoginService, EventLogService eventLogService, AppUserService appUserService, LoginService loginService) {
         this.ccdProperties = ccdProperties;
         this.userAccountService = userAccountService;
         this.userLoginService = userLoginService;
         this.eventLogService = eventLogService;
         this.appUserService = appUserService;
+        this.loginService = loginService;
     }
 
-    public void logInUser(UserAccount userAccount, Auth0User auth0User, HttpServletRequest req, final HttpServletResponse res, Model model) {
-        eventLogService.userLogIn(userAccount);
-        userLoginService.logUserSignIn(userAccount);
+    public void logInUser(UserAccount userAccount, Auth0User auth0User, RedirectAttributes redirectAttributes, HttpServletRequest req, final HttpServletResponse res, Model model) {
+        Subject subject = loginService.manualLogin(userAccount, req, res);
+        if (subject.isAuthenticated()) {
+            loginService.logUserInDatabase(userAccount);
 
-        // reset data after successful login
-        userAccount.setActivationKey(null);
-        userAccountService.save(userAccount);
-
-        // create user directories if not existed
-//        fileManagementService.createUserDirectories(userAccount);
-        AppUser appUser = appUserService.createAppUser(userAccount, true);
-        if (auth0User != null) {
-            appUser.setFirstName(auth0User.getGivenName());
-            appUser.setLastName(auth0User.getFamilyName());
+            AppUser appUser = appUserService.createAppUser(userAccount, true);
+            if (auth0User != null) {
+                appUser.setFirstName(auth0User.getGivenName());
+                appUser.setLastName(auth0User.getFamilyName());
+            }
+            redirectAttributes.addFlashAttribute("appUser", appUser);
+        } else {
+            redirectAttributes.addFlashAttribute("errorMsg", UserRegistrationService.LOGIN_FAILED);
         }
-
-        new WebSubject.Builder(req, res)
-                .authenticated(true)
-                .sessionCreationEnabled(true)
-                .buildSubject();
-
-        model.addAttribute("appUser", appUser);
     }
 
     public AppUser createTempAppUser(Auth0User auth0User) {
