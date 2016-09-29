@@ -161,7 +161,7 @@ public class GFCIController implements ViewPath {
 
     private GfciContinuousRunInfo createDefaultGfciContinuousRunInfo() {
     	GfciContinuousRunInfo runInfo = new GfciContinuousRunInfo();
-    	runInfo.setAlpha(0.5);
+    	runInfo.setAlpha(0.01);
         runInfo.setPenaltyDiscount(4.0);
         runInfo.setFaithfulnessAssumed(true);
         runInfo.setMaxInDegree(3);
