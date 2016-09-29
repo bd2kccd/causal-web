@@ -86,6 +86,7 @@ public class FgsService {
         // set additional data options
         fgscRunInfo.setExcludeVarFileTitle("none");
         fgscRunInfo.setPriorFileTitle("none");
+        fgscRunInfo.setJvmMaxMem(64);
 
         model.addAttribute("datasetList", datasetList);
         model.addAttribute("varList", varList);

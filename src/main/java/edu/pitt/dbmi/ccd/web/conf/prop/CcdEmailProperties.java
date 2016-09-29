@@ -41,9 +41,6 @@ public class CcdEmailProperties {
     @Value("${ccd.email.acct.reg.admin.activ.subject:New User Registration}")
     private String acctRegAdminActivSubject;
 
-    @Value("${ccd.email.acct.reg.user.activ.subject:New User Registration and Activation}")
-    private String acctRegUserActivSubject;
-
     @Value("${ccd.email.acct.reg.user.activ.sucess.subject:Account Activated}")
     private String acctRegUserActivSuccessSubject;
 
@@ -75,14 +72,6 @@ public class CcdEmailProperties {
 
     public void setAcctRegAdminActivSubject(String acctRegAdminActivSubject) {
         this.acctRegAdminActivSubject = acctRegAdminActivSubject;
-    }
-
-    public String getAcctRegUserActivSubject() {
-        return acctRegUserActivSubject;
-    }
-
-    public void setAcctRegUserActivSubject(String acctRegUserActivSubject) {
-        this.acctRegUserActivSubject = acctRegUserActivSubject;
     }
 
     public String getAcctRegUserActivSuccessSubject() {

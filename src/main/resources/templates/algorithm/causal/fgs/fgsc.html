@@ -16,7 +16,6 @@
         <link rel="stylesheet" href="../../../../static/css/algo/stepwizard.min.css" th:href="@{/css/algo/stepwizard.min.css}" />
         <script src="../../../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
         <script src="../../../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
-        <script src="../../../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
         <script src="../../../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
         <script src="../../../../static/js/algo/stepwizard.min.js" th:src="@{/js/algo/stepwizard.min.js}"></script>
     </head>
@@ -26,7 +25,7 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h1 class="page-header">FGS Continuous</h1>
+                        <h3 class="page-header">FGS Continuous</h3>
                     </div>
                 </div>
                 <div class="row">
@@ -213,90 +212,94 @@
                             <div class="row setup-content" id="step4">
                                 <div class="col-md-12">
                                     <h3> Step 4: Run Algorithm</h3>
-                                    <div class="table-responsive">
-                                        <table class="table table-striped">
-                                            <caption>Dataset</caption>
-                                            <tbody>
-                                                <tr>
-                                                    <td class="col-md-3">File:</td><td ng-bind="dataset"></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div class="table-responsive">
-                                        <table class="table table-striped">
-                                            <caption>Data Validations</caption>
-                                            <tbody>
-                                                <tr>
-                                                    <td class="col-md-3">Non-zero Variance:</td>
-                                                    <td ng-bind="nonZeroVarianceValidation"></td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="col-md-3">Unique Variable Name:</td>
-                                                    <td ng-bind="uniqueVarNameValidation"></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div class="table-responsive">
-                                        <table class="table table-striped">
-                                            <caption>Parameters</caption>
-                                            <tbody>
-                                                <tr>
-                                                    <td class="col-md-3">Penalty Discount:</td>
-                                                    <td ng-bind="penaltyDiscount"></td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="col-md-3">Depth:</td>
-                                                    <td ng-bind="depth"></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div class="table-responsive">
-                                        <table class="table table-striped">
-                                            <caption>Algorithm Run Options</caption>
-                                            <tbody>
-                                                <tr>
-                                                    <td class="col-md-3">Heuristic Speedup</td>
-                                                    <td ng-bind="heuristicSpeedup"></td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="col-md-3">Ignore Linear Dependence:</td>
-                                                    <td ng-bind="ignoreLinearDependence"></td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="col-md-3">Verbose:</td>
-                                                    <td ng-bind="verbose"></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div class="table-responsive">
-                                        <table class="table table-striped">
-                                            <caption>Additional Data Options</caption>
-                                            <tbody>
-                                                <tr>
-                                                    <td class="col-md-3">Variable Exclusion</td>
-                                                    <td ng-bind="excludeVars"></td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="col-md-3">Prior Knowledge</td>
-                                                    <td ng-bind="priors"></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div class="table-responsive">
-                                        <table class="table table-striped">
-                                            <caption>JVM Options</caption>
-                                            <tbody>
-                                                <tr>
-                                                    <td class="col-md-3">Advanced JVM Options:</td>
-                                                    <td>{{(jvmMaxMem == 0) ? 'JVM default' : '-Xmx' + jvmMaxMem + 'G'}}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                    <div class="panel panel-primary">
+                                        <div class="panel-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-condensed table-striped">
+                                                    <caption>Dataset</caption>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="col-md-3">File:</td><td ng-bind="dataset"></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table table-condensed table-striped">
+                                                    <caption>Data Validations</caption>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="col-md-3">Non-zero Variance:</td>
+                                                            <td ng-bind="nonZeroVarianceValidation"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="col-md-3">Unique Variable Name:</td>
+                                                            <td ng-bind="uniqueVarNameValidation"></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table table-condensed table-striped">
+                                                    <caption>Parameters</caption>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="col-md-3">Penalty Discount:</td>
+                                                            <td ng-bind="penaltyDiscount"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="col-md-3">Depth:</td>
+                                                            <td ng-bind="depth"></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table table-condensed table-striped">
+                                                    <caption>Algorithm Run Options</caption>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="col-md-3">Heuristic Speedup</td>
+                                                            <td ng-bind="heuristicSpeedup"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="col-md-3">Ignore Linear Dependence:</td>
+                                                            <td ng-bind="ignoreLinearDependence"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="col-md-3">Verbose:</td>
+                                                            <td ng-bind="verbose"></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table table-condensed table-striped">
+                                                    <caption>Additional Data Options</caption>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="col-md-3">Variable Exclusion</td>
+                                                            <td ng-bind="excludeVars"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="col-md-3">Prior Knowledge</td>
+                                                            <td ng-bind="priors"></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table table-condensed table-striped">
+                                                    <caption>JVM Options</caption>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="col-md-3">Advanced JVM Options:</td>
+                                                            <td>{{(jvmMaxMem == 0) ? 'JVM default' : '-Xmx' + jvmMaxMem + 'G'}}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
                                     </div>
                                     <button type="submit" class="btn btn-success btn-lg btn-block nextBtn">Run Algorithm!</button>
                                 </div>
@@ -314,7 +317,7 @@
                 </footer>
             </div>
         </div>
-
+        <script src="../../../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
         <script src="../../../../static/vendors/angularjs/angular.min.js" th:src="@{/vendors/angularjs/angular.min.js}"></script>
         <script src="../../../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
         <script src="../../../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
