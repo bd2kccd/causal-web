@@ -23,9 +23,11 @@ import edu.pitt.dbmi.ccd.web.domain.account.UserRegistration;
 import edu.pitt.dbmi.ccd.web.service.account.UserRegistrationService;
 import java.util.Base64;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -55,13 +57,15 @@ public class UserRegistrationController implements ViewPath {
             @Valid @ModelAttribute("userRegistration") final UserRegistration userRegistration,
             final BindingResult bindingResult,
             final RedirectAttributes redirectAttributes,
-            final HttpServletRequest request) {
+            final Model model,
+            final HttpServletRequest req,
+            final HttpServletResponse res) {
         if (bindingResult.hasErrors()) {
             redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.userRegistration", bindingResult);
             redirectAttributes.addFlashAttribute("userRegistration", userRegistration);
             redirectAttributes.addFlashAttribute("errorMsg", "Registration failed!");
         } else {
-            userRegistrationService.registerNewRegularUser(userRegistration, redirectAttributes, request);
+            userRegistrationService.registerNewRegularUser(userRegistration, false, model, redirectAttributes, req, res);
         }
 
         return REDIRECT_LOGIN;

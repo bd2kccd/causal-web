@@ -18,14 +18,15 @@
  */
 package edu.pitt.dbmi.ccd.web.service.account;
 
-import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.account.UserRegistration;
 import edu.pitt.dbmi.ccd.web.util.PasswordTool;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
@@ -45,7 +46,7 @@ public class Auth0UserRegistrationService {
         this.userRegistrationService = userRegistrationService;
     }
 
-    public UserAccount registerNewUser(AppUser appUser, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+    public void registerNewUser(AppUser appUser, final Model model, RedirectAttributes redirectAttributes, HttpServletRequest req, final HttpServletResponse res) {
         String username = appUser.getEmail();
         String firstName = appUser.getFirstName();
         String lastName = appUser.getLastName();
@@ -59,7 +60,7 @@ public class Auth0UserRegistrationService {
         userRegistration.setPassword(password);
         userRegistration.setUsername(username);
 
-        return userRegistrationService.registerNewRegularUser(userRegistration, redirectAttributes, request);
+        userRegistrationService.registerNewRegularUser(userRegistration, true, model, redirectAttributes, req, res);
     }
 
 }

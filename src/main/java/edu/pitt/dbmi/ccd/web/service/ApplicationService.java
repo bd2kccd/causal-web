@@ -21,7 +21,6 @@ package edu.pitt.dbmi.ccd.web.service;
 import com.auth0.SessionUtils;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
-import edu.pitt.dbmi.ccd.db.service.UserLoginService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.LoginCredentials;
 import edu.pitt.dbmi.ccd.web.domain.file.SummaryCount;
@@ -30,8 +29,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,17 +56,17 @@ public class ApplicationService {
     private final UserAccountService userAccountService;
 
     private final AppUserService appUserService;
-    private final UserLoginService userLoginService;
     private final EventLogService eventLogService;
     private final FileManagementService fileManagementService;
+    private final LoginService loginService;
 
     @Autowired
-    public ApplicationService(UserAccountService userAccountService, AppUserService appUserService, UserLoginService userLoginService, EventLogService eventLogService, FileManagementService fileManagementService) {
+    public ApplicationService(UserAccountService userAccountService, AppUserService appUserService, EventLogService eventLogService, FileManagementService fileManagementService, LoginService loginService) {
         this.userAccountService = userAccountService;
         this.appUserService = appUserService;
-        this.userLoginService = userLoginService;
         this.eventLogService = eventLogService;
         this.fileManagementService = fileManagementService;
+        this.loginService = loginService;
     }
 
     public void retrieveFileCounts(final AppUser appUser, final Model model) {
@@ -84,46 +81,25 @@ public class ApplicationService {
             RedirectAttributes redirectAttributes,
             Model model,
             HttpServletRequest request) {
-        String username = loginCredentials.getLoginUsername();
-        String password = loginCredentials.getLoginPassword();
-        boolean rememberMe = loginCredentials.isRememberMe();
+        Subject currentUser = loginService.passwordLogin(loginCredentials);
+        if (currentUser.isAuthenticated()) {
+            String username = loginCredentials.getLoginUsername();
+            UserAccount userAccount = userAccountService.findByUsername(username);
+            if (userAccount.isActivated()) {
+                loginService.logUserInDatabase(userAccount);
+                model.addAttribute("appUser", appUserService.createAppUser(userAccount, false));
 
-        Subject currentUser = SecurityUtils.getSubject();
-        try {
-            currentUser.login(new UsernamePasswordToken(username, password, rememberMe));
-        } catch (AuthenticationException exception) {
-            LOGGER.info(String.format("Failed login attempt from user %s.", username));
-        }
-
-        if (!currentUser.isAuthenticated()) {
+                return true;
+            } else {
+                currentUser.logout();
+                redirectAttributes.addFlashAttribute("errorMsg", UNACTIVATED_ACCOUNT);
+            }
+        } else {
             redirectAttributes.addFlashAttribute("errorMsg", INVALID_CREDENTIALS);
             redirectAttributes.addFlashAttribute("loginCredentials", loginCredentials);
-            eventLogService.userLogInFailed(username);
-
-            return false;
         }
 
-        UserAccount userAccount = userAccountService.findByUsername(username);
-        if (!userAccount.isActivated()) {
-            currentUser.logout();
-            redirectAttributes.addFlashAttribute("errorMsg", UNACTIVATED_ACCOUNT);
-
-            return false;
-        }
-
-        eventLogService.userLogIn(userAccount);
-        userLoginService.logUserSignIn(userAccount);
-
-        // reset data after successful login
-        userAccount.setActivationKey(null);
-        userAccountService.save(userAccount);
-
-        // create user directories if not existed
-        fileManagementService.createUserDirectories(userAccount);
-
-        model.addAttribute("appUser", appUserService.createAppUser(userAccount, false));
-
-        return true;
+        return false;
     }
 
     public void logOutUser(

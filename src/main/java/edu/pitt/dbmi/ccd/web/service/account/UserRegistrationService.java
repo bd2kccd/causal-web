@@ -27,16 +27,20 @@ import edu.pitt.dbmi.ccd.db.service.UserRoleService;
 import edu.pitt.dbmi.ccd.web.conf.prop.CcdProperties;
 import edu.pitt.dbmi.ccd.web.domain.account.UserRegistration;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
-import edu.pitt.dbmi.ccd.web.service.EventLogService;
+import edu.pitt.dbmi.ccd.web.service.AppUserService;
+import edu.pitt.dbmi.ccd.web.service.LoginService;
 import edu.pitt.dbmi.ccd.web.service.mail.UserRegistrationMailService;
 import edu.pitt.dbmi.ccd.web.util.UriTool;
 import java.util.Base64;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
+import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
@@ -50,7 +54,7 @@ public class UserRegistrationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserRegistrationService.class);
 
-    private static final String[] REGISTRATION_SUCCESS_NO_ACTIVATION = {"Registration Success!", "You may now sign in."};
+    private static final String[] LOGIN_FAILED = {"Login Failed!", "Unable to log in at this time."};
     private static final String[] REGISTRATION_SUCCESS = {"Registration Success!", "You will receive a confirmation email soon."};
     private static final String[] REGISTRATION_FAILED = {"Registration Failed!", "Unable to register new user."};
     private static final String[] USERNAME_EXISTED = {"Registration Failed!", "Account already existed for that email."};
@@ -62,16 +66,18 @@ public class UserRegistrationService {
     private final UserAccountService userAccountService;
     private final UserRoleService userRoleService;
     private final UserRegistrationMailService userRegistrationMailService;
-    private final EventLogService eventLogService;
+    private final LoginService loginService;
+    private final AppUserService appUserService;
 
     @Autowired
-    public UserRegistrationService(CcdProperties ccdProperties, DefaultPasswordService passwordService, UserAccountService userAccountService, UserRoleService userRoleService, UserRegistrationMailService userRegistrationMailService, EventLogService eventLogService) {
+    public UserRegistrationService(CcdProperties ccdProperties, DefaultPasswordService passwordService, UserAccountService userAccountService, UserRoleService userRoleService, UserRegistrationMailService userRegistrationMailService, LoginService loginService, AppUserService appUserService) {
         this.ccdProperties = ccdProperties;
         this.passwordService = passwordService;
         this.userAccountService = userAccountService;
         this.userRoleService = userRoleService;
         this.userRegistrationMailService = userRegistrationMailService;
-        this.eventLogService = eventLogService;
+        this.loginService = loginService;
+        this.appUserService = appUserService;
     }
 
     public void activateNewUser(String activationKey, HttpServletRequest request, RedirectAttributes redirectAttributes) throws ResourceNotFoundException {
@@ -99,57 +105,65 @@ public class UserRegistrationService {
         }
     }
 
-    public UserAccount registerNewRegularUser(UserRegistration userRegistration, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+    public UserAccount regesterUser(UserRegistration userRegistration, UserRoleEnum userRoleEnum) {
+        String username = userRegistration.getUsername();
+        String password = passwordService.encryptPassword(userRegistration.getPassword());
+        boolean activated = !ccdProperties.isRequireActivation();
+        String email = userRegistration.getUsername();
+        String firstName = userRegistration.getFirstName();
+        String lastName = userRegistration.getLastName();
+        String workspace = ccdProperties.getWorkspaceDir();
+
+        AccountRegistration registration = new AccountRegistration();
+        registration.setActivated(activated);
+        registration.setEmail(email);
+        registration.setFirstName(firstName);
+        registration.setLastName(lastName);
+        registration.setPassword(password);
+        registration.setUsername(username);
+        registration.setWorkspace(workspace);
+
+        UserRole userRole = userRoleService.findByEnum(UserRoleEnum.USER);
+
         UserAccount userAccount = null;
-        if (userAccountService.findByUsername(userRegistration.getUsername()) == null) {
-            String username = userRegistration.getUsername();
-            String password = passwordService.encryptPassword(userRegistration.getPassword());
-            boolean activated = !ccdProperties.isRequireActivation();
-            String email = userRegistration.getUsername();
-            String firstName = userRegistration.getFirstName();
-            String lastName = userRegistration.getLastName();
-            String workspace = ccdProperties.getWorkspaceDir();
-
-            AccountRegistration registration = new AccountRegistration();
-            registration.setActivated(activated);
-            registration.setEmail(email);
-            registration.setFirstName(firstName);
-            registration.setLastName(lastName);
-            registration.setPassword(password);
-            registration.setUsername(username);
-            registration.setWorkspace(workspace);
-
-            UserRole userRole = userRoleService.findByEnum(UserRoleEnum.USER);
-
-            try {
-                userAccount = userAccountService.createNewAccount(registration, userRole);
-            } catch (Exception exception) {
-                LOGGER.error("Failed to register new user.", exception);
-            }
-
-            if (userAccount == null) {
-                redirectAttributes.addFlashAttribute("errorMsg", REGISTRATION_FAILED);
-            } else {
-                eventLogService.userRegistration(userAccount);
-                if (userAccount.isActivated()) {
-                    redirectAttributes.addFlashAttribute("successMsg", REGISTRATION_SUCCESS_NO_ACTIVATION);
-                } else {
-                    // send e-mail notification to user
-                    String activationLink = createActivationLink(userAccount, request);
-                    try {
-                        sendOutActivationLink(userAccount, activationLink);
-                    } catch (Exception exception) {
-                        LOGGER.error("Failed to send new-user-registration notifications.", exception);
-                    }
-                    redirectAttributes.addFlashAttribute("successMsg", REGISTRATION_SUCCESS);
-                }
-            }
-        } else {
-            redirectAttributes.addFlashAttribute("userRegistration", userRegistration);
-            redirectAttributes.addFlashAttribute("errorMsg", USERNAME_EXISTED);
+        try {
+            userAccount = userAccountService.createNewAccount(registration, userRole);
+        } catch (Exception exception) {
+            LOGGER.error("Failed to register new user.", exception);
         }
 
         return userAccount;
+    }
+
+    public void registerNewRegularUser(UserRegistration userRegistration, boolean federatedUser, Model model, RedirectAttributes redirectAttributes, HttpServletRequest req, HttpServletResponse res) {
+        String username = userRegistration.getUsername();
+        boolean existed = userAccountService.countByUsername(username) > 0;
+        if (existed) {
+            redirectAttributes.addFlashAttribute("userRegistration", userRegistration);
+            redirectAttributes.addFlashAttribute("errorMsg", USERNAME_EXISTED);
+        } else {
+            UserAccount userAccount = regesterUser(userRegistration, UserRoleEnum.USER);
+            if (userAccount == null) {
+                redirectAttributes.addFlashAttribute("errorMsg", REGISTRATION_FAILED);
+            } else if (userAccount.isActivated()) {
+                Subject subject = loginService.manualLogin(userAccount, req, res);
+                if (subject.isAuthenticated()) {
+                    loginService.logUserInDatabase(userAccount);
+                    redirectAttributes.addFlashAttribute("appUser", appUserService.createAppUser(userAccount, federatedUser));
+                } else {
+                    redirectAttributes.addFlashAttribute("errorMsg", LOGIN_FAILED);
+                }
+            } else {
+                // send e-mail notification to user
+                String activationLink = createActivationLink(userAccount, req);
+                try {
+                    sendOutActivationLink(userAccount, activationLink);
+                } catch (Exception exception) {
+                    LOGGER.error("Failed to send new-user-registration notifications.", exception);
+                }
+                redirectAttributes.addFlashAttribute("successMsg", REGISTRATION_SUCCESS);
+            }
+        }
     }
 
     protected String createActivationLink(UserAccount userAccount, HttpServletRequest request) {

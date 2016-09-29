@@ -18,9 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.account;
 
-import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.REDIRECT_HOME;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.Auth0LoginService;
 import edu.pitt.dbmi.ccd.web.service.account.Auth0UserRegistrationService;
@@ -64,21 +62,18 @@ public class Auth0UserRegistrationController implements ViewPath {
             @RequestParam("agree") boolean agree,
             @ModelAttribute("appUser") final AppUser appUser,
             final SessionStatus sessionStatus,
-            final HttpServletRequest req,
-            final HttpServletResponse res,
+            final Model model,
             final RedirectAttributes redirectAttributes,
-            final Model model) {
+            final HttpServletRequest req,
+            final HttpServletResponse res) {
         if (agree) {
-            UserAccount userAccount = auth0UserRegistrationService.registerNewUser(appUser, redirectAttributes, req);
-            auth0LoginService.logInUser(userAccount, null, req, res, model);
-
-            return REDIRECT_HOME;
+            auth0UserRegistrationService.registerNewUser(appUser, model, redirectAttributes, req, res);
         } else {
             redirectAttributes.addFlashAttribute("errorMsg", "You must accept the terms.");
             sessionStatus.setComplete();
-
-            return REDIRECT_LOGIN;
         }
+
+        return REDIRECT_LOGIN;
     }
 
 }
