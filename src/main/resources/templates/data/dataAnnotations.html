@@ -469,6 +469,7 @@
                                                             .attr('data-subtext', vocabulary.description)
                                                             .text(vocabulary.name));
                                                     });
+                                                   selectVocabulary(1);
                                             });
                                         }
 
@@ -495,6 +496,7 @@
                                                             option.innerHTML = attribute.level;
                                                             $('#attribute-level-optgroup').append(option);
                                                         }
+                                                    selectAttributeLevel(levels[0]);
                                                     });
                                                 } else {
                                                     $('#create-anno-attribute-select').hide();
@@ -503,14 +505,26 @@
                                         }
 
                                         function selectAttributeLevel(level) {
+                                            var attributeGroup = $('#attribute-optgroup');
+                                            attributeGroup.empty();
+                                            //<!--attributeGroup.parentNode.removeChild(attributeGroup);-->
+                                            //<!--var attributeSelect = $('#attribute-select');-->
+                                            //<!--attributeSelect.append($('<option></option>')-->
+                                            //    <!--.attr('label', 'Select one')-->
+                                            //    <!--.attr('id', '#attribute-optgroup'));-->
+                                            var first = -1;
                                             $.each(attributes, function(index, attribute) {
                                                 if (attribute.level === level) {
+                                                    if (first >= 0) {
+                                                        first = Number(attribute.id);
+                                                    }
                                                     var option = document.createElement('option');
                                                     option.setAttribute('value', Number(attribute.id));
                                                     option.innerHTML = attribute.name;
                                                     $('#attribute-optgroup').append(option);
                                                 }
                                             });
+                                            attributeGroup.val(first);
                                         }
 
                                         function createAnnotation() {
