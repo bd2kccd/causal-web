@@ -65,23 +65,6 @@ public class UserRegistrationMailService extends AbstractMailService {
     }
 
     @Async
-    public void sendUserSelfActivation(final UserAccount userAccount, String activationLink) {
-        String sendTo = userAccount.getPerson().getEmail();
-        String subject = ccdEmailProperties.getAcctRegUserActivSubject();
-        String template = "email/account/registration/user_self_activation";
-
-        Map<String, String> msgVariables = new HashMap<>();
-        msgVariables.put("username", userAccount.getUsername());
-        msgVariables.put("activationLink", activationLink);
-
-        try {
-            sendMail(msgVariables, template, subject, sendTo);
-        } catch (MessagingException exception) {
-            LOGGER.error("Failed to send user self-activation emai.", exception);
-        }
-    }
-
-    @Async
     public void sendUserNewAccountConfirmation(final UserAccount userAccount) {
         String sendTo = userAccount.getPerson().getEmail();
         String subject = ccdEmailProperties.getAcctRegUserConfirmSubject();
@@ -107,7 +90,7 @@ public class UserRegistrationMailService extends AbstractMailService {
         }
     }
 
-    private Map<String, String> createUserActivationMsgVariables(UserAccount userAccount, String activationLink) {
+    protected Map<String, String> createUserActivationMsgVariables(UserAccount userAccount, String activationLink) {
         String email = userAccount.getPerson().getEmail();
         String registrationDate = EMAIL_DATE_FORMAT.format(userAccount.getRegistrationDate());
 

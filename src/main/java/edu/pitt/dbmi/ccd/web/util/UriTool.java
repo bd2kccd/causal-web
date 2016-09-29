@@ -18,8 +18,8 @@
  */
 package edu.pitt.dbmi.ccd.web.util;
 
-import edu.pitt.dbmi.ccd.web.conf.prop.CcdProperties;
 import java.net.InetAddress;
+import java.net.URI;
 import java.net.UnknownHostException;
 import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -99,34 +99,16 @@ public class UriTool {
         return InetAddress.getByAddress(addr).getHostAddress();
     }
 
-    public static UriComponentsBuilder buildURI(HttpServletRequest request, CcdProperties ccdProperties) {
-        String hostName = ccdProperties.getServerHostName();
-        String port = ccdProperties.getServerPort();
+    public static UriComponentsBuilder buildURI(HttpServletRequest req) {
+        String uri = req.getRequestURL().toString().replace(req.getRequestURI(), "");
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance().uri(URI.create(uri));
 
-        String serverName = (hostName == null || hostName.isEmpty()) ? request.getServerName() : hostName;  // hostname.com
-        int serverPort = (port == null || port.isEmpty()) ? request.getServerPort() : Integer.parseInt(port); // 80
-        String scheme = (serverPort == 443) ? "https" : "http";  // http or https
-        String contextPath = request.getContextPath();  // /ccd
-
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance()
-                .scheme(scheme)
-                .host(serverName);
-        if (!(serverPort == 80 || serverPort == 443)) {
-            uriBuilder = uriBuilder.port(serverPort);
-        }
+        String contextPath = req.getContextPath();
         if (!(contextPath == null || contextPath.isEmpty())) {
             uriBuilder = uriBuilder.path(contextPath);
         }
 
         return uriBuilder;
-    }
-
-    public static String buildURI(HttpServletRequest request, CcdProperties ccdProperties, String... pathSegments) {
-        String[] cleanPathSegments = new String[pathSegments.length];
-        for (int i = 0; i < pathSegments.length; i++) {
-            cleanPathSegments[i] = pathSegments[i].replace("/", "");
-        }
-        return buildURI(request, ccdProperties).pathSegment(cleanPathSegments).build().normalize().toString();
     }
 
 }

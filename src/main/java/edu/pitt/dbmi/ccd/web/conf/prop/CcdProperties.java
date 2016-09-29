@@ -32,12 +32,6 @@ import org.springframework.stereotype.Component;
 @PropertySource("classpath:ccd.properties")
 public class CcdProperties {
 
-    @Value("${ccd.server.hostname:}")
-    private String serverHostName;
-
-    @Value("${ccd.server.port:}")
-    private String serverPort;
-
     @Value("${ccd.dir.workspace:}")
     private String workspaceDir;
 
@@ -56,26 +50,7 @@ public class CcdProperties {
     @Value("${ccd.acct.reg.activ.required:false}")
     private boolean requireActivation;
 
-    @Value("${ccd.acct.reg.activ.self:false}")
-    private boolean accountSelfActivation;
-
     public CcdProperties() {
-    }
-
-    public String getServerHostName() {
-        return serverHostName;
-    }
-
-    public void setServerHostName(String serverHostName) {
-        this.serverHostName = serverHostName;
-    }
-
-    public String getServerPort() {
-        return serverPort;
-    }
-
-    public void setServerPort(String serverPort) {
-        this.serverPort = serverPort;
     }
 
     public String getWorkspaceDir() {
@@ -124,14 +99,6 @@ public class CcdProperties {
 
     public void setRequireActivation(boolean requireActivation) {
         this.requireActivation = requireActivation;
-    }
-
-    public boolean isAccountSelfActivation() {
-        return accountSelfActivation;
-    }
-
-    public void setAccountSelfActivation(boolean accountSelfActivation) {
-        this.accountSelfActivation = accountSelfActivation;
     }
 
 }

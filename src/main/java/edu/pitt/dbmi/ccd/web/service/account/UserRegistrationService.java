@@ -92,7 +92,7 @@ public class UserRegistrationService {
             userAccountService.save(userAccount);
 
             // send e-mail notification to user
-            String url = UriTool.buildURI(request, ccdProperties).build().toString();
+            String url = UriTool.buildURI(request).build().toString();
             userRegistrationMailService.sendUserActivationSuccess(userAccount, url);
 
             redirectAttributes.addFlashAttribute("header", "User Activation Success!");
@@ -156,33 +156,21 @@ public class UserRegistrationService {
             } else {
                 // send e-mail notification to user
                 String activationLink = createActivationLink(userAccount, req);
-                try {
-                    sendOutActivationLink(userAccount, activationLink);
-                } catch (Exception exception) {
-                    LOGGER.error("Failed to send new-user-registration notifications.", exception);
-                }
+                userRegistrationMailService.sendUserNewAccountConfirmation(userAccount);
+                userRegistrationMailService.sendAdminUserActivation(userAccount, activationLink);
                 redirectAttributes.addFlashAttribute("successMsg", REGISTRATION_SUCCESS);
             }
         }
     }
 
-    protected String createActivationLink(UserAccount userAccount, HttpServletRequest request) {
+    protected String createActivationLink(UserAccount userAccount, HttpServletRequest req) {
         String activationKey = userAccount.getActivationKey();
-        String activationLink = UriTool.buildURI(request, ccdProperties)
+        String activationLink = UriTool.buildURI(req)
                 .pathSegment("user", "account", "registration", "activate")
                 .queryParam("activation", Base64.getUrlEncoder().encodeToString(activationKey.getBytes()))
                 .build().toString();
 
         return activationLink;
-    }
-
-    protected void sendOutActivationLink(UserAccount userAccount, String activationLink) {
-        if (ccdProperties.isAccountSelfActivation()) {
-            userRegistrationMailService.sendUserSelfActivation(userAccount, activationLink);
-        } else {
-            userRegistrationMailService.sendUserNewAccountConfirmation(userAccount);
-            userRegistrationMailService.sendAdminUserActivation(userAccount, activationLink);
-        }
     }
 
 }

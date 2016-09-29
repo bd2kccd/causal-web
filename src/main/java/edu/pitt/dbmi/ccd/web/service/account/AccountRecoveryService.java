@@ -20,7 +20,6 @@ package edu.pitt.dbmi.ccd.web.service.account;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
-import edu.pitt.dbmi.ccd.web.conf.prop.CcdProperties;
 import edu.pitt.dbmi.ccd.web.domain.PasswordRecovery;
 import edu.pitt.dbmi.ccd.web.domain.account.PasswordReset;
 import edu.pitt.dbmi.ccd.web.service.mail.AccountRecoveryMailService;
@@ -49,17 +48,12 @@ public class AccountRecoveryService {
     private static final String[] UNACTIVATED_ACCOUNT = {"Login Failed!", "Your account has not been activated."};
     private static final String[] USER_NOT_FOUND = {"Password Reset Failed!", "No such user found."};
 
-    private final CcdProperties ccdProperties;
-
     private final UserAccountService userAccountService;
-
     private final AccountRecoveryMailService accountRecoveryMailService;
-
     private final DefaultPasswordService passwordService;
 
     @Autowired
-    public AccountRecoveryService(CcdProperties ccdProperties, UserAccountService userAccountService, AccountRecoveryMailService accountRecoveryMailService, DefaultPasswordService passwordService) {
-        this.ccdProperties = ccdProperties;
+    public AccountRecoveryService(UserAccountService userAccountService, AccountRecoveryMailService accountRecoveryMailService, DefaultPasswordService passwordService) {
         this.userAccountService = userAccountService;
         this.accountRecoveryMailService = accountRecoveryMailService;
         this.passwordService = passwordService;
@@ -100,7 +94,7 @@ public class AccountRecoveryService {
             redirectAttributes.addFlashAttribute("errorMsg", UNACTIVATED_ACCOUNT);
         } else {
             String activationKey = UUID.randomUUID().toString();
-            String resetPasswordURL = UriTool.buildURI(request, ccdProperties)
+            String resetPasswordURL = UriTool.buildURI(request)
                     .pathSegment("user", "account", "recovery", "password")
                     .queryParam("reset", Base64.getUrlEncoder().encodeToString(activationKey.getBytes()))
                     .build().toString();

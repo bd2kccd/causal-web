@@ -37,7 +37,7 @@
                             </li>
                             <li class="divider"></li>
                             <li>
-                                <a href="../shiroLogin.html" th:href="${appUser.federatedUser} ? ${@auth0Helper.buildLogoutUrl(#httpServletRequest, 'secured/logout')} : @{/secured/logout}"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
+                                <a href="../shiroLogin.html" th:href="${appUser.federatedUser} ? ${@environment.getProperty('auth0.issuer') + 'v2/logout?returnTo='}+${#strings.replace(#httpServletRequest.getRequestURL(), #httpServletRequest.getRequestURI(), #httpServletRequest.getContextPath())}+${'/secured/logout&amp;client_id='+@environment.getProperty('auth0.clientId')} : @{/secured/logout}"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
                             </li>
                         </ul>
                     </li>

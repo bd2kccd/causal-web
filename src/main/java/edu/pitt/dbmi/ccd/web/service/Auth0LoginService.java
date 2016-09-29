@@ -21,18 +21,14 @@ package edu.pitt.dbmi.ccd.web.service;
 import com.auth0.Auth0User;
 import com.auth0.NonceUtils;
 import com.auth0.SessionUtils;
-import com.auth0.Tokens;
 import com.auth0.web.Auth0CallbackHandler;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
-import edu.pitt.dbmi.ccd.db.service.UserLoginService;
-import edu.pitt.dbmi.ccd.web.conf.prop.CcdProperties;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.LoginCredentials;
 import edu.pitt.dbmi.ccd.web.domain.PasswordRecovery;
 import edu.pitt.dbmi.ccd.web.domain.account.UserRegistration;
 import edu.pitt.dbmi.ccd.web.service.account.UserRegistrationService;
-import edu.pitt.dbmi.ccd.web.util.UriTool;
 import java.io.IOException;
 import java.util.Map;
 import javax.servlet.ServletException;
@@ -55,25 +51,21 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  */
 @Profile("auth0")
 @Service
-public class Auth0LoginService extends Auth0CallbackHandler {
+public class Auth0LoginService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Auth0LoginService.class);
 
-    private final CcdProperties ccdProperties;
     private final UserAccountService userAccountService;
-    private final UserLoginService userLoginService;
-    private final EventLogService eventLogService;
     private final AppUserService appUserService;
     private final LoginService loginService;
+    private final Auth0CallbackHandler auth0CallbackHandler;
 
     @Autowired
-    public Auth0LoginService(CcdProperties ccdProperties, UserAccountService userAccountService, UserLoginService userLoginService, EventLogService eventLogService, AppUserService appUserService, LoginService loginService) {
-        this.ccdProperties = ccdProperties;
+    public Auth0LoginService(UserAccountService userAccountService, AppUserService appUserService, LoginService loginService, Auth0CallbackHandler auth0CallbackHandler) {
         this.userAccountService = userAccountService;
-        this.userLoginService = userLoginService;
-        this.eventLogService = eventLogService;
         this.appUserService = appUserService;
         this.loginService = loginService;
+        this.auth0CallbackHandler = auth0CallbackHandler;
     }
 
     public void logInUser(UserAccount userAccount, Auth0User auth0User, RedirectAttributes redirectAttributes, HttpServletRequest req, final HttpServletResponse res, Model model) {
@@ -126,21 +118,11 @@ public class Auth0LoginService extends Auth0CallbackHandler {
 
         detectError(model);
         NonceUtils.addNonceToStorage(request);
-        String host = UriTool.buildURI(request, ccdProperties).build().toString();
-        model.addAttribute("host", host);
         model.addAttribute("state", SessionUtils.getState(request));
     }
 
     public void handleCallback(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
-        handle(req, res);
-    }
-
-    @Override
-    protected Tokens fetchTokens(HttpServletRequest req) {
-        final String authorizationCode = req.getParameter("code");
-        final String redirectUri = UriTool.buildURI(req, ccdProperties).build().toString();
-
-        return auth0Client.getTokens(authorizationCode, redirectUri);
+        auth0CallbackHandler.handle(req, res);
     }
 
     private void detectError(Model model) {
