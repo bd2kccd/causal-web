@@ -37,4 +37,8 @@ public class AppTool {
         return FilePrint.humanReadableSize(size, true);
     }
 
+    public String printEnumName(String enumName) {
+        return enumName.replaceAll("_", " ").toLowerCase();
+    }
+
 }
