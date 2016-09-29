@@ -98,7 +98,7 @@ public class FGSController implements ViewPath {
             @ModelAttribute("algoInfo") final FgsDiscreteRunInfo algoInfo,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("fgs-discrete", algorithmJar, fgsDiscreteAlgorithm);
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("fgsd", algorithmJar, fgsDiscreteAlgorithm);
         jobRequest.setDataset(getDataset(algoInfo));
         jobRequest.setPriorKnowledge(getPriorKnowledge(algoInfo));
         jobRequest.setJvmOptions(getJvmOptions(algoInfo));
@@ -140,7 +140,7 @@ public class FGSController implements ViewPath {
             @ModelAttribute("algoInfo") final FgsContinuousRunInfo algoInfo,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("fgs", algorithmJar, fgsAlgorithm);
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("fgsc", algorithmJar, fgsAlgorithm);
         jobRequest.setDataset(getDataset(algoInfo));
         jobRequest.setPriorKnowledge(getPriorKnowledge(algoInfo));
         jobRequest.setJvmOptions(getJvmOptions(algoInfo));
@@ -187,13 +187,13 @@ public class FGSController implements ViewPath {
         parameters.add("--sample-prior");
         parameters.add(Double.toString(algoInfo.getSamplePrior()));
 
-        parameters.add("--depth");
-        parameters.add(Integer.toString(algoInfo.getDepth()));
+        parameters.add("--max-degree");
+        parameters.add(Integer.toString(algoInfo.getMaxDegree()));
         if (algoInfo.isVerbose()) {
             parameters.add("--verbose");
         }
-        if (!algoInfo.isHeuristicSpeedup()) {
-            parameters.add("--disable-heuristic-speedup");
+        if (algoInfo.isFaithfulnessAssumed()) {
+            parameters.add("--faithfulness-assumed");
         }
         if (!algoInfo.isUniqueVarNameValidation()) {
             parameters.add("--skip-unique-var-name");
@@ -212,16 +212,13 @@ public class FGSController implements ViewPath {
         parameters.add(delimiter);
         parameters.add("--penalty-discount");
         parameters.add(Double.toString(algoInfo.getPenaltyDiscount()));
-        parameters.add("--depth");
-        parameters.add(Integer.toString(algoInfo.getDepth()));
+        parameters.add("--max-degree");
+        parameters.add(Integer.toString(algoInfo.getMaxDegree()));
         if (algoInfo.isVerbose()) {
             parameters.add("--verbose");
         }
-        if (!algoInfo.isHeuristicSpeedup()) {
-            parameters.add("--disable-heuristic-speedup");
-        }
-        if (algoInfo.isIgnoreLinearDependence()) {
-            parameters.add("--ignore-linear-dependence");
+        if (algoInfo.isFaithfulnessAssumed()) {
+            parameters.add("--faithfulness-assumed");
         }
         if (!algoInfo.isNonZeroVarianceValidation()) {
             parameters.add("--skip-non-zero-variance");
@@ -236,9 +233,8 @@ public class FGSController implements ViewPath {
     private FgsContinuousRunInfo createDefaultFgsContinuousRunInfo() {
         FgsContinuousRunInfo runInfo = new FgsContinuousRunInfo();
         runInfo.setPenaltyDiscount(4.0);
-        runInfo.setHeuristicSpeedup(true);
-        runInfo.setDepth(3);
-        runInfo.setIgnoreLinearDependence(true);
+        runInfo.setFaithfulnessAssumed(true);
+        runInfo.setMaxDegree(3);
         runInfo.setNonZeroVarianceValidation(true);
         runInfo.setUniqueVarNameValidation(true);
         runInfo.setVerbose(true);
@@ -251,8 +247,8 @@ public class FGSController implements ViewPath {
         FgsDiscreteRunInfo runInfo = new FgsDiscreteRunInfo();
         runInfo.setSamplePrior(1.0);
         runInfo.setStructurePrior(1.0);
-        runInfo.setHeuristicSpeedup(true);
-        runInfo.setDepth(3);
+        runInfo.setFaithfulnessAssumed(true);
+        runInfo.setMaxDegree(3);
         runInfo.setUniqueVarNameValidation(true);
         runInfo.setLimitNumOfCategory(true);
         runInfo.setVerbose(true);

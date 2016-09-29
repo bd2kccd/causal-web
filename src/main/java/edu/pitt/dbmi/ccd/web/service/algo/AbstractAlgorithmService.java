@@ -71,6 +71,7 @@ public abstract class AbstractAlgorithmService {
     @Autowired
     @Value("${ccd.remote.server.dataspace:}") 
     private String remotedataspace;
+    
     @Autowired
     @Value("${ccd.remote.server.workspace:}") 
     private String remoteworkspace;
@@ -161,7 +162,7 @@ public abstract class AbstractAlgorithmService {
         dataset.forEach(dataFile -> {
             Path dataPath = Paths.get(workspace, username, dataFolder, dataFile);
             // Algorithm job will be run on the cluster nodes
-            if(env.acceptsProfiles("slurm")){ // remotedataspace = /pylon1/$(id -Gn)/$(whoami)/
+            if(env.acceptsProfiles("slurm")){ 
             	dataPath = Paths.get(remotedataspace, username, dataFolder, dataFile);
             }
             datasetPath.add(dataPath.toAbsolutePath().toString());
@@ -175,6 +176,9 @@ public abstract class AbstractAlgorithmService {
         if (!priorKnowledge.isEmpty()) {
             priorKnowledge.forEach(priorKnowledgeFile -> {
                 Path priorKnowledgeFilePath = Paths.get(workspace, username, dataFolder, priorKnowledgeFile);
+                if(env.acceptsProfiles("slurm")){ 
+                	priorKnowledgeFilePath = Paths.get(remotedataspace, username, dataFolder, priorKnowledgeFile);
+                }
                 priorKnowledgePath.add(priorKnowledgeFilePath.toAbsolutePath().toString());
             });
             String knowledgeList = listToSeperatedValues(priorKnowledgePath, ",");

@@ -19,7 +19,6 @@
 package edu.pitt.dbmi.ccd.web.ctrl;
 
 import edu.pitt.dbmi.ccd.queue.service.JobQueueService;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.REDIRECT_JOB_QUEUE;
 import edu.pitt.dbmi.ccd.web.model.AppUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

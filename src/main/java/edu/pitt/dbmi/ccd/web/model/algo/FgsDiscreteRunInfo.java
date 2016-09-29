@@ -28,8 +28,8 @@ public class FgsDiscreteRunInfo extends AlgorithmRunInfo {
 
     private double structurePrior;
     private double samplePrior;
-    private int depth;
-    private boolean heuristicSpeedup;
+    private int maxDegree;
+    private boolean faithfulnessAssumed;
 
     // data validation
     private boolean uniqueVarNameValidation;
@@ -40,7 +40,7 @@ public class FgsDiscreteRunInfo extends AlgorithmRunInfo {
 
     @Override
     public String toString() {
-        return "FgsDiscreteRunInfo{" + "structurePrior=" + structurePrior + ", samplePrior=" + samplePrior + ", depth=" + depth + ", heuristicSpeedup=" + heuristicSpeedup + ", uniqueVarNameValidation=" + uniqueVarNameValidation + ", limitNumOfCategory=" + limitNumOfCategory + '}';
+        return "FgsDiscreteRunInfo{" + "structurePrior=" + structurePrior + ", samplePrior=" + samplePrior + ", maxDegree=" + maxDegree + ", faithfulnessAssumed=" + faithfulnessAssumed + ", uniqueVarNameValidation=" + uniqueVarNameValidation + ", limitNumOfCategory=" + limitNumOfCategory + '}';
     }
 
     public double getStructurePrior() {
@@ -59,20 +59,20 @@ public class FgsDiscreteRunInfo extends AlgorithmRunInfo {
         this.samplePrior = samplePrior;
     }
 
-    public int getDepth() {
-        return depth;
+    public int getMaxDegree() {
+        return maxDegree;
     }
 
-    public void setDepth(int depth) {
-        this.depth = depth;
+    public void setMaxDegree(int depth) {
+        this.maxDegree = depth;
     }
 
-    public boolean isHeuristicSpeedup() {
-        return heuristicSpeedup;
+    public boolean isFaithfulnessAssumed() {
+        return faithfulnessAssumed;
     }
 
-    public void setHeuristicSpeedup(boolean heuristicSpeedup) {
-        this.heuristicSpeedup = heuristicSpeedup;
+    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
+        this.faithfulnessAssumed = faithfulnessAssumed;
     }
 
     public boolean isUniqueVarNameValidation() {

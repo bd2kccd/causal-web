@@ -4,17 +4,17 @@ $(document).ready(function () {
             dataset: {
                 required: true
             },
-            structurePrior: {
+            alpha: {
+                required: true,
+                number: true,
+                min: 0
+            },
+            penaltyDiscount: {
                 required: true,
                 number: true,
                 greaterThan: 0
             },
-            samplePrior: {
-                required: true,
-                number: true,
-                greaterThan: 0
-            },
-            maxDegree: {
+            maxInDegree: {
                 required: true,
                 number: true,
                 min: -1
@@ -30,16 +30,16 @@ $(document).ready(function () {
             dataset: {
                 required: "Please select a dataset."
             },
-            structurePrior: {
-                required: "Please set the structure prior.",
+            alpha: {
+                required: "Please set the alpha.",
                 greaterThan: "Value must be greater than 0."
             },
-            samplePrior: {
-                required: "Please set the sample prior.",
+            penaltyDiscount: {
+                required: "Please set the penalty discount.",
                 greaterThan: "Value must be greater than 0."
             },
-            maxDegree: {
-                required: "Please select the search max degree."
+            maxInDegree: {
+                required: "Please select the search maximum in-degree."
             },
             jvmMaxMem: {
                 required: "Must be a number between 0 and 128.",
