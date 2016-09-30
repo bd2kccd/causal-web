@@ -27,11 +27,9 @@ package edu.pitt.dbmi.ccd.web.model.algo;
 public class FgsContinuousRunInfo extends AlgorithmRunInfo {
 
     // algorithm parameters
-    protected int depth;
+    protected int maxDegree;
     protected double penaltyDiscount;
-    protected boolean heuristicSpeedup;
-
-    protected boolean ignoreLinearDependence;
+    protected boolean faithfulnessAssumed;
 
     // data validation
     protected boolean nonZeroVarianceValidation;
@@ -42,15 +40,15 @@ public class FgsContinuousRunInfo extends AlgorithmRunInfo {
 
     @Override
     public String toString() {
-        return "FgsContinuousRunInfo{" + "depth=" + depth + ", penaltyDiscount=" + penaltyDiscount + ", heuristicSpeedup=" + heuristicSpeedup + ", ignoreLinearDependence=" + ignoreLinearDependence + ", nonZeroVarianceValidation=" + nonZeroVarianceValidation + ", uniqueVarNameValidation=" + uniqueVarNameValidation + '}';
+        return "FgsContinuousRunInfo{" + "maxDegree=" + maxDegree + ", penaltyDiscount=" + penaltyDiscount + ", faithfulnessAssumed=" + faithfulnessAssumed + ", nonZeroVarianceValidation=" + nonZeroVarianceValidation + ", uniqueVarNameValidation=" + uniqueVarNameValidation + '}';
     }
 
-    public int getDepth() {
-        return depth;
+    public int getMaxDegree() {
+        return maxDegree;
     }
 
-    public void setDepth(int depth) {
-        this.depth = depth;
+    public void setMaxDegree(int maxDegree) {
+        this.maxDegree = maxDegree;
     }
 
     public double getPenaltyDiscount() {
@@ -61,20 +59,12 @@ public class FgsContinuousRunInfo extends AlgorithmRunInfo {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    public boolean isHeuristicSpeedup() {
-        return heuristicSpeedup;
+    public boolean isFaithfulnessAssumed() {
+        return faithfulnessAssumed;
     }
 
-    public void setHeuristicSpeedup(boolean heuristicSpeedup) {
-        this.heuristicSpeedup = heuristicSpeedup;
-    }
-
-    public boolean isIgnoreLinearDependence() {
-        return ignoreLinearDependence;
-    }
-
-    public void setIgnoreLinearDependence(boolean ignoreLinearDependence) {
-        this.ignoreLinearDependence = ignoreLinearDependence;
+    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
+        this.faithfulnessAssumed = faithfulnessAssumed;
     }
 
     public boolean isNonZeroVarianceValidation() {

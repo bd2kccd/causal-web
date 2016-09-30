@@ -9,7 +9,7 @@ $(document).ready(function () {
                 number: true,
                 greaterThan: 0
             },
-            depth: {
+            maxDegree: {
                 required: true,
                 number: true,
                 min: -1
@@ -29,8 +29,8 @@ $(document).ready(function () {
                 required: "Please set the penalty discount.",
                 greaterThan: "Value must be greater than 0."
             },
-            depth: {
-                required: "Please select the search depth."
+            maxDegree: {
+                required: "Please select the search max degree."
             },
             jvmMaxMem: {
                 required: "Must be a number between 0 and 128.",
