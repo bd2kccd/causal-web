@@ -19,7 +19,7 @@
 package edu.pitt.dbmi.ccd.web;
 
 import edu.pitt.dbmi.ccd.db.CCDDatabaseApplication;
-import edu.pitt.dbmi.ccd.mail.CCDMailApplication;
+import edu.pitt.dbmi.ccd.mail.CcdMailApplication;
 import edu.pitt.dbmi.ccd.queue.CCDJobQueueApplication;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -35,7 +35,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
  */
 @SpringBootApplication
 @EnableAsync
-@Import({CCDDatabaseApplication.class, CCDJobQueueApplication.class, CCDMailApplication.class})
+@Import({CCDDatabaseApplication.class, CCDJobQueueApplication.class, CcdMailApplication.class})
 @PropertySource("classpath:ccd.properties")
 public class CcdWebApplication {
 
