@@ -23,7 +23,7 @@
                     <div class="col-lg-12">
                         <div class="page-header">
                             <span class="h3" th:text="'Welcome ' + ${appUser.firstName} + ' ' + ${appUser.middleName} + ' ' + ${appUser.lastName}">Welcome User</span>
-                            <span class="pull-right" th:text="'Last Logon: ' + ${appUser.lastLogin}">Last Logged In:</span>
+                            <span class="pull-right" th:text="'Last Logon: ' + ${#dates.format(appUser.lastLogin,'EEE, MMM dd, yyyy hh:mm aaa')}">Last Logged In:</span>
                         </div>
                     </div>
                 </div>

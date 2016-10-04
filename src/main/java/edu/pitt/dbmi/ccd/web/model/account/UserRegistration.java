@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 University of Pittsburgh.
+ * Copyright (C) 2016 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.model.user;
+package edu.pitt.dbmi.ccd.web.model.account;
 
 import javax.validation.constraints.AssertTrue;
 import org.hibernate.validator.constraints.Email;
@@ -25,7 +25,7 @@ import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
- * Jun 20, 2015 12:20:50 PM
+ * Oct 4, 2016 12:25:23 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
