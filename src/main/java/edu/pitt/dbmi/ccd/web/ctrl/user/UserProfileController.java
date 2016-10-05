@@ -200,10 +200,8 @@ public class UserProfileController implements ViewPath {
         model.addAttribute("securityQuestions", securityQuestionService.findAllSecurityQuestion());
 
         // Generate JWT (JSON Web Token, for API authentication)
-        // Use the user account creation time as the iat
-        // Convert the date format to milliseconds
-        final long iat = userAccount.getCreatedDate().getTime() / 1000l; // issued at claim
-        //final long exp = iat + 60L; // expires claim. In this case the token expires in 60 seconds
+        final long iat = System.currentTimeMillis() / 1000l; // issued at claim
+        final long exp = iat + 3600L; // expires claim. In this case the token expires in 3600 seconds (1 hour)
 
         final JWTSigner signer = new JWTSigner(jwtSecret);
         // JWT claims
@@ -211,16 +209,13 @@ public class UserProfileController implements ViewPath {
         // Add reserved claims
         claims.put("iss", jwtIssuer);
         claims.put("iat", iat);
-        //claims.put("exp", exp);
+        claims.put("exp", exp);
 
         // Add private/custom claims
         claims.put("username", userAccount.getUsername());
         claims.put("valid", true);
 
         final String jwt = signer.sign(claims);
-
-        // Go to https://jwt.io/#debugger to verify during testing
-        System.out.println("JWT-----" + jwt);
 
         // Assign the generated jwt to view
         model.addAttribute("jwt", jwt);
