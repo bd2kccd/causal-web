@@ -44,7 +44,7 @@ public class CcdProperties {
     @Value("${ccd.queue.size:5}")
     private String jobQueueSize;
 
-    @Value("${ccd.dir.workspace:}")
+    @Value("${ccd.server.workspace:}")
     private String workspaceDir;
 
     @Value("${ccd.folder.data}")
@@ -60,10 +60,10 @@ public class CcdProperties {
     private String resultFolder;
 
     @Value("${ccd.folder.results.algorithm:algorithm}")
-    private String algorithmFolder;
+    private String resultAlgorithmFolder;
 
     @Value("${ccd.folder.results.comparison:comparison}")
-    private String comparisonFolder;
+    private String resultComparisonFolder;
 
     @Value("${ccd.acct.reg.activ.required:false}")
     private boolean requireActivation;
@@ -152,20 +152,20 @@ public class CcdProperties {
         this.resultFolder = resultFolder;
     }
 
-    public String getAlgorithmFolder() {
-        return algorithmFolder;
+    public String getResultAlgorithmFolder() {
+        return resultAlgorithmFolder;
     }
 
-    public void setAlgorithmFolder(String algorithmFolder) {
-        this.algorithmFolder = algorithmFolder;
+    public void setResultAlgorithmFolder(String resultAlgorithmFolder) {
+        this.resultAlgorithmFolder = resultAlgorithmFolder;
     }
 
-    public String getComparisonFolder() {
-        return comparisonFolder;
+    public String getResultComparisonFolder() {
+        return resultComparisonFolder;
     }
 
-    public void setComparisonFolder(String comparisonFolder) {
-        this.comparisonFolder = comparisonFolder;
+    public void setResultComparisonFolder(String resultComparisonFolder) {
+        this.resultComparisonFolder = resultComparisonFolder;
     }
 
     public boolean isRequireActivation() {

@@ -19,7 +19,6 @@
 package edu.pitt.dbmi.ccd.web.service;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.model.LoginCredentials;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,7 +29,6 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.subject.WebSubject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -44,11 +42,7 @@ public class LoginService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LoginService.class);
 
-    private final UserAccountService userAccountService;
-
-    @Autowired
-    public LoginService(UserAccountService userAccountService) {
-        this.userAccountService = userAccountService;
+    public LoginService() {
     }
 
     public Subject passwordLogin(LoginCredentials loginCredentials) {

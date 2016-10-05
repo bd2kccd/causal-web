@@ -19,6 +19,7 @@
 package edu.pitt.dbmi.ccd.web.service.mail;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.web.prop.CcdEmailProperties;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,8 +44,27 @@ public class UserRegistrationMailService extends AbstractMailService {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserRegistrationMailService.class);
 
     @Autowired
-    public UserRegistrationMailService(SpringTemplateEngine templateEngine, JavaMailSender javaMailSender) {
-        super(templateEngine, javaMailSender);
+    public UserRegistrationMailService(CcdEmailProperties ccdEmailProperties, SpringTemplateEngine templateEngine, JavaMailSender javaMailSender) {
+        super(ccdEmailProperties, templateEngine, javaMailSender);
+    }
+
+    @Async
+    public void sendAdminNewUserRegistrationNotification(final UserAccount userAccount) {
+        String email = userAccount.getPerson().getEmail();
+        Date registrationDate = userAccount.getCreatedDate();
+
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("email", email);
+        variables.put("registrationDate", registrationDate);
+
+        String[] sendTo = ccdEmailProperties.getAdminSendTo();
+        String subject = "Causal Web: New User Registration";
+        String template = "email/account/registration/admin_new_registration_notification";
+        try {
+            sendMail(variables, template, subject, sendTo);
+        } catch (MessagingException exception) {
+            LOGGER.error("Failed to email new user activation link.", exception);
+        }
     }
 
     @Async
@@ -57,9 +77,11 @@ public class UserRegistrationMailService extends AbstractMailService {
         variables.put("registrationDate", registrationDate);
         variables.put("activationLink", activationLink);
 
-        String template = "email/account/registration/user_self_activation";
+        String sendTo = email;
+        String subject = "Causal Web: User Activation";
+        String template = "email/account/registration/user_activation";
         try {
-            sendMail(variables, template, "Causal Web User Activation", email);
+            sendMail(variables, template, subject, sendTo);
         } catch (MessagingException exception) {
             LOGGER.error("Failed to email new user activation link.", exception);
         }

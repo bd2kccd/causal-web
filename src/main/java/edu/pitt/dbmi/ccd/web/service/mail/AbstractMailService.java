@@ -19,6 +19,7 @@
 package edu.pitt.dbmi.ccd.web.service.mail;
 
 import edu.pitt.dbmi.ccd.mail.AbstractBasicMail;
+import edu.pitt.dbmi.ccd.web.prop.CcdEmailProperties;
 import java.util.Locale;
 import java.util.Map;
 import javax.mail.MessagingException;
@@ -36,10 +37,12 @@ public abstract class AbstractMailService extends AbstractBasicMail {
 
     protected static final Locale LOCALE = new Locale("en", "US");
 
+    protected final CcdEmailProperties ccdEmailProperties;
     protected final SpringTemplateEngine templateEngine;
 
-    public AbstractMailService(SpringTemplateEngine templateEngine, JavaMailSender javaMailSender) {
+    public AbstractMailService(CcdEmailProperties ccdEmailProperties, SpringTemplateEngine templateEngine, JavaMailSender javaMailSender) {
         super(javaMailSender);
+        this.ccdEmailProperties = ccdEmailProperties;
         this.templateEngine = templateEngine;
     }
 

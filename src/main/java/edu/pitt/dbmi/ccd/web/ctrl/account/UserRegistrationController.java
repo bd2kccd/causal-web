@@ -76,8 +76,8 @@ public class UserRegistrationController implements ViewPath {
             @RequestParam(value = "activation", required = true) final String activation,
             final HttpServletRequest request,
             final RedirectAttributes redirectAttributes) {
-        String activationKey = new String(Base64.getUrlDecoder().decode(activation));
-        userRegistrationService.activateNewUser(activationKey, request, redirectAttributes);
+        String accountId = new String(Base64.getUrlDecoder().decode(activation));
+        userRegistrationService.activateNewUser(accountId, request, redirectAttributes);
 
         return REDIRECT_MESSAGE;
     }

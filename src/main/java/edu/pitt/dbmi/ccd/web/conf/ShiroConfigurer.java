@@ -40,7 +40,6 @@ import org.springframework.context.annotation.DependsOn;
 public class ShiroConfigurer {
 
     private static final String AUTHC = "authc";
-    private static final String ANON = "anon";
 
     @Bean(name = "passwordService")
     public DefaultPasswordService passwordService() {

@@ -26,6 +26,7 @@ import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.LoginService;
+import edu.pitt.dbmi.ccd.web.service.file.FileManagementService;
 import edu.pitt.dbmi.ccd.web.service.mail.UserRegistrationMailService;
 import edu.pitt.dbmi.ccd.web.util.UriTool;
 import java.util.Base64;
@@ -63,18 +64,37 @@ public class UserRegistrationService {
     private final LoginService loginService;
     private final AppUserService appUserService;
     private final UserRegistrationMailService userRegistrationMailService;
+    private final FileManagementService fileManagementService;
 
     @Autowired
-    public UserRegistrationService(CcdProperties ccdProperties, DefaultPasswordService passwordService, UserAccountService userAccountService, LoginService loginService, AppUserService appUserService, UserRegistrationMailService userRegistrationMailService) {
+    public UserRegistrationService(CcdProperties ccdProperties, DefaultPasswordService passwordService, UserAccountService userAccountService, LoginService loginService, AppUserService appUserService, UserRegistrationMailService userRegistrationMailService, FileManagementService fileManagementService) {
         this.ccdProperties = ccdProperties;
         this.passwordService = passwordService;
         this.userAccountService = userAccountService;
         this.loginService = loginService;
         this.appUserService = appUserService;
         this.userRegistrationMailService = userRegistrationMailService;
+        this.fileManagementService = fileManagementService;
     }
 
-    public void activateNewUser(String activationKey, HttpServletRequest request, RedirectAttributes redirectAttributes) throws ResourceNotFoundException {
+    public void activateNewUser(String accountId, HttpServletRequest request, RedirectAttributes redirectAttributes) throws ResourceNotFoundException {
+        UserAccount userAccount = userAccountService.findByAccountId(accountId);
+        if (userAccount == null || userAccount.getActive()) {
+            throw new ResourceNotFoundException();
+        }
+
+        try {
+            userAccount.setActive(Boolean.TRUE);
+            userAccountService.save(userAccount);
+
+            redirectAttributes.addFlashAttribute("header", "User Activation Success!");
+            redirectAttributes.addFlashAttribute("successMsg", String.format("You have successfully activated user '%s'.", userAccount.getUsername()));
+        } catch (Exception exception) {
+            LOGGER.error(String.format("Unable to activate user account '%s'.", userAccount.getUsername()), exception);
+
+            redirectAttributes.addFlashAttribute("header", "User Activation Failed!");
+            redirectAttributes.addFlashAttribute("errorMsg", String.format("Unable to activate user '%s'.", userAccount.getUsername()));
+        }
     }
 
     public void registerNewRegularUser(UserRegistration userRegistration, boolean federatedUser, Model model, RedirectAttributes redirectAttributes, HttpServletRequest req, HttpServletResponse res) {
@@ -87,9 +107,12 @@ public class UserRegistrationService {
             UserAccount userAccount = regesterUser(userRegistration);
             if (userAccount == null) {
                 redirectAttributes.addFlashAttribute("errorMsg", REGISTRATION_FAILED);
-            } else if (userAccount.getActive()) {
+            } else // send e-mail notification to admin
+            //                userRegistrationMailService.sendAdminNewUserRegistrationNotification(userAccount);
+            if (userAccount.getActive()) {
                 Subject subject = loginService.manualLogin(userAccount, req, res);
                 if (subject.isAuthenticated()) {
+                    fileManagementService.createUserDirectories(userAccount);
                     redirectAttributes.addFlashAttribute("appUser", appUserService.createAppUser(userAccount, federatedUser));
                 } else {
                     redirectAttributes.addFlashAttribute("errorMsg", LOGIN_FAILED);
@@ -115,7 +138,7 @@ public class UserRegistrationService {
     }
 
     public UserAccount regesterUser(UserRegistration userRegistration) {
-        String username = userRegistration.getUsername();
+        String username = userRegistration.getUsername().split("@")[0];
         String password = passwordService.encryptPassword(userRegistration.getPassword());
         boolean activated = !ccdProperties.isRequireActivation();
         String email = userRegistration.getUsername();

@@ -25,6 +25,7 @@ import edu.pitt.dbmi.ccd.web.model.AppUser;
 import edu.pitt.dbmi.ccd.web.model.LoginCredentials;
 import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmResultService;
 import edu.pitt.dbmi.ccd.web.service.algo.ResultComparisonService;
+import edu.pitt.dbmi.ccd.web.service.file.FileManagementService;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.apache.shiro.SecurityUtils;
@@ -52,15 +53,17 @@ public class ApplicationService {
     private final AlgorithmResultService algorithmResultService;
     private final ResultComparisonService resultComparisonService;
     private final LoginService loginService;
+    private final FileManagementService fileManagementService;
     private final AppUserService appUserService;
     private final UserAccountService userAccountService;
 
     @Autowired
-    public ApplicationService(DataService dataService, AlgorithmResultService algorithmResultService, ResultComparisonService resultComparisonService, LoginService loginService, AppUserService appUserService, UserAccountService userAccountService) {
+    public ApplicationService(DataService dataService, AlgorithmResultService algorithmResultService, ResultComparisonService resultComparisonService, LoginService loginService, FileManagementService fileManagementService, AppUserService appUserService, UserAccountService userAccountService) {
         this.dataService = dataService;
         this.algorithmResultService = algorithmResultService;
         this.resultComparisonService = resultComparisonService;
         this.loginService = loginService;
+        this.fileManagementService = fileManagementService;
         this.appUserService = appUserService;
         this.userAccountService = userAccountService;
     }
@@ -82,6 +85,7 @@ public class ApplicationService {
             String username = loginCredentials.getLoginUsername();
             UserAccount userAccount = userAccountService.findByUsername(username);
             if (userAccount.getActive()) {
+                fileManagementService.createUserDirectories(userAccount);
                 model.addAttribute("appUser", appUserService.createAppUser(userAccount, false));
 
                 return true;
