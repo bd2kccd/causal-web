@@ -40,8 +40,8 @@ public interface ViewPath {
     public static final String REDIRECT_HOME = "redirect:/home";
 
     public static final String USER_PROFILE = "userProfile";
-    public static final String USER_PROFILE_VIEW = "user/userProfile";
-    public static final String REDIRECT_USER_PROFILE = "redirect:/user/profile";
+    public static final String USER_PROFILE_VIEW = "user/account/userProfile";
+    public static final String REDIRECT_USER_PROFILE = "redirect:/user/account/profile";
 
     public static final String REQUEST_USERNAME_VIEW = "user/account/reqestUsername";
     public static final String REQUEST_ANSWER_VIEW = "user/account/reqestAnswer";

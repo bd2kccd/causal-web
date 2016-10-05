@@ -60,7 +60,6 @@ public class FileManagementService {
             Paths.get(workspace, username, resultFolder, ccdProperties.getResultComparisonFolder())
         };
         for (Path directory : directories) {
-            System.out.println(directory.toAbsolutePath().toString());
             if (Files.notExists(directory)) {
                 try {
                     Files.createDirectories(directory);

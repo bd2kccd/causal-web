@@ -18,6 +18,8 @@
  */
 package edu.pitt.dbmi.ccd.web.model.user;
 
+import org.hibernate.validator.constraints.Length;
+
 /**
  *
  * Jul 28, 2015 2:59:03 PM
@@ -26,11 +28,14 @@ package edu.pitt.dbmi.ccd.web.model.user;
  */
 public class PasswordChange {
 
+    @Length(min = 5, max = 25, message = "Please enter your password.")
     private String currentPassword;
 
+    @Length(min = 5, max = 25, message = "Please enter your new password.")
     private String newPassword;
 
-    private String confirmPassword;
+    @Length(min = 5, max = 25, message = "Please reenter your new password.")
+    private String newConfirmPassword;
 
     public PasswordChange() {
     }
@@ -49,14 +54,20 @@ public class PasswordChange {
 
     public void setNewPassword(String newPassword) {
         this.newPassword = newPassword;
+        if (!(this.newPassword == null || this.newPassword.equals(this.newConfirmPassword))) {
+            this.newConfirmPassword = "";
+        }
     }
 
-    public String getConfirmPassword() {
-        return confirmPassword;
+    public String getNewConfirmPassword() {
+        return newConfirmPassword;
     }
 
-    public void setConfirmPassword(String confirmPassword) {
-        this.confirmPassword = confirmPassword;
+    public void setNewConfirmPassword(String newConfirmPassword) {
+        this.newConfirmPassword = newConfirmPassword;
+        if (!(this.newConfirmPassword == null || this.newConfirmPassword.equals(this.newPassword))) {
+            this.newPassword = "";
+        }
     }
 
 }
