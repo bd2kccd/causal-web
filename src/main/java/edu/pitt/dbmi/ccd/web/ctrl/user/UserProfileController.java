@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -59,6 +60,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @SessionAttributes("appUser")
 @RequestMapping(value = "user/profile")
 public class UserProfileController implements ViewPath {
+
+    @Value("${ccd.jwt.issuer}")
+    private String jwtIssuer;
+
+    @Value("${ccd.jwt.secret}")
+    private String jwtSecret;
 
     private final UserAccountService userAccountService;
 
@@ -193,22 +200,25 @@ public class UserProfileController implements ViewPath {
         model.addAttribute("securityQuestions", securityQuestionService.findAllSecurityQuestion());
 
         // Generate JWT (JSON Web Token, for API authentication)
-        // Get the issuer and secret from ccd.properties file
-        final String issuer = "${ccd.jwt.issuer}";
-        final String secret = "${ccd.jwt.secret}";
+        // Use the user account creation time as the iat
+        // Convert the date format to milliseconds
+        final long iat = userAccount.getCreatedDate().getTime() / 1000l; // issued at claim
+        //final long exp = iat + 60L; // expires claim. In this case the token expires in 60 seconds
 
-        final long iat = System.currentTimeMillis() / 1000l; // issued at claim
-        final long exp = iat + 60L; // expires claim. In this case the token expires in 60 seconds
-
-        final JWTSigner signer = new JWTSigner(secret);
+        final JWTSigner signer = new JWTSigner(jwtSecret);
         // JWT claims
         final HashMap<String, Object> claims = new HashMap<>();
-        claims.put("iss", issuer);
+        // Add reserved claims
+        claims.put("iss", jwtIssuer);
         claims.put("iat", iat);
-        claims.put("exp", exp);
+        //claims.put("exp", exp);
+
+        // Add private/custom claims
+        claims.put("valid", true);
 
         final String jwt = signer.sign(claims);
 
+        // Go to https://jwt.io/#debugger to verify during testing
         System.out.println("JWT-----" + jwt);
 
         // Assign the generated jwt to view
