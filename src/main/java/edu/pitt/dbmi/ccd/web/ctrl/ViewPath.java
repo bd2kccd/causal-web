@@ -76,6 +76,7 @@ public interface ViewPath {
     public static final String REDIRECT_JOB_QUEUE = "redirect:/jobQueue";
 
     public static final String FEEDBACK_VIEW = "feedback";
+    public static final String REDIRECT_FEEDBACK_VIEW = "redirect:/feedback";
 
     public static final String USER_ACTIVATION_SUCCESS_VIEW = "user/userActivationSuccess";
 

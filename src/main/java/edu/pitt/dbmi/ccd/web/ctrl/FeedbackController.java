@@ -19,17 +19,20 @@
 package edu.pitt.dbmi.ccd.web.ctrl;
 
 import edu.pitt.dbmi.ccd.web.model.Feedback;
-import edu.pitt.dbmi.ccd.web.service.mail.MailService;
-import javax.mail.MessagingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import edu.pitt.dbmi.ccd.web.service.FeedbackService;
+import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  *
@@ -42,37 +45,42 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @RequestMapping(value = "feedback")
 public class FeedbackController implements ViewPath {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FeedbackController.class);
-
-    private final MailService mailService;
+    private final FeedbackService feedbackService;
 
     @Autowired
-    public FeedbackController(MailService mailService) {
-        this.mailService = mailService;
+    public FeedbackController(FeedbackService feedbackService) {
+        this.feedbackService = feedbackService;
+    }
+
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
     }
 
     @RequestMapping(method = RequestMethod.GET)
     public String showFeedbackForm(Model model) {
-        model.addAttribute("feedback", new Feedback());
+        if (!model.containsAttribute("feedback")) {
+            model.addAttribute("feedback", new Feedback());
+        }
 
         return FEEDBACK_VIEW;
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public String greetingSubmit(@ModelAttribute Feedback feedback, Model model) {
-        model.addAttribute("feedback", feedback);
-        model.addAttribute("successMsg", "Thank you for your feedback!");
+    public String sendFeedback(
+            @Valid @ModelAttribute final Feedback feedback,
+            final BindingResult bindingResult,
+            final RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.feedback", bindingResult);
+            redirectAttributes.addFlashAttribute("errorMsg", "Feedback message is required.");
+        } else {
+            feedbackService.sendFeedback(feedback, redirectAttributes);
+        }
 
-        Thread t = new Thread(() -> {
-            try {
-                mailService.sendFeedback(feedback.getEmail(), feedback.getFeedbackMsg());
-            } catch (MessagingException exception) {
-                LOGGER.error(exception.getMessage());
-            }
-        });
-        t.start();
+        redirectAttributes.addFlashAttribute("feedback", feedback);
 
-        return FEEDBACK_VIEW;
+        return REDIRECT_FEEDBACK_VIEW;
     }
 
 }

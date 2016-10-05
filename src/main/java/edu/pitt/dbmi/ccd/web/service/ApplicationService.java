@@ -26,10 +26,13 @@ import edu.pitt.dbmi.ccd.web.model.LoginCredentials;
 import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmResultService;
 import edu.pitt.dbmi.ccd.web.service.algo.ResultComparisonService;
 import edu.pitt.dbmi.ccd.web.service.file.FileManagementService;
+import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
@@ -44,6 +47,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  */
 @Service
 public class ApplicationService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationService.class);
 
     public static final String INVALID_CREDENTIALS = "Invalid username and/or password.";
     public static final String UNACTIVATED_ACCOUNT = "Your account has not been activated.";
@@ -87,6 +92,14 @@ public class ApplicationService {
             if (userAccount.getActive()) {
                 fileManagementService.createUserDirectories(userAccount);
                 model.addAttribute("appUser", appUserService.createAppUser(userAccount, false));
+
+                // update last login
+                userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
+                try {
+                    userAccountService.save(userAccount);
+                } catch (Exception exception) {
+                    LOGGER.error("Unable to update last login.", exception);
+                }
 
                 return true;
             } else {

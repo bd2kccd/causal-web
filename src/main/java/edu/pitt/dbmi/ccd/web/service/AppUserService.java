@@ -22,8 +22,6 @@ import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.model.AppUser;
 import java.util.Date;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -34,8 +32,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class AppUserService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AppUserService.class);
 
     public AppUserService() {
     }
@@ -57,7 +53,6 @@ public class AppUserService {
         String firstName = person.getFirstName();
         String middleName = person.getMiddleName();
         String lastName = person.getLastName();
-        String email = person.getEmail();
         String username = userAccount.getUsername();
 
         Date lastLoginDate = userAccount.getLastLoginDate();
