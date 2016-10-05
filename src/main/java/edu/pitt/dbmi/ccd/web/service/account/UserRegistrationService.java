@@ -107,21 +107,23 @@ public class UserRegistrationService {
             UserAccount userAccount = regesterUser(userRegistration);
             if (userAccount == null) {
                 redirectAttributes.addFlashAttribute("errorMsg", REGISTRATION_FAILED);
-            } else // send e-mail notification to admin
-            //                userRegistrationMailService.sendAdminNewUserRegistrationNotification(userAccount);
-            if (userAccount.getActive()) {
-                Subject subject = loginService.manualLogin(userAccount, req, res);
-                if (subject.isAuthenticated()) {
-                    fileManagementService.createUserDirectories(userAccount);
-                    redirectAttributes.addFlashAttribute("appUser", appUserService.createAppUser(userAccount, federatedUser));
-                } else {
-                    redirectAttributes.addFlashAttribute("errorMsg", LOGIN_FAILED);
-                }
             } else {
-                // send e-mail notification to user
-                String activationLink = createActivationLink(userAccount, req);
-                userRegistrationMailService.sendUserSelfActivation(userAccount, activationLink);
-                redirectAttributes.addFlashAttribute("successMsg", REGISTRATION_SUCCESS);
+                // send e-mail notification to admin
+                userRegistrationMailService.sendAdminNewUserRegistrationNotification(userAccount);
+                if (userAccount.getActive()) {
+                    Subject subject = loginService.manualLogin(userAccount, req, res);
+                    if (subject.isAuthenticated()) {
+                        fileManagementService.createUserDirectories(userAccount);
+                        redirectAttributes.addFlashAttribute("appUser", appUserService.createAppUser(userAccount, federatedUser));
+                    } else {
+                        redirectAttributes.addFlashAttribute("errorMsg", LOGIN_FAILED);
+                    }
+                } else {
+                    // send e-mail notification to user
+                    String activationLink = createActivationLink(userAccount, req);
+                    userRegistrationMailService.sendUserSelfActivation(userAccount, activationLink);
+                    redirectAttributes.addFlashAttribute("successMsg", REGISTRATION_SUCCESS);
+                }
             }
         }
     }
