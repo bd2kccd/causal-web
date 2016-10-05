@@ -20,6 +20,7 @@ package edu.pitt.dbmi.ccd.web.service.account;
 
 import edu.pitt.dbmi.ccd.db.domain.AccountRegistration;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.PersonService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
@@ -61,16 +62,18 @@ public class UserRegistrationService {
     private final DefaultPasswordService passwordService;
 
     private final UserAccountService userAccountService;
+    private final PersonService personService;
     private final LoginService loginService;
     private final AppUserService appUserService;
     private final UserRegistrationMailService userRegistrationMailService;
     private final FileManagementService fileManagementService;
 
     @Autowired
-    public UserRegistrationService(CcdProperties ccdProperties, DefaultPasswordService passwordService, UserAccountService userAccountService, LoginService loginService, AppUserService appUserService, UserRegistrationMailService userRegistrationMailService, FileManagementService fileManagementService) {
+    public UserRegistrationService(CcdProperties ccdProperties, DefaultPasswordService passwordService, UserAccountService userAccountService, PersonService personService, LoginService loginService, AppUserService appUserService, UserRegistrationMailService userRegistrationMailService, FileManagementService fileManagementService) {
         this.ccdProperties = ccdProperties;
         this.passwordService = passwordService;
         this.userAccountService = userAccountService;
+        this.personService = personService;
         this.loginService = loginService;
         this.appUserService = appUserService;
         this.userRegistrationMailService = userRegistrationMailService;
@@ -99,7 +102,7 @@ public class UserRegistrationService {
 
     public void registerNewRegularUser(UserRegistration userRegistration, boolean federatedUser, Model model, RedirectAttributes redirectAttributes, HttpServletRequest req, HttpServletResponse res) {
         String username = userRegistration.getUsername();
-        boolean existed = userAccountService.countByUsername(username) > 0;
+        boolean existed = personService.countByEmail(username) > 0;
         if (existed) {
             redirectAttributes.addFlashAttribute("userRegistration", userRegistration);
             redirectAttributes.addFlashAttribute("errorMsg", USERNAME_EXISTED);

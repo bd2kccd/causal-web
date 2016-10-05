@@ -58,11 +58,12 @@ public class AppUserService {
         String middleName = person.getMiddleName();
         String lastName = person.getLastName();
         String email = person.getEmail();
+        String username = userAccount.getUsername();
 
         Date lastLoginDate = userAccount.getLastLoginDate();
 
         AppUser appUser = new AppUser();
-        appUser.setUsername(email);
+        appUser.setUsername(username);
         appUser.setFirstName(firstName == null ? "" : firstName);
         appUser.setMiddleName(middleName == null ? "" : middleName);
         appUser.setLastName(lastName == null ? "" : lastName);

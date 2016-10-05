@@ -82,8 +82,8 @@ public class ApplicationService {
             HttpServletRequest request) {
         Subject currentUser = loginService.passwordLogin(loginCredentials);
         if (currentUser.isAuthenticated()) {
-            String username = loginCredentials.getLoginUsername();
-            UserAccount userAccount = userAccountService.findByUsername(username);
+            String email = loginCredentials.getLoginUsername();
+            UserAccount userAccount = userAccountService.findByEmail(email);
             if (userAccount.getActive()) {
                 fileManagementService.createUserDirectories(userAccount);
                 model.addAttribute("appUser", appUserService.createAppUser(userAccount, false));
