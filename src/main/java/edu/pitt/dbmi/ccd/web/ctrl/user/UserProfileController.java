@@ -214,6 +214,7 @@ public class UserProfileController implements ViewPath {
         //claims.put("exp", exp);
 
         // Add private/custom claims
+        claims.put("username", userAccount.getUsername());
         claims.put("valid", true);
 
         final String jwt = signer.sign(claims);
