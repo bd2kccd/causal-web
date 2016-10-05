@@ -192,23 +192,26 @@ public class UserProfileController implements ViewPath {
         model.addAttribute("usqa", usqa);
         model.addAttribute("securityQuestions", securityQuestionService.findAllSecurityQuestion());
 
-        // Generate JWT and show it
-        final String issuer = "https://mydomain.com/";
-        final String secret = "causal";
+        // Generate JWT (JSON Web Token, for API authentication)
+        // Get the issuer and secret from ccd.properties file
+        final String issuer = "${ccd.jwt.issuer}";
+        final String secret = "${ccd.jwt.secret}";
 
         final long iat = System.currentTimeMillis() / 1000l; // issued at claim
         final long exp = iat + 60L; // expires claim. In this case the token expires in 60 seconds
 
         final JWTSigner signer = new JWTSigner(secret);
-        final HashMap<String, Object> claims = new HashMap<String, Object>();
+        // JWT claims
+        final HashMap<String, Object> claims = new HashMap<>();
         claims.put("iss", issuer);
-        claims.put("exp", exp);
         claims.put("iat", iat);
+        claims.put("exp", exp);
 
         final String jwt = signer.sign(claims);
 
         System.out.println("JWT-----" + jwt);
 
+        // Assign the generated jwt to view
         model.addAttribute("jwt", jwt);
 
         return USER_PROFILE_VIEW;
