@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>Terms and Conditions</title>
+        <meta name="description" content="" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="apple-touch-icon" href="../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
+        <link rel="icon" href="../static/favicon.ico" th:href="@{/favicon.ico}" />
+        <link rel="stylesheet" href="../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{/vendors/bootstrap/css/bootstrap.min.css}" />
+        <link rel="stylesheet" href="../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
+        <style>
+            textarea {
+                width:100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="page-header">
+                        <span class="h3" th:text="'Welcome ' + ${appUser.firstName} + ' ' + ${appUser.lastName}">Welcome User</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div id="terms" class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h4>CCD Terms and Conditions</h4>
+                    </div>
+                    <div class="panel-body">
+                        <form id="term_form" role="form" method="POST" action="/auth0/user/registration" th:action="@{/auth0/user/registration}">
+                            <fieldset>
+                                <textarea rows="15" id="agreement" readonly="readonly" th:utext="${@environment.getProperty('ccd.app.agreement')}"></textarea>
+                                <div class="form-group">
+                                    <div class="checkbox">
+                                        <label for="agree">
+                                            <input id="agree" type="checkbox" name="agree" /> I Accept the Terms and Conditions
+                                        </label>
+                                    </div>
+                                </div>
+                                <button id="accept" type="submit" class="btn btn-lg btn-block btn-success">Submit</button>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <footer>
+                <div class="row">
+                    <div class="text-center">
+                        <p class="text-muted" th:inline="text">Copyright &copy; [[${#dates.year(#dates.createNow())} + ' ' + ${@environment.getProperty('ccd.app.copyright')}]]</p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+        <script src="../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
+        <script src="../static/js/terms.min.js" th:src="@{/js/terms.min.js}"></script>
+    </body>
+</html>

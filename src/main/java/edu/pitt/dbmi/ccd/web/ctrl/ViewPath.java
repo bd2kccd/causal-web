@@ -26,6 +26,8 @@ package edu.pitt.dbmi.ccd.web.ctrl;
  */
 public interface ViewPath {
 
+    public static final String TERMS_VIEW = "terms";
+
     public static final String MESSAGE_VIEW = "message";
     public static final String MESSAGE = "/message";
     public static final String REDIRECT_MESSAGE = "redirect:/message";
