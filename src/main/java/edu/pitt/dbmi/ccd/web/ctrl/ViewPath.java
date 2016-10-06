@@ -80,4 +80,6 @@ public interface ViewPath {
 
     public static final String USER_ACTIVATION_SUCCESS_VIEW = "user/userActivationSuccess";
 
+    public static final String USER_PASSWORD_RESET_VIEW = "user/account/recovery/password_reset";
+
 }

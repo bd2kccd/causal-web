@@ -88,6 +88,7 @@ public class UserRegistrationService {
 
         try {
             userAccount.setActive(Boolean.TRUE);
+            userAccount.setAccountId(null);
             userAccountService.save(userAccount);
 
             redirectAttributes.addFlashAttribute("header", "User Activation Success!");
