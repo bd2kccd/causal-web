@@ -18,11 +18,16 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
+import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
+import edu.pitt.dbmi.ccd.web.model.AppUser;
+import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmJobRequest;
+import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmRunInfo;
+import edu.pitt.dbmi.ccd.web.model.algo.GfciContinuousRunInfo;
+import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmService;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -32,17 +37,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
-import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import edu.pitt.dbmi.ccd.web.model.AppUser;
-import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmJobRequest;
-import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmRunInfo;
-import edu.pitt.dbmi.ccd.web.model.algo.GfciContinuousRunInfo;
-import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmService;
-
 /**
- * 
+ *
  * Sep 28, 2016 10:01:10 PM
- * 
+ *
  * @author Chirayu (Kong) Wongchokprasitti, PhD (chw20@pitt.edu)
  *
  */
@@ -84,6 +82,13 @@ public class GFCIController implements ViewPath {
         } else {
             algoInfo.setPriorKnowledge(prior.keySet().iterator().next());
         }
+
+        algoInfo.setAlpha(0.01);
+        algoInfo.setPenaltyDiscount(4.0);
+        algoInfo.setMaxInDegree(100);
+        algoInfo.setFaithfulnessAssumed(true);
+        algoInfo.setNonZeroVarianceValidation(true);
+        algoInfo.setUniqueVarNameValidation(true);
 
         model.addAttribute("datasetList", dataset);
         model.addAttribute("priorList", prior);
@@ -160,8 +165,8 @@ public class GFCIController implements ViewPath {
     }
 
     private GfciContinuousRunInfo createDefaultGfciContinuousRunInfo() {
-    	GfciContinuousRunInfo runInfo = new GfciContinuousRunInfo();
-    	runInfo.setAlpha(0.01);
+        GfciContinuousRunInfo runInfo = new GfciContinuousRunInfo();
+        runInfo.setAlpha(0.01);
         runInfo.setPenaltyDiscount(4.0);
         runInfo.setFaithfulnessAssumed(true);
         runInfo.setMaxInDegree(3);
@@ -172,5 +177,5 @@ public class GFCIController implements ViewPath {
 
         return runInfo;
     }
-    
+
 }

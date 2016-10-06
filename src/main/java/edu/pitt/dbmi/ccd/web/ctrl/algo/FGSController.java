@@ -234,11 +234,11 @@ public class FGSController implements ViewPath {
         FgsContinuousRunInfo runInfo = new FgsContinuousRunInfo();
         runInfo.setPenaltyDiscount(4.0);
         runInfo.setFaithfulnessAssumed(true);
-        runInfo.setMaxDegree(3);
+        runInfo.setMaxDegree(100);
         runInfo.setNonZeroVarianceValidation(true);
         runInfo.setUniqueVarNameValidation(true);
         runInfo.setVerbose(true);
-        runInfo.setJvmMaxMem(0);
+        runInfo.setJvmMaxMem(1);
 
         return runInfo;
     }
@@ -248,11 +248,11 @@ public class FGSController implements ViewPath {
         runInfo.setSamplePrior(1.0);
         runInfo.setStructurePrior(1.0);
         runInfo.setFaithfulnessAssumed(true);
-        runInfo.setMaxDegree(3);
+        runInfo.setMaxDegree(100);
         runInfo.setUniqueVarNameValidation(true);
         runInfo.setLimitNumOfCategory(true);
         runInfo.setVerbose(true);
-        runInfo.setJvmMaxMem(0);
+        runInfo.setJvmMaxMem(1);
 
         return runInfo;
     }
