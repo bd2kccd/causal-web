@@ -15,6 +15,9 @@
         <link rel="stylesheet" href="../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
         <link rel="stylesheet" href="../../static/css/algo/stepwizard.min.css" th:href="@{/css/algo/stepwizard.min.css}" /> 
         <link rel="stylesheet" href="../../static/css/algo/algorithm.min.css" th:href="@{/css/algo/algorithm.min.css}" />
+        <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
+        <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
+        <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
     </head>
     <body ng-app="">
         <div id="wrapper">
@@ -23,7 +26,7 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h1 class="page-header">GFCI</h1>
+                        <h3 class="page-header">GFCI</h3>
                     </div>
                 </div>
                 <div class="row">
@@ -154,16 +157,19 @@
                                             </div>
                                         </div>
                                         <div class="panel panel-primary">
-                                            <div class="panel-heading">
-                                                <h3 class="panel-title">Advanced Options For Java Virtual Machine (JVM)</h3>
-                                                <span class="pull-right clickable panel-collapsed"><i class="glyphicon glyphicon-chevron-down"></i></span>
-                                            </div>
-                                            <div class="panel-body" style="display: none;">
-                                                <div class="form-group">
-                                                    <label for="jvmMaxMem" class="control-label">Maximum memory allocation for the JVM. Enter 0 for default.</label>
-                                                    <div class="input-group">
-                                                        <input type="number" class="form-control" id="jvmMaxMem" name="jvmMaxMem" aria-describedby="mem_unit" ng-model="jvmMaxMem" th:attr="ng-init='jvmMaxMem=' + *{jvmMaxMem}" th:field="*{jvmMaxMem}" />
-                                                        <span class="input-group-addon" id="mem_unit">Gigabyte</span>
+                                            <a id="optJvm" class="panel-primary" data-toggle="collapse" href="#collapseOptJvm">
+                                                <div class="panel-heading">
+                                                    <h3 class="panel-title">Advanced Options For Java Virtual Machine (JVM)<span class="pull-right"><i class="glyphicon glyphicon-chevron-down"></i></span></h3>
+                                                </div>
+                                            </a>
+                                            <div id="collapseOptJvm" class="panel-collapse collapse">
+                                                <div class="panel-body">
+                                                    <div class="form-group">
+                                                        <label for="jvmMaxMem" class="control-label">Maximum memory allocation for the JVM. Enter 0 for default.</label>
+                                                        <div class="input-group">
+                                                            <input type="number" min="0" max="128" class="form-control" id="jvmMaxMem" name="jvmMaxMem" aria-describedby="mem_unit" ng-model="jvmMaxMem" th:attr="ng-init='jvmMaxMem=' + *{jvmMaxMem}" th:field="*{jvmMaxMem}" />
+                                                            <span class="input-group-addon" id="mem_unit">Gigabyte</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -262,15 +268,13 @@
                 </footer>
             </div>
         </div>
-        <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
         <script src="../../static/vendors/angularjs/angular.min.js" th:src="@{/vendors/angularjs/angular.min.js}"></script>
-        <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
         <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
-        <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
         <script src="../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
         <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
         <script src="../../static/js/algo/gfciValidate.min.js" th:src="@{/js/algo/gfciValidate.min.js}"></script>
         <script src="../../static/js/algo/stepwizard.min.js" th:src="@{/js/algo/stepwizard.min.js}"></script>
+        <script src="../../static/js/collapse_panel.min.js" th:src="@{/js/collapse_panel.min.js}"></script>
         <script src="../../static/js/algo/algorithm.min.js" th:src="@{/js/algo/algorithm.min.js}"></script>
     </body>
 </html>
