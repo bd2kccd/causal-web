@@ -108,7 +108,7 @@ public class UserRegistrationService {
             redirectAttributes.addFlashAttribute("userRegistration", userRegistration);
             redirectAttributes.addFlashAttribute("errorMsg", USERNAME_EXISTED);
         } else {
-            UserAccount userAccount = regesterUser(userRegistration);
+            UserAccount userAccount = regesterUser(userRegistration, federatedUser);
             if (userAccount == null) {
                 redirectAttributes.addFlashAttribute("errorMsg", REGISTRATION_FAILED);
             } else {
@@ -143,10 +143,10 @@ public class UserRegistrationService {
         return activationLink;
     }
 
-    public UserAccount regesterUser(UserRegistration userRegistration) {
+    public UserAccount regesterUser(UserRegistration userRegistration, boolean federatedUser) {
         String username = userRegistration.getUsername().split("@")[0];
         String password = passwordService.encryptPassword(userRegistration.getPassword());
-        boolean activated = !ccdProperties.isRequireActivation();
+        boolean activated = !ccdProperties.isRequireActivation() || federatedUser;
         String email = userRegistration.getUsername();
         String firstName = userRegistration.getFirstName();
         String lastName = userRegistration.getLastName();

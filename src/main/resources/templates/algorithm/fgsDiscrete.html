@@ -137,7 +137,7 @@
                                                     <input type="number" id="samplePrior" name="samplePrior" maxlength="10" class="form-control" placeholder="Sample Prior" ng-model="samplePrior" th:attr="ng-init='samplePrior=' + *{samplePrior}" th:field="*{samplePrior}" required="required" />
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="maxDegree" class="control-label">Search Maximum Degree - The maximum degree of graph. A value of -1 indicates no limit.</label>
+                                                    <label for="maxDegree" class="control-label">Search Maximum Degree - The maximum degree of graph.</label>
                                                     <input type="number" id="maxDegree" name="maxDegree" maxlength="10" class="form-control" placeholder="MaxDegree" ng-model="maxDegree" th:attr="ng-init='maxDegree=' + *{maxDegree}" th:field="*{maxDegree}" required="required" />
                                                 </div>
                                                 <div class="form-group">
@@ -231,7 +231,7 @@
                                                             </tr>
                                                             <tr>
                                                                 <td class="col-md-3">Advanced JVM Options:</td>
-                                                                <td>-Xmx{{jvmMaxMem}}G</td>
+                                                                <td>{{(jvmMaxMem == 0) ? 'JVM default' : '-Xmx' + jvmMaxMem + 'G'}}</td>
                                                             </tr>
                                                         </tbody>
                                                     </table>

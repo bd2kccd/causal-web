@@ -133,20 +133,20 @@
                                                     <input type="number" id="penaltyDiscount" name="penaltyDiscount" maxlength="10" class="form-control" placeholder="Penalty Discount" ng-model="penaltyDiscount" th:attr="ng-init='penaltyDiscount=' + *{penaltyDiscount}" th:field="*{penaltyDiscount}" required="required" />
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="maxDegree" class="control-label">Search Maximum Degree - The maximum degree of graph. A value of -1 indicates no limit.</label>
+                                                    <label for="maxDegree" class="control-label">Search Maximum Degree - The maximum degree of graph.</label>
                                                     <input type="number" id="maxDegree" name="maxDegree" maxlength="10" class="form-control" placeholder="MaxDegree" ng-model="maxDegree" th:attr="ng-init='maxDegree=' + *{maxDegree}" th:field="*{maxDegree}" required="required" />
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
                                                         <label for="faithfulnessAssumed" class="control-label">
-                                                            <input type="checkbox" id="faithfulnessAssumed" name="faithfulnessAssumed" ng-model="faithfulnessAssumed" th:attr="ng-init='faithfulnessAssumed=' + *{faithfulnessAssumed}" th:field="*{faithfulnessAssumed}" /> Faithfulness Assumed - Yes if (one edge) faithfulness should be assumed
+                                                            <input type="checkbox" id="faithfulnessAssumed" name="faithfulnessAssumed" ng-model="faithfulnessAssumed" th:attr="ng-init='faithfulnessAssumed=' + *{faithfulnessAssumed}" th:field="*{faithfulnessAssumed}" /> Faithfulness Assumed - Yes if (one edge) faithfulness should be assumed.
                                                         </label>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
                                                         <label for="verbose" class="control-label">
-                                                            <input type="checkbox" id="verbose" name="verbose" ng-model="verbose" th:attr="ng-init='verbose=' + *{verbose}" th:field="*{verbose}" /> Verbose Output - output includes extra information about the run
+                                                            <input type="checkbox" id="verbose" name="verbose" ng-model="verbose" th:attr="ng-init='verbose=' + *{verbose}" th:field="*{verbose}" /> Verbose Output - output includes extra information about the run.
                                                         </label>
                                                     </div>
                                                 </div>
@@ -223,7 +223,7 @@
                                                             </tr>
                                                             <tr>
                                                                 <td class="col-md-3">Advanced JVM Options:</td>
-                                                                <td>-Xmx{{jvmMaxMem}}G</td>
+                                                                <td>{{(jvmMaxMem == 0) ? 'JVM default' : '-Xmx' + jvmMaxMem + 'G'}}</td>
                                                             </tr>
                                                         </tbody>
                                                     </table>

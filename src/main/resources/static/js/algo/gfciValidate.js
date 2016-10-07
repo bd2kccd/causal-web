@@ -7,17 +7,18 @@ $(document).ready(function () {
             alpha: {
                 required: true,
                 number: true,
-                min: 0
+                min: 0.0,
+                max: 1.0
             },
             penaltyDiscount: {
                 required: true,
                 number: true,
-                greaterThan: 0
+                min: 0
             },
             maxInDegree: {
                 required: true,
                 number: true,
-                min: -1
+                min: 1
             },
             jvmMaxMem: {
                 required: true,
@@ -32,19 +33,21 @@ $(document).ready(function () {
             },
             alpha: {
                 required: "Please set the alpha.",
-                greaterThan: "Value must be greater than 0."
+                min: "Must be at least 0.0.",
+                max: "Must be at most 1.0."
             },
             penaltyDiscount: {
                 required: "Please set the penalty discount.",
-                greaterThan: "Value must be greater than 0."
+                min: "Must be at least 0."
             },
             maxInDegree: {
-                required: "Please select the search maximum in-degree."
+                required: "Please select the search maximum in-degree.",
+                min: "Must be at least 1."
             },
             jvmMaxMem: {
                 required: "Must be a number between 0 and 128.",
-                min: "Must between 0 and 128.",
-                max: "Must between 0 and 128."
+                min: "Must be at least 0.",
+                max: "Must be at most 128."
             }
         },
         highlight: function (element) {

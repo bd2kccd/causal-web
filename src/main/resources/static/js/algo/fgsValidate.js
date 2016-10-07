@@ -7,12 +7,12 @@ $(document).ready(function () {
             penaltyDiscount: {
                 required: true,
                 number: true,
-                greaterThan: 0
+                min: 0
             },
             maxDegree: {
                 required: true,
                 number: true,
-                min: -1
+                min: 1
             },
             jvmMaxMem: {
                 required: true,
@@ -27,15 +27,16 @@ $(document).ready(function () {
             },
             penaltyDiscount: {
                 required: "Please set the penalty discount.",
-                greaterThan: "Value must be greater than 0."
+                min: "Must be at least 0."
             },
             maxDegree: {
-                required: "Please select the search max degree."
+                required: "Please select the search max degree.",
+                min: "Must be at least 1."
             },
             jvmMaxMem: {
                 required: "Must be a number between 0 and 128.",
-                min: "Must between 0 and 128.",
-                max: "Must between 0 and 128."
+                min: "Must be at least 0.",
+                max: "Must be at most 128."
             }
         },
         highlight: function (element) {
