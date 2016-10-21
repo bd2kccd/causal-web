@@ -169,7 +169,7 @@
         <script src="../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
         <script src="../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
         <script src="../static/js/login.min.js" th:src="@{/js/login.min.js}"></script>
-        <script src="../static/vendors/auth0/lock.min.js" th:src="@{/vendors/auth0/lock.min.js}"></script>
+        <script src="https://cdn.auth0.com/js/lock/10.4.1/lock.min.js"></script>
         <script type="text/javascript" th:inline="javascript">
                                     var auth0ClientId = /*[[${@environment.getProperty('auth0.clientId')}]]*/ '';
                                     var auth0Domain = /*[[${@environment.getProperty('auth0.domain')}]]*/ '';
