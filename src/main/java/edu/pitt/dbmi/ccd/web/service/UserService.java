@@ -18,12 +18,6 @@
  */
 package edu.pitt.dbmi.ccd.web.service;
 
-import edu.pitt.dbmi.ccd.db.entity.SecurityAnswer;
-import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.service.SecurityAnswerService;
-import edu.pitt.dbmi.ccd.db.service.UserAccountService;
-import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
-import edu.pitt.dbmi.ccd.web.service.mail.MailService;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +25,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import edu.pitt.dbmi.ccd.db.entity.SecurityAnswer;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.SecurityAnswerService;
+import edu.pitt.dbmi.ccd.db.service.UserAccountService;
+import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
+import edu.pitt.dbmi.ccd.web.service.mail.MailService;
 
 /**
  *
@@ -80,7 +81,7 @@ public class UserService {
         boolean flag = false;
 
         try {
-            userAccountService.saveUserAccount(userAccount);
+            userAccountService.save(userAccount);
             securityAnswerService.saveSecurityAnswer(securityAnswer);
             flag = true;
         } catch (Exception exception) {
