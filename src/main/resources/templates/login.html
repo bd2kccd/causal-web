@@ -39,7 +39,7 @@
                                     <form id="login" method="POST" action="" role="form">
                                         <div class="form-group">
                                             <div class="input-group">
-                                                <span class="input-group-addon"><i class="fa fa-user pitt-color"></i></span> 
+                                                <span class="input-group-addon"><i class="fa fa-user pitt-color"></i></span>
                                                 <input class="form-control" placeholder="Username" name="username" type="text" autofocus="autofocus" value="" required="required" />
                                             </div>
                                         </div>
@@ -57,7 +57,7 @@
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <input type="submit" class="btn btn-lg btn-block btn-pitt" value="Sign In" />
+                                            <input type="submit" class="btn btn-lg btn-block btn-pitt" value="Sign In" onClick="JavaScript:requestAnnotationsTokens()"/>
                                         </div>
                                     </form>
                                     <div style="border-top: 1px solid #ddd; padding-top:15px; font-size:85%">
@@ -94,7 +94,7 @@
                                     <div class="input-group">
                                         <span class="input-group-addon">
                                             <i class="fa fa-user pitt-color"></i>
-                                        </span> 
+                                        </span>
                                         <input class="form-control" placeholder="Username" name="username" type="text" autofocus="autofocus" th:field="*{username}" required="required" />
                                     </div>
                                 </div>
@@ -102,7 +102,7 @@
                                     <div class="input-group">
                                         <span class="input-group-addon">
                                             <i class="fa fa-envelope pitt-color"></i>
-                                        </span> 
+                                        </span>
                                         <input class="form-control" placeholder="Email" name="email" type="email" th:field="*{email}" required="required" />
                                     </div>
                                 </div>
@@ -110,7 +110,7 @@
                                     <div class="input-group">
                                         <span class="input-group-addon">
                                             <i class="fa fa-lock pitt-color"></i>
-                                        </span> 
+                                        </span>
                                         <input id="password" class="form-control" placeholder="Password" name="password" type="password" th:field="*{password}" required="required" />
                                     </div>
                                 </div>
@@ -118,7 +118,7 @@
                                     <div class="input-group">
                                         <span class="input-group-addon">
                                             <i class="fa fa-lock pitt-color"></i>
-                                        </span> 
+                                        </span>
                                         <input id="confirmPassword" class="form-control" placeholder="Confirm Password" name="confirmPassword" type="password" required="required" />
                                     </div>
                                 </div>
@@ -186,5 +186,6 @@
         <script src="../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
         <script src="../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
         <script src="../static/js/login.min.js" th:src="@{/js/login.min.js}"></script>
+        <script src="../static/js/annotations.js" th:src="@{/js/annotations.js}"></script>
     </body>
 </html>

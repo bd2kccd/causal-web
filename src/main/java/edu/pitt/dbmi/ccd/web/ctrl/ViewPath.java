@@ -54,6 +54,7 @@ public interface ViewPath {
     public static final String REDIRECT_DATA = "redirect:/data";
     public static final String DATA_SUMMARY_VIEW = "data/dataSummary";
     public static final String DATA_UPLOAD_VIEW = "data/dataUpload";
+    public static final String DATA_ANNOTATIONS_VIEW = "data/dataAnnotations";
 
     public static final String DATASET_PRIOR_VIEW = "data/prior";
     public static final String REDIRECT_DATASET_PRIOR = "redirect:/data/prior";

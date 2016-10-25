@@ -18,14 +18,15 @@
  */
 package edu.pitt.dbmi.ccd.web;
 
-import edu.pitt.dbmi.ccd.db.CCDDatabaseApplication;
-import edu.pitt.dbmi.ccd.mail.CcdMailApplication;
-import edu.pitt.dbmi.ccd.queue.CCDJobQueueApplication;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.annotation.EnableAsync;
+
+import edu.pitt.dbmi.ccd.db.CCDDatabaseApplication;
+import edu.pitt.dbmi.ccd.mail.CcdMailApplication;
+import edu.pitt.dbmi.ccd.queue.CCDJobQueueApplication;
 
 /**
  *

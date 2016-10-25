@@ -18,22 +18,6 @@
  */
 package edu.pitt.dbmi.ccd.web.service;
 
-import edu.pitt.dbmi.ccd.commons.file.FilePrint;
-import edu.pitt.dbmi.ccd.commons.file.MessageDigestHash;
-import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
-import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
-import edu.pitt.dbmi.ccd.db.entity.DataFile;
-import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
-import edu.pitt.dbmi.ccd.db.entity.FileDelimiter;
-import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.entity.VariableType;
-import edu.pitt.dbmi.ccd.db.service.DataFileService;
-import edu.pitt.dbmi.ccd.db.service.FileDelimiterService;
-import edu.pitt.dbmi.ccd.db.service.UserAccountService;
-import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
-import edu.pitt.dbmi.ccd.web.model.AttributeValue;
-import edu.pitt.dbmi.ccd.web.model.data.DataSummary;
-import edu.pitt.dbmi.ccd.web.model.file.DatasetFileInfo;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -49,11 +33,30 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import edu.pitt.dbmi.ccd.commons.file.FilePrint;
+import edu.pitt.dbmi.ccd.commons.file.MessageDigestHash;
+import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
+import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
+import edu.pitt.dbmi.ccd.db.entity.AnnotationTarget;
+import edu.pitt.dbmi.ccd.db.entity.DataFile;
+import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
+import edu.pitt.dbmi.ccd.db.entity.FileDelimiter;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.entity.VariableType;
+import edu.pitt.dbmi.ccd.db.service.DataFileService;
+import edu.pitt.dbmi.ccd.db.service.FileDelimiterService;
+import edu.pitt.dbmi.ccd.db.service.UserAccountService;
+import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
+import edu.pitt.dbmi.ccd.web.model.AttributeValue;
+import edu.pitt.dbmi.ccd.web.model.data.DataSummary;
+import edu.pitt.dbmi.ccd.web.model.file.DatasetFileInfo;
 
 /**
  *
@@ -163,6 +166,12 @@ public class DataService {
         });
 
         return map;
+    }
+
+    public AnnotationTarget getAnnotationTarget(final String fileName, final String username) {
+        Path dataDir = Paths.get(workspace, username, dataFolder);
+        DataFile dataFile = dataFileService.findByAbsolutePathAndName(dataDir.toAbsolutePath().toString(), fileName);
+        return dataFile.getAnnotationTarget();
     }
 
     public boolean saveDataSummary(final DataSummary dataSummary, final String username) {
