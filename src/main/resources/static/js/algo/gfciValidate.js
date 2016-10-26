@@ -15,10 +15,10 @@ $(document).ready(function () {
                 number: true,
                 min: 0
             },
-            maxInDegree: {
+            maxDegree: {
                 required: true,
                 number: true,
-                min: 1
+                min: -1
             },
             jvmMaxMem: {
                 required: true,
@@ -40,9 +40,9 @@ $(document).ready(function () {
                 required: "Please set the penalty discount.",
                 min: "Must be at least 0."
             },
-            maxInDegree: {
-                required: "Please select the search maximum in-degree.",
-                min: "Must be at least 1."
+            maxDegree: {
+                required: "Please select the search max degree.",
+                min: "Must be at least -1."
             },
             jvmMaxMem: {
                 required: "Must be a number between 0 and 128.",

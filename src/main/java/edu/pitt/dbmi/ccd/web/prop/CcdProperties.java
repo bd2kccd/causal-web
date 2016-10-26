@@ -32,6 +32,9 @@ import org.springframework.stereotype.Component;
 @PropertySource("classpath:ccd.properties")
 public class CcdProperties {
 
+    @Value("${ccd.jar.algorithm}")
+    private String algoJar;
+
     @Value("${ccd.algorithm.fgs}")
     private String algoFgsContinuous;
 
@@ -78,6 +81,14 @@ public class CcdProperties {
     private String agreement;
 
     public CcdProperties() {
+    }
+
+    public String getAlgoJar() {
+        return algoJar;
+    }
+
+    public void setAlgoJar(String algoJar) {
+        this.algoJar = algoJar;
     }
 
     public String getAlgoFgsContinuous() {
