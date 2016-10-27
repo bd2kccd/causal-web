@@ -26,7 +26,7 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h1 class="page-header">FGS</h1>
+                        <h3 class="page-header">FGS</h3>
                     </div>
                 </div>
                 <div class="row">
@@ -109,7 +109,7 @@
                                                 <div class="form-group">
                                                     <div class="checkbox">
                                                         <label for="skipUniqueVarName" class="control-label">
-                                                            <input type="checkbox" id="skipUniqueVarName" name="skipUniqueVarName" ng-model="skipUniqueVarName" th:attr="ng-init='skipUniqueVarName=' + *{skipUniqueVarName}" th:field="*{skipUniqueVarName}" /> Skip validation the ensures unique variable name.
+                                                            <input type="checkbox" id="skipUniqueVarName" name="skipUniqueVarName" ng-model="skipUniqueVarName" th:attr="ng-init='skipUniqueVarName=' + *{skipUniqueVarName}" th:field="*{skipUniqueVarName}" /> Skip validation that ensures unique variable name.
                                                         </label>
                                                     </div>
                                                 </div>
@@ -231,12 +231,12 @@
                                                         <caption>Data Validations</caption>
                                                         <tbody>
                                                             <tr>
-                                                                <td class="col-md-3">Non-zero Variance:</td>
-                                                                <td ng-bind="skipNonzeroVariance"></td>
+                                                                <td class="col-md-3">Ensure Non-zero Variance:</td>
+                                                                <td ng-bind="!skipNonzeroVariance"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-3">Unique Variable Name:</td>
-                                                                <td ng-bind="skipUniqueVarName"></td>
+                                                                <td class="col-md-3">Ensure Unique Variable Name:</td>
+                                                                <td ng-bind="!skipUniqueVarName"></td>
                                                             </tr>
                                                         </tbody>
                                                     </table>

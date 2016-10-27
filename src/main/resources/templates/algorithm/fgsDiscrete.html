@@ -109,7 +109,7 @@
                                                 <div class="form-group">
                                                     <div class="checkbox">
                                                         <label for="skipUniqueVarName" class="control-label">
-                                                            <input type="checkbox" id="skipUniqueVarName" name="skipUniqueVarName" ng-model="skipUniqueVarName" th:attr="ng-init='skipUniqueVarName=' + *{skipUniqueVarName}" th:field="*{skipUniqueVarName}" /> Skip validation the ensures unique variable name.
+                                                            <input type="checkbox" id="skipUniqueVarName" name="skipUniqueVarName" ng-model="skipUniqueVarName" th:attr="ng-init='skipUniqueVarName=' + *{skipUniqueVarName}" th:field="*{skipUniqueVarName}" /> Skip validation that ensures unique variable name.
                                                         </label>
                                                     </div>
                                                 </div>
@@ -239,12 +239,12 @@
                                                         <caption>Data Validations</caption>
                                                         <tbody>
                                                             <tr>
-                                                                <td class="col-md-3">Unique Variable Name:</td>
-                                                                <td ng-bind="skipUniqueVarName"></td>
+                                                                <td class="col-md-3">Ensure Categories is Limited to 10:</td>
+                                                                <td ng-bind="!skipCategoryLimit"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-3">Limit Number of Categories:</td>
-                                                                <td ng-bind="skipCategoryLimit"></td>
+                                                                <td class="col-md-3">Ensure Unique Variable Name:</td>
+                                                                <td ng-bind="!skipUniqueVarName"></td>
                                                             </tr>
                                                         </tbody>
                                                     </table>
