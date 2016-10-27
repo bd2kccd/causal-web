@@ -101,15 +101,15 @@
                                             <div class="panel-body">
                                                 <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="uniqueVarNameValidation" class="control-label">
-                                                            <input type="checkbox" id="uniqueVarNameValidation" name="uniqueVarNameValidation" ng-model="uniqueVarNameValidation" th:attr="ng-init='uniqueVarNameValidation=' + *{uniqueVarNameValidation}" th:field="*{uniqueVarNameValidation}" /> Unique Variable Name - ensure that there are no duplicated variable names
+                                                        <label for="skipCategoryLimit" class="control-label">
+                                                            <input type="checkbox" id="skipCategoryLimit" name="skipCategoryLimit" ng-model="skipCategoryLimit" th:attr="ng-init='skipCategoryLimit=' + *{skipCategoryLimit}" th:field="*{skipCategoryLimit}" /> Skip validation that ensures the number of categories do not exceed 10.
                                                         </label>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="limitNumOfCategory" class="control-label">
-                                                            <input type="checkbox" id="limitNumOfCategory" name="limitNumOfCategory" ng-model="limitNumOfCategory" th:attr="ng-init='limitNumOfCategory=' + *{limitNumOfCategory}" th:field="*{limitNumOfCategory}" /> Limit Number of Categories - ensure the number of categories of a variable does not exceed 10.
+                                                        <label for="skipUniqueVarName" class="control-label">
+                                                            <input type="checkbox" id="skipUniqueVarName" name="skipUniqueVarName" ng-model="skipUniqueVarName" th:attr="ng-init='skipUniqueVarName=' + *{skipUniqueVarName}" th:field="*{skipUniqueVarName}" /> Skip validation that ensures unique variable name.
                                                         </label>
                                                     </div>
                                                 </div>
@@ -239,12 +239,12 @@
                                                         <caption>Data Validations</caption>
                                                         <tbody>
                                                             <tr>
-                                                                <td class="col-md-3">Unique Variable Name:</td>
-                                                                <td ng-bind="uniqueVarNameValidation"></td>
+                                                                <td class="col-md-3">Ensure Categories is Limited to 10:</td>
+                                                                <td ng-bind="!skipCategoryLimit"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-3">Limit Number of Categories:</td>
-                                                                <td ng-bind="limitNumOfCategory"></td>
+                                                                <td class="col-md-3">Ensure Unique Variable Name:</td>
+                                                                <td ng-bind="!skipUniqueVarName"></td>
                                                             </tr>
                                                         </tbody>
                                                     </table>

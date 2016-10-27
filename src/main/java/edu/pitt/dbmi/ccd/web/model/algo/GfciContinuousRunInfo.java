@@ -25,25 +25,11 @@ package edu.pitt.dbmi.ccd.web.model.algo;
  * @author Chirayu (Kong) Wongchokprasitti, PhD (chw20@pitt.edu)
  *
  */
-public class GfciContinuousRunInfo extends AlgorithmRunInfo {
+public class GfciContinuousRunInfo extends FgsContinuousRunInfo {
 
-    // algorithm parameters
     protected double alpha;
-    protected int maxInDegree;
-    protected double penaltyDiscount;
-    protected boolean faithfulnessAssumed;
-
-    // data validation
-    protected boolean nonZeroVarianceValidation;
-    protected boolean uniqueVarNameValidation;
 
     public GfciContinuousRunInfo() {
-
-    }
-
-    @Override
-    public String toString() {
-        return "FgsContinuousRunInfo{" + "alpha=" + alpha + ", maxInDegree=" + maxInDegree + ", penaltyDiscount=" + penaltyDiscount + ", faithfulnessAssumed=" + faithfulnessAssumed + ", nonZeroVarianceValidation=" + nonZeroVarianceValidation + ", uniqueVarNameValidation=" + uniqueVarNameValidation + '}';
     }
 
     public double getAlpha() {
@@ -52,46 +38,6 @@ public class GfciContinuousRunInfo extends AlgorithmRunInfo {
 
     public void setAlpha(double alpha) {
         this.alpha = alpha;
-    }
-
-    public int getMaxInDegree() {
-        return maxInDegree;
-    }
-
-    public void setMaxInDegree(int maxInDegree) {
-        this.maxInDegree = maxInDegree;
-    }
-
-    public double getPenaltyDiscount() {
-        return penaltyDiscount;
-    }
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
-    }
-
-    public boolean isFaithfulnessAssumed() {
-        return faithfulnessAssumed;
-    }
-
-    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
-        this.faithfulnessAssumed = faithfulnessAssumed;
-    }
-
-    public boolean isNonZeroVarianceValidation() {
-        return nonZeroVarianceValidation;
-    }
-
-    public void setNonZeroVarianceValidation(boolean nonZeroVarianceValidation) {
-        this.nonZeroVarianceValidation = nonZeroVarianceValidation;
-    }
-
-    public boolean isUniqueVarNameValidation() {
-        return uniqueVarNameValidation;
-    }
-
-    public void setUniqueVarNameValidation(boolean uniqueVarNameValidation) {
-        this.uniqueVarNameValidation = uniqueVarNameValidation;
     }
 
 }

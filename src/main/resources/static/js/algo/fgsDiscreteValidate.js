@@ -17,7 +17,7 @@ $(document).ready(function () {
             maxDegree: {
                 required: true,
                 number: true,
-                min: 1
+                min: -1
             },
             jvmMaxMem: {
                 required: true,
@@ -40,7 +40,7 @@ $(document).ready(function () {
             },
             maxDegree: {
                 required: "Please select the search max degree.",
-                min: "Must be at least 1."
+                min: "Must be at least -1."
             },
             jvmMaxMem: {
                 required: "Must be a number between 0 and 128.",

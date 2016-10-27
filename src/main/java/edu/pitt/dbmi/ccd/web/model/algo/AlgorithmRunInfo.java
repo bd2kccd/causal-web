@@ -34,11 +34,6 @@ public abstract class AlgorithmRunInfo {
     public AlgorithmRunInfo() {
     }
 
-    @Override
-    public String toString() {
-        return "AlgorithmRunInfo{" + "dataset=" + dataset + ", priorKnowledge=" + priorKnowledge + ", verbose=" + verbose + ", jvmMaxMem=" + jvmMaxMem + '}';
-    }
-
     public String getDataset() {
         return dataset;
     }
