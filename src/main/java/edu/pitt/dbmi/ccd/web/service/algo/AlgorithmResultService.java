@@ -140,14 +140,16 @@ public class AlgorithmResultService {
             List<BasicFileInfo> results = FileInfos.listBasicPathInfo(files);
             results.forEach(result -> {
                 String fileName = result.getFilename();
+                // only accept files that ends in .txt
+                if (fileName.endsWith(".txt")) {
+                    ResultFileInfo fileInfo = new ResultFileInfo();
+                    fileInfo.setCreationDate(new Date(result.getCreationTime()));
+                    fileInfo.setFileName(fileName);
+                    fileInfo.setFileSize(result.getSize());
+                    fileInfo.setError(fileName.startsWith("error"));
 
-                ResultFileInfo fileInfo = new ResultFileInfo();
-                fileInfo.setCreationDate(new Date(result.getCreationTime()));
-                fileInfo.setFileName(fileName);
-                fileInfo.setFileSize(result.getSize());
-                fileInfo.setError(fileName.startsWith("error"));
-
-                resultFileInfos.add(fileInfo);
+                    resultFileInfos.add(fileInfo);
+                }
             });
         } catch (IOException exception) {
             LOGGER.error(exception.getMessage());
@@ -178,12 +180,10 @@ public class AlgorithmResultService {
                 if (isCategory) {
                     if (line.isEmpty()) {
                         isCategory = false;
-                    } else {
-                        if (map != null) {
-                            String[] data = equalDelim.split(line);
-                            if (data.length == 2) {
-                                map.put(data[0].trim(), data[1].trim());
-                            }
+                    } else if (map != null) {
+                        String[] data = equalDelim.split(line);
+                        if (data.length == 2) {
+                            map.put(data[0].trim(), data[1].trim());
                         }
                     }
                 } else if (line.endsWith(":")) {
