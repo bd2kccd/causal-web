@@ -57,7 +57,7 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <input type="submit" class="btn btn-block btn-lg btn-default btn-default_pitt" value="Sign In" />
+                                        <input type="submit" class="btn btn-block btn-lg btn-default btn-default_pitt" value="Sign In" onClick="JavaScript:requestAnnotationsTokens()"/>
                                     </div>
                                 </fieldset>
                             </form>
@@ -165,5 +165,6 @@
         <script src="../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
         <script src="../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
         <script src="../static/js/login.min.js" th:src="@{/js/login.min.js}"></script>
+        <script src="../static/js/annotations.js" th:src="@{/js/annotations.js}"></script>
     </body>
 </html>

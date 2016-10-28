@@ -2,7 +2,7 @@
  * @author Mark Silvis (marksilvis@pitt.edu)
  */
 
-const apiURL = "http://localhost:8000/api";
+const apiURL = "http://localhost:4040/annotations";
 const tokenURL = "/oauth/token";
 const annoURL = "/annotations";
 const vocabURL = "/vocabularies";
@@ -110,8 +110,8 @@ function requestAnnotationsTokens() {
         type: 'post',
         data: {
             grant_type: passwordGrant,
-            username: document.getElementById("login").username.value,
-            password: document.getElementById("login").password.value
+            username: document.getElementById("login").loginUsername.value,
+            password: document.getElementById("login").loginPassword.value
         },
         beforeSend: function(xhr) {
             xhr.setRequestHeader('Authorization', 'Basic ' + btoa(client + ':' + clientPassword));

@@ -23,11 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.bind.annotation.*;
 
 import edu.pitt.dbmi.ccd.db.entity.AnnotationTarget;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
@@ -89,7 +85,9 @@ public class DataManagementController implements ViewPath {
         model.addAttribute("username", username);
         model.addAttribute("fileName", fileName);
         AnnotationTarget target = dataService.getAnnotationTarget(fileName, username);
-        model.addAttribute("annotationTargetID", target.getId());
+        if (target != null) {
+            model.addAttribute("annotationTargetID", target.getId());
+        }
 
         return DATA_ANNOTATIONS_VIEW;
     }
