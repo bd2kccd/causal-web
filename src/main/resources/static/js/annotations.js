@@ -104,10 +104,12 @@ function postRequest(url, parameters, async, beforeSendCallback) {
 /**
  * Fetch refresh and access tokens from Annotations API
  */
-function requestAnnotationsTokens() {
+function requestAnnotationsTokens(async) {
+    var a = (typeof async === 'undefined') ? true : async;
     $.ajax({
         url: apiURL + tokenURL,
         type: 'post',
+        async: a,
         data: {
             grant_type: passwordGrant,
             username: document.getElementById("login").loginUsername.value,
