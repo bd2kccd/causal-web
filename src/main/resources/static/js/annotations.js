@@ -82,6 +82,7 @@ function postRequest(url, parameters, async, beforeSendCallback) {
     var a = (typeof async === 'undefined') ? true : async;
     return $.ajax({
         url: apiURL + url,
+        crossDomain: true,
         type: 'post',
         async: a,
         beforeSend: function(xhr) {
