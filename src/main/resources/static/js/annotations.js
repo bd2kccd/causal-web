@@ -2,7 +2,7 @@
  * @author Mark Silvis (marksilvis@pitt.edu)
  */
 
-const apiURL = "http://localhost:4040/annotations";
+const apiURL = "https://ccd3.vm.bridges.psc.edu/annotations";
 const tokenURL = "/oauth/token";
 const annoURL = "/annotations";
 const vocabURL = "/vocabularies";
