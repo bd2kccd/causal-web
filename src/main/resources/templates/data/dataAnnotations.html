@@ -42,6 +42,10 @@
                             /*<![CDATA[*/
                             /* begin thymeleaf templating */
 
+                            var annoApiUrl = /*[[${@environment.getProperty('annotations.api.url')}]]*/ '';
+                            var annoClientId = /*[[${@environment.getProperty('annotations.api.clientId')}]]*/ '';
+                            var annoClientSecret = /*[[${@environment.getProperty('annotations.api.clientSecret')}]]*/ '';
+
                             const searchURL = annoURL + "/search";
                             const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -469,7 +473,7 @@
                                                             .attr('data-subtext', vocabulary.description)
                                                             .text(vocabulary.name));
                                                     });
-                                                   selectVocabulary(1);
+                                                   selectVocabulary(vocabularies[0]['id']);
                                             });
                                         }
 

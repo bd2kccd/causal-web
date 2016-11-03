@@ -166,5 +166,10 @@
         <script src="../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
         <script src="../static/js/login.min.js" th:src="@{/js/login.min.js}"></script>
         <script src="../static/js/annotations.js" th:src="@{/js/annotations.js}"></script>
+        <script type="text/javascript" th:inline="javascript">
+            var annoApiUrl = /*[[${@environment.getProperty('annotations.api.url')}]]*/ '';
+            var annoClientId = /*[[${@environment.getProperty('annotations.api.clientId')}]]*/ '';
+            var annoClientSecret = /*[[${@environment.getProperty('annotations.api.clientSecret')}]]*/ '';
+        </script>
     </body>
 </html>
