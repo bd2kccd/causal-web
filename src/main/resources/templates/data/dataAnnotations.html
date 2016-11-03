@@ -41,6 +41,9 @@
                 <script type="text/javascript" th:inline="javascript">
                             /*<![CDATA[*/
                             /* begin thymeleaf templating */
+                            var annoApiUrl = /*[[${@environment.getProperty('annotations.api.url')}]]*/ '';
+                            var annoClientId = /*[[${@environment.getProperty('annotations.api.clientId')}]]*/ '';
+                            var annoClientSecret = /*[[${@environment.getProperty('annotations.api.clientSecret')}]]*/ '';
 
                             var annoApiUrl = /*[[${@environment.getProperty('annotations.api.url')}]]*/ '';
                             var annoClientId = /*[[${@environment.getProperty('annotations.api.clientId')}]]*/ '';

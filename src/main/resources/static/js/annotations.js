@@ -1,7 +1,7 @@
 /**
  * @author Mark Silvis (marksilvis@pitt.edu)
  */
-    
+
 const passwordGrant = "password";
 const refreshGrant = "refresh_token";
 const tokenURL = "oauth/token";
@@ -9,7 +9,6 @@ const annoURL = "annotations/";
 const vocabURL = "vocabularies/";
 const client = "causal-web";
 const clientPassword = "";
-
 
 /**
  * Generic ajax GET request to CCD Annotations API
@@ -116,7 +115,7 @@ function requestAnnotationsTokens(async) {
             password: document.getElementById("login").loginPassword.value
         },
         beforeSend: function(xhr) {
-            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(client + ':' + clientPassword));
+            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(annoClientId + ':' + annoClientSecret));
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         },
         dataType: 'json',
@@ -142,7 +141,7 @@ function requestAccessToken(async) {
             refresh_token: getRefreshToken()
         },
         beforeSend: function (xhr) {
-            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(client + ':' + clientPassword));
+            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(annoClientId + ':' + annoClientSecret));
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         },
         dataType: 'json',
