@@ -2,14 +2,15 @@
  * @author Mark Silvis (marksilvis@pitt.edu)
  */
 
-const apiURL = "https://ccd3.vm.bridges.psc.edu/annotations";
+//var annoApiUrl; // = "https://ccd3.vm.bridges.psc.edu/annotations";
+//var annoClientId = "causal-web";
+//var annoClientSecret = "";
+const passwordGrant = "password";
+const refreshGrant = "refresh_token";
+
 const tokenURL = "/oauth/token";
 const annoURL = "/annotations";
 const vocabURL = "/vocabularies";
-const client = "causal-web";
-const clientPassword = "";
-const passwordGrant = "password";
-const refreshGrant = "refresh_token";
 
 /**
  * Generic ajax GET request to CCD Annotations API
@@ -29,7 +30,7 @@ function getRequest(url, parameters, async, beforeSendCallback) {
     // get async setting
     var a = (typeof async === 'undefined') ? true : async;
     return $.ajax({
-        url: apiURL + url + params,
+        url: annoApiUrl + url + params,
         type: 'get',
         async: a,
         beforeSend: function(xhr) {
@@ -81,7 +82,7 @@ function getRequestByLink(link) {
 function postRequest(url, parameters, async, beforeSendCallback) {
     var a = (typeof async === 'undefined') ? true : async;
     return $.ajax({
-        url: apiURL + url,
+        url: annoApiUrl + url,
         type: 'post',
         async: a,
         beforeSend: function(xhr) {
@@ -107,7 +108,7 @@ function postRequest(url, parameters, async, beforeSendCallback) {
 function requestAnnotationsTokens(async) {
     var a = (typeof async === 'undefined') ? true : async;
     $.ajax({
-        url: apiURL + tokenURL,
+        url: annoApiUrl + tokenURL,
         type: 'post',
         async: a,
         data: {
@@ -116,7 +117,7 @@ function requestAnnotationsTokens(async) {
             password: document.getElementById("login").loginPassword.value
         },
         beforeSend: function(xhr) {
-            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(client + ':' + clientPassword));
+            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(annoClientId + ':' + annoClientSecret));
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         },
         dataType: 'json',
@@ -134,7 +135,7 @@ function requestAnnotationsTokens(async) {
 function requestAccessToken(async) {
     var a = (typeof async === 'undefined') ? true : async;
     $.ajax({
-        url: apiURL + tokenURL,
+        url: annoApiUrl + tokenURL,
         type: 'post',
         async: a,
         data: {
@@ -142,7 +143,7 @@ function requestAccessToken(async) {
             refresh_token: getRefreshToken()
         },
         beforeSend: function (xhr) {
-            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(client + ':' + clientPassword));
+            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(annoClientId + ':' + annoClientSecret));
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         },
         dataType: 'json',
@@ -207,7 +208,7 @@ function getRefreshToken() {
 function getUser() {
     getRequest('/users/12');
 //    $.ajax({
-//        url: apiURL+"/users/12",
+//        url: annoApiUrl+"/users/12",
 //        type: 'get',
 //        beforeSend: function (xhr) {
 //            xhr.setRequestHeader('Authorization', 'Bearer ' + getAccessToken());
