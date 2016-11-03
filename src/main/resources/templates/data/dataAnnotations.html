@@ -374,7 +374,8 @@
 
                             function formatDate(date) {
                                 // parse date
-                                date = new Date(Date.parse(date));
+                                var d = date.split(/[^0-9]/);
+                                date = new Date (d[0],d[1]-1,d[2],d[3],d[4],d[5]);
 
                                 var year = date.getFullYear();
                                 var month = months[date.getMonth()];

@@ -5,8 +5,8 @@
 const passwordGrant = "password";
 const refreshGrant = "refresh_token";
 const tokenURL = "oauth/token";
-const annoURL = "annotations/";
-const vocabURL = "vocabularies/";
+const annoURL = "annotations";
+const vocabURL = "vocabularies";
 const client = "causal-web";
 const clientPassword = "";
 
