@@ -2,6 +2,7 @@
  * @author Mark Silvis (marksilvis@pitt.edu)
  */
 
+<<<<<<< HEAD
 const passwordGrant = "password";
 const refreshGrant = "refresh_token";
 const tokenURL = "oauth/token";
@@ -9,6 +10,17 @@ const annoURL = "annotations/";
 const vocabURL = "vocabularies/";
 const client = "causal-web";
 const clientPassword = "";
+=======
+//var annoApiUrl; // = "https://ccd3.vm.bridges.psc.edu/annotations";
+//var annoClientId = "causal-web";
+//var annoClientSecret = "";
+const passwordGrant = "password";
+const refreshGrant = "refresh_token";
+
+const tokenURL = "/oauth/token";
+const annoURL = "/annotations";
+const vocabURL = "/vocabularies";
+>>>>>>> 0cd6435193a64f4b9e153d6bb0ba03fe6f2f0344
 
 /**
  * Generic ajax GET request to CCD Annotations API
