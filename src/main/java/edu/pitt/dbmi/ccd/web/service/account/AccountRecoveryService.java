@@ -63,9 +63,9 @@ public class AccountRecoveryService {
         String activationKey = passwordReset.getActivationKey();
         String password = passwordReset.getPassword();
 
-        UserAccount userAccount = userAccountService.findByAccountId(activationKey);
+        UserAccount userAccount = userAccountService.findByActivationKey(activationKey);
         userAccount.setPassword(passwordService.encryptPassword(password));
-        userAccount.setAccountId(null);
+        userAccount.setActivationKey(null);
         try {
             userAccountService.save(userAccount);
 
@@ -80,7 +80,7 @@ public class AccountRecoveryService {
     }
 
     public boolean isValidActivationKey(String activationKey) {
-        return (userAccountService.findByAccountId(activationKey) != null);
+        return (userAccountService.findByActivationKey(activationKey) != null);
     }
 
     public void recoverPasswordRequest(PasswordRecovery passwordRecovery, RedirectAttributes redirectAttributes, HttpServletRequest request) {
@@ -99,7 +99,7 @@ public class AccountRecoveryService {
                     .queryParam("reset", Base64.getUrlEncoder().encodeToString(activationKey.getBytes()))
                     .build().toString();
             try {
-                userAccount.setAccountId(activationKey);
+                userAccount.setActivationKey(activationKey);
                 userAccount = userAccountService.save(userAccount);
 
                 accountRecoveryMailService.sendUserPasswordRecovery(email, resetPasswordURL);

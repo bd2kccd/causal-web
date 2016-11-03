@@ -95,7 +95,7 @@ public class ApplicationService {
 
                 // update last login
                 userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
-                userAccount.setAccountId(null);
+                userAccount.setActivationKey(null);
                 try {
                     userAccountService.save(userAccount);
                 } catch (Exception exception) {

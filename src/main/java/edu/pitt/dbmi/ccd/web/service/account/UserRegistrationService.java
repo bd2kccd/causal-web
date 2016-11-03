@@ -81,14 +81,14 @@ public class UserRegistrationService {
     }
 
     public void activateNewUser(String accountId, HttpServletRequest request, RedirectAttributes redirectAttributes) throws ResourceNotFoundException {
-        UserAccount userAccount = userAccountService.findByAccountId(accountId);
+        UserAccount userAccount = userAccountService.findByActivationKey(accountId);
         if (userAccount == null || userAccount.getActive()) {
             throw new ResourceNotFoundException();
         }
 
         try {
             userAccount.setActive(Boolean.TRUE);
-            userAccount.setAccountId(null);
+            userAccount.setActivationKey(null);
             userAccountService.save(userAccount);
 
             redirectAttributes.addFlashAttribute("header", "User Activation Success!");
@@ -133,7 +133,7 @@ public class UserRegistrationService {
     }
 
     protected String createActivationLink(UserAccount userAccount, HttpServletRequest req) {
-        String accountId = userAccount.getAccountId();
+        String accountId = userAccount.getActivationKey();
 
         String activationLink = UriTool.buildURI(req)
                 .pathSegment("user", "account", "registration", "activate")
