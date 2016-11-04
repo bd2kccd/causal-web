@@ -36,7 +36,7 @@
                             </li>
                             <li class="divider"></li>
                             <li>
-                                <a href="../shiroLogin.html" th:href="${appUser.federatedUser} ? ${@environment.getProperty('auth0.issuer') + 'v2/logout?returnTo='}+${#strings.replace(#httpServletRequest.getRequestURL(), #httpServletRequest.getRequestURI(), #httpServletRequest.getContextPath())}+${'/logout&amp;client_id='+@environment.getProperty('auth0.clientId')} : @{/logout}"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
+                                <a href="../shiroLogin.html" th:href="${appUser.federatedUser} ? ${@environment.getProperty('auth0.issuer') + 'v2/logout?returnTo='}+${#strings.replace(#httpServletRequest.getRequestURL(), #httpServletRequest.getRequestURI(), #httpServletRequest.getContextPath())}+${'/logout&amp;client_id='+@environment.getProperty('auth0.clientId')} : @{/logout}" onclick="deleteTokens();"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
                             </li>
                         </ul>
                     </li>
@@ -102,5 +102,6 @@
         <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
         <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
+        <script src="../../static/js/annotations.js" th:src="@{/js/annotations.js}"></script>
     </body>
 </html>

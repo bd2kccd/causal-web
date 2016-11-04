@@ -37,31 +37,39 @@ repositories {
 }
 
 ext {
-    ccdDBVersion = '0.6.2'
-    ccdCommonsVersion = '0.3.1'
+    shiroVersion = '1.3.2'
 }
 
 dependencies {
-    compile("edu.pitt.dbmi:ccd-db:${ccdDBVersion}")
-    compile("edu.pitt.dbmi:ccd-commons:${ccdCommonsVersion}")
-    compile("edu.pitt.dbmi:ccd-job-queue:0.1.5")
-    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: "${springBootVersion}") {
-        exclude(module: 'spring-boot-starter-logging')
+    // Spring
+    compile("org.springframework.boot:spring-boot-starter-actuator") {
+        exclude(module: "spring-boot-starter-logging")
     }
-    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: "${springBootVersion}") {
-        exclude(module: 'spring-boot-starter-tomcat')
+    compile("org.springframework.boot:spring-boot-starter-web") {
+        exclude(module: "spring-boot-starter-tomcat")
     }
-    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version: "${springBootVersion}")
-    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-jetty', version: "${springBootVersion}")
-    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-log4j2')
-    compile(group: 'com.sun.mail', name: 'javax.mail', version: '1.5.2')
-    compile(group: 'org.apache.shiro', name: 'shiro-core', version: '1.2.4')
-    compile(group: 'org.apache.shiro', name: 'shiro-spring', version: '1.2.4')
-    compile(group: 'org.apache.shiro', name: 'shiro-web', version: '1.2.4')
-    compile(group: 'com.auth0', name: 'auth0-spring-mvc', version: '1.1.1')
-    compile(group: 'edu.pitt.dbmi', name: 'ccd-job-queue', version: '0.1.3')
-    compile(group: 'edu.pitt.dbmi', name: 'ccd-mail', version: '0.2.1') {
-        exclude(module: 'javax.mail')
+    compile("org.springframework.boot:spring-boot-starter-thymeleaf")
+    compile("org.springframework.boot:spring-boot-starter-log4j2")
+    compile("org.springframework.boot:spring-boot-starter-jetty")
+
+    // Shiro
+    compile("org.apache.shiro:shiro-core:${shiroVersion}")
+    compile("org.apache.shiro:shiro-spring:${shiroVersion}")
+    compile("org.apache.shiro:shiro-web:${shiroVersion}")
+
+    // auth0
+    compile("com.auth0:auth0-spring-mvc:1.1.1")
+
+    // DBMI
+    compile("edu.pitt.dbmi:ccd-job-queue:0.1.5") {
+        exclude(module: "edu.pitt.dbmi:ccd-db")
     }
-    compile(group: 'edu.pitt.dbmi', name: 'ccd-commons', version: '0.3.1')
+    compile("edu.pitt.dbmi:ccd-mail:0.2.1")
+    compile("edu.pitt.dbmi:ccd-db:0.6.2")
+    compile("edu.pitt.dbmi:ccd-commons:0.3.1")
+}
+
+// gradle wrapper (./gradlew)
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.1'
 }

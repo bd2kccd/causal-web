@@ -104,7 +104,7 @@ function postRequest(url, parameters, async, beforeSendCallback) {
 /**
  * Fetch refresh and access tokens from Annotations API
  */
-function requestAnnotationsTokens(async) {
+function requestAnnotationsTokens(username, password, async) {
     var a = (typeof async === 'undefined') ? true : async;
     $.ajax({
         url: annoApiUrl + tokenURL,
@@ -112,8 +112,8 @@ function requestAnnotationsTokens(async) {
         async: a,
         data: {
             grant_type: passwordGrant,
-            username: document.getElementById("login").loginUsername.value,
-            password: document.getElementById("login").loginPassword.value
+            username: (typeof username === 'undefined') ? document.getElementById("login").loginUsername.value : username,
+            password: (typeof password === 'undefined') ? document.getElementById("login").loginPassword.value : password
         },
         beforeSend: function(xhr) {
             xhr.setRequestHeader('Authorization', 'Basic ' + btoa(client + ':' + clientPassword));
@@ -169,9 +169,9 @@ function storeAccessToken(token, expires) {
     date.setTime(date.getTime() + expires*1000);
     date = date.toGMTString();
     // delete old cookie
-    document.cookie = 'access_token=; Path=/ccd; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    deleteAccessToken();
     // save new cookie
-    document.cookie = 'access_token=' + token + "; Path=/ccd; expires=" + date + "; max_age=" + date;
+    document.cookie = 'access_token=' + token + "; path=/ccd; expires=" + date + "; max_age=" + date;
 }
 
 /**
@@ -189,36 +189,70 @@ function getAccessToken() {
 }
 
 /**
- * Save refresh token in session storage
- * @param  {string} token refresh token
+ * Delete access token
  */
-function storeRefreshToken(token) {
-    sessionStorage.setItem('refresh_token', token);
+function deleteAccessToken() {
+    document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/ccd';
 }
 
 /**
- * Get refresh token from session storage
+ * Save refresh token in cookie
+ * @param  {string} token refresh token
+ */
+function storeRefreshToken(token) {
+    // sessionStorage.setItem('refresh_token', token);
+    // delete old cookie
+    deleteRefreshToken();
+    // save new cookie
+    document.cookie = 'refresh_token=' + token + "; path=/ccd";
+}
+
+/**
+ * Get refresh token from cookie
  * @return {string} refresh token
  */
 function getRefreshToken() {
-    return sessionStorage.getItem('refresh_token');
+    // return sessionStorage.getItem('refresh_token');
+    var value = "; " + document.cookie;
+    var parts = value.split("; refresh_token=");
+    if (parts.length == 2) {
+        return parts.pop().split(";").shift();
+    } else {
+        return "";
+    }
 }
 
-function getUser() {
-    getRequest('/users/12');
-//    $.ajax({
-//        url: annoApiUrl+"/users/12",
-//        type: 'get',
-//        beforeSend: function (xhr) {
-//            xhr.setRequestHeader('Authorization', 'Bearer ' + getAccessToken());
-//        },
-//        dataType: 'json',
-//        success: function(data) {
-//            console.log("Success fetching user: " + data['username']);
-//        },
-//        error: function(xhr, textStatus, errorThrown) {
-//            console.log('text: ' + textStatus + '\n error: ' + errorThrown);
-//            console.log(xhr.responseText);
-//        }
-//    });
+/**
+ * Delete refresh token
+ */
+function deleteRefreshToken() {
+    // sessionStorage.removeItem('refresh_token');
+    document.cookie = 'refresh_token=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/ccd';
 }
+
+/**
+ * Delete all tokens
+ */
+function deleteTokens() {
+    deleteAccessToken();
+    deleteRefreshToken();
+}
+
+// function getUser() {
+//     getRequest('/users/12');
+// //    $.ajax({
+// //        url: annoApiUrl+"/users/12",
+// //        type: 'get',
+// //        beforeSend: function (xhr) {
+// //            xhr.setRequestHeader('Authorization', 'Bearer ' + getAccessToken());
+// //        },
+// //        dataType: 'json',
+// //        success: function(data) {
+// //            console.log("Success fetching user: " + data['username']);
+// //        },
+// //        error: function(xhr, textStatus, errorThrown) {
+// //            console.log('text: ' + textStatus + '\n error: ' + errorThrown);
+// //            console.log(xhr.responseText);
+// //        }
+// //    });
+// }
