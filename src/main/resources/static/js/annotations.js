@@ -7,8 +7,6 @@ const refreshGrant = "refresh_token";
 const tokenURL = "oauth/token";
 const annoURL = "annotations";
 const vocabURL = "vocabularies";
-const client = "causal-web";
-const clientPassword = "";
 
 
 /**
@@ -38,7 +36,8 @@ function getRequest(url, parameters, async, beforeSendCallback) {
         },
         dataType: 'json',
         error: function(xhr) {
-            if(xhr.responseText.error_description.startsWith("Access token expired")) {
+            var json = JSON.parse(xhr.responseText);
+            if(json.error === 'invalid_token') {
                 console.log('Access token expired. Fetching a new one.')
                 requestAccessToken(false);
                 return getRequest(url, parameters, false, beforeSendCallback);
@@ -61,7 +60,8 @@ function getRequestByLink(link) {
         },
         dataType: 'json',
         error: function(xhr) {
-            if (xhr.responseText.error_description.startsWith("Access token expired")) {
+            var json = JSON.parse(xhr.responseText);
+            if (json.error === 'invalid_token') {
                 console.log('Access token expired. Fetching a new one.')
                 requestAccessToken(false);
                 return getRequestByLink(link);
@@ -93,7 +93,8 @@ function postRequest(url, parameters, async, beforeSendCallback) {
         contentType: 'application/json',
         dataType: 'json',
         error: function(xhr) {
-            if(xhr.responseText.error_description.startsWith("Access token expired")) {
+            var json = JSON.parse(xhr.responseText);
+            if(json.error === 'invalid_token') {
                 requestAccessToken(false);
                 return postRequest(url, parameters, false, beforeSendCallback);
             }
@@ -104,7 +105,7 @@ function postRequest(url, parameters, async, beforeSendCallback) {
 /**
  * Fetch refresh and access tokens from Annotations API
  */
-function requestAnnotationsTokens(username, password, async) {
+function requestAnnotationsTokens(async) {
     var a = (typeof async === 'undefined') ? true : async;
     $.ajax({
         url: annoApiUrl + tokenURL,
@@ -112,11 +113,11 @@ function requestAnnotationsTokens(username, password, async) {
         async: a,
         data: {
             grant_type: passwordGrant,
-            username: (typeof username === 'undefined') ? document.getElementById("login").loginUsername.value : username,
-            password: (typeof password === 'undefined') ? document.getElementById("login").loginPassword.value : password
+            username: document.getElementById("login").loginUsername.value,
+            password: document.getElementById("login").loginPassword.value
         },
         beforeSend: function(xhr) {
-            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(client + ':' + clientPassword));
+            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(annoClientId + ':' + annoClientSecret));
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         },
         dataType: 'json',
@@ -125,6 +126,7 @@ function requestAnnotationsTokens(username, password, async) {
             storeRefreshToken(data['refresh_token']);
         }
     });
+    return false;
 }
 
 /**
@@ -142,7 +144,7 @@ function requestAccessToken(async) {
             refresh_token: getRefreshToken()
         },
         beforeSend: function (xhr) {
-            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(client + ':' + clientPassword));
+            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(annoClientId + ':' + annoClientSecret));
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         },
         dataType: 'json',

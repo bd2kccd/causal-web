@@ -127,6 +127,13 @@
                                 getRequest(annoURL, params)
                                     .done(function(result) {
                                         displayAnnotations(result);
+                                    }).fail(function(data) {
+                                        requestAccessToken(false);
+
+                                        getRequest(annoURL, params)
+                                            .done(function(result) {
+                                                displayAnnotations(result);
+                                            });
                                     });
                             }
 
@@ -475,6 +482,21 @@
                                                             .text(vocabulary.name));
                                                     });
                                                    selectVocabulary(vocabularies[0]['id']);
+                                            }).fail(function(data) {
+                                                requestAccessToken(false);
+
+                                                getRequest(vocabURL).done(function(data) {
+                                                $('#create-anno-vocabulary-optgroup').empty();
+                                                var vocabularies = data['_embedded']['vocabularies'];
+                                                $.each(vocabularies, function(index, vocabulary) {
+                                                    $('#create-anno-vocabulary-optgroup')
+                                                        .append($('<option></option>')
+                                                            .attr('value', Number(vocabulary.id))
+                                                            .attr('data-subtext', vocabulary.description)
+                                                            .text(vocabulary.name));
+                                                    });
+                                                   selectVocabulary(vocabularies[0]['id']);
+                                                });
                                             });
                                         }
 
