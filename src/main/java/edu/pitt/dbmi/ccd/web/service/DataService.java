@@ -18,29 +18,6 @@
  */
 package edu.pitt.dbmi.ccd.web.service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import edu.pitt.dbmi.ccd.commons.file.FilePrint;
 import edu.pitt.dbmi.ccd.commons.file.MessageDigestHash;
 import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
@@ -59,6 +36,27 @@ import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.model.AttributeValue;
 import edu.pitt.dbmi.ccd.web.model.data.DataSummary;
 import edu.pitt.dbmi.ccd.web.model.file.DatasetFileInfo;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  *
@@ -477,16 +475,25 @@ public class DataService {
             });
             dataFileService.saveDataFile(list);
         }
-        addAnnotationTargets(saveFiles.values());
-    }
 
-    private void addAnnotationTargets(Collection<DataFile> dataFiles) {
-        for (DataFile dataFile : dataFiles) {
-            if (annotationTargetService.findByDataFile(dataFile) == null) {
-                UserAccount user = dataFile.getUserAccounts().iterator().next();
-                AnnotationTarget annotationTarget = new AnnotationTarget(user, dataFile.getName(), dataFile);
-                annotationTargetService.save(annotationTarget);
-            }
+        Set<AnnotationTarget> annotationTargets = getNewAnnotationTargets(userAccount);
+        if (!annotationTargets.isEmpty()) {
+            annotationTargetService.save(annotationTargets);
         }
     }
+
+    private Set<AnnotationTarget> getNewAnnotationTargets(UserAccount userAccount) {
+        Set<AnnotationTarget> annotationTargets = new HashSet<>();
+
+        // get all the user's dataset from the database
+        List<DataFile> dataFiles = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
+        dataFiles.forEach(dataFile -> {
+            if (annotationTargetService.findByDataFile(dataFile) == null) {
+                annotationTargets.add(new AnnotationTarget(userAccount, dataFile.getName(), dataFile));
+            }
+        });
+
+        return annotationTargets;
+    }
+
 }
