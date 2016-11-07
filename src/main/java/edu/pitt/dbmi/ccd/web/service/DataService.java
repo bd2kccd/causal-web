@@ -25,6 +25,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -50,6 +51,7 @@ import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
 import edu.pitt.dbmi.ccd.db.entity.FileDelimiter;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.entity.VariableType;
+import edu.pitt.dbmi.ccd.db.service.AnnotationTargetService;
 import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.db.service.FileDelimiterService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
@@ -81,6 +83,8 @@ public class DataService {
 
     private final UserAccountService userAccountService;
 
+    private final AnnotationTargetService annotationTargetService;
+
     @Autowired
     public DataService(
             @Value("${ccd.server.workspace}") String workspace,
@@ -88,13 +92,15 @@ public class DataService {
             DataFileService dataFileService,
             VariableTypeService variableTypeService,
             FileDelimiterService fileDelimiterService,
-            UserAccountService userAccountService) {
+            UserAccountService userAccountService,
+            AnnotationTargetService annotationTargetService) {
         this.workspace = workspace;
         this.dataFolder = dataFolder;
         this.dataFileService = dataFileService;
         this.variableTypeService = variableTypeService;
         this.fileDelimiterService = fileDelimiterService;
         this.userAccountService = userAccountService;
+        this.annotationTargetService = annotationTargetService;
     }
 
     public String getFileDelimiter(String fileName, String username) {
@@ -471,6 +477,16 @@ public class DataService {
             });
             dataFileService.saveDataFile(list);
         }
+        addAnnotationTargets(saveFiles.values());
     }
 
+    private void addAnnotationTargets(Collection<DataFile> dataFiles) {
+        for (DataFile dataFile : dataFiles) {
+            if (dataFile.getAnnotationTarget() == null) {
+                UserAccount user = dataFile.getUserAccounts().iterator().next();
+                AnnotationTarget annotationTarget = new AnnotationTarget(user, dataFile.getName(), dataFile);
+                annotationTargetService.save(annotationTarget);
+            }
+        }
+    }
 }
