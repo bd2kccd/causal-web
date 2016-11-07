@@ -482,7 +482,7 @@ public class DataService {
 
     private void addAnnotationTargets(Collection<DataFile> dataFiles) {
         for (DataFile dataFile : dataFiles) {
-            if (dataFile.getAnnotationTarget() == null) {
+            if (annotationTargetService.findByDataFile(dataFile) == null) {
                 UserAccount user = dataFile.getUserAccounts().iterator().next();
                 AnnotationTarget annotationTarget = new AnnotationTarget(user, dataFile.getName(), dataFile);
                 annotationTargetService.save(annotationTarget);
