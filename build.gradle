@@ -67,6 +67,9 @@ dependencies {
     compile("edu.pitt.dbmi:ccd-mail:0.2.1")
     compile("edu.pitt.dbmi:ccd-db:0.6.2")
     compile("edu.pitt.dbmi:ccd-commons:0.3.1")
+
+    // JSON
+    compile("org.json:json")
 }
 
 // gradle wrapper (./gradlew)
