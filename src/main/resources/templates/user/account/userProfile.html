@@ -31,7 +31,7 @@
                         <form role="form" th:replace="user/account/fragments/userInfo :: form"></form>
                     </div>
                 </div>
-                <div class="row">
+                <div class="row" th:if="${appUser.federatedUser} == false">
                     <div class="col-lg-12">
                         <form role="form" th:replace="user/account/fragments/passwordChange :: form"></form>
                     </div>
