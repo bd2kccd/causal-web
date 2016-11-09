@@ -10,7 +10,7 @@ $('#fileInfo').on('show.bs.modal', function (event) {
 
     var modal = $(this);
     modal.find('.modal-title').text(filename);
-    modal.find('#fileInfoFrame').attr('src', 'data/fileInfo?file=' + filename);
+    modal.find('#fileInfoFrame').attr('src', encodeURI('data/fileInfo?file=' + filename));
 });
 $('#priorFileInfo').on('show.bs.modal', function (event) {
     var link = $(event.relatedTarget);
@@ -18,5 +18,5 @@ $('#priorFileInfo').on('show.bs.modal', function (event) {
 
     var modal = $(this);
     modal.find('.modal-title').text(filename);
-    modal.find('#priorFileInfoFrame').attr('src', 'fileInfo?file=' + filename);
+    modal.find('#priorFileInfoFrame').attr('src', encodeURI('fileInfo?file=' + filename));
 });
