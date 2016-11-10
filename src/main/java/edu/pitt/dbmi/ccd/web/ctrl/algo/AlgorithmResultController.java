@@ -95,9 +95,8 @@ public class AlgorithmResultController implements ViewPath {
             @RequestParam(value = "file") final String fileName,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        String url = String.format("/algorithm/results/d3graph?file=%s", fileName);
         model.addAttribute("plot", fileName);
-        model.addAttribute("link", url);
+        model.addAttribute("fileName", fileName);
 
         String username = appUser.getUsername();
         List<String> categoryNames = Arrays.asList("Runtime Parameters", "Dataset", "Filters", "FGS Parameters", "Run Options", "Algorithm Parameters", "Data Validations");
