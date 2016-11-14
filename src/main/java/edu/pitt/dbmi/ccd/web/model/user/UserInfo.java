@@ -26,6 +26,8 @@ package edu.pitt.dbmi.ccd.web.model.user;
  */
 public class UserInfo {
 
+    private String username;
+
     private String firstName;
 
     private String middleName;
@@ -37,11 +39,12 @@ public class UserInfo {
     public UserInfo() {
     }
 
-    public UserInfo(String firstName, String middleName, String lastName, String email) {
-        this.firstName = firstName;
-        this.middleName = middleName;
-        this.lastName = lastName;
-        this.email = email;
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getFirstName() {

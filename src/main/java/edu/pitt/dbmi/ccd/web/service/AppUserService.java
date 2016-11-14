@@ -18,19 +18,10 @@
  */
 package edu.pitt.dbmi.ccd.web.service;
 
-import edu.pitt.dbmi.ccd.commons.file.FilePrint;
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.model.AppUser;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Date;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -42,60 +33,28 @@ import org.springframework.stereotype.Service;
 @Service
 public class AppUserService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AppUserService.class);
-
-    final String workspace;
-
-    final String dataFolder;
-    final String resultFolder;
-    final String libFolder;
-    final String tmpFolder;
-
-    final String algorithmResultFolder;
-    final String compareResultFolder;
-
-    @Autowired
-    public AppUserService(
-            @Value("${ccd.server.workspace}") String workspace,
-            @Value("${ccd.folder.data:data}") String dataFolder,
-            @Value("${ccd.folder.results:results}") String resultFolder,
-            @Value("${ccd.folder.lib:lib}") String libFolder,
-            @Value("${ccd.folder.tmp:tmp}") String tmpFolder,
-            @Value("${ccd.folder.results.algorithm:algorithm}") String algorithmResultFolder,
-            @Value("${ccd.folder.results.comparison:comparison}") String compareResultFolder) {
-        this.workspace = workspace;
-        this.dataFolder = dataFolder;
-        this.resultFolder = resultFolder;
-        this.libFolder = libFolder;
-        this.tmpFolder = tmpFolder;
-        this.algorithmResultFolder = algorithmResultFolder;
-        this.compareResultFolder = compareResultFolder;
+    public AppUserService() {
     }
 
-    public AppUser createAppUser(final UserAccount userAccount) {
-        String username = userAccount.getUsername();
-        Path[] directories = {
-            Paths.get(workspace, username, dataFolder),
-            Paths.get(workspace, username, resultFolder),
-            Paths.get(workspace, libFolder),
-            Paths.get(workspace, username, tmpFolder),
-            Paths.get(workspace, username, resultFolder, algorithmResultFolder),
-            Paths.get(workspace, username, resultFolder, compareResultFolder)
-        };
-        for (Path directory : directories) {
-            if (Files.notExists(directory)) {
-                try {
-                    Files.createDirectories(directory);
-                } catch (IOException exception) {
-                    LOGGER.error(String.format("Unable to create directory '%s'.", directory), exception);
-                }
-            }
-        }
+    public AppUser updateUserProfile(AppUser appUser, Person person) {
+        String firstName = person.getFirstName();
+        String middleName = person.getMiddleName();
+        String lastName = person.getLastName();
 
+        appUser.setFirstName(firstName == null ? "" : firstName);
+        appUser.setMiddleName(middleName == null ? "" : middleName);
+        appUser.setLastName(lastName == null ? "" : lastName);
+
+        return appUser;
+    }
+
+    public AppUser createAppUser(UserAccount userAccount, boolean federatedUser) {
         Person person = userAccount.getPerson();
         String firstName = person.getFirstName();
         String middleName = person.getMiddleName();
         String lastName = person.getLastName();
+        String username = userAccount.getUsername();
+
         Date lastLoginDate = userAccount.getLastLoginDate();
 
         AppUser appUser = new AppUser();
@@ -103,8 +62,10 @@ public class AppUserService {
         appUser.setFirstName(firstName == null ? "" : firstName);
         appUser.setMiddleName(middleName == null ? "" : middleName);
         appUser.setLastName(lastName == null ? "" : lastName);
-        appUser.setLastLogin(lastLoginDate == null ? "" : FilePrint.fileTimestamp(lastLoginDate.getTime()));
+        appUser.setLastLogin(lastLoginDate == null ? new Date(System.currentTimeMillis()) : lastLoginDate);
+        appUser.setFederatedUser(federatedUser);
 
         return appUser;
     }
+
 }

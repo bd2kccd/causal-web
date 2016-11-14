@@ -15,6 +15,9 @@
         <link rel="stylesheet" href="../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
         <link rel="stylesheet" href="../../static/css/algo/stepwizard.min.css" th:href="@{/css/algo/stepwizard.min.css}" /> 
         <link rel="stylesheet" href="../../static/css/algo/algorithm.min.css" th:href="@{/css/algo/algorithm.min.css}" />
+        <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
+        <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
+        <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
     </head>
     <body ng-app="">
         <div id="wrapper">
@@ -23,7 +26,7 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h1 class="page-header">FGS Discrete</h1>
+                        <h3 class="page-header">FGS Discrete</h3>
                     </div>
                 </div>
                 <div class="row">
@@ -98,15 +101,15 @@
                                             <div class="panel-body">
                                                 <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="uniqueVarNameValidation" class="control-label">
-                                                            <input type="checkbox" id="uniqueVarNameValidation" name="uniqueVarNameValidation" ng-model="uniqueVarNameValidation" th:attr="ng-init='uniqueVarNameValidation=' + *{uniqueVarNameValidation}" th:field="*{uniqueVarNameValidation}" /> Unique Variable Name - ensure that there are no duplicated variable names
+                                                        <label for="skipCategoryLimit" class="control-label">
+                                                            <input type="checkbox" id="skipCategoryLimit" name="skipCategoryLimit" ng-model="skipCategoryLimit" th:attr="ng-init='skipCategoryLimit=' + *{skipCategoryLimit}" th:field="*{skipCategoryLimit}" /> Skip validation that ensures the number of categories do not exceed 10.
                                                         </label>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="limitNumOfCategory" class="control-label">
-                                                            <input type="checkbox" id="limitNumOfCategory" name="limitNumOfCategory" ng-model="limitNumOfCategory" th:attr="ng-init='limitNumOfCategory=' + *{limitNumOfCategory}" th:field="*{limitNumOfCategory}" /> Limit Number of Categories - ensure the number of categories of a variable does not exceed 10.
+                                                        <label for="skipUniqueVarName" class="control-label">
+                                                            <input type="checkbox" id="skipUniqueVarName" name="skipUniqueVarName" ng-model="skipUniqueVarName" th:attr="ng-init='skipUniqueVarName=' + *{skipUniqueVarName}" th:field="*{skipUniqueVarName}" /> Skip validation that ensures unique variable name.
                                                         </label>
                                                     </div>
                                                 </div>
@@ -134,7 +137,7 @@
                                                     <input type="number" id="samplePrior" name="samplePrior" maxlength="10" class="form-control" placeholder="Sample Prior" ng-model="samplePrior" th:attr="ng-init='samplePrior=' + *{samplePrior}" th:field="*{samplePrior}" required="required" />
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="maxDegree" class="control-label">Search Maximum Degree - The maximum degree of graph. A value of -1 indicates no limit.</label>
+                                                    <label for="maxDegree" class="control-label">Search Maximum Degree - The maximum degree of graph.</label>
                                                     <input type="number" id="maxDegree" name="maxDegree" maxlength="10" class="form-control" placeholder="MaxDegree" ng-model="maxDegree" th:attr="ng-init='maxDegree=' + *{maxDegree}" th:field="*{maxDegree}" required="required" />
                                                 </div>
                                                 <div class="form-group">
@@ -154,16 +157,19 @@
                                             </div>
                                         </div>
                                         <div class="panel panel-primary">
-                                            <div class="panel-heading">
-                                                <h3 class="panel-title">Advanced Options For Java Virtual Machine (JVM)</h3>
-                                                <span class="pull-right clickable panel-collapsed"><i class="glyphicon glyphicon-chevron-down"></i></span>
-                                            </div>
-                                            <div class="panel-body" style="display: none;">
-                                                <div class="form-group">
-                                                    <label for="jvmMaxMem" class="control-label">Maximum memory allocation for the JVM. Enter 0 for default.</label>
-                                                    <div class="input-group">
-                                                        <input type="number" class="form-control" id="jvmMaxMem" name="jvmMaxMem" aria-describedby="mem_unit" ng-model="jvmMaxMem" th:attr="ng-init='jvmMaxMem=' + *{jvmMaxMem}" th:field="*{jvmMaxMem}" />
-                                                        <span class="input-group-addon" id="mem_unit">Gigabyte</span>
+                                            <a id="optJvm" class="panel-primary" data-toggle="collapse" href="#collapseOptJvm">
+                                                <div class="panel-heading">
+                                                    <h3 class="panel-title">Advanced Options For Java Virtual Machine (JVM)<span class="pull-right"><i class="glyphicon glyphicon-chevron-down"></i></span></h3>
+                                                </div>
+                                            </a>
+                                            <div id="collapseOptJvm" class="panel-collapse collapse">
+                                                <div class="panel-body">
+                                                    <div class="form-group">
+                                                        <label for="jvmMaxMem" class="control-label">Maximum memory allocation for the JVM. Enter 0 for default.</label>
+                                                        <div class="input-group">
+                                                            <input type="number" min="0" max="128" class="form-control" id="jvmMaxMem" name="jvmMaxMem" aria-describedby="mem_unit" ng-model="jvmMaxMem" th:attr="ng-init='jvmMaxMem=' + *{jvmMaxMem}" th:field="*{jvmMaxMem}" />
+                                                            <span class="input-group-addon" id="mem_unit">Gigabyte</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -225,7 +231,7 @@
                                                             </tr>
                                                             <tr>
                                                                 <td class="col-md-3">Advanced JVM Options:</td>
-                                                                <td>-Xmx{{jvmMaxMem}}G</td>
+                                                                <td>{{(jvmMaxMem == 0) ? 'JVM default' : '-Xmx' + jvmMaxMem + 'G'}}</td>
                                                             </tr>
                                                         </tbody>
                                                     </table>
@@ -233,12 +239,12 @@
                                                         <caption>Data Validations</caption>
                                                         <tbody>
                                                             <tr>
-                                                                <td class="col-md-3">Unique Variable Name:</td>
-                                                                <td ng-bind="uniqueVarNameValidation"></td>
+                                                                <td class="col-md-3">Ensure Categories is Limited to 10:</td>
+                                                                <td ng-bind="!skipCategoryLimit"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-3">Limit Number of Categories:</td>
-                                                                <td ng-bind="limitNumOfCategory"></td>
+                                                                <td class="col-md-3">Ensure Unique Variable Name:</td>
+                                                                <td ng-bind="!skipUniqueVarName"></td>
                                                             </tr>
                                                         </tbody>
                                                     </table>
@@ -262,15 +268,13 @@
                 </footer>
             </div>
         </div>
-        <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
         <script src="../../static/vendors/angularjs/angular.min.js" th:src="@{/vendors/angularjs/angular.min.js}"></script>
-        <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
         <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
-        <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
         <script src="../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
         <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
         <script src="../../static/js/algo/fgsDiscreteValidate.min.js" th:src="@{/js/algo/fgsDiscreteValidate.min.js}"></script>
         <script src="../../static/js/algo/stepwizard.min.js" th:src="@{/js/algo/stepwizard.min.js}"></script>
+        <script src="../../static/js/collapse_panel.min.js" th:src="@{/js/collapse_panel.min.js}"></script>
         <script src="../../static/js/algo/algorithm.min.js" th:src="@{/js/algo/algorithm.min.js}"></script>
     </body>
 </html>

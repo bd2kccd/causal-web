@@ -25,6 +25,7 @@ import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmRunInfo;
 import edu.pitt.dbmi.ccd.web.model.algo.FgsContinuousRunInfo;
 import edu.pitt.dbmi.ccd.web.model.algo.FgsDiscreteRunInfo;
 import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmService;
+import edu.pitt.dbmi.ccd.web.util.CmdOptions;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -178,28 +179,25 @@ public class FGSController implements ViewPath {
     private List<String> getParametersForDiscrete(FgsDiscreteRunInfo algoInfo, String username) {
         List<String> parameters = new LinkedList<>();
         String delimiter = algorithmService.getFileDelimiter(algoInfo.getDataset(), username);
-        parameters.add("--delimiter");
+        parameters.add(CmdOptions.DELIMITER);
         parameters.add(delimiter);
-
-        parameters.add("--structure-prior");
+        parameters.add(CmdOptions.STRUCTURE_PRIOR);
         parameters.add(Double.toString(algoInfo.getStructurePrior()));
-
-        parameters.add("--sample-prior");
+        parameters.add(CmdOptions.SAMPLE_PRIOR);
         parameters.add(Double.toString(algoInfo.getSamplePrior()));
-
-        parameters.add("--max-degree");
+        parameters.add(CmdOptions.MAX_DEGREE);
         parameters.add(Integer.toString(algoInfo.getMaxDegree()));
         if (algoInfo.isVerbose()) {
-            parameters.add("--verbose");
+            parameters.add(CmdOptions.VERBOSE);
         }
         if (algoInfo.isFaithfulnessAssumed()) {
-            parameters.add("--faithfulness-assumed");
+            parameters.add(CmdOptions.FAITHFULNESS_ASSUMED);
         }
-        if (!algoInfo.isUniqueVarNameValidation()) {
-            parameters.add("--skip-unique-var-name");
+        if (algoInfo.isSkipCategoryLimit()) {
+            parameters.add(CmdOptions.SKIP_CATEGORY_LIMIT);
         }
-        if (!algoInfo.isLimitNumOfCategory()) {
-            parameters.add("--skip-category-limit");
+        if (algoInfo.isSkipUniqueVarName()) {
+            parameters.add(CmdOptions.SKIP_UNIQUE_VAR_NAME);
         }
 
         return parameters;
@@ -208,23 +206,23 @@ public class FGSController implements ViewPath {
     private List<String> getParametersForContinuous(FgsContinuousRunInfo algoInfo, String username) {
         List<String> parameters = new LinkedList<>();
         String delimiter = algorithmService.getFileDelimiter(algoInfo.getDataset(), username);
-        parameters.add("--delimiter");
+        parameters.add(CmdOptions.DELIMITER);
         parameters.add(delimiter);
-        parameters.add("--penalty-discount");
+        parameters.add(CmdOptions.PENALTY_DISCOUNT);
         parameters.add(Double.toString(algoInfo.getPenaltyDiscount()));
-        parameters.add("--max-degree");
+        parameters.add(CmdOptions.MAX_DEGREE);
         parameters.add(Integer.toString(algoInfo.getMaxDegree()));
         if (algoInfo.isVerbose()) {
-            parameters.add("--verbose");
+            parameters.add(CmdOptions.VERBOSE);
         }
         if (algoInfo.isFaithfulnessAssumed()) {
-            parameters.add("--faithfulness-assumed");
+            parameters.add(CmdOptions.FAITHFULNESS_ASSUMED);
         }
-        if (!algoInfo.isNonZeroVarianceValidation()) {
-            parameters.add("--skip-non-zero-variance");
+        if (algoInfo.isSkipNonzeroVariance()) {
+            parameters.add(CmdOptions.SKIP_NONZERO_VARIANCE);
         }
-        if (!algoInfo.isUniqueVarNameValidation()) {
-            parameters.add("--skip-unique-var-name");
+        if (algoInfo.isSkipUniqueVarName()) {
+            parameters.add(CmdOptions.SKIP_UNIQUE_VAR_NAME);
         }
 
         return parameters;
@@ -232,27 +230,27 @@ public class FGSController implements ViewPath {
 
     private FgsContinuousRunInfo createDefaultFgsContinuousRunInfo() {
         FgsContinuousRunInfo runInfo = new FgsContinuousRunInfo();
-        runInfo.setPenaltyDiscount(4.0);
-        runInfo.setFaithfulnessAssumed(true);
-        runInfo.setMaxDegree(3);
-        runInfo.setNonZeroVarianceValidation(true);
-        runInfo.setUniqueVarNameValidation(true);
-        runInfo.setVerbose(true);
-        runInfo.setJvmMaxMem(0);
+        runInfo.setPenaltyDiscount(CmdOptions.PENALTY_DISCOUNT_DEFAULT);
+        runInfo.setMaxDegree(CmdOptions.MAX_DEGREE_DEFAULT);
+        runInfo.setFaithfulnessAssumed(CmdOptions.FAITHFULNESS_ASSUMED_DEFAULT);
+        runInfo.setSkipUniqueVarName(CmdOptions.SKIP_UNIQUE_VAR_NAME_DEFAULT);
+        runInfo.setSkipNonzeroVariance(CmdOptions.SKIP_NONZERO_VARIANCE_DEFAULT);
+        runInfo.setVerbose(CmdOptions.VERBOSE_DEFAULT);
+        runInfo.setJvmMaxMem(1);
 
         return runInfo;
     }
 
     private FgsDiscreteRunInfo createDefaultFgsDiscreteRunInfo() {
         FgsDiscreteRunInfo runInfo = new FgsDiscreteRunInfo();
-        runInfo.setSamplePrior(1.0);
-        runInfo.setStructurePrior(1.0);
-        runInfo.setFaithfulnessAssumed(true);
-        runInfo.setMaxDegree(3);
-        runInfo.setUniqueVarNameValidation(true);
-        runInfo.setLimitNumOfCategory(true);
-        runInfo.setVerbose(true);
-        runInfo.setJvmMaxMem(0);
+        runInfo.setSamplePrior(CmdOptions.SAMPLE_PRIOR_DEFAULT);
+        runInfo.setStructurePrior(CmdOptions.STRUCTURE_PRIOR_DEFAULT);
+        runInfo.setFaithfulnessAssumed(CmdOptions.FAITHFULNESS_ASSUMED_DEFAULT);
+        runInfo.setMaxDegree(CmdOptions.MAX_DEGREE_DEFAULT);
+        runInfo.setSkipUniqueVarName(CmdOptions.SKIP_UNIQUE_VAR_NAME_DEFAULT);
+        runInfo.setSkipCategoryLimit(CmdOptions.SKIP_CATEGORY_LIMIT_DEFAULT);
+        runInfo.setVerbose(CmdOptions.VERBOSE_DEFAULT);
+        runInfo.setJvmMaxMem(1);
 
         return runInfo;
     }

@@ -18,6 +18,8 @@
  */
 package edu.pitt.dbmi.ccd.web.model;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 /**
  *
  * Aug 12, 2015 8:44:11 AM
@@ -28,6 +30,7 @@ public class Feedback {
 
     private String email;
 
+    @NotEmpty(message = "Feedback message is required.")
     private String feedbackMsg;
 
     public Feedback() {

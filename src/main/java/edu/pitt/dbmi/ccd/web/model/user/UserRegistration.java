@@ -18,7 +18,10 @@
  */
 package edu.pitt.dbmi.ccd.web.model.user;
 
-import edu.pitt.dbmi.ccd.db.entity.SecurityQuestion;
+import javax.validation.constraints.AssertTrue;
+import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
@@ -28,17 +31,22 @@ import edu.pitt.dbmi.ccd.db.entity.SecurityQuestion;
  */
 public class UserRegistration {
 
+    @NotBlank(message = "Email is required.")
+    @Email(message = "Please enter a valid email")
     private String username;
 
-    private String email;
-
+    @Length(min = 5, max = 25, message = "Please enter a password (5-25 chars).")
     private String password;
 
-    private SecurityQuestion secureQues;
+    @Length(min = 5, max = 25, message = "Please reenter password.")
+    private String confirmPassword;
 
-    private String secureAns;
-
+    @AssertTrue(message = "You must agree to the terms and conditions.")
     private boolean agree;
+
+    private String firstName;
+
+    private String lastName;
 
     public UserRegistration() {
     }
@@ -51,36 +59,26 @@ public class UserRegistration {
         this.username = username;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public String getPassword() {
         return password;
     }
 
     public void setPassword(String password) {
         this.password = password;
+        if (!(this.password == null || this.password.equals(this.confirmPassword))) {
+            this.confirmPassword = "";
+        }
     }
 
-    public SecurityQuestion getSecureQues() {
-        return secureQues;
+    public String getConfirmPassword() {
+        return confirmPassword;
     }
 
-    public void setSecureQues(SecurityQuestion secureQues) {
-        this.secureQues = secureQues;
-    }
-
-    public String getSecureAns() {
-        return secureAns;
-    }
-
-    public void setSecureAns(String secureAns) {
-        this.secureAns = secureAns;
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
+        if (!(this.confirmPassword == null || this.confirmPassword.equals(this.password))) {
+            this.password = "";
+        }
     }
 
     public boolean isAgree() {
@@ -89,6 +87,22 @@ public class UserRegistration {
 
     public void setAgree(boolean agree) {
         this.agree = agree;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
 }

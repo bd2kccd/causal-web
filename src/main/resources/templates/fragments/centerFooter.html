@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
     <head>
-        <meta charset="utf-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <meta charset="UTF-8" />
+        <meta name="description" content="Center for Causal Discovery" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>CCD: Footer</title>
-        <meta name="description" content="" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="apple-touch-icon" href="../../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
         <link rel="icon" href="../../static/favicon.ico" th:href="@{/favicon.ico}" />
         <link rel="stylesheet" href="../../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{/vendors/bootstrap/css/bootstrap.min.css}" />
@@ -15,7 +14,7 @@
             <footer>
                 <div class="row">
                     <div class="text-center">
-                        <p class="text-muted" th:inline="text">Copyright &copy; [[${#dates.year(#dates.createNow())} + ' ' + ${@environment.getProperty('ccd.copyright')}]]</p>
+                        <p class="text-muted" th:inline="text">Copyright &copy; [[${#dates.year(#dates.createNow())} + ' ' + ${@environment.getProperty('ccd.app.copyright')}]]</p>
                     </div>
                 </div>
             </footer>

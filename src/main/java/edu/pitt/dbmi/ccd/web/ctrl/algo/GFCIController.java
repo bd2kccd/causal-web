@@ -18,13 +18,19 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
+import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
+import edu.pitt.dbmi.ccd.web.model.AppUser;
+import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmJobRequest;
+import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmRunInfo;
+import edu.pitt.dbmi.ccd.web.model.algo.GfciContinuousRunInfo;
+import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
+import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmService;
+import edu.pitt.dbmi.ccd.web.util.CmdOptions;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -32,17 +38,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
-import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import edu.pitt.dbmi.ccd.web.model.AppUser;
-import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmJobRequest;
-import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmRunInfo;
-import edu.pitt.dbmi.ccd.web.model.algo.GfciContinuousRunInfo;
-import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmService;
-
 /**
- * 
+ *
  * Sep 28, 2016 10:01:10 PM
- * 
+ *
  * @author Chirayu (Kong) Wongchokprasitti, PhD (chw20@pitt.edu)
  *
  */
@@ -51,19 +50,13 @@ import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmService;
 @RequestMapping(value = "algorithm/gfci")
 public class GFCIController implements ViewPath {
 
-    private final String gfciAlgorithm;
-    protected final String algorithmJar;
-
     private final AlgorithmService algorithmService;
+    private final CcdProperties ccdProperties;
 
     @Autowired
-    public GFCIController(
-            @Value("${ccd.algorithm.gfci}") String gfciAlgorithm,
-            @Value("${ccd.jar.algorithm}") String algorithmJar,
-            AlgorithmService algorithmService) {
-        this.gfciAlgorithm = gfciAlgorithm;
-        this.algorithmJar = algorithmJar;
+    public GFCIController(AlgorithmService algorithmService, CcdProperties ccdProperties) {
         this.algorithmService = algorithmService;
+        this.ccdProperties = ccdProperties;
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -97,7 +90,7 @@ public class GFCIController implements ViewPath {
             @ModelAttribute("algoInfo") final GfciContinuousRunInfo algoInfo,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("gfcic", algorithmJar, gfciAlgorithm);
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("gfcic", ccdProperties.getAlgoJar(), ccdProperties.getAlgoGfci());
         jobRequest.setDataset(getDataset(algoInfo));
         jobRequest.setPriorKnowledge(getPriorKnowledge(algoInfo));
         jobRequest.setJvmOptions(getJvmOptions(algoInfo));
@@ -135,42 +128,42 @@ public class GFCIController implements ViewPath {
     private List<String> getParametersForContinuous(GfciContinuousRunInfo algoInfo, String username) {
         List<String> parameters = new LinkedList<>();
         String delimiter = algorithmService.getFileDelimiter(algoInfo.getDataset(), username);
-        parameters.add("--delimiter");
+        parameters.add(CmdOptions.DELIMITER);
         parameters.add(delimiter);
-        parameters.add("--alpha");
+        parameters.add(CmdOptions.ALPHA);
         parameters.add(Double.toString(algoInfo.getAlpha()));
-        parameters.add("--penalty-discount");
+        parameters.add(CmdOptions.PENALTY_DISCOUNT);
         parameters.add(Double.toString(algoInfo.getPenaltyDiscount()));
-        parameters.add("--max-indegree");
-        parameters.add(Integer.toString(algoInfo.getMaxInDegree()));
+        parameters.add(CmdOptions.MAX_DEGREE);
+        parameters.add(Integer.toString(algoInfo.getMaxDegree()));
         if (algoInfo.isVerbose()) {
-            parameters.add("--verbose");
+            parameters.add(CmdOptions.VERBOSE);
         }
         if (algoInfo.isFaithfulnessAssumed()) {
-            parameters.add("--faithfulness-assumed");
+            parameters.add(CmdOptions.FAITHFULNESS_ASSUMED);
         }
-        if (!algoInfo.isNonZeroVarianceValidation()) {
-            parameters.add("--skip-non-zero-variance");
+        if (algoInfo.isSkipNonzeroVariance()) {
+            parameters.add(CmdOptions.SKIP_NONZERO_VARIANCE);
         }
-        if (!algoInfo.isUniqueVarNameValidation()) {
-            parameters.add("--skip-unique-var-name");
+        if (algoInfo.isSkipUniqueVarName()) {
+            parameters.add(CmdOptions.SKIP_UNIQUE_VAR_NAME);
         }
 
         return parameters;
     }
 
     private GfciContinuousRunInfo createDefaultGfciContinuousRunInfo() {
-    	GfciContinuousRunInfo runInfo = new GfciContinuousRunInfo();
-    	runInfo.setAlpha(0.01);
-        runInfo.setPenaltyDiscount(4.0);
-        runInfo.setFaithfulnessAssumed(true);
-        runInfo.setMaxInDegree(3);
-        runInfo.setNonZeroVarianceValidation(true);
-        runInfo.setUniqueVarNameValidation(true);
-        runInfo.setVerbose(true);
-        runInfo.setJvmMaxMem(0);
+        GfciContinuousRunInfo runInfo = new GfciContinuousRunInfo();
+        runInfo.setAlpha(CmdOptions.ALPHA_DEFAULT);
+        runInfo.setPenaltyDiscount(CmdOptions.PENALTY_DISCOUNT_DEFAULT);
+        runInfo.setMaxDegree(CmdOptions.MAX_DEGREE_DEFAULT);
+        runInfo.setFaithfulnessAssumed(CmdOptions.FAITHFULNESS_ASSUMED_DEFAULT);
+        runInfo.setSkipUniqueVarName(CmdOptions.SKIP_UNIQUE_VAR_NAME_DEFAULT);
+        runInfo.setSkipNonzeroVariance(CmdOptions.SKIP_NONZERO_VARIANCE_DEFAULT);
+        runInfo.setVerbose(CmdOptions.VERBOSE_DEFAULT);
+        runInfo.setJvmMaxMem(1);
 
         return runInfo;
     }
-    
+
 }

@@ -26,8 +26,13 @@ package edu.pitt.dbmi.ccd.web.ctrl;
  */
 public interface ViewPath {
 
+    public static final String TERMS_VIEW = "terms";
+
+    public static final String MESSAGE_VIEW = "message";
+    public static final String MESSAGE = "/message";
+    public static final String REDIRECT_MESSAGE = "redirect:/message";
+
     public static final String LOGIN = "login";
-    public static final String LOGIN_VIEW = "login";
     public static final String REDIRECT_LOGIN = "redirect:/login";
 
     public static final String LOGOUT = "logout";
@@ -37,8 +42,8 @@ public interface ViewPath {
     public static final String REDIRECT_HOME = "redirect:/home";
 
     public static final String USER_PROFILE = "userProfile";
-    public static final String USER_PROFILE_VIEW = "user/userProfile";
-    public static final String REDIRECT_USER_PROFILE = "redirect:/user/profile";
+    public static final String USER_PROFILE_VIEW = "user/account/userProfile";
+    public static final String REDIRECT_USER_PROFILE = "redirect:/user/account/profile";
 
     public static final String REQUEST_USERNAME_VIEW = "user/account/reqestUsername";
     public static final String REQUEST_ANSWER_VIEW = "user/account/reqestAnswer";
@@ -49,6 +54,7 @@ public interface ViewPath {
     public static final String REDIRECT_DATA = "redirect:/data";
     public static final String DATA_SUMMARY_VIEW = "data/dataSummary";
     public static final String DATA_UPLOAD_VIEW = "data/dataUpload";
+    public static final String DATA_ANNOTATIONS_VIEW = "data/dataAnnotations";
 
     public static final String DATASET_PRIOR_VIEW = "data/prior";
     public static final String REDIRECT_DATASET_PRIOR = "redirect:/data/prior";
@@ -73,7 +79,10 @@ public interface ViewPath {
     public static final String REDIRECT_JOB_QUEUE = "redirect:/jobQueue";
 
     public static final String FEEDBACK_VIEW = "feedback";
+    public static final String REDIRECT_FEEDBACK_VIEW = "redirect:/feedback";
 
     public static final String USER_ACTIVATION_SUCCESS_VIEW = "user/userActivationSuccess";
+
+    public static final String USER_PASSWORD_RESET_VIEW = "user/account/recovery/password_reset";
 
 }

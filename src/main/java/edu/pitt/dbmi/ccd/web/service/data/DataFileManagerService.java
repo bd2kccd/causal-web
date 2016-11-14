@@ -24,8 +24,10 @@ import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
 import edu.pitt.dbmi.ccd.db.entity.DataFile;
 import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.entity.AnnotationTarget;
 import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
+import edu.pitt.dbmi.ccd.db.service.AnnotationTargetService;
 import edu.pitt.dbmi.ccd.web.model.data.ResumableChunk;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
@@ -65,16 +67,20 @@ public class DataFileManagerService {
 
     private final DataFileService dataFileService;
 
+    private final AnnotationTargetService annotationTargetService;
+
     @Autowired
     public DataFileManagerService(
             @Value("${ccd.server.workspace}") String workspace,
             @Value("${ccd.folder.data:data}") String dataFolder,
             UserAccountService userAccountService,
-            DataFileService dataFileService) {
+            DataFileService dataFileService,
+            AnnotationTargetService annotationTargetService) {
         this.workspace = workspace;
         this.dataFolder = dataFolder;
         this.userAccountService = userAccountService;
         this.dataFileService = dataFileService;
+        this.annotationTargetService = annotationTargetService;
     }
 
     public boolean isSupported(ResumableChunk chunk) {
@@ -138,11 +144,21 @@ public class DataFileManagerService {
 
         synchronized (dataFileService) {
             DataFile dataFile = dataFileService.findByAbsolutePathAndName(absolutePath, name);
+            AnnotationTarget annotationTarget;
             if (dataFile == null) {
                 dataFile = new DataFile();
                 dataFile.setAbsolutePath(absolutePath);
                 dataFile.setName(name);
                 dataFile.setUserAccounts(Collections.singleton(userAccount));
+
+                // create new Annotatable entity
+                annotationTarget = new AnnotationTarget(userAccount, dataFile.getName(), dataFile);
+            }else {
+                // Get annotatable entity from Data File
+                annotationTarget = annotationTargetService.findByDataFile(dataFile);
+                if (annotationTarget == null) {
+                    annotationTarget = new AnnotationTarget(userAccount, dataFile.getName(), dataFile);
+                }
             }
             dataFile.setCreationTime(creationTime);
             dataFile.setFileSize(fileSize);
@@ -166,6 +182,7 @@ public class DataFileManagerService {
             }
 
             dataFileService.saveDataFile(dataFile);
+            annotationTargetService.save(annotationTarget);
         }
 
         return md5checkSum;

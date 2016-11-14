@@ -22,11 +22,13 @@ import edu.pitt.dbmi.ccd.commons.file.FilePrint;
 import edu.pitt.dbmi.ccd.commons.file.MessageDigestHash;
 import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
+import edu.pitt.dbmi.ccd.db.entity.AnnotationTarget;
 import edu.pitt.dbmi.ccd.db.entity.DataFile;
 import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
 import edu.pitt.dbmi.ccd.db.entity.FileDelimiter;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.entity.VariableType;
+import edu.pitt.dbmi.ccd.db.service.AnnotationTargetService;
 import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.db.service.FileDelimiterService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
@@ -43,6 +45,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +81,8 @@ public class DataService {
 
     private final UserAccountService userAccountService;
 
+    private final AnnotationTargetService annotationTargetService;
+
     @Autowired
     public DataService(
             @Value("${ccd.server.workspace}") String workspace,
@@ -85,13 +90,15 @@ public class DataService {
             DataFileService dataFileService,
             VariableTypeService variableTypeService,
             FileDelimiterService fileDelimiterService,
-            UserAccountService userAccountService) {
+            UserAccountService userAccountService,
+            AnnotationTargetService annotationTargetService) {
         this.workspace = workspace;
         this.dataFolder = dataFolder;
         this.dataFileService = dataFileService;
         this.variableTypeService = variableTypeService;
         this.fileDelimiterService = fileDelimiterService;
         this.userAccountService = userAccountService;
+        this.annotationTargetService = annotationTargetService;
     }
 
     public String getFileDelimiter(String fileName, String username) {
@@ -163,6 +170,12 @@ public class DataService {
         });
 
         return map;
+    }
+
+    public AnnotationTarget getAnnotationTarget(final String fileName, final String username) {
+        Path dataDir = Paths.get(workspace, username, dataFolder);
+        DataFile dataFile = dataFileService.findByAbsolutePathAndName(dataDir.toAbsolutePath().toString(), fileName);
+        return dataFile.getAnnotationTarget();
     }
 
     public boolean saveDataSummary(final DataSummary dataSummary, final String username) {
@@ -462,6 +475,25 @@ public class DataService {
             });
             dataFileService.saveDataFile(list);
         }
+
+        Set<AnnotationTarget> annotationTargets = getNewAnnotationTargets(userAccount);
+        if (!annotationTargets.isEmpty()) {
+            annotationTargetService.save(annotationTargets);
+        }
+    }
+
+    private Set<AnnotationTarget> getNewAnnotationTargets(UserAccount userAccount) {
+        Set<AnnotationTarget> annotationTargets = new HashSet<>();
+
+        // get all the user's dataset from the database
+        List<DataFile> dataFiles = dataFileService.findByUserAccounts(Collections.singleton(userAccount));
+        dataFiles.forEach(dataFile -> {
+            if (annotationTargetService.findByDataFile(dataFile) == null) {
+                annotationTargets.add(new AnnotationTarget(userAccount, dataFile.getName(), dataFile));
+            }
+        });
+
+        return annotationTargets;
     }
 
 }

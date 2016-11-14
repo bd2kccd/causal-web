@@ -18,18 +18,6 @@
  */
 package edu.pitt.dbmi.ccd.web.service;
 
-import edu.pitt.dbmi.ccd.db.entity.Person;
-import edu.pitt.dbmi.ccd.db.entity.SecurityAnswer;
-import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.service.SecurityAnswerService;
-import edu.pitt.dbmi.ccd.db.service.UserAccountService;
-import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
-import edu.pitt.dbmi.ccd.web.service.mail.MailService;
-import java.net.URI;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Date;
-import java.util.UUID;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +25,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.util.UriComponentsBuilder;
+
+import edu.pitt.dbmi.ccd.db.entity.SecurityAnswer;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.SecurityAnswerService;
+import edu.pitt.dbmi.ccd.db.service.UserAccountService;
+import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
+import edu.pitt.dbmi.ccd.web.service.mail.MailService;
 
 /**
  *
@@ -79,54 +73,6 @@ public class UserService {
             final String requestURL) {
         boolean success = false;
 
-        String username = userRegistration.getUsername();
-        String email = userRegistration.getEmail();
-        String password = userRegistration.getPassword();
-
-        String accountId = UUID.randomUUID().toString();
-
-        try {
-            UriComponentsBuilder uriComponentsBuilder;
-            if (serverUrl.isEmpty()) {
-                uriComponentsBuilder = UriComponentsBuilder.fromHttpUrl(requestURL);
-            } else {
-                String[] paths = new URI(requestURL).getPath().split("/");
-                uriComponentsBuilder = UriComponentsBuilder.fromHttpUrl(serverUrl).pathSegment(paths);
-            }
-
-            String url = uriComponentsBuilder
-                    .pathSegment("activate")
-                    .queryParam("account", Base64.getUrlEncoder().encodeToString(accountId.getBytes()))
-                    .build().normalize().toString();
-
-            Person person = new Person();
-            person.setFirstName("");
-            person.setLastName("");
-            person.setEmail(email);
-            person.setWorkspace("");
-
-            UserAccount userAccount = new UserAccount();
-            userAccount.setAccountId(accountId);
-            userAccount.setActive(Boolean.FALSE);
-            userAccount.setCreatedDate(new Date(System.currentTimeMillis()));
-            userAccount.setLastLoginDate(new Date(System.currentTimeMillis()));
-            userAccount.setPassword(passwordService.encryptPassword(password));
-            userAccount.setPerson(person);
-            userAccount.setUsername(username);
-
-            SecurityAnswer securityAnswer = new SecurityAnswer();
-            securityAnswer.setAnswer(userRegistration.getSecureAns());
-            securityAnswer.setSecurityQuestion(userRegistration.getSecureQues());
-            securityAnswer.setUserAccounts(Collections.singleton(userAccount));
-
-            success = persistUserRegistration(userAccount, securityAnswer);
-            if (success) {
-                mailService.sendRegistrationActivation(username, email, url);
-            }
-        } catch (Exception exception) {
-            LOGGER.warn(exception.getMessage());
-        }
-
         return success;
     }
 
@@ -135,7 +81,7 @@ public class UserService {
         boolean flag = false;
 
         try {
-            userAccountService.saveUserAccount(userAccount);
+            userAccountService.save(userAccount);
             securityAnswerService.saveSecurityAnswer(securityAnswer);
             flag = true;
         } catch (Exception exception) {

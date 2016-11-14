@@ -26,29 +26,14 @@ package edu.pitt.dbmi.ccd.web.model.algo;
  */
 public class FgsContinuousRunInfo extends AlgorithmRunInfo {
 
-    // algorithm parameters
-    protected int maxDegree;
     protected double penaltyDiscount;
+    protected int maxDegree;
     protected boolean faithfulnessAssumed;
 
-    // data validation
-    protected boolean nonZeroVarianceValidation;
-    protected boolean uniqueVarNameValidation;
+    protected boolean skipUniqueVarName;
+    protected boolean skipNonzeroVariance;
 
     public FgsContinuousRunInfo() {
-    }
-
-    @Override
-    public String toString() {
-        return "FgsContinuousRunInfo{" + "maxDegree=" + maxDegree + ", penaltyDiscount=" + penaltyDiscount + ", faithfulnessAssumed=" + faithfulnessAssumed + ", nonZeroVarianceValidation=" + nonZeroVarianceValidation + ", uniqueVarNameValidation=" + uniqueVarNameValidation + '}';
-    }
-
-    public int getMaxDegree() {
-        return maxDegree;
-    }
-
-    public void setMaxDegree(int maxDegree) {
-        this.maxDegree = maxDegree;
     }
 
     public double getPenaltyDiscount() {
@@ -59,6 +44,14 @@ public class FgsContinuousRunInfo extends AlgorithmRunInfo {
         this.penaltyDiscount = penaltyDiscount;
     }
 
+    public int getMaxDegree() {
+        return maxDegree;
+    }
+
+    public void setMaxDegree(int maxDegree) {
+        this.maxDegree = maxDegree;
+    }
+
     public boolean isFaithfulnessAssumed() {
         return faithfulnessAssumed;
     }
@@ -67,20 +60,20 @@ public class FgsContinuousRunInfo extends AlgorithmRunInfo {
         this.faithfulnessAssumed = faithfulnessAssumed;
     }
 
-    public boolean isNonZeroVarianceValidation() {
-        return nonZeroVarianceValidation;
+    public boolean isSkipUniqueVarName() {
+        return skipUniqueVarName;
     }
 
-    public void setNonZeroVarianceValidation(boolean nonZeroVarianceValidation) {
-        this.nonZeroVarianceValidation = nonZeroVarianceValidation;
+    public void setSkipUniqueVarName(boolean skipUniqueVarName) {
+        this.skipUniqueVarName = skipUniqueVarName;
     }
 
-    public boolean isUniqueVarNameValidation() {
-        return uniqueVarNameValidation;
+    public boolean isSkipNonzeroVariance() {
+        return skipNonzeroVariance;
     }
 
-    public void setUniqueVarNameValidation(boolean uniqueVarNameValidation) {
-        this.uniqueVarNameValidation = uniqueVarNameValidation;
+    public void setSkipNonzeroVariance(boolean skipNonzeroVariance) {
+        this.skipNonzeroVariance = skipNonzeroVariance;
     }
 
 }

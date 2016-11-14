@@ -32,15 +32,10 @@ public class FgsDiscreteRunInfo extends AlgorithmRunInfo {
     private boolean faithfulnessAssumed;
 
     // data validation
-    private boolean uniqueVarNameValidation;
-    private boolean limitNumOfCategory;
+    protected boolean skipUniqueVarName;
+    protected boolean skipCategoryLimit;
 
     public FgsDiscreteRunInfo() {
-    }
-
-    @Override
-    public String toString() {
-        return "FgsDiscreteRunInfo{" + "structurePrior=" + structurePrior + ", samplePrior=" + samplePrior + ", maxDegree=" + maxDegree + ", faithfulnessAssumed=" + faithfulnessAssumed + ", uniqueVarNameValidation=" + uniqueVarNameValidation + ", limitNumOfCategory=" + limitNumOfCategory + '}';
     }
 
     public double getStructurePrior() {
@@ -63,8 +58,8 @@ public class FgsDiscreteRunInfo extends AlgorithmRunInfo {
         return maxDegree;
     }
 
-    public void setMaxDegree(int depth) {
-        this.maxDegree = depth;
+    public void setMaxDegree(int maxDegree) {
+        this.maxDegree = maxDegree;
     }
 
     public boolean isFaithfulnessAssumed() {
@@ -75,20 +70,20 @@ public class FgsDiscreteRunInfo extends AlgorithmRunInfo {
         this.faithfulnessAssumed = faithfulnessAssumed;
     }
 
-    public boolean isUniqueVarNameValidation() {
-        return uniqueVarNameValidation;
+    public boolean isSkipUniqueVarName() {
+        return skipUniqueVarName;
     }
 
-    public void setUniqueVarNameValidation(boolean uniqueVarNameValidation) {
-        this.uniqueVarNameValidation = uniqueVarNameValidation;
+    public void setSkipUniqueVarName(boolean skipUniqueVarName) {
+        this.skipUniqueVarName = skipUniqueVarName;
     }
 
-    public boolean isLimitNumOfCategory() {
-        return limitNumOfCategory;
+    public boolean isSkipCategoryLimit() {
+        return skipCategoryLimit;
     }
 
-    public void setLimitNumOfCategory(boolean limitNumOfCategory) {
-        this.limitNumOfCategory = limitNumOfCategory;
+    public void setSkipCategoryLimit(boolean skipCategoryLimit) {
+        this.skipCategoryLimit = skipCategoryLimit;
     }
 
 }

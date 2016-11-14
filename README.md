@@ -1,7 +1,7 @@
 # causal-web
 Causal web is a Java web-based application that allows users to run causal modeling algorithms on their dataset.  The Center for Causal Discovery is hosting this application at the Pittsburgh Supercomputing Center and you can access it at https://ccd2.vm.bridges.psc.edu/ccd
 
-Documentation for using the web application can be found at [http://www.ccd.pitt.edu/wiki/index.php?title=Causal_Web_Application_Quick_Start_and_User_Guide](http://www.ccd.pitt.edu/wiki/index.php?title=Causal_Web_Application_Quick_Start_and_User_Guide) 
+Documentation for using the web application can be found at [https://bd2kccd.github.io/docs/causal-web/](https://bd2kccd.github.io/docs/causal-web/) 
 
 If you want to host the application with your own hardware, follow the instructions below for configuring, building and installing the application.
 
@@ -17,18 +17,17 @@ If you want to host the application with your own hardware, follow the instructi
 #### Dependencies
 Download and uncompress the source code for each of following dependencies:
 
-* [ccd-job-queue-0.1.4](https://github.com/bd2kccd/ccd-job-queue/releases/tag/v0.1.4)
-* [ccd-mail-0.2.0](https://github.com/bd2kccd/ccd-mail/releases/tag/v0.2.0)
-* [ccd-db-0.6.1](https://github.com/bd2kccd/ccd-db/releases/tag/v0.6.1)
+* [ccd-job-queue-0.1.5](https://github.com/bd2kccd/ccd-job-queue/releases/tag/v0.1.5)
+* [ccd-mail-0.2.1](https://github.com/bd2kccd/ccd-mail/releases/tag/v0.2.1)
+* [ccd-db-0.6.2](https://github.com/bd2kccd/ccd-db/releases/tag/v0.6.2)
 * [ccd-commons-0.3.1](https://github.com/bd2kccd/ccd-commons/releases/tag/v0.3.1)
-
 To install the dependencies, go to the top directory of each project and do a maven install by typing **mvn install**.
 
 #### Application
-Download and uncompress the application source code  [causal-web-1.2.2](https://github.com/bd2kccd/causal-web/releases/tag/v1.2.2).  To compile and build the application, go to the directory **causal-web-1.2.2** and type **mvn package**.
+Download and uncompress the application source code  [causal-web-1.3.0](https://github.com/bd2kccd/causal-web/releases/tag/v1.3.0).  To compile and build the application, go to the directory **causal-web-1.3.0** and type **mvn package**.
 
 #### External Dependencies
-* [causal-cmd-5.3.0.jar](https://github.com/cmu-phil/tetrad/releases/tag/v5.3.0-20160624)
+* [causal-cmd-6.0.0.jar](https://github.com/cmu-phil/tetrad/releases/tag/6.0.0-20161031)
 
 ## Configure the software
 
@@ -39,7 +38,7 @@ Inside the workspace directory, create another folder called **lib**, for exampl
 Copy the **causal-cmd-5.3.0.jar** to the  **workspace/lib** folder.
 
 ### Configure
-There are 4 configuration files to configure located in causal-web-1.2.2/src/main/resources folder:
+There are 4 configuration files to configure located in causal-web-1.3.0/src/main/resources folder:
 1. **application-hsqldb.properties**: HSQLDB database configurations (for testing only).
 2. **application-mysql.properties**: MySQL database configurations
 3. **application.properties**: Spring Boot configurations
@@ -59,11 +58,6 @@ Set the following properties in the **application.properties** file:
 spring.mail.username=<gmail username>
 spring.mail.password=<gmail username>
 ```
-Set the following properties in the **ccd.properties** file:
-```java
-// add gmail account
-ccd.mail.feedback.to=<gmail username>
-```
 
 #### Testing Configuration
 Set the following properties in the **application.properties** file:
@@ -80,15 +74,15 @@ spring.profiles.active=scheduler,mysql
 Make sure you set **ccd.server.workspace=/home/tuser/workspace** and **ccd.folder.lib=lib** in the **ccd.properties** file.
 
 ## Compile the Program
-Go to the **ccd-web** directory and run the command **mvn clean package**. This will create a jar file called **causal-web-1.2.2.jar** in the **/target** folder.
+Go to the **causal-web** directory and run the command **mvn clean package**. This will create a jar file called **causal-web-1.3.0.jar** in the **/target** folder.
 
 ### Launch the Program
 ```java
-java -jar causal-web-1.2.2.jar
+java -jar causal-web-1.3.0.jar
 ```
 To give the program 4GB of memory to run on, type the follow, using the jvm options:
 ```java
-java -Xmx4G -jar causal-web-1.2.2.jar
+java -Xmx4G -jar causal-web-1.3.0.jar
 ```
 
 To launch app in the browser

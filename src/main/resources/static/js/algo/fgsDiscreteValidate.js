@@ -7,12 +7,12 @@ $(document).ready(function () {
             structurePrior: {
                 required: true,
                 number: true,
-                greaterThan: 0
+                min: 1.0
             },
             samplePrior: {
                 required: true,
                 number: true,
-                greaterThan: 0
+                min: 1.0
             },
             maxDegree: {
                 required: true,
@@ -32,19 +32,20 @@ $(document).ready(function () {
             },
             structurePrior: {
                 required: "Please set the structure prior.",
-                greaterThan: "Value must be greater than 0."
+                min: "Must be at least 1.0."
             },
             samplePrior: {
                 required: "Please set the sample prior.",
-                greaterThan: "Value must be greater than 0."
+                min: "Must be at least 1.0."
             },
             maxDegree: {
-                required: "Please select the search max degree."
+                required: "Please select the search max degree.",
+                min: "Must be at least -1."
             },
             jvmMaxMem: {
                 required: "Must be a number between 0 and 128.",
-                min: "Must between 0 and 128.",
-                max: "Must between 0 and 128."
+                min: "Must be at least 0.",
+                max: "Must be at most 128."
             }
         },
         highlight: function (element) {

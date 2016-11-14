@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <title>CCD</title>
+        <meta name="description" content="" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="apple-touch-icon" href="../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
+        <link rel="icon" href="../static/favicon.ico" th:href="@{/favicon.ico}" />
+        <link rel="stylesheet" href="../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{/vendors/bootstrap/css/bootstrap.min.css}" />
+        <link rel="stylesheet" href="../static/vendors/bootstrap/css/bootstrap-theme.min.css" th:href="@{/vendors/bootstrap/css/bootstrap-theme.min.css}" />
+        <link rel="stylesheet" href="../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{/vendors/font-awesome/css/font-awesome.min.css}"/>
+        <link rel="stylesheet" href="../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
+        <link rel="stylesheet" href="../static/css/login.min.css" th:href="@{/css/login.min.css}" />
+        <script src="../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
+        <script src="../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 col-md-offset-4">
+                    <div class="panel panel-default panel-default_pitt">
+                        <div class="panel-heading">
+                            <h3 class="panel-title" th:text="${@environment.getProperty('ccd.app.title')}">Causal Web</h3>
+                        </div>
+                        <div class="panel-body">
+                            <img class="profile-img" src="../static/img/ccd_logo.png" th:src="@{/img/ccd_logo.png}" alt="profile picture" />
+                            <div class="alert alert-success text-center" role="alert" th:if="${successMsg}">
+                                <div class="text-left" th:each="msg : ${successMsg}" th:text="${msg}"></div>
+                            </div>
+                            <div class="alert alert-danger text-center" role="alert" th:if="${errorMsg}">
+                                <div class="text-left" th:each="msg : ${errorMsg}" th:text="${msg}"></div>
+                            </div>
+                            <form id="login" method="POST" action="" th:action="@{/login}" accept-charset="UTF-8" role="form" th:object="${loginCredentials}">
+                                <fieldset>
+                                    <div class="form-group" th:class="${#fields.hasErrors('loginUsername')} ? 'form-group has-error' : 'form-group'">
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
+                                            <input type="email" class="form-control" placeholder="Email" name="loginUsername" value="" required="required" th:field="*{loginUsername}" autofocus="autofocus" />
+                                        </div>
+                                        <span class="help-block" th:if="${#fields.hasErrors('loginUsername')}" th:errors="*{loginUsername}">Please enter a valid e-mail.</span>
+                                    </div>
+                                    <div class="form-group" th:class="${#fields.hasErrors('loginPassword')} ? 'form-group has-error' : 'form-group'">
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><i class="fa fa-lock"></i></span>
+                                            <input type="password" class="form-control" placeholder="Password" name="loginPassword" value="" th:field="*{loginPassword}" required="required" />
+                                        </div>
+                                        <span class="help-block" th:if="${#fields.hasErrors('loginPassword')}" th:errors="*{loginPassword}">Please enter your password.</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="checkbox">
+                                            <label for="rememberMe">
+                                                <input type="checkbox" id="rememberMe" name="rememberMe" value="true" checked="checked" th:field="*{rememberMe}" /> Remember Me
+                                            </label>
+                                            <span class="pull-right"><a href="#" data-toggle="modal" data-target="#forget_pwd"> Forgot Password?</a></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="submit" class="btn btn-block btn-lg btn-default btn-default_pitt" value="Sign In" onClick="requestAnnotationsTokens(false);"/>
+                                    </div>
+                                </fieldset>
+                            </form>
+                            <hr />
+                            <div class="auth0">
+                                Don't have an account yet?<br/>
+                                <a href="#" data-toggle="modal" data-target="#signup">Create an account</a>
+                            </div>
+                            <div class="registration">
+                                <p>or you can sign in/up via your university account</p>
+                                <button class="btn btn-info" onclick="signIn();"><i class="fa fa-university"></i> University</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer th:replace="fragments/centerFooter :: footer">
+                <div class="row">
+                    <div class="text-center">
+                        <p class="text-muted">Copyright &copy; 1900 University of Pittsburgh Department of Biomedical Informatics</p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+        <div class="modal fade" id="forget_pwd" tabindex="-1" role="dialog" aria-labelledby="forget_pwd" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form id="pwd_reset" method="POST" action="" th:action="@{/user/account/recovery/password/request}" accept-charset="UTF-8" role="form" th:object="${passwordRecovery}">
+                        <div class="modal-header">
+                            <h4 class="modal-title">Password Reset</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p>Please enter your e-mail to reset your password.</p>
+                            <div class="form-group" th:class="${#fields.hasErrors('usernameRecover')} ? 'form-group has-error' : 'form-group'">
+                                <div class="input-group">
+                                    <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
+                                    <input type="text" class="form-control" placeholder="Email" name="usernameRecover" value="" required="required" th:field="*{usernameRecover}" autofocus="autofocus" />
+                                </div>
+                                <span class="help-block" th:if="${#fields.hasErrors('usernameRecover')}" th:errors="*{usernameRecover}">Please enter a valid e-mail.</span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button data-dismiss="modal" class="btn btn-default" type="button">Cancel</button>
+                            <button type="submit" class="btn btn-default_pitt">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="signup" tabindex="-1" role="dialog" aria-labelledby="signup" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form id="registration" role="form" method="POST" action="" th:action="@{/user/account/registration}" th:object="${userRegistration}">
+                        <div class="modal-header">
+                            <button type="button" class="close close_pitt" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                            <h4 class="modal-title">CCD Account Registration</h4>
+                        </div>
+                        <div class="modal-body">
+                            <fieldset>
+                                <div class="form-group" th:class="${#fields.hasErrors('username')} ? 'form-group has-error' : 'form-group'">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
+                                        <input class="form-control" placeholder="Email" name="username" type="text" autofocus="autofocus" th:field="*{username}" required="required" />
+                                    </div>
+                                    <span class="help-block" th:if="${#fields.hasErrors('username')}" th:errors="*{username}">Please enter a valid email.</span>
+                                </div>
+                                <div class="form-group" th:class="${#fields.hasErrors('password')} ? 'form-group has-error' : 'form-group'">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i class="fa fa-lock"></i></span>
+                                        <input type="password" id="password" class="form-control" placeholder="Password" name="password" th:field="*{password}" required="required" />
+                                    </div>
+                                    <span class="help-block" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Please enter a valid email.</span>
+                                </div>
+                                <div class="form-group" th:class="${#fields.hasErrors('confirmPassword')} ? 'form-group has-error' : 'form-group'">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i class="fa fa-lock"></i></span>
+                                        <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm Password" name="confirmPassword" th:field="*{confirmPassword}" required="required" />
+                                    </div>
+                                    <span class="help-block" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}">Please reenter password.</span>
+                                </div>
+                                <div class="form-group" th:class="${#fields.hasErrors('agree')} ? 'form-group has-error' : 'form-group'">
+                                    <input id="agree" type="checkbox" name="agree" th:field="*{agree}" required="required" /> Agree to <a href="#agreement" data-toggle="modal" data-target="#term_condition">Terms &amp; Conditions</a>
+                                    <span class="help-block" th:if="${#fields.hasErrors('agree')}" th:errors="*{agree}">You must agree to the terms and conditions.</span>
+                                </div>
+                            </fieldset>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="register" type="submit" class="btn btn-default_pitt pull-right">Sign Up</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="term_condition" tabindex="-1" role="dialog" aria-labelledby="agreement" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Terms and Conditions</h4>
+                    </div>
+                    <div class="modal-body">
+                        <textarea id="agreement" readonly="readonly" th:utext="${@environment.getProperty('ccd.app.agreement')}"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default_pitt" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
+        <script src="../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
+        <script src="../static/js/login.min.js" th:src="@{/js/login.min.js}"></script>
+        <script src="https://cdn.auth0.com/js/lock/10.4.1/lock.min.js"></script>
+        <script type="text/javascript" th:inline="javascript">
+                                    var auth0ClientId = /*[[${@environment.getProperty('auth0.clientId')}]]*/ '';
+                                    var auth0Domain = /*[[${@environment.getProperty('auth0.domain')}]]*/ '';
+                                    var state = /*[[${state}]]*/ '';
+                                    var loginCallback = /*[[${#strings.replace(#httpServletRequest.getRequestURL(), #httpServletRequest.getRequestURI(), #httpServletRequest.getContextPath())} + ${@environment.getProperty('auth0.loginCallback')}]]*/ '';
+                                    var iconUrl = /*[[@{/img/ccd_logo.png}]]*/ '';
+                                    var lock = new Auth0Lock(auth0ClientId, auth0Domain, {
+                                        rememberLastLogin: false,
+                                        auth: {
+                                            redirectUrl: loginCallback,
+                                            responseType: 'code',
+                                            params: {
+                                                state: state,
+                                                scope: 'openid user_id name nickname email picture'
+                                            }
+                                        },
+                                        theme: {
+                                            logo: iconUrl
+                                        },
+                                        languageDictionary: {
+                                            title: 'Causal Web',
+                                            emailInputPlaceholder: 'Pitt or Harvard email.'
+                                        }
+                                    });
+                                    function signIn() {
+                                        lock.show();
+                                    }
+        </script>
+        <script src="../static/js/annotations.js" th:src="@{/js/annotations.js}"></script>
+        <script type="text/javascript" th:inline="javascript">
+            var annoApiUrl = /*[[${@environment.getProperty('annotations.api.url')}]]*/ '';
+            var annoClientId = /*[[${@environment.getProperty('annotations.api.clientId')}]]*/ '';
+            var annoClientSecret = /*[[${@environment.getProperty('annotations.api.clientSecret')}]]*/ '';
+        </script>
+    </body>
+</html>

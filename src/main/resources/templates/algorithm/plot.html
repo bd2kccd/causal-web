@@ -13,6 +13,9 @@
         <link rel="stylesheet" href="../../static/vendors/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.min.css}" />
         <link rel="stylesheet" href="../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{/vendors/font-awesome/css/font-awesome.min.css}"/>
         <link rel="stylesheet" href="../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
+        <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
+        <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
+        <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
         <style>
             iframe {
                 width: 100%;
@@ -34,13 +37,13 @@
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
-                        <iframe src="#" th:src="@{${link}}" marginwidth="0" marginheight="0" scrolling="no"></iframe>
+                        <iframe src="#" th:src="@{/algorithm/results/d3graph(file=${fileName})}" marginwidth="0" marginheight="0" scrolling="no"></iframe>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
                         <p>
-                            <a href="#" th:href="@{${link}}" class="btn btn-info" role="button">View Full Screen</a>
+                            <a href="#" th:href="@{/algorithm/results/d3graph(file=${fileName})}" class="btn btn-info" role="button">View Full Screen</a>
                         </p>
                     </div>
                 </div>
@@ -76,9 +79,6 @@
                 </footer>
             </div>
         </div>
-        <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
-        <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
         <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
-        <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
     </body>
 </html>
