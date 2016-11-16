@@ -10,25 +10,33 @@
         <link rel="icon" href="../../static/favicon.ico" th:href="@{/favicon.ico}" />
         <style>
             .link {
-                fill: none;
-                stroke: #666;
-                stroke-width: 1.5px;
-            }
-            circle {
-                fill: #ccc;
-                stroke: #333;
-                stroke-width: 1.5px;
-            }
-            text {
-                font: 10px sans-serif;
-                pointer-events: none;
-                text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
-            }
+			stroke: #666;
+			stroke-opacity: .6;
+			}
+
+			.node {
+			fill: #9467bd;
+			}
+
+			.node-name {
+			fill:#222;
+			font: 10px helvetica;
+			}
+
+			.marker-start-arrow,
+			.marker-start-circle,
+			.marker-end-arrow,
+			.marker-end-circle{
+			fill: #666;
+			}
         </style>
     </head>
     <body>
+
+        <div id="causal-graph"></div>
+        
         <script src="../../static/vendors/d3js/d3.min.js" th:src="@{/vendors/d3js/d3.min.js}"></script>
-        <script src="../../static/js/algo/d3jsplot.min.js" th:src="@{/js/algo/d3jsplot.min.js}"></script>
+        <script src="../../static/js/algo/causalGraph.js" th:src="@{/js/algo/causalGraph.js}"></script>
         <script type="text/javascript" th:inline="javascript">
             /*<![CDATA[*/
             plotGraph(/*[[${data}]]*/ []);
