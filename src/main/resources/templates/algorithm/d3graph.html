@@ -8,6 +8,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="apple-touch-icon" href="../../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
         <link rel="icon" href="../../static/favicon.ico" th:href="@{/favicon.ico}" />
+        <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
         <style>
             .link {
 			stroke: #666;
@@ -32,6 +33,10 @@
         </style>
     </head>
     <body>
+
+        <div id="search-box">
+        <input id="search"> <button id="searchBtn" type="button">Search</button>
+        </div>
 
         <div id="causal-graph"></div>
         
