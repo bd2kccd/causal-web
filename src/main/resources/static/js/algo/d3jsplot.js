@@ -37,12 +37,21 @@ function plotGraph(links) {
 
     //console.log(nodes);
 
+    // Must defien this before the var svg
+    var zoom = d3.zoom()
+            .scaleExtent([.2, 10])
+            .on("zoom", zoomed);
+        
     // Append a SVG to the graph container div
     // This graph auto scales with the window resize
     var svg = d3.select("#causal-graph")
             .append("svg")
             .attr("width", svgWidth)
-            .attr("height", svgHeight);
+            .attr("height", svgHeight)
+            .call(zoom);
+    
+    // This graphGroup groups all graph elements
+    var graphGroup = svg.append("g");
 
     // Creates a new simulation with nodes array
     var simulation = d3.forceSimulation(nodes)
@@ -76,7 +85,7 @@ function plotGraph(links) {
     });
 
     // <- marker starts with arrow
-    svg.append("defs").append("marker")
+    graphGroup.append("defs").append("marker")
             .attr("id", "marker-start-arrow")
             .attr("viewBox", "0 -5 10 10")
             .attr("refX", -5)
@@ -89,7 +98,7 @@ function plotGraph(links) {
             .attr("class", "marker-start-arrow");
 
     // o- marker starts with circle
-    svg.append("defs").append("marker")
+    graphGroup.append("defs").append("marker")
             .attr("id", "marker-start-circle")
             .attr("viewBox", "0 -5 10 10")
             .attr("refX", -5)
@@ -104,7 +113,7 @@ function plotGraph(links) {
             .attr("class", "marker-start-circle");
 
     // -> marker ends with arrow
-    svg.append("defs").append("marker")
+    graphGroup.append("defs").append("marker")
             .attr("id", "marker-end-arrow")
             .attr("viewBox", "0 -5 10 10")
             .attr("refX", 20)
@@ -117,7 +126,7 @@ function plotGraph(links) {
             .attr("class", "marker-end-arrow");
 
     // -o marker ends with circle
-    svg.append("defs").append("marker")
+    graphGroup.append("defs").append("marker")
             .attr("id", "marker-end-circle")
             .attr("viewBox", "0 -5 10 10")
             .attr("refX", 15)
@@ -132,7 +141,7 @@ function plotGraph(links) {
             .attr("class", "marker-end-circle");
 
     // Add the edge based on type: link line and the arrow/circle
-    var link = svg.append("g").selectAll(".link")
+    var link = graphGroup.append("g").selectAll(".link")
             .data(links)
             .enter().append("line")
             .attr("class", "link")
@@ -156,7 +165,7 @@ function plotGraph(links) {
             });
 
     // Draw all nodes as circles
-    var node = svg.append("g")
+    var node = graphGroup.append("g")
             .selectAll(".node")
             .data(nodes)
             .enter().append("circle")
@@ -168,61 +177,8 @@ function plotGraph(links) {
                     .on("drag", dragged)
                     .on("end", dragended));
 
-    // This function looks up whether a pair are neighbours
-    function neighboring(a, b) {
-        return linkedByIndex[a.index + "," + b.index];
-    }
-
-    // Highlight connected nodes on double click
-    function highlightConnectedNodes() {
-        if (toggle == 0) {
-            // Reduce the opacity of all but the neighbouring nodes/text
-            d = d3.select(this).node().__data__;
-            node.style("opacity", function (o) {
-                return neighboring(d, o) | neighboring(o, d) ? 1 : reducedOpacity;
-            });
-
-            text.style("opacity", function (o) {
-                return neighboring(d, o) | neighboring(o, d) ? 1 : reducedOpacity;
-            });
-
-            link.style("opacity", function (o) {
-                return d.index == o.source.index | d.index == o.target.index ? 1 : reducedOpacity;
-            });
-
-            // Set toggle flag
-            toggle = 1;
-        } else {
-            // Reset opacity and toggle flag
-            node.style("opacity", 1);
-            text.style("opacity", 1);
-            link.style("opacity", 1);
-            toggle = 0;
-        }
-    }
-
-    // Drag
-    function dragstarted() {
-        if (!d3.event.active)
-            simulation.alphaTarget(0.3).restart();
-        d3.event.subject.fx = d3.event.subject.x;
-        d3.event.subject.fy = d3.event.subject.y;
-    }
-
-    function dragged() {
-        d3.event.subject.fx = d3.event.x;
-        d3.event.subject.fy = d3.event.y;
-    }
-
-    function dragended() {
-        if (!d3.event.active)
-            simulation.alphaTarget(0);
-        d3.event.subject.fx = null;
-        d3.event.subject.fy = null;
-    }
-
     // Draw node text
-    var text = svg.append("g")
+    var text = graphGroup.append("g")
             .selectAll(".node-name")
             .data(nodes)
             .enter().append("text")
@@ -272,20 +228,78 @@ function plotGraph(links) {
             });
     }
 
+    // Zooming
+    function zoomed() {
+        graphGroup.attr("transform", d3.event.transform);
+    }
+        
+    // This function looks up whether a pair are neighbours
+    function neighboring(a, b) {
+        return linkedByIndex[a.index + "," + b.index];
+    }
+
+    // Highlight connected nodes on double click
+    function highlightConnectedNodes() {
+        if (toggle === 0) {
+            // Reduce the opacity of all but the neighbouring nodes/text
+            d = d3.select(this).node().__data__;
+            node.style("opacity", function (o) {
+                return neighboring(d, o) | neighboring(o, d) ? 1 : reducedOpacity;
+            });
+
+            text.style("opacity", function (o) {
+                return neighboring(d, o) | neighboring(o, d) ? 1 : reducedOpacity;
+            });
+
+            link.style("opacity", function (o) {
+                return d.index === o.source.index | d.index === o.target.index ? 1 : reducedOpacity;
+            });
+
+            // Set toggle flag
+            toggle = 1;
+        } else {
+            // Reset opacity and toggle flag
+            node.style("opacity", 1);
+            text.style("opacity", 1);
+            link.style("opacity", 1);
+            toggle = 0;
+        }
+    }
+
+    // Drag
+    function dragstarted() {
+        if (!d3.event.active)
+            simulation.alphaTarget(0.3).restart();
+        d3.event.subject.fx = d3.event.subject.x;
+        d3.event.subject.fy = d3.event.subject.y;
+    }
+
+    function dragged() {
+        d3.event.subject.fx = d3.event.x;
+        d3.event.subject.fy = d3.event.y;
+    }
+
+    function dragended() {
+        if (!d3.event.active)
+            simulation.alphaTarget(0);
+        d3.event.subject.fx = null;
+        d3.event.subject.fy = null;
+    }
+    
     // When the graph is huge it's nice to have some search functionality
     // This highlights the target node
     $('#searchBtn').click(function () {
         //find the node
         var selectedVal = $('#search').val();
-        var node = svg.selectAll(".node");
-        if (selectedVal == '') {
+        var node = graphGroup.selectAll(".node");
+        if (selectedVal === '') {
             node.style("stroke", "white").style("stroke-width", "1");
         } else {
             var selected = node.filter(function (d, i) {
                 return d.name !== selectedVal;
             });
             selected.style("opacity", "0");
-            var link = svg.selectAll(".link")
+            var link = graphGroup.selectAll(".link")
             link.style("opacity", "0");
             d3.selectAll(".node, .link").transition()
                     .duration(5000)
