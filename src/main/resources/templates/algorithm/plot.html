@@ -32,8 +32,13 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h3 class="page-header">Causal Graph</h3>
-                        <h3><span class="label label-primary" th:text="${plot}">Title</span></h3>
+                        <h3 class="page-header">Causal Graph of <span class="label label-primary" th:text="${plot}">Title</span></h3>
+                        <ul>
+                        <li>You can use the mouse wheel to zoom in/out this graph.</li>
+                        <li>You can drag the entire graph by dragging an empty space on the graph.</li>
+                        <li>You can highlight a node and all the edges of this node by double clicking the node, and double clicking again to disable the highlighting.</li>
+                        <li>You can search and locate a node by entering its name in the search box.</li>
+                        </ul>
                     </div>
                 </div>
                 <div class="row">
