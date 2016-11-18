@@ -41,9 +41,8 @@ function plotGraph(links) {
     // This graph auto scales with the window resize
     var svg = d3.select("#causal-graph")
             .append("svg")
-            // The viewBox is an attribute of the <svg> element. 
-            // Its value is a list of four numbers, separated by whitespace or commas: x, y, width, height.
-            .attr("viewBox", "0 0 " + svgWidth + " " + svgHeight);
+            .attr("width", svgWidth)
+            .attr("height", svgHeight);
 
     // Creates a new simulation with nodes array
     var simulation = d3.forceSimulation(nodes)
