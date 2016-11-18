@@ -7,8 +7,8 @@ function plotGraph(links) {
 	var nodes = {};
 
 	// Default width and height of SVG
-	var svgWidth = 960;
-	var svgHeight = 800;
+	var svgWidth = window.innerWidth;;
+	var svgHeight = window.innerHeight;
 	
 	// Raduis of node
 	var nodeRadius = 6;
