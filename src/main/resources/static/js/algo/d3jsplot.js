@@ -39,7 +39,7 @@ function plotGraph(links) {
 
     // Must defien this before the var svg
     var zoom = d3.zoom()
-            .scaleExtent([.2, 10])
+            .scaleExtent([.2, 10]) // // zoom scale x.2 to x10
             .on("zoom", zoomed);
         
     // Append a SVG to the graph container div
@@ -48,7 +48,8 @@ function plotGraph(links) {
             .append("svg")
             .attr("width", svgWidth)
             .attr("height", svgHeight)
-            .call(zoom);
+            .call(zoom)
+            .on("dblclick.zoom", null); // This disables zoom in behavior caused by double click
     
     // This graphGroup groups all graph elements
     var graphGroup = svg.append("g");
