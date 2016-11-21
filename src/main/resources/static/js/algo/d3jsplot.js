@@ -89,8 +89,8 @@ function plotGraph(links) {
     graphGroup.append("defs").append("marker")
             .attr("id", "marker-start-arrow")
             .attr("viewBox", "0 -5 10 10")
-            .attr("refX", -5)
-            .attr("refY", -1.5)
+            .attr("refX", -10)
+            .attr("refY", 0)
             .attr("markerWidth", 6)
             .attr("markerHeight", 6)
             .attr("orient", "auto")
@@ -102,13 +102,13 @@ function plotGraph(links) {
     graphGroup.append("defs").append("marker")
             .attr("id", "marker-start-circle")
             .attr("viewBox", "0 -5 10 10")
-            .attr("refX", -5)
-            .attr("refY", -1.5)
+            .attr("refX", -8)
+            .attr("refY", 0)
             .attr("markerWidth", 6)
             .attr("markerHeight", 6)
             .attr("orient", "auto")
             .append("circle")
-            .attr("cx", 4)
+            .attr("cx", 6)
             .attr("cy", 0)
             .attr("r", 4)
             .attr("class", "marker-start-circle");
@@ -130,17 +130,18 @@ function plotGraph(links) {
     graphGroup.append("defs").append("marker")
             .attr("id", "marker-end-circle")
             .attr("viewBox", "0 -5 10 10")
-            .attr("refX", 15)
-            .attr("refY", -1.5)
+            .attr("refX", 20)
+            .attr("refY", 0)
             .attr("markerWidth", 6)
             .attr("markerHeight", 6)
             .attr("orient", "auto")
             .append("circle")
-            .attr("cx", 4)
+            .attr("cx", 6)
             .attr("cy", 0)
             .attr("r", 4)
             .attr("class", "marker-end-circle");
 
+    
     // Add the edge based on type: link line and the arrow/circle
     var link = graphGroup.append("g").selectAll(".link")
             .data(links)
@@ -164,8 +165,9 @@ function plotGraph(links) {
                     return "";
                 }
             });
-
+            
     // Draw all nodes as circles
+    // In order to cover the links, this code must be after drawing links
     var node = graphGroup.append("g")
             .selectAll(".node")
             .data(nodes)
@@ -194,6 +196,18 @@ function plotGraph(links) {
     // when it has changed (the simulation has advanced by a tick) and act on it.
     // In particular, redraw the nodes and links where they currently are in the simulation.
     function ticked() {
+        // Position nodes
+        node.attr("cx", function (d) {
+                // This makes sure the nodes won't go out of the container
+                // Bounding box example: http://mbostock.github.io/d3/talk/20110921/bounding.html
+                return d.x = Math.max(nodeRadius, Math.min(svgWidth - nodeRadius, d.x));
+                //return d.x;
+            })
+            .attr("cy", function (d) {
+                return d.y = Math.max(nodeRadius, Math.min(svgHeight - nodeRadius, d.y));
+                //return d.y;
+            });
+            
         // Position links
         link.attr("x1", function (d) {
             return d.source.x;
@@ -207,18 +221,6 @@ function plotGraph(links) {
                 .attr("y2", function (d) {
                     return d.target.y;
                 });
-
-        // Position nodes
-        node.attr("cx", function (d) {
-                // This makes sure the nodes won't go out of the container
-                // Bounding box example: http://mbostock.github.io/d3/talk/20110921/bounding.html
-                return d.x = Math.max(nodeRadius, Math.min(svgWidth - nodeRadius, d.x));
-                //return d.x;
-            })
-            .attr("cy", function (d) {
-                return d.y = Math.max(nodeRadius, Math.min(svgHeight - nodeRadius, d.y));
-                //return d.y;
-            });
 
         // Position node text
         text.attr("x", function (d) {
