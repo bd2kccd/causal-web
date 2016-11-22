@@ -24,10 +24,10 @@ Download and uncompress the source code for each of following dependencies:
 To install the dependencies, go to the top directory of each project and do a maven install by typing **mvn install**.
 
 #### Application
-Download and uncompress the application source code  [causal-web-1.3.0](https://github.com/bd2kccd/causal-web/releases/tag/v1.3.0).  To compile and build the application, go to the directory **causal-web-1.3.0** and type **mvn package**.
+Download and uncompress the application source code  [causal-web-1.3.1](https://github.com/bd2kccd/causal-web/releases/tag/v1.3.1).  To compile and build the application, go to the directory **causal-web-1.3.1** and type **mvn package**.
 
 #### External Dependencies
-* [causal-cmd-6.0.0.jar](https://github.com/cmu-phil/tetrad/releases/tag/6.0.0-20161031)
+* [causal-cmd-6.0.1-SNAPSHOT-jar-with-dependencies.jar](https://github.com/cmu-phil/tetrad/releases/tag/v6.0.1-20161122)
 
 ## Configure the software
 
