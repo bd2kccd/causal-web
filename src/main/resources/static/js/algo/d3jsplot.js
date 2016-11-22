@@ -1,5 +1,26 @@
+// http://www.coppelia.io/2014/07/an-a-to-z-of-extra-features-for-the-d3-force-layout/
+
 function plotGraph(links) {
+    //console.log(links);
+
+    // Named array, node name is the key
     var nodes = {};
+
+    // Default width and height of SVG
+    // -40 so we don't see the scrollbars
+    var svgWidth = window.innerWidth - 40;
+    var svgHeight = window.innerHeight -40;
+
+    // Raduis of node
+    var nodeRadius = 6;
+
+    // Toggle stores whether the highlighting is on
+    var toggle = 0;
+    // Create an index array logging what is connected to what
+    var linkedByIndex = {};
+
+    // Reduce the opacity of all other nodes, links, and text except the current highlighted node
+    var reducedOpacity = 0.1;
 
     // Compute the distinct nodes from the links.
     links.forEach(function (link) {
@@ -7,130 +28,288 @@ function plotGraph(links) {
         link.target = nodes[link.target] || (nodes[link.target] = {name: link.target});
     });
 
-    var width = window.innerWidth;
-    var height = window.innerHeight;
+    //console.log(nodes);
 
-    var svg = d3.select("body").append("svg")
-            .attr("width", "100%")
-            .attr("height", height);
+    // Convert named array to index array
+    var nodes = Object.keys(nodes).map(function (key) {
+        return nodes[key];
+    });
 
-    var force = d3.layout.force()
-            .nodes(d3.values(nodes))
-            .links(links)
-            .size([width, height])
-            .linkDistance(60)
-            .charge(-300)
-            .on("tick", tick)
-            .start();
+    //console.log(nodes);
 
-    // create the arrows
-    svg.append("svg:defs").append("svg:marker")
-            .attr("id", "end-arrow")
+    // Must defien this before the var svg
+    var zoom = d3.zoom()
+            .scaleExtent([.2, 10]) // // zoom scale x.2 to x10
+            .on("zoom", zoomed);
+        
+    // Append a SVG to the graph container div
+    // This graph auto scales with the window resize
+    var svg = d3.select("#causal-graph")
+            .append("svg")
+            .attr("width", svgWidth)
+            .attr("height", svgHeight)
+            .call(zoom)
+            .on("dblclick.zoom", null); // This disables zoom in behavior caused by double click
+    
+    // This graphGroup groups all graph elements
+    var graphGroup = svg.append("g");
+
+    // Creates a new simulation with nodes array
+    var simulation = d3.forceSimulation(nodes)
+            .force("link", d3.forceLink().id(function (d) {
+                return d.index;
+            }))
+            .force("charge", d3.forceManyBody())
+            .force("collide", d3.forceCollide(2)) // nodes shouldn't overlap
+            .force("center", d3.forceCenter(svgWidth / 2, svgHeight / 2))
+            .on("tick", ticked);
+
+    // Can't be chained with the above call
+    simulation.force("link")
+            .links(links);
+
+    // Default distance accessor is 30
+    simulation.force("link")
+            .distance(60);
+
+    // Each node conects to itself, so we can highlight this node when it's selected
+    for (i = 0; i < nodes.length; i++) {
+        linkedByIndex[i + "," + i] = 1;
+    }
+    ;
+
+    // Add all the connections based on links
+    // Must call this after  simulation.force("link").links(links)
+    // since the the zero-based index of each link is assigned by this method
+    links.forEach(function (d) {
+        linkedByIndex[d.source.index + "," + d.target.index] = 1;
+    });
+
+    // <- marker starts with arrow
+    graphGroup.append("defs").append("marker")
+            .attr("id", "marker-start-arrow")
             .attr("viewBox", "0 -5 10 10")
-            .attr("refX", 15)
-            .attr("refY", -1.5)
-            .attr("markerWidth", 6)
-            .attr("markerHeight", 6)
+            .attr("refX", -10)
+            .attr("refY", 0)
+            .attr("markerWidth", nodeRadius)
+            .attr("markerHeight", nodeRadius)
             .attr("orient", "auto")
-            .append("svg:path")
-            .attr("d", "M0,-5L10,0L0,5");
+            .append("path")
+            .attr("d", "M10,-5L0,0L10,5")
+            .attr("class", "marker-start-arrow");
 
-    svg.append("svg:defs").append("svg:marker")
-            .attr("id", "start-arrow")
+    // o- marker starts with circle
+    graphGroup.append("defs").append("marker")
+            .attr("id", "marker-start-circle")
             .attr("viewBox", "0 -5 10 10")
-            .attr("refX", -5)
-            .attr("refY", -1.5)
-            .attr("markerWidth", 6)
-            .attr("markerHeight", 6)
+            .attr("refX", -8)
+            .attr("refY", 0)
+            .attr("markerWidth", nodeRadius)
+            .attr("markerHeight", nodeRadius)
             .attr("orient", "auto")
-            .append("svg:path")
-            .attr("d", "M10,-5L0,0L10,5");
-
-    svg.append("svg:defs").append("svg:marker")
-            .attr("id", "circle-start-arrow")
-            .attr("viewBox", "0 -5 10 10")
-            .attr("refX", -5)
-            .attr("refY", -1.5)
-            .attr("markerWidth", 6)
-            .attr("markerHeight", 6)
-            .attr("orient", "auto")
-            .append("svg:circle")
+            .append("circle")
             .attr("cx", 6)
             .attr("cy", 0)
-            .attr("r", 4);
+            .attr("r", 4)
+            .attr("class", "marker-start-circle");
 
-    svg.append("svg:defs").append("svg:marker")
-            .attr("id", "circle-end-arrow")
+    // -> marker ends with arrow
+    graphGroup.append("defs").append("marker")
+            .attr("id", "marker-end-arrow")
             .attr("viewBox", "0 -5 10 10")
-            .attr("refX", 15)
-            .attr("refY", -1.5)
-            .attr("markerWidth", 6)
-            .attr("markerHeight", 6)
+            .attr("refX", 20)
+            .attr("refY", 0)
+            .attr("markerWidth", nodeRadius)
+            .attr("markerHeight", nodeRadius)
             .attr("orient", "auto")
-            .append("svg:circle")
-            .attr("cx", 4)
-            .attr("cy", 0)
-            .attr("r", 4);
+            .append("path")
+            .attr("d", "M0,-5L10,0L0,5")
+            .attr("class", "marker-end-arrow");
 
-    // add the links and the arrows
-    var path = svg.append("svg:g").selectAll("path")
-            .data(force.links())
-            .enter().append("svg:path")
+    // -o marker ends with circle
+    graphGroup.append("defs").append("marker")
+            .attr("id", "marker-end-circle")
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 20)
+            .attr("refY", 0)
+            .attr("markerWidth", nodeRadius)
+            .attr("markerHeight", nodeRadius)
+            .attr("orient", "auto")
+            .append("circle")
+            .attr("cx", 6)
+            .attr("cy", 0)
+            .attr("r", 4)
+            .attr("class", "marker-end-circle");
+
+    
+    // Add the edge based on type: link line and the arrow/circle
+    var link = graphGroup.append("g").selectAll(".link")
+            .data(links)
+            .enter().append("line")
             .attr("class", "link")
             .attr("marker-start", function (d) {
                 if (d.type === "<->") {
-                    return "url(#start-arrow)";
+                    return "url(#marker-start-arrow)";
                 } else if (d.type === "o-o" || d.type === "o->") {
-                    return "url(#circle-start-arrow)";
+                    return "url(#marker-start-circle)";
                 } else {
                     return "";
                 }
             })
             .attr("marker-end", function (d) {
                 if (d.type === "-->" || d.type === "<->" || d.type === "o->") {
-                    return "url(#end-arrow)";
+                    return "url(#marker-end-arrow)";
                 } else if (d.type === "o-o") {
-                    return "url(#circle-end-arrow)";
+                    return "url(#marker-end-circle)";
                 } else {
                     return "";
                 }
             });
+            
+    // Draw all nodes as circles
+    // In order to cover the links, this code must be after drawing links
+    var node = graphGroup.append("g")
+            .selectAll(".node")
+            .data(nodes)
+            .enter().append("circle")
+            .attr("class", "node")
+            .attr("r", nodeRadius)
+            .on('dblclick', highlightConnectedNodes)
+            .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
 
-    var circle = svg.append("svg:g")
-            .selectAll("circle")
-            .data(force.nodes())
-            .enter().append("svg:circle")
-            .attr("r", 6)
-            .call(force.drag);
-
-    var text = svg.append("svg:g")
-            .selectAll("text")
-            .data(force.nodes())
-            .enter().append("svg:text")
+    // Draw node text
+    var text = graphGroup.append("g")
+            .selectAll(".node-name")
+            .data(nodes)
+            .enter().append("text")
+            .attr("class", "node-name")
             .attr("x", 8)
             .attr("y", ".31em")
             .text(function (d) {
                 return d.name;
             });
 
-    // Use elliptical arc path segments to doubly-encode directionality.
-    function tick() {
-        path.attr("d", linkArc).each(function () {
-            this.parentNode.insertBefore(this, this);
-        });
-        circle.attr("transform", transform);
-        text.attr("transform", transform);
+    // The tick handler is the function that enables you to get the state of the layout 
+    // when it has changed (the simulation has advanced by a tick) and act on it.
+    // In particular, redraw the nodes and links where they currently are in the simulation.
+    function ticked() {
+        // Position nodes
+        node.attr("cx", function (d) {
+                // This makes sure the nodes won't go out of the container
+                // Bounding box example: http://mbostock.github.io/d3/talk/20110921/bounding.html
+                return d.x = Math.max(nodeRadius, Math.min(svgWidth - nodeRadius, d.x));
+                //return d.x;
+            })
+            .attr("cy", function (d) {
+                return d.y = Math.max(nodeRadius, Math.min(svgHeight - nodeRadius, d.y));
+                //return d.y;
+            });
+            
+        // Position links
+        link.attr("x1", function (d) {
+            return d.source.x;
+        })
+                .attr("y1", function (d) {
+                    return d.source.y;
+                })
+                .attr("x2", function (d) {
+                    return d.target.x;
+                })
+                .attr("y2", function (d) {
+                    return d.target.y;
+                });
+
+        // Position node text
+        text.attr("x", function (d) {
+                return d.x + nodeRadius;
+            })
+            .attr("y", function (d) {
+                return d.y + nodeRadius/2;
+            });
     }
 
-    function linkArc(d) {
-        var dx = d.target.x - d.source.x,
-                dy = d.target.y - d.source.y,
-                dr = Math.sqrt(dx * dx + dy * dy);
-        return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+    // Zooming
+    function zoomed() {
+        graphGroup.attr("transform", d3.event.transform);
+    }
+        
+    // This function looks up whether a pair are neighbours
+    function neighboring(a, b) {
+        return linkedByIndex[a.index + "," + b.index];
     }
 
-    function transform(d) {
-        return "translate(" + d.x + "," + d.y + ")";
+    // Highlight connected nodes on double click
+    function highlightConnectedNodes() {
+        if (toggle === 0) {
+            // Reduce the opacity of all but the neighbouring nodes/text
+            d = d3.select(this).node().__data__;
+            node.style("opacity", function (o) {
+                return neighboring(d, o) | neighboring(o, d) ? 1 : reducedOpacity;
+            });
+
+            text.style("opacity", function (o) {
+                return neighboring(d, o) | neighboring(o, d) ? 1 : reducedOpacity;
+            });
+
+            link.style("opacity", function (o) {
+                return d.index === o.source.index | d.index === o.target.index ? 1 : reducedOpacity;
+            });
+
+            // Set toggle flag
+            toggle = 1;
+        } else {
+            // Reset opacity and toggle flag
+            node.style("opacity", 1);
+            text.style("opacity", 1);
+            link.style("opacity", 1);
+            toggle = 0;
+        }
     }
+
+    // Drag
+    function dragstarted() {
+        if (!d3.event.active)
+            simulation.alphaTarget(0.3).restart();
+        d3.event.subject.fx = d3.event.subject.x;
+        d3.event.subject.fy = d3.event.subject.y;
+    }
+
+    function dragged() {
+        d3.event.subject.fx = d3.event.x;
+        d3.event.subject.fy = d3.event.y;
+    }
+
+    function dragended() {
+        if (!d3.event.active)
+            simulation.alphaTarget(0);
+        d3.event.subject.fx = null;
+        d3.event.subject.fy = null;
+    }
+    
+    // When the graph is huge it's nice to have some search functionality
+    // This highlights the target node
+    $('#searchBtn').click(function () {
+        //find the node
+        var selectedVal = $('#search').val();
+        var node = graphGroup.selectAll(".node");
+        if (selectedVal === '') {
+            node.style("stroke", "white").style("stroke-width", "1");
+        } else {
+            var selected = node.filter(function (d, i) {
+                return d.name !== selectedVal;
+            });
+            selected.style("opacity", "0");
+            var link = graphGroup.selectAll(".link")
+            link.style("opacity", "0");
+            d3.selectAll(".node, .link").transition()
+                    .duration(5000)
+                    .style("opacity", 1);
+        }
+    });
 
 }
+
+
