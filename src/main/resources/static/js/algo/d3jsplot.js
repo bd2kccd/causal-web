@@ -299,7 +299,8 @@ function plotGraph(links) {
             node.style("stroke", "white").style("stroke-width", "1");
         } else {
             var selected = node.filter(function (d, i) {
-                return d.name !== selectedVal;
+                // Make the search case-insensitive
+                return d.name.toLowerCase() !== selectedVal.toLowerCase();
             });
             selected.style("opacity", "0");
             var link = graphGroup.selectAll(".link")
