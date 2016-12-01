@@ -2,7 +2,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="utf-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
         <title>CCD</title>
         <meta name="description" content="" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -165,8 +164,8 @@
         <script src="../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
         <script src="../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
         <script src="../static/js/login.min.js" th:src="@{/js/login.min.js}"></script>
-        <script src="../static/js/annotations.js" th:src="@{/js/annotations.js}"></script>
-        <script type="text/javascript" th:inline="javascript">
+        <script th:if="${#arrays.contains(@environment.getActiveProfiles(),'annotations')}" src="../static/js/annotations.js" th:src="@{/js/annotations.js}"></script>
+        <script th:if="${#arrays.contains(@environment.getActiveProfiles(),'annotations')}" type="text/javascript" th:inline="javascript">
             var annoApiUrl = /*[[${@environment.getProperty('annotations.api.url')}]]*/ '';
             var annoClientId = /*[[${@environment.getProperty('annotations.api.clientId')}]]*/ '';
             var annoClientSecret = /*[[${@environment.getProperty('annotations.api.clientSecret')}]]*/ '';
