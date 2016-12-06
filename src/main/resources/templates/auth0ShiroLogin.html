@@ -56,7 +56,7 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <input type="submit" class="btn btn-block btn-lg btn-default btn-default_pitt" value="Sign In" onClick="requestAnnotationsTokens(false);"/>
+                                        <input type="submit" class="btn btn-block btn-lg btn-default btn-default_pitt" value="Sign In" onclick="requestAnnotationsTokens(false);" />
                                     </div>
                                 </fieldset>
                             </form>
@@ -168,7 +168,7 @@
         <script src="../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
         <script src="../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
         <script src="../static/js/login.min.js" th:src="@{/js/login.min.js}"></script>
-        <script src="https://cdn.auth0.com/js/lock/10.4.1/lock.min.js"></script>
+        <script src="http://cdn.auth0.com/js/lock/10.7.2/lock.min.js"></script>
         <script type="text/javascript" th:inline="javascript">
                                     var auth0ClientId = /*[[${@environment.getProperty('auth0.clientId')}]]*/ '';
                                     var auth0Domain = /*[[${@environment.getProperty('auth0.domain')}]]*/ '';
@@ -199,9 +199,9 @@
         </script>
         <script th:if="${#arrays.contains(@environment.getActiveProfiles(),'annotations')}" src="../static/js/annotations.js" th:src="@{/js/annotations.js}"></script>
         <script th:if="${#arrays.contains(@environment.getActiveProfiles(),'annotations')}" type="text/javascript" th:inline="javascript">
-            var annoApiUrl = /*[[${@environment.getProperty('annotations.api.url')}]]*/ '';
-            var annoClientId = /*[[${@environment.getProperty('annotations.api.clientId')}]]*/ '';
-            var annoClientSecret = /*[[${@environment.getProperty('annotations.api.clientSecret')}]]*/ '';
+                                    var annoApiUrl = /*[[${@environment.getProperty('annotations.api.url')}]]*/ '';
+                                    var annoClientId = /*[[${@environment.getProperty('annotations.api.clientId')}]]*/ '';
+                                    var annoClientSecret = /*[[${@environment.getProperty('annotations.api.clientSecret')}]]*/ '';
         </script>
     </body>
 </html>
