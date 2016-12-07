@@ -26,6 +26,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -105,12 +106,19 @@ public class AlgorithmResultService {
     }
 
     public void deleteResultFiles(List<String> fileNames, String username) {
+        List<Path> filesToDelete = new LinkedList<>();
         fileNames.forEach(fileName -> {
-            Path file = Paths.get(workspace, username, resultFolder, algorithmResultFolder, fileName);
-            try {
-                Files.deleteIfExists(file);
-            } catch (IOException exception) {
-                LOGGER.error(exception.getMessage());
+            filesToDelete.add(Paths.get(workspace, username, resultFolder, algorithmResultFolder, fileName));
+            filesToDelete.add(Paths.get(workspace, username, resultFolder, algorithmResultFolder, fileName.replaceAll(".txt$", ".json")));
+        });
+
+        filesToDelete.forEach(file -> {
+            if (Files.exists(file, LinkOption.NOFOLLOW_LINKS)) {
+                try {
+                    Files.delete(file);
+                } catch (IOException exception) {
+                    LOGGER.error(exception.getMessage());
+                }
             }
         });
     }
