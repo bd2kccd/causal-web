@@ -26,7 +26,7 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h3 class="page-header">FGS Discrete</h3>
+                        <h3 class="page-header">GFCI Continuous</h3>
                     </div>
                 </div>
                 <div class="row">
@@ -62,7 +62,7 @@
                                             </div>
                                             <div class="panel-body">
                                                 <div class="form-group">
-                                                    <label for="dataset">Dataset: (Data must be summarized before appearing here. Only discrete data is analyzable by this algorithm.)</label>
+                                                    <label for="dataset">Dataset: (Data must be summarized before appearing here. Only continuous data is analyzable by this algorithm.)</label>
                                                     <select id="dataset" name="dataset" class="form-control" ng-model="dataset" required="required"
                                                             th:field="*{dataset}"
                                                             th:attr="ng-init='dataset = \'' + *{dataset} + '\''"
@@ -101,8 +101,8 @@
                                             <div class="panel-body">
                                                 <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="skipCategoryLimit" class="control-label">
-                                                            <input type="checkbox" id="skipCategoryLimit" name="skipCategoryLimit" ng-model="skipCategoryLimit" th:attr="ng-init='skipCategoryLimit=' + *{skipCategoryLimit}" th:field="*{skipCategoryLimit}" /> Skip validation that ensures the number of categories do not exceed 10.
+                                                        <label for="skipNonzeroVariance" class="control-label">
+                                                            <input type="checkbox" id="skipNonzeroVariance" name="skipNonzeroVariance" ng-model="skipNonzeroVariance" th:attr="ng-init='skipNonzeroVariance=' + *{skipNonzeroVariance}" th:field="*{skipNonzeroVariance}" /> Skip validation that ensures non-zero variance.
                                                         </label>
                                                     </div>
                                                 </div>
@@ -129,28 +129,28 @@
                                             </div>
                                             <div class="panel-body">
                                                 <div class="form-group">
-                                                    <label for="structurePrior" class="control-label">Structure Prior</label>
-                                                    <input type="number" id="structurePrior" name="structurePrior" maxlength="10" class="form-control" placeholder="Structure Prior" ng-model="structurePrior" th:attr="ng-init='structurePrior=' + *{structurePrior}" th:field="*{structurePrior}" required="required" />
+                                                    <label for="alpha" class="control-label">Alpha - Cutoff for p-values (alpha).</label>
+                                                    <input type="number" id="alpha" name="alpha" maxlength="10" class="form-control" placeholder="Alpha" ng-model="alpha" th:attr="ng-init='alpha=' + *{alpha}" th:field="*{alpha}" required="required" />
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="samplePrior" class="control-label">Sample Prior</label>
-                                                    <input type="number" id="samplePrior" name="samplePrior" maxlength="10" class="form-control" placeholder="Sample Prior" ng-model="samplePrior" th:attr="ng-init='samplePrior=' + *{samplePrior}" th:field="*{samplePrior}" required="required" />
+                                                    <label for="penaltyDiscount" class="control-label">Penalty Discount - multiplier on the penalty term of the BIC score for continuous data. We suggest 2 for &lt;50 variables and 4 for &gt;50 variables.</label>
+                                                    <input type="number" id="penaltyDiscount" name="penaltyDiscount" maxlength="10" class="form-control" ng-model="penaltyDiscount" th:attr="ng-init='penaltyDiscount=' + *{penaltyDiscount}" th:field="*{penaltyDiscount}" required="required" />
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="maxDegree" class="control-label">Search Maximum Degree - The maximum degree of graph.</label>
-                                                    <input type="number" id="maxDegree" name="maxDegree" maxlength="10" class="form-control" placeholder="MaxDegree" ng-model="maxDegree" th:attr="ng-init='maxDegree=' + *{maxDegree}" th:field="*{maxDegree}" required="required" />
+                                                    <label for="maxDegree" class="control-label">Maximum Degree - The maximum degree of the output graph.</label>
+                                                    <input type="number" id="maxDegree" name="maxDegree" maxlength="10" class="form-control" ng-model="maxDegree" th:attr="ng-init='maxDegree=' + *{maxDegree}" th:field="*{maxDegree}" required="required" />
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
                                                         <label for="faithfulnessAssumed" class="control-label">
-                                                            <input type="checkbox" id="faithfulnessAssumed" name="faithfulnessAssumed" ng-model="faithfulnessAssumed" th:attr="ng-init='faithfulnessAssumed=' + *{faithfulnessAssumed}" th:field="*{faithfulnessAssumed}" /> Faithfulness Assumed - Yes if (one edge) faithfulness should be assumed
+                                                            <input type="checkbox" id="faithfulnessAssumed" name="faithfulnessAssumed" ng-model="faithfulnessAssumed" th:attr="ng-init='faithfulnessAssumed=' + *{faithfulnessAssumed}" th:field="*{faithfulnessAssumed}" /> Faithfulness Assumed - Yes if (one edge) faithfulness should be assumed.
                                                         </label>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
                                                     <div class="checkbox">
                                                         <label for="verbose" class="control-label">
-                                                            <input type="checkbox" id="verbose" name="verbose" ng-model="verbose" th:attr="ng-init='verbose=' + *{verbose}" th:field="*{verbose}" /> Verbose Output - output includes extra information about the run
+                                                            <input type="checkbox" id="verbose" name="verbose" ng-model="verbose" th:attr="ng-init='verbose=' + *{verbose}" th:field="*{verbose}" /> Verbose Output - output includes extra information about the run.
                                                         </label>
                                                     </div>
                                                 </div>
@@ -210,12 +210,12 @@
                                                         <caption>Parameters</caption>
                                                         <tbody>
                                                             <tr>
-                                                                <td class="col-md-3">Structure Prior:</td>
-                                                                <td ng-bind="structurePrior"></td>
+                                                                <td class="col-md-3">Alpha:</td>
+                                                                <td ng-bind="alpha"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-3">Sample Prior:</td>
-                                                                <td ng-bind="samplePrior"></td>
+                                                                <td class="col-md-3">Penalty Discount:</td>
+                                                                <td ng-bind="penaltyDiscount"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td class="col-md-3">Max Degree:</td>
@@ -239,8 +239,8 @@
                                                         <caption>Data Validations</caption>
                                                         <tbody>
                                                             <tr>
-                                                                <td class="col-md-3">Ensure Categories is Limited to 10:</td>
-                                                                <td ng-bind="!skipCategoryLimit"></td>
+                                                                <td class="col-md-3">Ensure Non-zero Variance:</td>
+                                                                <td ng-bind="!skipNonzeroVariance"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td class="col-md-3">Ensure Unique Variable Name:</td>
@@ -272,7 +272,7 @@
         <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
         <script src="../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
         <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
-        <script src="../../static/js/algo/fgsDiscreteValidate.min.js" th:src="@{/js/algo/fgsDiscreteValidate.min.js}"></script>
+        <script src="../../static/js/algo/gfciValidate.min.js" th:src="@{/js/algo/gfciValidate.min.js}"></script>
         <script src="../../static/js/algo/stepwizard.min.js" th:src="@{/js/algo/stepwizard.min.js}"></script>
         <script src="../../static/js/collapse_panel.min.js" th:src="@{/js/collapse_panel.min.js}"></script>
         <script src="../../static/js/algo/algorithm.min.js" th:src="@{/js/algo/algorithm.min.js}"></script>

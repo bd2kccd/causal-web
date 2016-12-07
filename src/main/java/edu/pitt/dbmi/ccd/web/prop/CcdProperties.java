@@ -35,14 +35,14 @@ public class CcdProperties {
     @Value("${ccd.jar.algorithm}")
     private String algoJar;
 
-    @Value("${ccd.algorithm.fgs}")
-    private String algoFgsContinuous;
+    @Value("${ccd.algorithm.fges.cont}")
+    private String algoFgesCont;
 
-    @Value("${ccd.algorithm.fgs.discrete}")
-    private String algoFgsDiscrete;
+    @Value("${ccd.algorithm.fges.disc}")
+    private String algoFgesDisc;
 
-    @Value("${ccd.algorithm.gfci:}")
-    private String algoGfci;
+    @Value("${ccd.algorithm.gfci.cont}")
+    private String algoGfciCont;
 
     @Value("${ccd.queue.size:5}")
     private String jobQueueSize;
@@ -91,28 +91,28 @@ public class CcdProperties {
         this.algoJar = algoJar;
     }
 
-    public String getAlgoFgsContinuous() {
-        return algoFgsContinuous;
+    public String getAlgoFgesCont() {
+        return algoFgesCont;
     }
 
-    public void setAlgoFgsContinuous(String algoFgsContinuous) {
-        this.algoFgsContinuous = algoFgsContinuous;
+    public void setAlgoFgesCont(String algoFgesCont) {
+        this.algoFgesCont = algoFgesCont;
     }
 
-    public String getAlgoFgsDiscrete() {
-        return algoFgsDiscrete;
+    public String getAlgoFgesDisc() {
+        return algoFgesDisc;
     }
 
-    public void setAlgoFgsDiscrete(String algoFgsDiscrete) {
-        this.algoFgsDiscrete = algoFgsDiscrete;
+    public void setAlgoFgesDisc(String algoFgesDisc) {
+        this.algoFgesDisc = algoFgesDisc;
     }
 
-    public String getAlgoGfci() {
-        return algoGfci;
+    public String getAlgoGfciCont() {
+        return algoGfciCont;
     }
 
-    public void setAlgoGfci(String algoGfci) {
-        this.algoGfci = algoGfci;
+    public void setAlgoGfciCont(String algoGfciCont) {
+        this.algoGfciCont = algoGfciCont;
     }
 
     public String getJobQueueSize() {
