@@ -24,6 +24,7 @@ import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmJobRequest;
 import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmRunInfo;
 import edu.pitt.dbmi.ccd.web.model.algo.FgsContinuousRunInfo;
 import edu.pitt.dbmi.ccd.web.model.algo.FgsDiscreteRunInfo;
+import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmService;
 import edu.pitt.dbmi.ccd.web.util.CmdOptions;
 import java.util.Collections;
@@ -31,7 +32,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -47,29 +47,20 @@ import org.springframework.web.bind.annotation.SessionAttributes;
  */
 @Controller
 @SessionAttributes("appUser")
-@RequestMapping(value = "algorithm/fgs")
-public class FGSController implements ViewPath {
-
-    private final String fgsAlgorithm;
-    private final String fgsDiscreteAlgorithm;
-    protected final String algorithmJar;
+@RequestMapping(value = "algorithm/fges")
+public class FGESController implements ViewPath {
 
     private final AlgorithmService algorithmService;
+    private final CcdProperties ccdProperties;
 
     @Autowired
-    public FGSController(
-            @Value("${ccd.algorithm.fgs}") String fgsAlgorithm,
-            @Value("${ccd.algorithm.fgs.discrete}") String fgsDiscreteAlgorithm,
-            @Value("${ccd.jar.algorithm}") String algorithmJar,
-            AlgorithmService algorithmService) {
-        this.fgsAlgorithm = fgsAlgorithm;
-        this.fgsDiscreteAlgorithm = fgsDiscreteAlgorithm;
-        this.algorithmJar = algorithmJar;
+    public FGESController(AlgorithmService algorithmService, CcdProperties ccdProperties) {
         this.algorithmService = algorithmService;
+        this.ccdProperties = ccdProperties;
     }
 
-    @RequestMapping(value = "discrete", method = RequestMethod.GET)
-    public String showFgsDiscreteView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+    @RequestMapping(value = "disc", method = RequestMethod.GET)
+    public String showFgesDiscreteView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         Map<String, String> dataset = algorithmService.getUserDiscreteDataset(appUser.getUsername());
         Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
         FgsDiscreteRunInfo algoInfo = createDefaultFgsDiscreteRunInfo();
@@ -91,15 +82,15 @@ public class FGSController implements ViewPath {
         model.addAttribute("priorList", prior);
         model.addAttribute("algoInfo", algoInfo);
 
-        return FGS_DISCRETE_VIEW;
+        return FGES_DISC_VIEW;
     }
 
-    @RequestMapping(value = "discrete", method = RequestMethod.POST)
-    public String runFgsDiscrete(
+    @RequestMapping(value = "disc", method = RequestMethod.POST)
+    public String runFgesDiscrete(
             @ModelAttribute("algoInfo") final FgsDiscreteRunInfo algoInfo,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("fgsd", algorithmJar, fgsDiscreteAlgorithm);
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("FGESd", ccdProperties.getAlgoJar(), ccdProperties.getAlgoFgesDisc());
         jobRequest.setDataset(getDataset(algoInfo));
         jobRequest.setPriorKnowledge(getPriorKnowledge(algoInfo));
         jobRequest.setJvmOptions(getJvmOptions(algoInfo));
@@ -110,8 +101,8 @@ public class FGSController implements ViewPath {
         return REDIRECT_JOB_QUEUE;
     }
 
-    @RequestMapping(method = RequestMethod.GET)
-    public String showFgsView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+    @RequestMapping(value = "cont", method = RequestMethod.GET)
+    public String showFgesContinuousView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         Map<String, String> dataset = algorithmService.getUserDataset(appUser.getUsername());
         Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
         FgsContinuousRunInfo algoInfo = createDefaultFgsContinuousRunInfo();
@@ -133,15 +124,15 @@ public class FGSController implements ViewPath {
         model.addAttribute("priorList", prior);
         model.addAttribute("algoInfo", algoInfo);
 
-        return FGS_VIEW;
+        return FGES_CONT_VIEW;
     }
 
-    @RequestMapping(method = RequestMethod.POST)
-    public String runFgs(
+    @RequestMapping(value = "cont", method = RequestMethod.POST)
+    public String runFgesContinuous(
             @ModelAttribute("algoInfo") final FgsContinuousRunInfo algoInfo,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("fgsc", algorithmJar, fgsAlgorithm);
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("FGESc", ccdProperties.getAlgoJar(), ccdProperties.getAlgoFgesCont());
         jobRequest.setDataset(getDataset(algoInfo));
         jobRequest.setPriorKnowledge(getPriorKnowledge(algoInfo));
         jobRequest.setJvmOptions(getJvmOptions(algoInfo));
@@ -200,6 +191,8 @@ public class FGSController implements ViewPath {
             parameters.add(CmdOptions.SKIP_UNIQUE_VAR_NAME);
         }
 
+        parameters.add(CmdOptions.TETRAD_GRAPH_JSON);
+
         return parameters;
     }
 
@@ -224,6 +217,8 @@ public class FGSController implements ViewPath {
         if (algoInfo.isSkipUniqueVarName()) {
             parameters.add(CmdOptions.SKIP_UNIQUE_VAR_NAME);
         }
+
+        parameters.add(CmdOptions.TETRAD_GRAPH_JSON);
 
         return parameters;
     }

@@ -26,7 +26,7 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h3 class="page-header">GFCI</h3>
+                        <h3 class="page-header">FGES Continuous</h3>
                     </div>
                 </div>
                 <div class="row">
@@ -129,10 +129,6 @@
                                             </div>
                                             <div class="panel-body">
                                                 <div class="form-group">
-                                                    <label for="alpha" class="control-label">Alpha - Cutoff for p-values (alpha).</label>
-                                                    <input type="number" id="alpha" name="alpha" maxlength="10" class="form-control" placeholder="Alpha" ng-model="alpha" th:attr="ng-init='alpha=' + *{alpha}" th:field="*{alpha}" required="required" />
-                                                </div>
-                                                <div class="form-group">
                                                     <label for="penaltyDiscount" class="control-label">Penalty Discount - multiplier on the penalty term of the BIC score for continuous data. We suggest 2 for &lt;50 variables and 4 for &gt;50 variables.</label>
                                                     <input type="number" id="penaltyDiscount" name="penaltyDiscount" maxlength="10" class="form-control" ng-model="penaltyDiscount" th:attr="ng-init='penaltyDiscount=' + *{penaltyDiscount}" th:field="*{penaltyDiscount}" required="required" />
                                                 </div>
@@ -210,10 +206,6 @@
                                                         <caption>Parameters</caption>
                                                         <tbody>
                                                             <tr>
-                                                                <td class="col-md-3">Alpha:</td>
-                                                                <td ng-bind="alpha"></td>
-                                                            </tr>
-                                                            <tr>
                                                                 <td class="col-md-3">Penalty Discount:</td>
                                                                 <td ng-bind="penaltyDiscount"></td>
                                                             </tr>
@@ -272,7 +264,7 @@
         <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
         <script src="../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
         <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
-        <script src="../../static/js/algo/gfciValidate.min.js" th:src="@{/js/algo/gfciValidate.min.js}"></script>
+        <script src="../../static/js/algo/fgsValidate.min.js" th:src="@{/js/algo/fgsValidate.min.js}"></script>
         <script src="../../static/js/algo/stepwizard.min.js" th:src="@{/js/algo/stepwizard.min.js}"></script>
         <script src="../../static/js/collapse_panel.min.js" th:src="@{/js/collapse_panel.min.js}"></script>
         <script src="../../static/js/algo/algorithm.min.js" th:src="@{/js/algo/algorithm.min.js}"></script>

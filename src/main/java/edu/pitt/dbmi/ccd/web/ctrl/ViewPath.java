@@ -71,9 +71,9 @@ public interface ViewPath {
     public static final String REDIRECT_ALGO_RESULT_COMPARE_VIEW = "redirect:/algorithm/results/comparison";
     public static final String ALGO_RESULT_COMPARISON_TABLE_VIEW = "algorithm/algorithmCompareTable";
 
-    public static final String FGS_VIEW = "algorithm/fgs";
-    public static final String FGS_DISCRETE_VIEW = "algorithm/fgsDiscrete";
-    public static final String GFCI_VIEW = "algorithm/gfci";
+    public static final String FGES_CONT_VIEW = "algorithm/fgesc";
+    public static final String FGES_DISC_VIEW = "algorithm/fgesd";
+    public static final String GFCI_CONT_VIEW = "algorithm/gfcic";
 
     public static final String JOB_QUEUE = "jobQueue";
     public static final String REDIRECT_JOB_QUEUE = "redirect:/jobQueue";
