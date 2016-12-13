@@ -145,7 +145,7 @@ function plotGraph(links) {
     // Add the edge based on type: link line and the arrow/circle
     var link = graphGroup.append("g").selectAll(".link")
             .data(links)
-            .enter().append("line")
+            .enter().append("path") // don't use line
             .attr("class", "link")
             .attr("marker-start", function (d) {
                 if (d.type === "<->") {
@@ -209,18 +209,10 @@ function plotGraph(links) {
             });
             
         // Position links
-        link.attr("x1", function (d) {
-            return d.source.x;
-        })
-                .attr("y1", function (d) {
-                    return d.source.y;
-                })
-                .attr("x2", function (d) {
-                    return d.target.x;
-                })
-                .attr("y2", function (d) {
-                    return d.target.y;
-                });
+        // Use path instead of line since IE 10 doesn't render the links correctly
+        link.attr("d", positionLink).each(function () {
+            this.parentNode.insertBefore(this, this);
+        });
 
         // Position node text
         text.attr("x", function (d) {
@@ -231,6 +223,12 @@ function plotGraph(links) {
             });
     }
 
+    // Position the edge link
+    // Use path to draw a straight line, don't use line since IE bug
+    function positionLink(d) {
+        return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
+    }
+    
     // Zooming
     function zoomed() {
         graphGroup.attr("transform", d3.event.transform);
@@ -299,7 +297,8 @@ function plotGraph(links) {
             node.style("stroke", "white").style("stroke-width", "1");
         } else {
             var selected = node.filter(function (d, i) {
-                return d.name !== selectedVal;
+                // Make the search case-insensitive
+                return d.name.toLowerCase() !== selectedVal.toLowerCase();
             });
             selected.style("opacity", "0");
             var link = graphGroup.selectAll(".link")

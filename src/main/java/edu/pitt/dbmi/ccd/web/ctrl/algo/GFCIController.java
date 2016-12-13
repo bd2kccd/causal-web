@@ -59,8 +59,8 @@ public class GFCIController implements ViewPath {
         this.ccdProperties = ccdProperties;
     }
 
-    @RequestMapping(method = RequestMethod.GET)
-    public String showGfciView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+    @RequestMapping(value = "cont", method = RequestMethod.GET)
+    public String showGfciContinuousView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         Map<String, String> dataset = algorithmService.getUserDataset(appUser.getUsername());
         Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
         GfciContinuousRunInfo algoInfo = createDefaultGfciContinuousRunInfo();
@@ -82,15 +82,15 @@ public class GFCIController implements ViewPath {
         model.addAttribute("priorList", prior);
         model.addAttribute("algoInfo", algoInfo);
 
-        return GFCI_VIEW;
+        return GFCI_CONT_VIEW;
     }
 
-    @RequestMapping(method = RequestMethod.POST)
-    public String runGfci(
+    @RequestMapping(value = "cont", method = RequestMethod.POST)
+    public String runGfciContinuous(
             @ModelAttribute("algoInfo") final GfciContinuousRunInfo algoInfo,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("gfcic", ccdProperties.getAlgoJar(), ccdProperties.getAlgoGfci());
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("GFCIc", ccdProperties.getAlgoJar(), ccdProperties.getAlgoGfciCont());
         jobRequest.setDataset(getDataset(algoInfo));
         jobRequest.setPriorKnowledge(getPriorKnowledge(algoInfo));
         jobRequest.setJvmOptions(getJvmOptions(algoInfo));
@@ -148,6 +148,8 @@ public class GFCIController implements ViewPath {
         if (algoInfo.isSkipUniqueVarName()) {
             parameters.add(CmdOptions.SKIP_UNIQUE_VAR_NAME);
         }
+
+        parameters.add(CmdOptions.TETRAD_GRAPH_JSON);
 
         return parameters;
     }

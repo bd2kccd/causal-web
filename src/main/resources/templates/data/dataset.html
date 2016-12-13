@@ -37,7 +37,7 @@
                                         <th>Name</th>
                                         <th>Size</th>
                                         <th>Summarized</th>
-                                        <th>Annotations</th>
+                                        <th th:if="${#arrays.contains(@environment.getActiveProfiles(),'annotations')}">Annotations</th>
                                         <th>Delete</th>
                                     </tr>
                                 </thead>
@@ -54,7 +54,7 @@
                                                 </a>
                                             </p>
                                         </td>
-                                        <td>
+                                        <td th:if="${#arrays.contains(@environment.getActiveProfiles(),'annotations')}">
                                             <p data-placement="top" data-toggle="tooltip" title="Annotate Data" th:title="'Annotate Data'">
                                                 <a class="btn btn-xs btn-primary" th:class="'btn btn-xs btn-primary'" href="data/annotations?file=" th:href="@{/data/annotations(fileName=${item.fileName})}">
                                                     <span class="glyphicon glyphicon-comment" th:class="'glyphicon glyphicon-comment'"></span>
