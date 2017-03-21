@@ -44,6 +44,9 @@ public class CcdProperties {
     @Value("${ccd.algorithm.gfci.cont}")
     private String algoGfciCont;
 
+    @Value("${ccd.algorithm.gfci.disc}")
+    private String algoGfciDisc;
+
     @Value("${ccd.queue.size:5}")
     private String jobQueueSize;
 
@@ -113,6 +116,14 @@ public class CcdProperties {
 
     public void setAlgoGfciCont(String algoGfciCont) {
         this.algoGfciCont = algoGfciCont;
+    }
+
+    public String getAlgoGfciDisc() {
+        return algoGfciDisc;
+    }
+
+    public void setAlgoGfciDisc(String algoGfciDisc) {
+        this.algoGfciDisc = algoGfciDisc;
     }
 
     public String getJobQueueSize() {

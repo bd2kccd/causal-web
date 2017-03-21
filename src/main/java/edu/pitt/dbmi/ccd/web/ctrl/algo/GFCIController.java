@@ -23,6 +23,7 @@ import edu.pitt.dbmi.ccd.web.model.AppUser;
 import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmJobRequest;
 import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmRunInfo;
 import edu.pitt.dbmi.ccd.web.model.algo.GfciContinuousRunInfo;
+import edu.pitt.dbmi.ccd.web.model.algo.GfciDiscreteRunInfo;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmService;
 import edu.pitt.dbmi.ccd.web.util.CmdOptions;
@@ -57,6 +58,48 @@ public class GFCIController implements ViewPath {
     public GFCIController(AlgorithmService algorithmService, CcdProperties ccdProperties) {
         this.algorithmService = algorithmService;
         this.ccdProperties = ccdProperties;
+    }
+
+    @RequestMapping(value = "disc", method = RequestMethod.GET)
+    public String showFgesDiscreteView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+        Map<String, String> dataset = algorithmService.getUserDiscreteDataset(appUser.getUsername());
+        Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
+        GfciDiscreteRunInfo algoInfo = createDefaultGfciDiscreteRunInfo();
+
+        // set the default dataset
+        if (dataset.isEmpty()) {
+            algoInfo.setDataset("");
+        } else {
+            algoInfo.setDataset(dataset.keySet().iterator().next());  // get one element
+        }
+
+        if (prior.isEmpty()) {
+            algoInfo.setPriorKnowledge("");
+        } else {
+            algoInfo.setPriorKnowledge(prior.keySet().iterator().next());
+        }
+
+        model.addAttribute("datasetList", dataset);
+        model.addAttribute("priorList", prior);
+        model.addAttribute("algoInfo", algoInfo);
+
+        return GFCI_DISC_VIEW;
+    }
+
+    @RequestMapping(value = "disc", method = RequestMethod.POST)
+    public String runFgesDiscrete(
+            @ModelAttribute("algoInfo") final GfciDiscreteRunInfo algoInfo,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("GFCId", ccdProperties.getAlgoJar(), ccdProperties.getAlgoGfciDisc());
+        jobRequest.setDataset(getDataset(algoInfo));
+        jobRequest.setPriorKnowledge(getPriorKnowledge(algoInfo));
+        jobRequest.setJvmOptions(getJvmOptions(algoInfo));
+        jobRequest.setParameters(getParametersForDiscrete(algoInfo, appUser.getUsername()));
+
+        algorithmService.addToQueue(jobRequest, appUser.getUsername());
+
+        return REDIRECT_JOB_QUEUE;
     }
 
     @RequestMapping(value = "cont", method = RequestMethod.GET)
@@ -125,6 +168,37 @@ public class GFCIController implements ViewPath {
         }
     }
 
+    private List<String> getParametersForDiscrete(GfciDiscreteRunInfo algoInfo, String username) {
+        List<String> parameters = new LinkedList<>();
+        String delimiter = algorithmService.getFileDelimiter(algoInfo.getDataset(), username);
+        parameters.add(CmdOptions.DELIMITER);
+        parameters.add(delimiter);
+        parameters.add(CmdOptions.ALPHA);
+        parameters.add(Double.toString(algoInfo.getAlpha()));
+        parameters.add(CmdOptions.STRUCTURE_PRIOR);
+        parameters.add(Double.toString(algoInfo.getStructurePrior()));
+        parameters.add(CmdOptions.SAMPLE_PRIOR);
+        parameters.add(Double.toString(algoInfo.getSamplePrior()));
+        parameters.add(CmdOptions.MAX_DEGREE);
+        parameters.add(Integer.toString(algoInfo.getMaxDegree()));
+        if (algoInfo.isVerbose()) {
+            parameters.add(CmdOptions.VERBOSE);
+        }
+        if (algoInfo.isFaithfulnessAssumed()) {
+            parameters.add(CmdOptions.FAITHFULNESS_ASSUMED);
+        }
+        if (algoInfo.isSkipCategoryLimit()) {
+            parameters.add(CmdOptions.SKIP_CATEGORY_LIMIT);
+        }
+        if (algoInfo.isSkipUniqueVarName()) {
+            parameters.add(CmdOptions.SKIP_UNIQUE_VAR_NAME);
+        }
+
+        parameters.add(CmdOptions.TETRAD_GRAPH_JSON);
+
+        return parameters;
+    }
+
     private List<String> getParametersForContinuous(GfciContinuousRunInfo algoInfo, String username) {
         List<String> parameters = new LinkedList<>();
         String delimiter = algorithmService.getFileDelimiter(algoInfo.getDataset(), username);
@@ -162,6 +236,21 @@ public class GFCIController implements ViewPath {
         runInfo.setFaithfulnessAssumed(CmdOptions.FAITHFULNESS_ASSUMED_DEFAULT);
         runInfo.setSkipUniqueVarName(CmdOptions.SKIP_UNIQUE_VAR_NAME_DEFAULT);
         runInfo.setSkipNonzeroVariance(CmdOptions.SKIP_NONZERO_VARIANCE_DEFAULT);
+        runInfo.setVerbose(CmdOptions.VERBOSE_DEFAULT);
+        runInfo.setJvmMaxMem(1);
+
+        return runInfo;
+    }
+
+    private GfciDiscreteRunInfo createDefaultGfciDiscreteRunInfo() {
+        GfciDiscreteRunInfo runInfo = new GfciDiscreteRunInfo();
+        runInfo.setAlpha(CmdOptions.ALPHA_DEFAULT);
+        runInfo.setSamplePrior(CmdOptions.SAMPLE_PRIOR_DEFAULT);
+        runInfo.setStructurePrior(CmdOptions.STRUCTURE_PRIOR_DEFAULT);
+        runInfo.setFaithfulnessAssumed(CmdOptions.FAITHFULNESS_ASSUMED_DEFAULT);
+        runInfo.setMaxDegree(CmdOptions.MAX_DEGREE_DEFAULT);
+        runInfo.setSkipUniqueVarName(CmdOptions.SKIP_UNIQUE_VAR_NAME_DEFAULT);
+        runInfo.setSkipCategoryLimit(CmdOptions.SKIP_CATEGORY_LIMIT_DEFAULT);
         runInfo.setVerbose(CmdOptions.VERBOSE_DEFAULT);
         runInfo.setJvmMaxMem(1);
 
