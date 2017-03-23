@@ -21,13 +21,13 @@ package edu.pitt.dbmi.ccd.web.service.data;
 import edu.pitt.dbmi.ccd.commons.file.MessageDigestHash;
 import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
+import edu.pitt.dbmi.ccd.db.entity.AnnotationTarget;
 import edu.pitt.dbmi.ccd.db.entity.DataFile;
 import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.entity.AnnotationTarget;
+import edu.pitt.dbmi.ccd.db.service.AnnotationTargetService;
 import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
-import edu.pitt.dbmi.ccd.db.service.AnnotationTargetService;
 import edu.pitt.dbmi.ccd.web.model.data.ResumableChunk;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
@@ -153,7 +153,7 @@ public class DataFileManagerService {
 
                 // create new Annotatable entity
                 annotationTarget = new AnnotationTarget(userAccount, dataFile.getName(), dataFile);
-            }else {
+            } else {
                 // Get annotatable entity from Data File
                 annotationTarget = annotationTargetService.findByDataFile(dataFile);
                 if (annotationTarget == null) {

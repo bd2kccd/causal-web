@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.4.2.RELEASE</version>
+        <version>1.4.5.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -97,7 +97,7 @@
         <dependency>
             <groupId>edu.pitt.dbmi</groupId>
             <artifactId>ccd-mail</artifactId>
-            <version>0.2.2</version>
+            <version>0.2.3</version>
         </dependency>
         <dependency>
             <groupId>edu.pitt.dbmi</groupId>
