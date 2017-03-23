@@ -57,7 +57,7 @@ public class CmdOptions {
 
     public static final String TETRAD_GRAPH_JSON = "--tetrad-graph-json";
 
-    public static final double PENALTY_DISCOUNT_DEFAULT = 4.0;
+    public static final double PENALTY_DISCOUNT_DEFAULT = 2.0;
     public static final double ALPHA_DEFAULT = 0.01;
     public static final double STRUCTURE_PRIOR_DEFAULT = 1.0;
     public static final double SAMPLE_PRIOR_DEFAULT = 1.0;
