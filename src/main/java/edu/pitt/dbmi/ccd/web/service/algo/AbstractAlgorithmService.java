@@ -67,15 +67,15 @@ public abstract class AbstractAlgorithmService {
 
     @Autowired
     private Environment env;
-        
+
     @Autowired
-    @Value("${ccd.remote.server.dataspace:}") 
+    @Value("${ccd.remote.server.dataspace:}")
     private String remotedataspace;
-    
+
     @Autowired
-    @Value("${ccd.remote.server.workspace:}") 
+    @Value("${ccd.remote.server.workspace:}")
     private String remoteworkspace;
-    
+
     public AbstractAlgorithmService(
             String workspace,
             String dataFolder,
@@ -134,11 +134,11 @@ public abstract class AbstractAlgorithmService {
         Path userTempDir = Paths.get(workspace, username, tmpFolder);
 
         // Different configurations for the remote Slurm-based HPC environment
-        if(env.acceptsProfiles("slurm")){
-        	//userResultDir = Paths.get(remoteworkspace, username, resultFolder, algorithmResultFolder);
-        	userTempDir = Paths.get(remoteworkspace, username, tmpFolder);
+        if (env.acceptsProfiles("slurm")) {
+            //userResultDir = Paths.get(remoteworkspace, username, resultFolder, algorithmResultFolder);
+            userTempDir = Paths.get(remoteworkspace, username, tmpFolder);
         }
-        
+
         List<String> commands = new LinkedList<>();
         commands.add("java");
 
@@ -147,8 +147,8 @@ public abstract class AbstractAlgorithmService {
 
         // add classpath
         Path classPath = Paths.get(workspace, libFolder, algorithmJar);
-        if(env.acceptsProfiles("slurm")){
-        	classPath = Paths.get(remoteworkspace, libFolder, algorithmJar);
+        if (env.acceptsProfiles("slurm")) {
+            classPath = Paths.get(remoteworkspace, libFolder, algorithmJar);
         }
         commands.add("-jar");
         commands.add(classPath.toString());
@@ -162,8 +162,8 @@ public abstract class AbstractAlgorithmService {
         dataset.forEach(dataFile -> {
             Path dataPath = Paths.get(workspace, username, dataFolder, dataFile);
             // Algorithm job will be run on the cluster nodes
-            if(env.acceptsProfiles("slurm")){ 
-            	dataPath = Paths.get(remotedataspace, username, dataFolder, dataFile);
+            if (env.acceptsProfiles("slurm")) {
+                dataPath = Paths.get(remotedataspace, username, dataFolder, dataFile);
             }
             datasetPath.add(dataPath.toAbsolutePath().toString());
         });
@@ -176,8 +176,8 @@ public abstract class AbstractAlgorithmService {
         if (!priorKnowledge.isEmpty()) {
             priorKnowledge.forEach(priorKnowledgeFile -> {
                 Path priorKnowledgeFilePath = Paths.get(workspace, username, dataFolder, priorKnowledgeFile);
-                if(env.acceptsProfiles("slurm")){ 
-                	priorKnowledgeFilePath = Paths.get(remotedataspace, username, dataFolder, priorKnowledgeFile);
+                if (env.acceptsProfiles("slurm")) {
+                    priorKnowledgeFilePath = Paths.get(remotedataspace, username, dataFolder, priorKnowledgeFile);
                 }
                 priorKnowledgePath.add(priorKnowledgeFilePath.toAbsolutePath().toString());
             });
