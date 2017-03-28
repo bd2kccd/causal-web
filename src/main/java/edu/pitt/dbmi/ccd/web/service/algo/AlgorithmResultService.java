@@ -249,7 +249,22 @@ public class AlgorithmResultService {
                         if (values.length == 2) {
                             String source = values[0].trim();
                             String target = values[1].trim();
-                            nodes.add(new Node(source, target, edge));
+
+                            // check for edge properties
+                            values = space.split(target);
+                            if (values.length > 1) {
+                                target = values[0];
+
+                                // get edge properties
+                                List<String> edgeProperties = new LinkedList<>();
+                                for (int i = 1; i < values.length; i++) {
+                                    edgeProperties.add(values[i].trim());
+                                }
+
+                                nodes.add(new Node(source, target, edge, edgeProperties));
+                            } else {
+                                nodes.add(new Node(source, target, edge));
+                            }
                         }
                     }
                 } else if ("Graph Edges:".equals(line)) {
