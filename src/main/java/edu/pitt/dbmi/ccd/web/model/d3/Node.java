@@ -18,6 +18,8 @@
  */
 package edu.pitt.dbmi.ccd.web.model.d3;
 
+import java.util.List;
+
 /**
  *
  * Apr 7, 2015 1:06:29 PM
@@ -32,6 +34,8 @@ public class Node {
 
     private String type;
 
+    private List<String> edgeProps;
+
     public Node() {
     }
 
@@ -41,12 +45,11 @@ public class Node {
         this.type = type;
     }
 
-    public String getTarget() {
-        return target;
-    }
-
-    public void setTarget(String target) {
+    public Node(String source, String target, String type, List<String> edgeProps) {
+        this.source = source;
         this.target = target;
+        this.type = type;
+        this.edgeProps = edgeProps;
     }
 
     public String getSource() {
@@ -57,12 +60,28 @@ public class Node {
         this.source = source;
     }
 
+    public String getTarget() {
+        return target;
+    }
+
+    public void setTarget(String target) {
+        this.target = target;
+    }
+
     public String getType() {
         return type;
     }
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public List<String> getEdgeProps() {
+        return edgeProps;
+    }
+
+    public void setEdgeProps(List<String> edgeProps) {
+        this.edgeProps = edgeProps;
     }
 
 }
