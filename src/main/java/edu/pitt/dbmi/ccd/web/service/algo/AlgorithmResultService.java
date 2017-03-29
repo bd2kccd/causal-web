@@ -256,12 +256,12 @@ public class AlgorithmResultService {
                                 target = values[0];
 
                                 // get edge properties
-                                List<String> edgeProperties = new LinkedList<>();
+                                List<String> edgeProps = new LinkedList<>();
                                 for (int i = 1; i < values.length; i++) {
-                                    edgeProperties.add(values[i].trim());
+                                    edgeProps.add(values[i].trim());
                                 }
 
-                                nodes.add(new Node(source, target, edge, edgeProperties));
+                                nodes.add(new Node(source, target, edge, edgeProps));
                             } else {
                                 nodes.add(new Node(source, target, edge));
                             }

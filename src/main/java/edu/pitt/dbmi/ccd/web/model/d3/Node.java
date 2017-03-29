@@ -34,7 +34,7 @@ public class Node {
 
     private String type;
 
-    private List<String> edgeProperties;
+    private List<String> edgeProps;
 
     public Node() {
     }
@@ -45,11 +45,11 @@ public class Node {
         this.type = type;
     }
 
-    public Node(String source, String target, String type, List<String> edgeProperties) {
+    public Node(String source, String target, String type, List<String> edgeProps) {
         this.source = source;
         this.target = target;
         this.type = type;
-        this.edgeProperties = edgeProperties;
+        this.edgeProps = edgeProps;
     }
 
     public String getSource() {
@@ -76,12 +76,12 @@ public class Node {
         this.type = type;
     }
 
-    public List<String> getEdgeProperties() {
-        return edgeProperties;
+    public List<String> getEdgeProps() {
+        return edgeProps;
     }
 
-    public void setEdgeProperties(List<String> edgeProperties) {
-        this.edgeProperties = edgeProperties;
+    public void setEdgeProps(List<String> edgeProps) {
+        this.edgeProps = edgeProps;
     }
 
 }
