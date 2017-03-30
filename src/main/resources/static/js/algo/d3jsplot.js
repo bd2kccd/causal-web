@@ -9,7 +9,7 @@ function plotGraph(links) {
     // Default width and height of SVG
     // -40 so we don't see the scrollbars
     var svgWidth = window.innerWidth - 40;
-    var svgHeight = window.innerHeight -40;
+    var svgHeight = window.innerHeight - 40;
 
     // Raduis of node
     var nodeRadius = 6;
@@ -41,7 +41,7 @@ function plotGraph(links) {
     var zoom = d3.zoom()
             .scaleExtent([.2, 10]) // // zoom scale x.2 to x10
             .on("zoom", zoomed);
-        
+
     // Append a SVG to the graph container div
     // This graph auto scales with the window resize
     var svg = d3.select("#causal-graph")
@@ -50,7 +50,7 @@ function plotGraph(links) {
             .attr("height", svgHeight)
             .call(zoom)
             .on("dblclick.zoom", null); // This disables zoom in behavior caused by double click
-    
+
     // This graphGroup groups all graph elements
     var graphGroup = svg.append("g");
 
@@ -141,7 +141,7 @@ function plotGraph(links) {
             .attr("r", 4)
             .attr("class", "marker-end-circle");
 
-    
+
     // Add the edge based on type: link line and the arrow/circle
     var link = graphGroup.append("g").selectAll(".link")
             .data(links)
@@ -164,8 +164,18 @@ function plotGraph(links) {
                 } else {
                     return "";
                 }
+            })
+            .style('stroke', function (d) {
+                if (d.edgeProps !== null && d.edgeProps.indexOf('dd') >= 0) {
+                    return d3.rgb(0, 128, 0);
+                }
+            })
+            .style("stroke-dasharray", function (d) {
+                if (d.edgeProps !== null && d.edgeProps.indexOf('nl') >= 0) {
+                    return (6, 3);
+                }
             });
-            
+
     // Draw all nodes as circles
     // In order to cover the links, this code must be after drawing links
     var node = graphGroup.append("g")
@@ -198,16 +208,16 @@ function plotGraph(links) {
     function ticked() {
         // Position nodes
         node.attr("cx", function (d) {
-                // This makes sure the nodes won't go out of the container
-                // Bounding box example: http://mbostock.github.io/d3/talk/20110921/bounding.html
-                return d.x = Math.max(nodeRadius, Math.min(svgWidth - nodeRadius, d.x));
-                //return d.x;
-            })
-            .attr("cy", function (d) {
-                return d.y = Math.max(nodeRadius, Math.min(svgHeight - nodeRadius, d.y));
-                //return d.y;
-            });
-            
+            // This makes sure the nodes won't go out of the container
+            // Bounding box example: http://mbostock.github.io/d3/talk/20110921/bounding.html
+            return d.x = Math.max(nodeRadius, Math.min(svgWidth - nodeRadius, d.x));
+            //return d.x;
+        })
+                .attr("cy", function (d) {
+                    return d.y = Math.max(nodeRadius, Math.min(svgHeight - nodeRadius, d.y));
+                    //return d.y;
+                });
+
         // Position links
         // Use path instead of line since IE 10 doesn't render the links correctly
         link.attr("d", positionLink).each(function () {
@@ -216,11 +226,11 @@ function plotGraph(links) {
 
         // Position node text
         text.attr("x", function (d) {
-                return d.x + nodeRadius;
-            })
-            .attr("y", function (d) {
-                return d.y + nodeRadius/2;
-            });
+            return d.x + nodeRadius;
+        })
+                .attr("y", function (d) {
+                    return d.y + nodeRadius / 2;
+                });
     }
 
     // Position the edge link
@@ -228,12 +238,12 @@ function plotGraph(links) {
     function positionLink(d) {
         return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
     }
-    
+
     // Zooming
     function zoomed() {
         graphGroup.attr("transform", d3.event.transform);
     }
-        
+
     // This function looks up whether a pair are neighbours
     function neighboring(a, b) {
         return linkedByIndex[a.index + "," + b.index];
@@ -286,7 +296,7 @@ function plotGraph(links) {
         d3.event.subject.fx = null;
         d3.event.subject.fy = null;
     }
-    
+
     // When the graph is huge it's nice to have some search functionality
     // This highlights the target node
     $('#searchBtn').click(function () {
