@@ -226,11 +226,11 @@ function plotGraph(links) {
 
         // Position node text
         text.attr("x", function (d) {
-            return d.x + nodeRadius;
-        })
-                .attr("y", function (d) {
-                    return d.y + nodeRadius / 2;
-                });
+            return d.x - (nodeRadius / 2);
+        });
+        text.attr("y", function (d) {
+            return d.y - (1.5 * nodeRadius);
+        });
     }
 
     // Position the edge link
