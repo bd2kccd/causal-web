@@ -70,13 +70,12 @@ function plotGraph(links) {
 
     // Default distance accessor is 30
     simulation.force("link")
-            .distance(60);
+            .distance(50);
 
     // Each node conects to itself, so we can highlight this node when it's selected
     for (i = 0; i < nodes.length; i++) {
         linkedByIndex[i + "," + i] = 1;
     }
-    ;
 
     // Add all the connections based on links
     // Must call this after  simulation.force("link").links(links)
@@ -208,29 +207,25 @@ function plotGraph(links) {
     function ticked() {
         // Position nodes
         node.attr("cx", function (d) {
-            // This makes sure the nodes won't go out of the container
-            // Bounding box example: http://mbostock.github.io/d3/talk/20110921/bounding.html
-            return d.x = Math.max(nodeRadius, Math.min(svgWidth - nodeRadius, d.x));
-            //return d.x;
-        })
-                .attr("cy", function (d) {
-                    return d.y = Math.max(nodeRadius, Math.min(svgHeight - nodeRadius, d.y));
-                    //return d.y;
-                });
+                return d.x;
+            })
+            .attr("cy", function (d) {
+                return d.y;
+            });
 
         // Position links
         // Use path instead of line since IE 10 doesn't render the links correctly
         link.attr("d", positionLink).each(function () {
-            this.parentNode.insertBefore(this, this);
-        });
+                this.parentNode.insertBefore(this, this);
+            });
 
         // Position node text
         text.attr("x", function (d) {
-            return d.x + nodeRadius;
-        })
-                .attr("y", function (d) {
-                    return d.y + nodeRadius / 2;
-                });
+                return d.x - (nodeRadius / 2);
+            })
+            .attr("y", function (d) {
+                return d.y - (1.5 * nodeRadius);
+            });
     }
 
     // Position the edge link
