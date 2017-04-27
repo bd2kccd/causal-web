@@ -1,6 +1,8 @@
-@import url(https://fonts.googleapis.com/css?family=Ruda:400,700,900);
-body {
-    font-family: 'Ruda', sans-serif;
+html {
+    font-family: sans-serif;
+}
+.fa {
+    color: #111150;
 }
 .pitt_color {
     color: #111150;

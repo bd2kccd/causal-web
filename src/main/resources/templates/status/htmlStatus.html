@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <title th:text="${pageTitle}">page title</title>
+        <meta name="description" content="causal" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="apple-touch-icon" href="../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
+        <link rel="icon" href="../static/favicon.ico" th:href="@{/favicon.ico}" />
+        <link rel="stylesheet" href="../static/css/error.min.css" th:href="@{/css/error.min.css}" />
+    </head>
+    <body>
+        <h1 th:text="${msgTitle}">message title</h1>
+        <p th:text="${msg}">message</p>
+    </body>
+</html>

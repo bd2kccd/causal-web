@@ -1,11 +1,14 @@
-body {
-    margin-top: 100px;
+.login_panel {
+    margin-top: 25%;
 }
 .profile-img {
     width: 120px;
     height: 120px;
     margin: 0 auto 20px;
     display: block;
+}
+.registration {
+    text-align: center;
 }
 textarea#agreement {
     width: 100%;
@@ -25,16 +28,4 @@ hr {
     margin-bottom: 20px;
     border: 0;
     border-top: 1px solid #797979;
-}
-.fa {
-    color: #111150;
-}
-.registration {
-    text-align: center;
-}
-.auth0 {
-    display: block;
-    margin-top: 20px;
-    margin-bottom: 15px;
-    text-align: center;
 }

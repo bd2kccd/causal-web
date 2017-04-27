@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 University of Pittsburgh.
+ * Copyright (C) 2016 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.conf;
 
+import org.springframework.boot.web.servlet.ErrorPage;
 import org.springframework.boot.web.servlet.ErrorPageRegistrar;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,10 +39,10 @@ public class ApplicationConfigurer extends WebMvcConfigurerAdapter {
     public ErrorPageRegistrar errorPageRegistrar() {
         return registry -> {
             registry.addErrorPages(
-                    new org.springframework.boot.web.servlet.ErrorPage(HttpStatus.BAD_REQUEST, "/400"),
-                    new org.springframework.boot.web.servlet.ErrorPage(HttpStatus.NOT_FOUND, "/404"),
-                    new org.springframework.boot.web.servlet.ErrorPage(HttpStatus.UNAUTHORIZED, "/401"),
-                    new org.springframework.boot.web.servlet.ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/500")
+                    new ErrorPage(HttpStatus.BAD_REQUEST, "/400"),
+                    new ErrorPage(HttpStatus.NOT_FOUND, "/404"),
+                    new ErrorPage(HttpStatus.UNAUTHORIZED, "/401"),
+                    new ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/500")
             );
         };
     }

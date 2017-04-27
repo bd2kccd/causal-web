@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 University of Pittsburgh.
+ * Copyright (C) 2017 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,11 +18,19 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.account;
 
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import edu.pitt.dbmi.ccd.web.model.AppUser;
+import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.domain.account.UserRegistrationForm;
+import edu.pitt.dbmi.ccd.web.service.AppUserService;
+import edu.pitt.dbmi.ccd.web.service.AuthenticationService;
 import edu.pitt.dbmi.ccd.web.service.account.Auth0UserRegistrationService;
+import edu.pitt.dbmi.ccd.web.service.account.UserRegistrationService;
+import edu.pitt.dbmi.ccd.web.service.fs.FileManagementService;
+import edu.pitt.dbmi.ccd.web.service.mail.UserRegistrationMailService;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Controller;
@@ -47,11 +55,31 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping(value = "auth0/user/registration")
 public class Auth0UserRegistrationController implements ViewPath {
 
+    private static final String[] TERMS_NOT_ACCEPTED = {"You must accept the terms."};
+    private static final String[] REGISTRATION_FAILED = {"Registration Failed!", "Unable to register new user."};
+    private static final String[] LOGIN_FAILED = {"Login Failed!", "Unable to log in."};
+
     private final Auth0UserRegistrationService auth0UserRegistrationService;
+    private final UserRegistrationService userRegistrationService;
+    private final UserRegistrationMailService userRegistrationMailService;
+    private final FileManagementService fileManagementService;
+    private final AuthenticationService authenticationService;
+    private final AppUserService appUserService;
 
     @Autowired
-    public Auth0UserRegistrationController(Auth0UserRegistrationService auth0UserRegistrationService) {
+    public Auth0UserRegistrationController(
+            Auth0UserRegistrationService auth0UserRegistrationService,
+            UserRegistrationService userRegistrationService,
+            UserRegistrationMailService userRegistrationMailService,
+            FileManagementService fileManagementService,
+            AuthenticationService authenticationService,
+            AppUserService appUserService) {
         this.auth0UserRegistrationService = auth0UserRegistrationService;
+        this.userRegistrationService = userRegistrationService;
+        this.userRegistrationMailService = userRegistrationMailService;
+        this.fileManagementService = fileManagementService;
+        this.authenticationService = authenticationService;
+        this.appUserService = appUserService;
     }
 
     @RequestMapping(method = RequestMethod.POST)
@@ -60,13 +88,27 @@ public class Auth0UserRegistrationController implements ViewPath {
             @ModelAttribute("appUser") final AppUser appUser,
             final SessionStatus sessionStatus,
             final Model model,
-            final RedirectAttributes redirectAttributes,
+            final RedirectAttributes redirAttrs,
             final HttpServletRequest req,
             final HttpServletResponse res) {
         if (agree) {
-            auth0UserRegistrationService.registerNewUser(appUser, model, redirectAttributes, req, res);
+            UserRegistrationForm userRegistrationForm = auth0UserRegistrationService.createUserRegistrationForm(appUser);
+            UserAccount userAccount = userRegistrationService.registerRegularAccount(userRegistrationForm, req.getRemoteAddr(), true);
+            if (userAccount == null) {
+                redirAttrs.addFlashAttribute("errorMsg", REGISTRATION_FAILED);
+            } else {
+                userRegistrationMailService.sendUserRegistrationAlertToAdmin(userAccount);
+                Subject subject = authenticationService.loginManually(userAccount, req, res);
+                if (subject.isAuthenticated()) {
+                    fileManagementService.setupUserHomeDirectory(userAccount);
+                    redirAttrs.addFlashAttribute("appUser", appUserService.create(userAccount, true));
+                    authenticationService.setLoginInfo(userAccount, req.getRemoteAddr());
+                } else {
+                    redirAttrs.addFlashAttribute("errorMsg", LOGIN_FAILED);
+                }
+            }
         } else {
-            redirectAttributes.addFlashAttribute("errorMsg", "You must accept the terms.");
+            redirAttrs.addFlashAttribute("errorMsg", TERMS_NOT_ACCEPTED);
             sessionStatus.setComplete();
         }
 

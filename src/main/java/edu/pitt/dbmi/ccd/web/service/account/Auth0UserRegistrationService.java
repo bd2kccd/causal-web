@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 University of Pittsburgh.
+ * Copyright (C) 2017 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,16 +18,11 @@
  */
 package edu.pitt.dbmi.ccd.web.service.account;
 
-import edu.pitt.dbmi.ccd.web.model.AppUser;
-import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
-import edu.pitt.dbmi.ccd.web.util.PasswordTool;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.domain.account.UserRegistrationForm;
+import edu.pitt.dbmi.ccd.web.util.PasswordUtils;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.Model;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  *
@@ -39,28 +34,20 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Service
 public class Auth0UserRegistrationService {
 
-    private final UserRegistrationService userRegistrationService;
-
-    @Autowired
-    public Auth0UserRegistrationService(UserRegistrationService userRegistrationService) {
-        this.userRegistrationService = userRegistrationService;
-    }
-
-    public void registerNewUser(AppUser appUser, final Model model, RedirectAttributes redirectAttributes, HttpServletRequest req, final HttpServletResponse res) {
+    public UserRegistrationForm createUserRegistrationForm(AppUser appUser) {
         String username = appUser.getUsername();
         String firstName = appUser.getFirstName();
         String lastName = appUser.getLastName();
-        String password = PasswordTool.generatePassword(20);
+        String password = PasswordUtils.generatePassword(20);
 
-        UserRegistration userRegistration = new UserRegistration();
-        userRegistration.setAgree(true);
-        userRegistration.setConfirmPassword(password);
-        userRegistration.setFirstName(firstName);
-        userRegistration.setLastName(lastName);
-        userRegistration.setPassword(password);
-        userRegistration.setUsername(username);
+        UserRegistrationForm userRegistrationForm = new UserRegistrationForm(true);
+        userRegistrationForm.setRegisterEmail(username);
+        userRegistrationForm.setFirstName(firstName);
+        userRegistrationForm.setLastName(lastName);
+        userRegistrationForm.setRegisterPassword(password);
+        userRegistrationForm.setConfirmRegisterPassword(password);
 
-        userRegistrationService.registerNewRegularUser(userRegistration, true, model, redirectAttributes, req, res);
+        return userRegistrationForm;
     }
 
 }

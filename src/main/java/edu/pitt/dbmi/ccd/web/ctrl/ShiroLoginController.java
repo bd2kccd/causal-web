@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 University of Pittsburgh.
+ * Copyright (C) 2017 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,22 +18,27 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl;
 
-import edu.pitt.dbmi.ccd.web.model.LoginCredentials;
-import edu.pitt.dbmi.ccd.web.model.account.PasswordRecovery;
-import edu.pitt.dbmi.ccd.web.model.user.UserRegistration;
+import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.domain.LoginForm;
+import edu.pitt.dbmi.ccd.web.domain.account.PasswordResetRequestForm;
+import edu.pitt.dbmi.ccd.web.domain.account.UserRegistrationForm;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  *
- * Oct 4, 2016 12:16:46 PM
+ * Feb 18, 2016 1:37:14 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
@@ -42,10 +47,12 @@ import org.springframework.web.bind.support.SessionStatus;
 @SessionAttributes("appUser")
 public class ShiroLoginController implements ViewPath {
 
+    private static final String[] LOGOUT_SUCCESS = {"You Have Successfully Logged Out."};
+
     private static final String LOGIN_VIEW = "shiroLogin";
 
     @RequestMapping(value = LOGIN, method = RequestMethod.GET)
-    public String showLoginPage(final SessionStatus sessionStatus, final Model model) {
+    public String showLoginPage(final SessionStatus sessionStatus, final Model model, HttpServletRequest req) {
         Subject currentUser = SecurityUtils.getSubject();
         if (sessionStatus.isComplete()) {
             currentUser.logout();
@@ -55,17 +62,39 @@ public class ShiroLoginController implements ViewPath {
             sessionStatus.setComplete();
         }
 
-        if (!model.containsAttribute("loginCredentials")) {
-            model.addAttribute("loginCredentials", new LoginCredentials(true));
+        if (!model.containsAttribute("loginForm")) {
+            model.addAttribute("loginForm", new LoginForm(true));
         }
-        if (!model.containsAttribute("userRegistration")) {
-            model.addAttribute("userRegistration", new UserRegistration());
+        if (!model.containsAttribute("userRegistrationForm")) {
+            model.addAttribute("userRegistrationForm", new UserRegistrationForm());
         }
-        if (!model.containsAttribute("passwordRecovery")) {
-            model.addAttribute("passwordRecovery", new PasswordRecovery());
+        if (!model.containsAttribute("passwordResetRequestForm")) {
+            model.addAttribute("passwordResetRequestForm", new PasswordResetRequestForm());
         }
 
         return LOGIN_VIEW;
+    }
+
+    @RequestMapping(value = LOGOUT, method = RequestMethod.GET)
+    public String logOut(
+            @ModelAttribute("appUser") final AppUser appUser,
+            final SessionStatus sessionStatus,
+            final RedirectAttributes redirAttrs,
+            final HttpServletRequest req) {
+        Subject currentUser = SecurityUtils.getSubject();
+        if (currentUser.isAuthenticated()) {
+            currentUser.logout();
+            sessionStatus.setComplete();
+
+            redirAttrs.addFlashAttribute("successMsg", LOGOUT_SUCCESS);
+        }
+
+        HttpSession httpSession = req.getSession();
+        if (httpSession != null) {
+            httpSession.invalidate();
+        }
+
+        return REDIRECT_LOGIN;
     }
 
 }

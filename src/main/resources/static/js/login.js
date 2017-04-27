@@ -1,20 +1,23 @@
 $(document).ready(function () {
     $('#login').validate({
         rules: {
-            loginUsername: {
+            email: {
                 email: true,
                 required: true
             },
-            loginPassword: {
+            password: {
+                minlength: 4,
+                maxlength: 10,
+                nowhitespace: true,
                 required: true
             }
         },
         messages: {
-            loginUsername: {
+            email: {
                 email: "Please enter a valid email.",
                 required: "E-mail is required."
             },
-            loginPassword: "Please enter your password."
+            password: "Please enter your password."
         },
         highlight: function (element) {
             $(element).closest('.form-group').addClass('has-error');
@@ -34,13 +37,13 @@ $(document).ready(function () {
     });
     $('#pwd_reset').validate({
         rules: {
-            usernameRecover: {
+            emailRecoverFrom: {
                 email: true,
                 required: true
             }
         },
         messages: {
-            usernameRecover: {
+            emailRecoverFrom: {
                 email: "Please enter a valid email.",
                 required: "Email is required."
             }
@@ -63,24 +66,24 @@ $(document).ready(function () {
     });
     $('#registration').validate({
         rules: {
-            username: {
+            registerEmail: {
                 email: true,
                 required: true
             },
-            password: {
-                minlength: 5,
-                maxlength: 25,
+            registerPassword: {
+                minlength: 4,
+                maxlength: 10,
                 nowhitespace: true,
                 required: true
             },
-            confirmPassword: {
-                equalTo: "#password"
+            confirmRegisterPassword: {
+                equalTo: "#registerPassword"
             }
         },
         messages: {
-            username: "Please enter a valid email.",
-            password: "Please enter valid a password (5-25 chars).",
-            confirmPassword: "Please reenter password.",
+            registerEmail: "Please enter a valid email.",
+            registerPassword: "Please enter valid a password (4-10 chars).",
+            confirmRegisterPassword: "Please reenter the password.",
         },
         highlight: function (element) {
             $(element).closest('.form-group').addClass('has-error');

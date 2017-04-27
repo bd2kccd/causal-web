@@ -18,11 +18,13 @@
  */
 package edu.pitt.dbmi.ccd.web.service.mail;
 
+import edu.pitt.dbmi.ccd.commons.uri.InetUtils;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.web.domain.template.UserRegistrationTemplateData;
 import edu.pitt.dbmi.ccd.web.prop.CcdEmailProperties;
+import edu.pitt.dbmi.ccd.web.util.UriTool;
+import java.net.URI;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import javax.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,41 +51,45 @@ public class UserRegistrationMailService extends AbstractMailService {
     }
 
     @Async
-    public void sendAdminNewUserRegistrationNotification(final UserAccount userAccount) {
-        String email = userAccount.getPerson().getEmail();
-        Date registrationDate = userAccount.getCreatedDate();
-
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("email", email);
-        variables.put("registrationDate", registrationDate);
-
+    public void sendUserRegistrationAlertToAdmin(final UserAccount userAccount) {
         String[] sendTo = ccdEmailProperties.getAdminSendTo();
-        String subject = "Causal Web: New User Registration";
-        String template = "email/account/registration/admin_new_registration_notification";
-        try {
-            sendMail(variables, template, subject, sendTo);
-        } catch (MessagingException exception) {
-            LOGGER.error("Failed to email new user activation link.", exception);
+        if (sendTo.length > 0) {
+            String email = userAccount.getUserInfo().getEmail();
+            Date registrationDate = userAccount.getRegistrationDate();
+            Long location = userAccount.getRegistrationLocation();
+
+            UserRegistrationTemplateData templateData = new UserRegistrationTemplateData();
+            templateData.setEmail(email);
+            templateData.setRegistrationDate(registrationDate);
+            templateData.setRegistrationLocation(UriTool.ipAddressToHostName(InetUtils.getInetATON(location)));
+
+            String subject = "Causal Web: New User Registration";
+            String template = "mail/account/registration/userRegistrationAlert";
+            try {
+                sendMail(templateData, template, subject, sendTo);
+            } catch (MessagingException exception) {
+                LOGGER.error("Fail to send new user registration to administrator.", exception);
+            }
         }
     }
 
     @Async
-    public void sendUserSelfActivation(final UserAccount userAccount, String activationLink) {
-        String email = userAccount.getPerson().getEmail();
-        Date registrationDate = userAccount.getCreatedDate();
+    public void sendAccountActivationToUser(final UserAccount userAccount, final URI activationLink) {
+        String email = userAccount.getUserInfo().getEmail();
+        Date registrationDate = userAccount.getRegistrationDate();
 
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("email", email);
-        variables.put("registrationDate", registrationDate);
-        variables.put("activationLink", activationLink);
+        UserRegistrationTemplateData templateData = new UserRegistrationTemplateData();
+        templateData.setActivationLink(activationLink);
+        templateData.setEmail(email);
+        templateData.setRegistrationDate(registrationDate);
 
         String sendTo = email;
         String subject = "Causal Web: User Activation";
-        String template = "email/account/registration/user_activation";
+        String template = "mail/account/registration/userActivationRequest";
         try {
-            sendMail(variables, template, subject, sendTo);
+            sendMail(templateData, template, subject, sendTo);
         } catch (MessagingException exception) {
-            LOGGER.error("Failed to email new user activation link.", exception);
+            LOGGER.error("Fail to send account activation link to user.", exception);
         }
     }
 

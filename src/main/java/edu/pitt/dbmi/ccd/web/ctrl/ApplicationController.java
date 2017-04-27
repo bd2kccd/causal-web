@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 University of Pittsburgh.
+ * Copyright (C) 2017 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,18 +18,16 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl;
 
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.HOME;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.HOME_VIEW;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.LOGIN;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.LOGOUT;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.REDIRECT_HOME;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.REDIRECT_LOGIN;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.domain.LoginForm;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
-import edu.pitt.dbmi.ccd.web.model.AppUser;
-import edu.pitt.dbmi.ccd.web.model.LoginCredentials;
-import edu.pitt.dbmi.ccd.web.service.ApplicationService;
+import edu.pitt.dbmi.ccd.web.service.AppUserService;
+import edu.pitt.dbmi.ccd.web.service.AuthenticationService;
+import edu.pitt.dbmi.ccd.web.service.fs.FileManagementService;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -38,12 +36,11 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
-import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  *
- * May 14, 2015 12:39:47 PM
+ * Feb 18, 2016 1:29:10 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
@@ -51,18 +48,21 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @SessionAttributes("appUser")
 public class ApplicationController implements ViewPath {
 
-    private final ApplicationService applicationService;
+    private static final String[] INVALID_CREDENTIALS = {"Login Failed!", "Invalid username and/or password."};
+    private static final String[] UNACTIVATED_ACCOUNT = {"Login Failed!", "Your account has not been activated."};
+
+    private final AuthenticationService authenticationService;
+    private final AppUserService appUserService;
+    private final FileManagementService fileManagementService;
 
     @Autowired
-    public ApplicationController(ApplicationService applicationService) {
-        this.applicationService = applicationService;
-    }
-
-    @RequestMapping(value = HOME, method = RequestMethod.GET)
-    public String showHomePage(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        applicationService.retrieveFileCounts(appUser, model);
-
-        return HOME_VIEW;
+    public ApplicationController(
+            AuthenticationService authenticationService,
+            AppUserService appUserService,
+            FileManagementService fileManagementService) {
+        this.authenticationService = authenticationService;
+        this.appUserService = appUserService;
+        this.fileManagementService = fileManagementService;
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
@@ -72,37 +72,50 @@ public class ApplicationController implements ViewPath {
 
     @RequestMapping(value = LOGIN, method = RequestMethod.POST)
     public String logIn(
-            @Valid @ModelAttribute("loginCredentials") final LoginCredentials loginCredentials,
+            @Valid @ModelAttribute("loginForm") final LoginForm loginForm,
             final BindingResult bindingResult,
-            final RedirectAttributes redirectAttributes,
+            final RedirectAttributes redirAttrs,
             final Model model,
-            final HttpServletRequest request) {
+            final HttpServletRequest req) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.loginCredentials", bindingResult);
-            redirectAttributes.addFlashAttribute("loginCredentials", loginCredentials);
+            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.loginForm", bindingResult);
+            redirAttrs.addFlashAttribute("loginForm", loginForm);
 
             return REDIRECT_LOGIN;
         }
 
-        boolean isAuthenticated = applicationService.logInUser(loginCredentials, redirectAttributes, model, request);
+        Subject currentUser = authenticationService.loginWithUsernamePassword(loginForm);
+        if (currentUser.isAuthenticated()) {
+            UserAccount userAccount = authenticationService.retrieveUserAccount(currentUser);
+            if (userAccount != null && userAccount.isActivated()) {
+                fileManagementService.setupUserHomeDirectory(userAccount);
+                redirAttrs.addFlashAttribute("appUser", appUserService.create(userAccount, false));
+                authenticationService.setLoginInfo(userAccount, req.getRemoteAddr());
 
-        return isAuthenticated ? REDIRECT_HOME : REDIRECT_LOGIN;
+                return REDIRECT_HOME;
+            } else {
+                currentUser.logout();
+                redirAttrs.addFlashAttribute("errorMsg", UNACTIVATED_ACCOUNT);
+
+                return REDIRECT_LOGIN;
+            }
+        } else {
+            redirAttrs.addFlashAttribute("errorMsg", INVALID_CREDENTIALS);
+            redirAttrs.addFlashAttribute("loginForm", loginForm);
+
+            return REDIRECT_LOGIN;
+        }
     }
 
-    @RequestMapping(value = LOGOUT, method = RequestMethod.GET)
-    public String logOut(
-            @ModelAttribute("appUser") final AppUser appUser,
-            final SessionStatus sessionStatus,
-            final RedirectAttributes redirectAttributes,
-            final HttpServletRequest request) {
-        applicationService.logOutUser(appUser, sessionStatus, redirectAttributes, request);
+    @RequestMapping(value = HOME, method = RequestMethod.GET)
+    public String showHomePage(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
 
-        return REDIRECT_LOGIN;
+        return HOME_VIEW;
     }
 
     @RequestMapping(value = MESSAGE, method = RequestMethod.GET)
     public String showMessage(final Model model) {
-        if (!model.containsAttribute("header")) {
+        if (!model.containsAttribute("message")) {
             throw new ResourceNotFoundException();
         }
 

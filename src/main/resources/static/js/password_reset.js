@@ -2,8 +2,8 @@ $(document).ready(function () {
     $('#password_reset').validate({
         rules: {
             password: {
-                minlength: 5,
-                maxlength: 25,
+                minlength: 4,
+                maxlength: 10,
                 nowhitespace: true,
                 required: true
             },
@@ -12,8 +12,8 @@ $(document).ready(function () {
             }
         },
         messages: {
-            password: "Please enter valid a password (5-25 chars).",
-            confirmPassword: "Please reenter password.",
+            password: "Please enter valid a password (4-10 chars).",
+            confirmPassword: "Please reenter the password.",
         },
         highlight: function (element) {
             $(element).closest('.form-group').addClass('has-error');

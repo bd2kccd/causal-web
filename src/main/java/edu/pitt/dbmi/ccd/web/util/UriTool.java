@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 University of Pittsburgh.
+ * Copyright (C) 2017 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,7 +18,9 @@
  */
 package edu.pitt.dbmi.ccd.web.util;
 
+import java.net.InetAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -43,6 +45,18 @@ public class UriTool {
         }
 
         return uriBuilder;
+    }
+
+    public static String ipAddressToHostName(String ipAddress) {
+        String hostName;
+
+        try {
+            hostName = InetAddress.getByName(ipAddress).getHostName();
+        } catch (UnknownHostException exception) {
+            hostName = "unknown";
+        }
+
+        return hostName;
     }
 
 }

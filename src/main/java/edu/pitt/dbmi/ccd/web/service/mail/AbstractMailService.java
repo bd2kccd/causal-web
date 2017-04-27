@@ -46,6 +46,15 @@ public abstract class AbstractMailService extends AbstractBasicMail {
         this.templateEngine = templateEngine;
     }
 
+    protected void sendMail(Object templateData, String template, String subject, String... to) throws MessagingException {
+        Context context = new Context(LOCALE);
+        context.setVariable("data", templateData);
+
+        String body = this.templateEngine.process(template, context);
+
+        send(to, subject, body, true);
+    }
+
     protected void sendMail(Map<String, Object> variables, String template, String subject, String... to) throws MessagingException {
         Context context = new Context(LOCALE);
         context.setVariables(variables);

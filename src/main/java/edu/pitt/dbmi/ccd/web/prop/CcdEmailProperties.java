@@ -32,7 +32,7 @@ import org.springframework.stereotype.Component;
 @PropertySource("classpath:ccd.properties")
 public class CcdEmailProperties {
 
-    @Value("${ccd.email.admin.sendto}")
+    @Value("${ccd.email.admin.sendto:}")
     private String[] adminSendTo;
 
     public CcdEmailProperties() {

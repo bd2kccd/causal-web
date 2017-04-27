@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 University of Pittsburgh.
+ * Copyright (C) 2017 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,20 +18,17 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.account;
 
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.REDIRECT_USER_PROFILE;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.USER_PROFILE_VIEW;
-import edu.pitt.dbmi.ccd.web.model.AppUser;
-import edu.pitt.dbmi.ccd.web.model.user.PasswordChange;
-import edu.pitt.dbmi.ccd.web.model.user.UserInfo;
+import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.domain.account.PasswordChangeForm;
+import edu.pitt.dbmi.ccd.web.domain.account.UserInfoForm;
+import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.account.UserProfileService;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -42,20 +39,26 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  *
- * Oct 5, 2016 4:09:57 PM
+ * Jun 30, 2016 3:48:46 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @Controller
 @SessionAttributes("appUser")
-@RequestMapping(value = "/user/account/profile")
+@RequestMapping(value = "secured/user/account/profile")
 public class UserProfileController implements ViewPath {
 
+    private static final String[] USER_PROFILE_UPDATE_FAILED = {"User Profile Update Failed!", "Unable to update user information."};
+    private static final String[] PASSWORD_UPDATE_FAILED = {"Password Update Failed!", "Unable to change password."};
+    private static final String[] PASSWORD_MATCH_FAILED = {"Password Update Failed!"};
+
     private final UserProfileService userProfileService;
+    private final AppUserService appUserService;
 
     @Autowired
-    public UserProfileController(UserProfileService userProfileService) {
+    public UserProfileController(UserProfileService userProfileService, AppUserService appUserService) {
         this.userProfileService = userProfileService;
+        this.appUserService = appUserService;
     }
 
     @InitBinder
@@ -63,46 +66,59 @@ public class UserProfileController implements ViewPath {
         binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
     }
 
+    @RequestMapping(value = "password/change", method = RequestMethod.POST)
+    public String processPasswordChange(
+            @ModelAttribute("passwordChangeForm") final PasswordChangeForm passwordChangeForm,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model,
+            final RedirectAttributes redirAttrs) {
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        if (userAccount == null) {
+            redirAttrs.addFlashAttribute("errorMsgPassword", PASSWORD_UPDATE_FAILED);
+        } else {
+            if (userProfileService.passwordMatch(passwordChangeForm, userAccount)) {
+                if (!userProfileService.updateUserAccountPassword(passwordChangeForm, userAccount)) {
+                    redirAttrs.addFlashAttribute("errorMsgPassword", PASSWORD_UPDATE_FAILED);
+                }
+            } else {
+                redirAttrs.addFlashAttribute("errorMsgPassword", PASSWORD_MATCH_FAILED);
+                redirAttrs.addFlashAttribute("errInvalidPwd", true);
+            }
+        }
+
+        return REDIRECT_USER_PROFILE;
+    }
+
+    @RequestMapping(value = "info/change", method = RequestMethod.POST)
+    public String processUserInfoChange(
+            @ModelAttribute("userInfoForm") final UserInfoForm userInfoForm,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model,
+            final RedirectAttributes redirAttrs) {
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        if (userAccount == null) {
+            redirAttrs.addFlashAttribute("errorMsgUserInfo", USER_PROFILE_UPDATE_FAILED);
+        } else {
+            if (userProfileService.updateUserInfo(userInfoForm, userAccount)) {
+                redirAttrs.addFlashAttribute("appUser", appUserService.update(userInfoForm, appUser));
+            } else {
+                redirAttrs.addFlashAttribute("errorMsgUserInfo", USER_PROFILE_UPDATE_FAILED);
+            }
+        }
+
+        return REDIRECT_USER_PROFILE;
+    }
+
     @RequestMapping(method = RequestMethod.GET)
     public String showUserProfilePage(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        if (!model.containsAttribute("userInfo")) {
-            model.addAttribute("userInfo", userProfileService.createUserInfo(appUser));
+        if (!model.containsAttribute("userInfoForm")) {
+            model.addAttribute("userInfoForm", userProfileService.populateUserInfoForm(appUser));
         }
-        if (!model.containsAttribute("passwordChange")) {
-            model.addAttribute("passwordChange", new PasswordChange());
+        if (!model.containsAttribute("passwordChangeForm")) {
+            model.addAttribute("passwordChangeForm", new PasswordChangeForm());
         }
 
         return USER_PROFILE_VIEW;
-    }
-
-    @RequestMapping(value = "info", method = RequestMethod.POST)
-    public String updateUserInfo(
-            @ModelAttribute("userInfo") final UserInfo userInfo,
-            @ModelAttribute("appUser") final AppUser appUser,
-            final Model model,
-            final RedirectAttributes redirectAttributes,
-            final HttpServletRequest request) {
-        userProfileService.updateUserProfile(userInfo, appUser, model, redirectAttributes, request);
-
-        return REDIRECT_USER_PROFILE;
-    }
-
-    @RequestMapping(value = "pwd", method = RequestMethod.POST)
-    public String updateUserPassword(
-            @Valid @ModelAttribute("passwordChange") final PasswordChange passwordChange,
-            final BindingResult bindingResult,
-            @ModelAttribute("appUser") final AppUser appUser,
-            final RedirectAttributes redirectAttributes,
-            final HttpServletRequest request) {
-        if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.passwordChange", bindingResult);
-            redirectAttributes.addFlashAttribute("passwordChange", passwordChange);
-            redirectAttributes.addFlashAttribute("pwdChangeErr", true);
-        } else {
-            userProfileService.updateUserPassword(passwordChange, appUser, redirectAttributes, request);
-        }
-
-        return REDIRECT_USER_PROFILE;
     }
 
 }

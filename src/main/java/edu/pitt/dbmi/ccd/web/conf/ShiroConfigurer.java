@@ -18,7 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.conf;
 
-import edu.pitt.dbmi.ccd.web.shiro.CCDAuthorizingRealm;
+import edu.pitt.dbmi.ccd.web.shiro.CcdAuthorizingRealm;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
@@ -32,14 +32,12 @@ import org.springframework.context.annotation.DependsOn;
 
 /**
  *
- * May 14, 2015 1:53:28 PM
+ * Aug 22, 2016 1:24:27 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @Configuration
 public class ShiroConfigurer {
-
-    private static final String AUTHC = "authc";
 
     @Bean(name = "passwordService")
     public DefaultPasswordService passwordService() {
@@ -61,8 +59,8 @@ public class ShiroConfigurer {
 
     @Bean(name = "realm")
     @DependsOn("lifecycleBeanPostProcessor")
-    public CCDAuthorizingRealm realm() {
-        CCDAuthorizingRealm realm = new CCDAuthorizingRealm();
+    public CcdAuthorizingRealm realm() {
+        CcdAuthorizingRealm realm = new CcdAuthorizingRealm();
         realm.setCredentialsMatcher(credentialsMatcher());
 
         return realm;
@@ -82,15 +80,10 @@ public class ShiroConfigurer {
         factoryBean.setSecurityManager(securityManager());
         factoryBean.setLoginUrl("/login");
         factoryBean.setUnauthorizedUrl("/401");
-        factoryBean.setSuccessUrl("/home");
+        factoryBean.setSuccessUrl("/secured/home");
 
         Map<String, String> filterChainDefinitionMap = new LinkedHashMap<>();
-        filterChainDefinitionMap.put("/home", AUTHC);
-        filterChainDefinitionMap.put("/user/profile/**", AUTHC);
-        filterChainDefinitionMap.put("/data/**", AUTHC);
-        filterChainDefinitionMap.put("/algorithm/**", AUTHC);
-        filterChainDefinitionMap.put("/jobQueue/**", AUTHC);
-        filterChainDefinitionMap.put("/feedback/**", AUTHC);
+        filterChainDefinitionMap.put("/secured/**", "authc");
         factoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
 
         return factoryBean;

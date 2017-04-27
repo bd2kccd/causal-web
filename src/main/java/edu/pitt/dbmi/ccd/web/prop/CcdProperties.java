@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 University of Pittsburgh.
+ * Copyright (C) 2017 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * Oct 4, 2016 10:48:59 AM
+ * Feb 13, 2016 2:44:02 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
@@ -32,44 +32,8 @@ import org.springframework.stereotype.Component;
 @PropertySource("classpath:ccd.properties")
 public class CcdProperties {
 
-    @Value("${ccd.jar.algorithm}")
-    private String algoJar;
-
-    @Value("${ccd.algorithm.fges.cont}")
-    private String algoFgesCont;
-
-    @Value("${ccd.algorithm.fges.disc}")
-    private String algoFgesDisc;
-
-    @Value("${ccd.algorithm.gfci.cont}")
-    private String algoGfciCont;
-
-    @Value("${ccd.algorithm.gfci.disc}")
-    private String algoGfciDisc;
-
-    @Value("${ccd.queue.size:5}")
-    private String jobQueueSize;
-
     @Value("${ccd.server.workspace:}")
     private String workspaceDir;
-
-    @Value("${ccd.folder.data}")
-    private String dataFolder;
-
-    @Value("${ccd.folder.lib:lib}")
-    private String libFolder;
-
-    @Value("${ccd.folder.tmp:tmp}")
-    private String tmpFolder;
-
-    @Value("${ccd.folder.results:results}")
-    private String resultFolder;
-
-    @Value("${ccd.folder.results.algorithm:algorithm}")
-    private String resultAlgorithmFolder;
-
-    @Value("${ccd.folder.results.comparison:comparison}")
-    private String resultComparisonFolder;
 
     @Value("${ccd.acct.reg.activ.required:false}")
     private boolean requireActivation;
@@ -86,108 +50,12 @@ public class CcdProperties {
     public CcdProperties() {
     }
 
-    public String getAlgoJar() {
-        return algoJar;
-    }
-
-    public void setAlgoJar(String algoJar) {
-        this.algoJar = algoJar;
-    }
-
-    public String getAlgoFgesCont() {
-        return algoFgesCont;
-    }
-
-    public void setAlgoFgesCont(String algoFgesCont) {
-        this.algoFgesCont = algoFgesCont;
-    }
-
-    public String getAlgoFgesDisc() {
-        return algoFgesDisc;
-    }
-
-    public void setAlgoFgesDisc(String algoFgesDisc) {
-        this.algoFgesDisc = algoFgesDisc;
-    }
-
-    public String getAlgoGfciCont() {
-        return algoGfciCont;
-    }
-
-    public void setAlgoGfciCont(String algoGfciCont) {
-        this.algoGfciCont = algoGfciCont;
-    }
-
-    public String getAlgoGfciDisc() {
-        return algoGfciDisc;
-    }
-
-    public void setAlgoGfciDisc(String algoGfciDisc) {
-        this.algoGfciDisc = algoGfciDisc;
-    }
-
-    public String getJobQueueSize() {
-        return jobQueueSize;
-    }
-
-    public void setJobQueueSize(String jobQueueSize) {
-        this.jobQueueSize = jobQueueSize;
-    }
-
     public String getWorkspaceDir() {
         return workspaceDir;
     }
 
     public void setWorkspaceDir(String workspaceDir) {
         this.workspaceDir = workspaceDir;
-    }
-
-    public String getDataFolder() {
-        return dataFolder;
-    }
-
-    public void setDataFolder(String dataFolder) {
-        this.dataFolder = dataFolder;
-    }
-
-    public String getLibFolder() {
-        return libFolder;
-    }
-
-    public void setLibFolder(String libFolder) {
-        this.libFolder = libFolder;
-    }
-
-    public String getTmpFolder() {
-        return tmpFolder;
-    }
-
-    public void setTmpFolder(String tmpFolder) {
-        this.tmpFolder = tmpFolder;
-    }
-
-    public String getResultFolder() {
-        return resultFolder;
-    }
-
-    public void setResultFolder(String resultFolder) {
-        this.resultFolder = resultFolder;
-    }
-
-    public String getResultAlgorithmFolder() {
-        return resultAlgorithmFolder;
-    }
-
-    public void setResultAlgorithmFolder(String resultAlgorithmFolder) {
-        this.resultAlgorithmFolder = resultAlgorithmFolder;
-    }
-
-    public String getResultComparisonFolder() {
-        return resultComparisonFolder;
-    }
-
-    public void setResultComparisonFolder(String resultComparisonFolder) {
-        this.resultComparisonFolder = resultComparisonFolder;
     }
 
     public boolean isRequireActivation() {
