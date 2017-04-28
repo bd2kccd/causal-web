@@ -18,9 +18,13 @@
  */
 package edu.pitt.dbmi.ccd.web.service.file;
 
+import edu.pitt.dbmi.ccd.commons.file.FileMD5Hash;
+import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
+import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfos;
+import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.FileService;
 import edu.pitt.dbmi.ccd.web.domain.file.ResumableChunk;
-import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.fs.FileManagementService;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
@@ -29,6 +33,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,13 +50,40 @@ public class FileUploadService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileUploadService.class);
 
-    private final AppUserService appUserService;
     private final FileManagementService fileManagementService;
+    private final FileService fileService;
 
     @Autowired
-    public FileUploadService(AppUserService appUserService, FileManagementService fileManagementService) {
-        this.appUserService = appUserService;
+    public FileUploadService(FileManagementService fileManagementService, FileService fileService) {
         this.fileManagementService = fileManagementService;
+        this.fileService = fileService;
+    }
+
+    public File saveFileToDatabase(Path file, UserAccount userAccount) {
+        File savedFileEntity = null;
+
+        try {
+            BasicFileInfo fileInfo = BasicFileInfos.getBasicFileInfo(file);
+            String name = fileInfo.getFilename();
+            String title = fileInfo.getFilename();
+            Date creationTime = new Date(fileInfo.getCreationTime());
+            long fileSize = fileInfo.getSize();
+            String md5checkSum = FileMD5Hash.computeHash(file);
+
+            File fileEntity = new File();
+            fileEntity.setCreationTime(creationTime);
+            fileEntity.setFileSize(fileSize);
+            fileEntity.setMd5checkSum(md5checkSum);
+            fileEntity.setName(name);
+            fileEntity.setTitle(title);
+            fileEntity.setUserAccount(userAccount);
+
+            savedFileEntity = fileService.getFileRepository().save(fileEntity);
+        } catch (IOException exception) {
+            LOGGER.error(exception.getMessage());
+        }
+
+        return savedFileEntity;
     }
 
     public Path combineAllChunks(ResumableChunk chunk, UserAccount userAccount) {

@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.file;
 
+import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
@@ -73,6 +74,9 @@ public class FileUploadController implements ViewPath {
                     if (uploadedFile == null) {
                         res.getWriter().println("Upload failed.");
                         res.setStatus(FAIL_STATUS);
+                    } else {
+                        File fileEntity = fileUploadService.saveFileToDatabase(uploadedFile, userAccount);
+                        res.getWriter().println(fileEntity.getMd5checkSum());
                     }
                 }
             } else {
