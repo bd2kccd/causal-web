@@ -45,7 +45,7 @@
                                         <td>
                                             <a href="#" th:href="@{${#httpServletRequest.getServletPath() + '/info'}(id=${file.id})}" th:text="${file.title}"></a>
                                         </td>
-                                        <td th:text="${file.fileSize} ? ${file.fileSize} : '--'"></td>
+                                        <td th:text="${@fileUtils.byteToSize(file.fileSize)}"></td>
                                         <td th:text="${#dates.format(file.creationTime,'MMM dd, yyyy hh:mm aaa')}"></td>
                                     </tr>
                                 </tbody>
@@ -71,6 +71,7 @@
         <script src="../../static/vendors/datatables/DataTables-1.10.15/js/dataTables.bootstrap.min.js" th:src="@{/vendors/datatables/DataTables-1.10.15/js/dataTables.bootstrap.min.js}"></script>
         <script src="../../static/vendors/datatables/Responsive-2.1.1/js/dataTables.responsive.min.js" th:src="@{/vendors/datatables/Responsive-2.1.1/js/dataTables.responsive.min.js}"></script>
         <script src="../../static/vendors/datatables/Responsive-2.1.1/js/responsive.bootstrap.min.js" th:src="@{/vendors/datatables/Responsive-2.1.1/js/responsive.bootstrap.min.js}"></script>
+        <script src="../../static/vendors/datatables/DataTables-1.10.15/plugins/file-size.min.js" th:src="@{/vendors/datatables/DataTables-1.10.15/plugins/file-size.min.js}"></script>
         <script src="../../static/js/file/fileList.min.js" th:src="@{/js/file/fileList.min.js}"></script>
     </body>
 </html>

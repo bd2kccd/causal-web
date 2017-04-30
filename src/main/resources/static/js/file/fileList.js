@@ -3,7 +3,7 @@ $(document).ready(function () {
         "order": [[2, "desc"]],
         "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
         "columnDefs": [
-            {"orderable": false, "bSearchable": false, "targets": 1}
+            {type: 'file-size', targets: 1}
         ]
     });
 });
