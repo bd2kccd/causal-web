@@ -41,8 +41,12 @@ public class FileListService {
         this.fileService = fileService;
     }
 
-    public List<File> retrieveFiles(UserAccount userAccount) {
+    public List<File> retrieveAllFiles(UserAccount userAccount) {
         return fileService.getFileRepository().findByUserAccount(userAccount);
+    }
+
+    public List<File> retrieveUntypedFiles(UserAccount userAccount) {
+        return fileService.getFileRepository().findUntypedFilesByUserAccount(userAccount);
     }
 
 }

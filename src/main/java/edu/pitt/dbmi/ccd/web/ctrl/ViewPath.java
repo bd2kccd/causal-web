@@ -47,6 +47,8 @@ public interface ViewPath {
     public static final String REDIRECT_USER_PROFILE = "redirect:/secured/user/account/profile";
 
     public static final String FILE_UPLOAD_VIEW = "file/fileUpload";
-    public static final String FILE_LIST_VIEW = "file/fileList";
+
+    public static final String FILE_LIST_VIEW = "file/untypedFile";
+    public static final String REDIRECT_FILE_LIST = "redirect:/secured/file/untyped";
 
 }

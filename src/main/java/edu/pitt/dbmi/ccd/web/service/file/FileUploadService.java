@@ -18,9 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.service.file;
 
-import edu.pitt.dbmi.ccd.commons.file.FileMD5Hash;
-import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
-import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfos;
+import edu.pitt.dbmi.ccd.commons.file.FileSys;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileService;
@@ -33,7 +31,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,21 +60,7 @@ public class FileUploadService {
         File savedFileEntity = null;
 
         try {
-            BasicFileInfo fileInfo = BasicFileInfos.getBasicFileInfo(file);
-            String name = fileInfo.getFilename();
-            String title = fileInfo.getFilename();
-            Date creationTime = new Date(fileInfo.getCreationTime());
-            long fileSize = fileInfo.getSize();
-            String md5checkSum = FileMD5Hash.computeHash(file);
-
-            File fileEntity = new File();
-            fileEntity.setCreationTime(creationTime);
-            fileEntity.setFileSize(fileSize);
-            fileEntity.setMd5checkSum(md5checkSum);
-            fileEntity.setName(name);
-            fileEntity.setTitle(title);
-            fileEntity.setUserAccount(userAccount);
-
+            File fileEntity = fileManagementService.createFileEntity(file, userAccount);
             savedFileEntity = fileService.getFileRepository().save(fileEntity);
         } catch (IOException exception) {
             LOGGER.error(exception.getMessage());
@@ -90,7 +73,7 @@ public class FileUploadService {
         String fileName = chunk.getResumableFilename();
         String identifier = chunk.getResumableIdentifier();
         int numOfChunks = chunk.getResumableTotalChunks();
-        String usrDataDir = fileManagementService.getUserDataDirectory(userAccount);
+        String usrDataDir = fileManagementService.getUserDataDirectory(userAccount).toAbsolutePath().toString();
 
         Path combinedFile = Paths.get(usrDataDir, fileName);
 
@@ -115,7 +98,7 @@ public class FileUploadService {
 
         // delete the chunk's folder
         try {
-            fileManagementService.deleteNonEmptyDir(Paths.get(usrDataDir, identifier));
+            FileSys.deleteNonEmptyDir(Paths.get(usrDataDir, identifier));
         } catch (IOException exception) {
             LOGGER.error(exception.getMessage());
         }
@@ -124,7 +107,7 @@ public class FileUploadService {
     }
 
     public boolean allChunksUploaded(ResumableChunk chunk, UserAccount userAccount) {
-        String usrDataDir = fileManagementService.getUserDataDirectory(userAccount);
+        String usrDataDir = fileManagementService.getUserDataDirectory(userAccount).toAbsolutePath().toString();
         String identifier = chunk.getResumableIdentifier();
         int numOfChunks = chunk.getResumableTotalChunks();
         for (int chunkNo = 1; chunkNo <= numOfChunks; chunkNo++) {
@@ -172,7 +155,7 @@ public class FileUploadService {
     }
 
     private Path createPathToChunkFile(ResumableChunk chunk, UserAccount userAccount) {
-        String usrDataDir = fileManagementService.getUserDataDirectory(userAccount);
+        String usrDataDir = fileManagementService.getUserDataDirectory(userAccount).toAbsolutePath().toString();
         String identifier = chunk.getResumableIdentifier();
         String chunkNumber = Integer.toString(chunk.getResumableChunkNumber());
 

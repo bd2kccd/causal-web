@@ -39,15 +39,15 @@ import org.springframework.web.bind.annotation.SessionAttributes;
  */
 @Controller
 @SessionAttributes("appUser")
-@RequestMapping(value = "secured/file/list")
-public class FileListController implements ViewPath {
+@RequestMapping(value = "secured/file/untyped")
+public class UntypedFileController implements ViewPath {
 
     private final AppUserService appUserService;
     private final FileManagementService fileManagementService;
     private final FileListService fileListService;
 
     @Autowired
-    public FileListController(AppUserService appUserService, FileManagementService fileManagementService, FileListService fileListService) {
+    public UntypedFileController(AppUserService appUserService, FileManagementService fileManagementService, FileListService fileListService) {
         this.appUserService = appUserService;
         this.fileManagementService = fileManagementService;
         this.fileListService = fileListService;
@@ -56,8 +56,9 @@ public class FileListController implements ViewPath {
     @RequestMapping(method = RequestMethod.GET)
     public String showFiles(AppUser appUser, Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        fileManagementService.syncDatabaseWithDataDirectory(userAccount);
 
-        model.addAttribute("files", fileListService.retrieveFiles(userAccount));
+        model.addAttribute("files", fileListService.retrieveUntypedFiles(userAccount));
 
         return FILE_LIST_VIEW;
     }

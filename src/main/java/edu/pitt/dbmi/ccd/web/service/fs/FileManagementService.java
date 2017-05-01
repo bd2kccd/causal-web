@@ -18,17 +18,23 @@
  */
 package edu.pitt.dbmi.ccd.web.service.fs;
 
+import edu.pitt.dbmi.ccd.commons.file.FileMD5Hash;
+import edu.pitt.dbmi.ccd.commons.file.FileSys;
+import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
+import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfos;
+import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.FileService;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,31 +59,100 @@ public class FileManagementService {
     };
 
     private final CcdProperties ccdProperties;
+    private final FileService fileService;
 
     @Autowired
-    public FileManagementService(CcdProperties ccdProperties) {
+    public FileManagementService(CcdProperties ccdProperties, FileService fileService) {
         this.ccdProperties = ccdProperties;
+        this.fileService = fileService;
     }
 
-    public String getUserHomeDirectory(UserAccount userAccount) {
+    public File deleteFile(Long id, UserAccount userAccount) {
+        File file = fileService.getFileRepository().findByIdAndUserAccount(id, userAccount);
+        if (file != null) {
+            try {
+                Path physicalFile = getPhysicalFile(file, userAccount);
+                Files.deleteIfExists(physicalFile);
+
+                fileService.getFileRepository().delete(file);
+            } catch (IOException exception) {
+                LOGGER.error(exception.getMessage());
+            }
+        }
+
+        return file;
+    }
+
+    public void syncDatabaseWithDataDirectory(UserAccount userAccount) {
+        // grab all the files from the database
+        Map<String, File> dbFileMap = new HashMap<>();
+        List<File> dbFileList = fileService.getFileRepository().findByUserAccount(userAccount);
+        dbFileList.forEach(file -> {
+            dbFileMap.put(file.getName(), file);
+        });
+
+        List<File> filesToSave = new LinkedList<>();
+        try {
+            Path userDataDir = getUserDataDirectory(userAccount);
+            List<Path> localFiles = FileSys.listFilesInDirectory(userDataDir, false);
+            localFiles.forEach(localFile -> {
+                String fileName = localFile.getFileName().toString();
+
+                if (dbFileMap.containsKey(fileName)) {
+                    dbFileMap.remove(fileName);
+                } else {
+                    try {
+                        filesToSave.add(createFileEntity(localFile, userAccount));
+                    } catch (IOException exception) {
+                        LOGGER.error(exception.getMessage());
+                    }
+                }
+            });
+        } catch (IOException exception) {
+            LOGGER.error(exception.getMessage());
+        }
+
+        if (!dbFileMap.isEmpty()) {
+            List<File> files = new LinkedList<>();
+            dbFileMap.forEach((key, value) -> {
+                System.out.println(key);
+                files.add(value);
+            });
+            fileService.getFileRepository().delete(files);
+        }
+
+        if (!filesToSave.isEmpty()) {
+            fileService.getFileRepository().save(filesToSave);
+        }
+    }
+
+    public Path getPhysicalFile(File file, UserAccount userAccount) {
+        String rootDir = ccdProperties.getWorkspaceDir();
+        String userFolder = userAccount.getAccount();
+        String fileName = file.getName();
+
+        return Paths.get(rootDir, userFolder, DATA_FOLDER, fileName);
+    }
+
+    public Path getUserHomeDirectory(UserAccount userAccount) {
         String rootDir = ccdProperties.getWorkspaceDir();
         String userFolder = userAccount.getAccount();
 
-        return Paths.get(rootDir, userFolder).toAbsolutePath().toString();
+        return Paths.get(rootDir, userFolder);
     }
 
-    public String getUserDataDirectory(UserAccount userAccount) {
+    public Path getUserDataDirectory(UserAccount userAccount) {
         String rootDir = ccdProperties.getWorkspaceDir();
         String userFolder = userAccount.getAccount();
 
-        return Paths.get(rootDir, userFolder, DATA_FOLDER).toAbsolutePath().toString();
+        return Paths.get(rootDir, userFolder, DATA_FOLDER);
     }
 
-    public String getUserResultDirectory(UserAccount userAccount) {
+    public Path getUserResultDirectory(UserAccount userAccount) {
         String rootDir = ccdProperties.getWorkspaceDir();
         String userFolder = userAccount.getAccount();
 
-        return Paths.get(rootDir, userFolder, RESULT_FOLDER).toAbsolutePath().toString();
+        return Paths.get(rootDir, userFolder, RESULT_FOLDER);
     }
 
     public void setupUserHomeDirectory(UserAccount userAccount) {
@@ -104,31 +179,23 @@ public class FileManagementService {
         });
     }
 
-    /**
-     * Delete folder/directory. If the directory is non-empty, all the files and
-     * folder in the directory will be deleted.
-     *
-     * @param path path to folder to be deleted
-     * @throws IOException
-     */
-    public void deleteNonEmptyDir(Path path) throws IOException {
-        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exception) throws IOException {
-                if (exception == null) {
-                    Files.deleteIfExists(dir);
-                    return FileVisitResult.CONTINUE;
-                } else {
-                    throw exception;
-                }
-            }
+    public File createFileEntity(Path file, UserAccount userAccount) throws IOException {
+        BasicFileInfo fileInfo = BasicFileInfos.getBasicFileInfo(file);
+        String name = fileInfo.getFilename();
+        String title = fileInfo.getFilename();
+        Date creationTime = new Date(fileInfo.getCreationTime());
+        long fileSize = fileInfo.getSize();
+        String md5checkSum = FileMD5Hash.computeHash(file);
 
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                Files.deleteIfExists(file);
-                return FileVisitResult.CONTINUE;
-            }
-        });
+        File fileEntity = new File();
+        fileEntity.setCreationTime(creationTime);
+        fileEntity.setFileSize(fileSize);
+        fileEntity.setMd5checkSum(md5checkSum);
+        fileEntity.setName(name);
+        fileEntity.setTitle(title);
+        fileEntity.setUserAccount(userAccount);
+
+        return fileEntity;
     }
 
 }
