@@ -25,6 +25,7 @@ import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfos;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileService;
+import edu.pitt.dbmi.ccd.web.domain.file.FileInfoUpdate;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -67,20 +68,29 @@ public class FileManagementService {
         this.fileService = fileService;
     }
 
-    public File deleteFile(Long id, UserAccount userAccount) {
-        File file = fileService.getFileRepository().findByIdAndUserAccount(id, userAccount);
-        if (file != null) {
-            try {
-                Path physicalFile = getPhysicalFile(file, userAccount);
-                Files.deleteIfExists(physicalFile);
+    public File updateFileInfo(File file, FileInfoUpdate fileInfoUpdate) {
+        file.setTitle(fileInfoUpdate.getTitle());
 
-                fileService.getFileRepository().delete(file);
-            } catch (IOException exception) {
-                LOGGER.error(exception.getMessage());
-            }
+        return fileService.getFileRepository().save(file);
+    }
+
+    public void deleteFile(File file, UserAccount userAccount) {
+        try {
+            Path physicalFile = getPhysicalFile(file, userAccount);
+            Files.deleteIfExists(physicalFile);
+
+            fileService.getFileRepository().delete(file);
+        } catch (IOException exception) {
+            LOGGER.error(exception.getMessage());
+        }
+    }
+
+    public File retrieveFile(Long id, UserAccount userAccount) {
+        if (id == null || userAccount == null) {
+            return null;
         }
 
-        return file;
+        return fileService.getFileRepository().findByIdAndUserAccount(id, userAccount);
     }
 
     public void syncDatabaseWithDataDirectory(UserAccount userAccount) {

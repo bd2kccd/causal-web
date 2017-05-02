@@ -23,16 +23,23 @@ import edu.pitt.dbmi.ccd.db.entity.FileType;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
+import edu.pitt.dbmi.ccd.web.domain.file.FileInfoUpdate;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.fs.FileManagementService;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.net.MalformedURLException;
+import java.net.URL;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  *
@@ -48,37 +55,90 @@ public class FileManagementController implements ViewPath {
     private final FileManagementService fileManagementService;
     private final AppUserService appUserService;
 
-    @Autowired
     public FileManagementController(FileManagementService fileManagementService, AppUserService appUserService) {
         this.fileManagementService = fileManagementService;
         this.appUserService = appUserService;
     }
 
-    @RequestMapping(value = "delete", method = RequestMethod.POST)
-    public String delete(
-            @RequestParam(value = "fileDeleteId") final Long id,
-            @ModelAttribute("appUser") final AppUser appUser) {
+    @RequestMapping(value = "info/update", method = RequestMethod.POST)
+    public String updateFileInfo(
+            @Valid @ModelAttribute("fileInfoUpdate") final FileInfoUpdate fileInfoUpdate,
+            final BindingResult bindingResult,
+            @RequestParam(value = "id") final Long id,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final RedirectAttributes redirectAttributes,
+            final HttpServletRequest req) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        if (userAccount == null) {
-            throw new ResourceNotFoundException();
-        }
-
-        File file = fileManagementService.deleteFile(id, userAccount);
+        File file = fileManagementService.retrieveFile(id, userAccount);
         if (file == null) {
             throw new ResourceNotFoundException();
         }
 
-        return getRedirect(file.getFileType());
-    }
+        String redirectUrl = getRedirect(req, file.getFileType()) + "?id=" + file.getId();
 
-    private String getRedirect(FileType fileType) {
-        if (fileType == null) {
-            return REDIRECT_FILE_LIST;
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.fileInfoUpdate", bindingResult);
+            redirectAttributes.addFlashAttribute("fileInfoUpdate", fileInfoUpdate);
+        } else {
+            fileManagementService.updateFileInfo(file, fileInfoUpdate);
         }
 
-        switch (fileType.getName()) {
-            default:
-                return REDIRECT_FILE_LIST;
+        return redirectUrl;
+    }
+
+    @RequestMapping(value = "categorize", method = RequestMethod.GET)
+    public String categorizeFile(
+            @RequestParam(value = "id") final Long id,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        File file = fileManagementService.retrieveFile(id, userAccount);
+        if (file == null) {
+            throw new ResourceNotFoundException();
+        }
+
+        if (!model.containsAttribute("fileInfoUpdate")) {
+            model.addAttribute("fileInfoUpdate", new FileInfoUpdate(file.getTitle()));
+        }
+        model.addAttribute("file", file);
+
+        return CATEGORIZED_FILE_VIEW;
+    }
+
+    @RequestMapping(value = "delete", method = RequestMethod.POST)
+    public String delete(
+            @RequestParam(value = "id") final Long id,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final HttpServletRequest req) {
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        File file = fileManagementService.retrieveFile(id, userAccount);
+        if (file == null) {
+            throw new ResourceNotFoundException();
+        }
+        fileManagementService.deleteFile(file, userAccount);
+
+        return getRedirect(req, file.getFileType());
+    }
+
+    private String getRedirect(HttpServletRequest req, FileType fileType) {
+        String referer = req.getHeader("referer");
+        if (referer == null || referer.isEmpty()) {
+            if (fileType == null) {
+                return REDIRECT_UNCATEGORIZED_FILE;
+            }
+
+            switch (fileType.getName()) {
+                default:
+                    return REDIRECT_UNCATEGORIZED_FILE;
+            }
+        } else {
+            try {
+                URL url = new URL(referer);
+
+                return "redirect:" + url.getPath().replaceFirst("/ccd", "");
+            } catch (MalformedURLException exception) {
+                return REDIRECT_UNCATEGORIZED_FILE;
+            }
         }
     }
 

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <title>Causal Web: Categorized Files</title>
+        <meta name="description" content="causal" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="apple-touch-icon" href="../../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
+        <link rel="icon" href="../../static/favicon.ico" th:href="@{/favicon.ico}" />
+        <link rel="stylesheet" href="../../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{/vendors/bootstrap/css/bootstrap.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/bootstrap/css/bootstrap-theme.min.css" th:href="@{/vendors/bootstrap/css/bootstrap-theme.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{/vendors/font-awesome/css/font-awesome.min.css}"/>
+        <link rel="stylesheet" href="../../static/vendors/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.min.css}" />
+        <link rel="stylesheet" href="../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/datatables/DataTables-1.10.15/css/dataTables.bootstrap.min.css" th:href="@{/vendors/datatables/DataTables-1.10.15/css/dataTables.bootstrap.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/datatables/Responsive-2.1.1/css/responsive.bootstrap.min.css" th:href="@{/vendors/datatables/Responsive-2.1.1/css/responsive.bootstrap.min.css}" />
+        <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
+        <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
+        <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
+        <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
+        <script src="../../static/js/file/categorize.min.js" th:src="@{/js/file/categorize.min.js}"></script>
+    </head>
+    <body>
+        <div id="wrapper">
+            <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0" th:replace="fragments/navigation :: nav"></nav>
+            <div id="page-wrapper">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h3 class="page-header" th:text="${file.title}">File</h3>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div id="view_file_info" class="panel panel-default">
+                            <div class="panel-heading clearfix">
+                                <div class="pull-left">
+                                    <h4><i class="fa fa-file fa-fw"></i> File Information</h4>
+                                </div>
+                                <div class="pull-right">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-default" id="edit_info">
+                                            <span class="glyphicon glyphicon-edit"></span> Edit
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel-body">
+                                <table class="table table-striped table-hover table-responsive table-condensed">
+                                    <tbody>
+                                        <tr>
+                                            <td><b>Name:</b></td>
+                                            <td th:text="${file.name}"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>Title:</b></td>
+                                            <td th:text="${file.title}"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>Created:</b></td>
+                                            <td th:text="${#dates.format(file.creationTime,'MMM dd, yyyy hh:mm aaa')}"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>Size:</b></td>
+                                            <td th:text="${@fileUtils.byteToSize(file.fileSize)}"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>MD5 Checksum:</b></td>
+                                            <td th:text="${file.md5checkSum}"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="panel panel-default" id="edit_file_info">
+                            <div class="panel-heading clearfix">
+                                <div class="pull-left">
+                                    <h4><i class="fa fa-file fa-fw"></i> File Information</h4>
+                                </div>
+                                <div class="pull-right">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-default" id="cancel_info">
+                                            <span class="glyphicon glyphicon-remove-sign"></span> Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel-body">
+                                <form id="fileInfoUpdate" method="post" action="" th:action="@{/secured/file/mgmt/info/update(id=${file.id})}" th:object="${fileInfoUpdate}" role="form">
+                                    <div class="form-group">
+                                        <label for="name">Name:</label>
+                                        <input id="name" class="form-control" type="text" value="" th:value="${file.name}" disabled="disabled" />
+                                    </div>
+                                    <div class="form-group" th:class="${#fields.hasErrors('title')} ? 'form-group has-error' : 'form-group'">
+                                        <label for="title">Title:</label>
+                                        <input name="title" id="title" class="form-control" type="text" value="" th:value="*{title}" th:field="*{title}" autofocus="autofocus" required="required" />
+                                        <label for="title" class="error" id="title-error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">File title is required.</label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="creationTime">Created:</label>
+                                        <input id="creationTime" class="form-control" type="text" value="" th:value="${#dates.format(file.creationTime,'MMM dd, yyyy hh:mm aaa')}" disabled="disabled" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fileSize">Size</label>
+                                        <input id="fileSize" class="form-control" type="text" value="" th:value="${@fileUtils.byteToSize(file.fileSize)}" disabled="disabled" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="md5checkSum">MD5 Checksum</label>
+                                        <input id="md5checkSum" class="form-control" type="text" value="" th:value="${file.md5checkSum}" disabled="disabled" />
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="submit" class="btn btn-lg btn-block btn-success" value="Save" />
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <footer th:replace="fragments/footer :: footer">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="page-header"></div>
+                            <p class="text-muted">Copyright &copy; 1900 University of Pittsburgh Department of Biomedical Informatics</p>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <script src="../../static/vendors/datatable/js/jquery.dataTables.min.js" th:src="@{/vendors/datatable/js/jquery.dataTables.min.js}"></script>
+        <script src="../../static/vendors/datatable/js/dataTables.bootstrap.min.js" th:src="@{/vendors/datatable/js/dataTables.bootstrap.min.js}"></script>
+        <script src="../../static/vendors/datatable/responsive/js/dataTables.responsive.min.js" th:src="@{/vendors/datatable/responsive/js/dataTables.responsive.min.js}"></script>
+        <script src="../../static/vendors/datatable/responsive/js/responsive.bootstrap.min.js" th:src="@{/vendors/datatable/responsive/js/responsive.bootstrap.min.js}"></script>
+        <script src="../../static/vendors/datatables/DataTables-1.10.15/js/jquery.dataTables.min.js" th:src="@{/vendors/datatables/DataTables-1.10.15/js/jquery.dataTables.min.js}"></script>
+        <script src="../../static/vendors/datatables/DataTables-1.10.15/js/dataTables.bootstrap.min.js" th:src="@{/vendors/datatables/DataTables-1.10.15/js/dataTables.bootstrap.min.js}"></script>
+        <script src="../../static/vendors/datatables/Responsive-2.1.1/js/dataTables.responsive.min.js" th:src="@{/vendors/datatables/Responsive-2.1.1/js/dataTables.responsive.min.js}"></script>
+        <script src="../../static/vendors/datatables/Responsive-2.1.1/js/responsive.bootstrap.min.js" th:src="@{/vendors/datatables/Responsive-2.1.1/js/responsive.bootstrap.min.js}"></script>
+        <script src="../../static/vendors/datatables/DataTables-1.10.15/plugins/file-size.min.js" th:src="@{/vendors/datatables/DataTables-1.10.15/plugins/file-size.min.js}"></script>
+        <script src="../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
+        <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
+        <script src="../../static/js/file/categorizeValid.min.js" th:src="@{/js/file/categorizeValid.min.js}"></script>
+    </body>
+</html>

@@ -10,5 +10,5 @@ $(document).ready(function () {
 });
 $('#confirm-delete').on('show.bs.modal', function (e) {
     $(this).find('.modal-title').text('Delete File: ' + $(e.relatedTarget).data('title'));
-    $('input[name="fileDeleteId"]').val($(e.relatedTarget).data('id'));
+    $('input[name="id"]').val($(e.relatedTarget).data('id'));
 });

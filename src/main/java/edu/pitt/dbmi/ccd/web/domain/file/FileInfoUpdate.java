@@ -16,37 +16,34 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.service.file;
+package edu.pitt.dbmi.ccd.web.domain.file;
 
-import edu.pitt.dbmi.ccd.db.entity.File;
-import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.service.FileService;
-import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
- * Apr 28, 2017 6:26:31 PM
+ * Aug 17, 2016 5:29:26 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-@Service
-public class FileListService {
+public class FileInfoUpdate {
 
-    private final FileService fileService;
+    @NotBlank(message = "File title is required.")
+    private String title;
 
-    @Autowired
-    public FileListService(FileService fileService) {
-        this.fileService = fileService;
+    public FileInfoUpdate() {
     }
 
-    public List<File> retrieveAllFiles(UserAccount userAccount) {
-        return fileService.getFileRepository().findByUserAccount(userAccount);
+    public FileInfoUpdate(String title) {
+        this.title = title;
     }
 
-    public List<File> retrieveUntypedFiles(UserAccount userAccount) {
-        return fileService.getFileRepository().findUntypedFilesByUserAccount(userAccount);
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
 }

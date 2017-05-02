@@ -22,7 +22,7 @@ import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
-import edu.pitt.dbmi.ccd.web.service.file.FileListService;
+import edu.pitt.dbmi.ccd.web.service.file.UncategorizedFileService;
 import edu.pitt.dbmi.ccd.web.service.fs.FileManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -39,28 +39,28 @@ import org.springframework.web.bind.annotation.SessionAttributes;
  */
 @Controller
 @SessionAttributes("appUser")
-@RequestMapping(value = "secured/file/untyped")
-public class UntypedFileController implements ViewPath {
+@RequestMapping(value = "secured/file/uncategorized")
+public class UncategorizedFileController implements ViewPath {
 
     private final AppUserService appUserService;
     private final FileManagementService fileManagementService;
-    private final FileListService fileListService;
+    private final UncategorizedFileService uncategorizedFileService;
 
     @Autowired
-    public UntypedFileController(AppUserService appUserService, FileManagementService fileManagementService, FileListService fileListService) {
+    public UncategorizedFileController(AppUserService appUserService, FileManagementService fileManagementService, UncategorizedFileService uncategorizedFileService) {
         this.appUserService = appUserService;
         this.fileManagementService = fileManagementService;
-        this.fileListService = fileListService;
+        this.uncategorizedFileService = uncategorizedFileService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public String showFiles(AppUser appUser, Model model) {
+    public String showFiles(final AppUser appUser, final Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
         fileManagementService.syncDatabaseWithDataDirectory(userAccount);
 
-        model.addAttribute("files", fileListService.retrieveUntypedFiles(userAccount));
+        model.addAttribute("files", uncategorizedFileService.getUncategorizedFiles(userAccount));
 
-        return FILE_LIST_VIEW;
+        return UNCATEGORIZED_FILE_VIEW;
     }
 
 }

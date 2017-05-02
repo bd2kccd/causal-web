@@ -48,7 +48,10 @@ public interface ViewPath {
 
     public static final String FILE_UPLOAD_VIEW = "file/fileUpload";
 
-    public static final String FILE_LIST_VIEW = "file/untypedFile";
-    public static final String REDIRECT_FILE_LIST = "redirect:/secured/file/untyped";
+    public static final String UNCATEGORIZED_FILE_VIEW = "file/uncategorizedFile";
+    public static final String REDIRECT_UNCATEGORIZED_FILE = "redirect:/secured/file/uncategorized";
+
+    public static final String CATEGORIZED_FILE_VIEW = "file/categorizedFile";
+    public static final String REDIRECT_CATEGORIZED_FILE = "redirect:/secured/file/mgmt/categorize";
 
 }
