@@ -38,24 +38,9 @@
                                         <th>Name</th>
                                         <th>Size</th>
                                         <th>Creation Time</th>
-                                        <th>Delete</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr th:each="file : ${files}">
-                                        <td>
-                                            <a href="#" th:href="@{/secured/file/mgmt/categorize(id=${file.id})}" th:text="${file.title}"></a>
-                                        </td>
-                                        <td th:text="${@fileUtils.byteToSize(file.fileSize)}"></td>
-                                        <td th:text="${#dates.format(file.creationTime,'MMM dd, yyyy hh:mm aaa')}"></td>
-                                        <td>
-                                            <p data-placement="top" data-toggle="tooltip" title="Delete File">
-                                                <button class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#confirm-delete" th:attr="data-title=${file.title},data-id=${file.id}">
-                                                    <span class="glyphicon glyphicon-trash"></span>
-                                                </button>
-                                            </p>
-                                        </td>
-                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -71,30 +56,6 @@
                 </footer>
             </div>
         </div>
-        <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="delete" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <form id="delete_file" role="form" method="POST" action="" th:action="@{/secured/file/mgmt/delete}">
-                        <fieldset>
-                            <input type="hidden" id="id" name="id" />
-                            <div class="modal-header">
-                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
-                                <h4 class="modal-title" id="Heading">Delete File</h4>
-                            </div>
-                            <div class="modal-body">
-                                <div class="alert alert-danger"><span class="glyphicon glyphicon-warning-sign"></span> Are you sure you want to delete this file?</div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="submit" class="btn btn-danger"><span class="glyphicon glyphicon-ok-sign"></span> Yes</button>
-                                <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> No</button>
-                            </div>
-                        </fieldset>
-                    </form>
-                </div>
-                <!-- /.modal-content --> 
-            </div>
-            <!-- /.modal-dialog --> 
-        </div>
         <script src="../../static/vendors/datatable/js/jquery.dataTables.min.js" th:src="@{/vendors/datatable/js/jquery.dataTables.min.js}"></script>
         <script src="../../static/vendors/datatable/js/dataTables.bootstrap.min.js" th:src="@{/vendors/datatable/js/dataTables.bootstrap.min.js}"></script>
         <script src="../../static/vendors/datatable/responsive/js/dataTables.responsive.min.js" th:src="@{/vendors/datatable/responsive/js/dataTables.responsive.min.js}"></script>
@@ -104,6 +65,31 @@
         <script src="../../static/vendors/datatables/Responsive-2.1.1/js/dataTables.responsive.min.js" th:src="@{/vendors/datatables/Responsive-2.1.1/js/dataTables.responsive.min.js}"></script>
         <script src="../../static/vendors/datatables/Responsive-2.1.1/js/responsive.bootstrap.min.js" th:src="@{/vendors/datatables/Responsive-2.1.1/js/responsive.bootstrap.min.js}"></script>
         <script src="../../static/vendors/datatables/DataTables-1.10.15/plugins/file-size.min.js" th:src="@{/vendors/datatables/DataTables-1.10.15/plugins/file-size.min.js}"></script>
-        <script src="../../static/js/file/uncategorizedFile.min.js" th:src="@{/js/file/uncategorizedFile.min.js}"></script>
+        <script src="../../static/vendors/momentjs/moment.min.js" th:src="@{/vendors/momentjs/moment.min.js}"></script>
+        <script src="../../static/js/file/fileUtils.min.js" th:src="@{/js/file/fileUtils.min.js}"></script>
+        <script th:inline="javascript">
+            $(document).ready(function () {
+                $('#file_table').DataTable({
+                    "sAjaxSource": /*[[@{${#strings.replace(#httpServletRequest.getRequestURL(), #httpServletRequest.getRequestURI(), #httpServletRequest.getContextPath())} + '/secured/rest/file/uncategorized'}]]*/ "",
+                    "sAjaxDataProp": "",
+                    "order": [[0, "asc"]],
+                    "aoColumns": [
+                        {"mData": "title"},
+                        {"mData": "fileSize"},
+                        {"mData": "creationTime"}
+                    ],
+                    "columnDefs": [
+                        {"render": function (data) {
+                                return toHumanReadableSize(data);
+                            }, "type": 'file-size', "targets": 1
+                        },
+                        {"render": function (data) {
+                                return moment(data).format('MM/DD/YYYY h:mm:ss a');
+                            }, "targets": 2
+                        }
+                    ]
+                })
+            });
+        </script>
     </body>
 </html>

@@ -18,48 +18,47 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.file;
 
+import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.file.UncategorizedFileService;
 import edu.pitt.dbmi.ccd.web.service.fs.FileManagementService;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
 /**
  *
- * Apr 28, 2017 4:57:05 PM
+ * May 3, 2017 2:25:20 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-@Controller
+@RestController
 @SessionAttributes("appUser")
-@RequestMapping(value = "secured/file/uncategorized")
-public class UncategorizedFileController implements ViewPath {
+@RequestMapping(value = "secured/rest/file/uncategorized")
+public class UncategorizedFileRestController {
 
     private final AppUserService appUserService;
     private final FileManagementService fileManagementService;
     private final UncategorizedFileService uncategorizedFileService;
 
     @Autowired
-    public UncategorizedFileController(AppUserService appUserService, FileManagementService fileManagementService, UncategorizedFileService uncategorizedFileService) {
+    public UncategorizedFileRestController(AppUserService appUserService, FileManagementService fileManagementService, UncategorizedFileService uncategorizedFileService) {
         this.appUserService = appUserService;
         this.fileManagementService = fileManagementService;
         this.uncategorizedFileService = uncategorizedFileService;
     }
 
-    @RequestMapping(method = RequestMethod.GET)
-    public String showFiles(final AppUser appUser, final Model model) {
+    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<File> showFiles(final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        fileManagementService.syncDatabaseWithDataDirectory(userAccount);
 
-//        model.addAttribute("files", uncategorizedFileService.getUncategorizedFiles(userAccount));
-        return UNCATEGORIZED_FILE_VIEW;
+        return uncategorizedFileService.getUncategorizedFiles(userAccount);
     }
 
 }
