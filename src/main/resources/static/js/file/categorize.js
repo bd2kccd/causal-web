@@ -6,19 +6,11 @@ function fileTypeAction(chkOpt) {
         $('#datasetOptions').addClass('none');
     }
 }
+function switchFileInfoForm() {
+    $("#view_file_info").toggle();
+    $("#edit_file_info").toggle();
+}
 $(document).ready(function () {
-    $("#view_file_info").show();
-    $("#edit_file_info").hide();
-
-    $("#edit_info").click(function () {
-        $("#view_file_info").hide();
-        $("#edit_file_info").show();
-    });
-    $("#cancel_info").click(function () {
-        $("#view_file_info").show();
-        $("#edit_file_info").hide();
-    });
-
     fileTypeAction($("input[name='fileTypeId']:checked"));
 });
 $(document).on('click', '#categorize_file', function (e) {

@@ -32,14 +32,14 @@
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
-                        <div id="view_file_info" class="panel panel-default">
+                        <div id="view_file_info" class="panel panel-default" style="display: block;">
                             <div class="panel-heading clearfix">
                                 <div class="pull-left">
                                     <h4><i class="fa fa-file fa-fw"></i> File Information</h4>
                                 </div>
                                 <div class="pull-right">
                                     <div class="btn-group">
-                                        <button type="button" class="btn btn-default" id="edit_info">
+                                        <button type="button" class="btn btn-default" onclick="switchFileInfoForm();">
                                             <span class="glyphicon glyphicon-edit"></span> Edit
                                         </button>
                                     </div>
@@ -72,14 +72,14 @@
                                 </table>
                             </div>
                         </div>
-                        <div class="panel panel-default" id="edit_file_info">
+                        <div class="panel panel-default" id="edit_file_info" style="display: none;">
                             <div class="panel-heading clearfix">
                                 <div class="pull-left">
                                     <h4><i class="fa fa-file fa-fw"></i> File Information</h4>
                                 </div>
                                 <div class="pull-right">
                                     <div class="btn-group">
-                                        <button type="button" class="btn btn-default" id="cancel_info">
+                                        <button type="button" class="btn btn-default" onclick="switchFileInfoForm();">
                                             <span class="glyphicon glyphicon-remove-sign"></span> Cancel
                                         </button>
                                     </div>
