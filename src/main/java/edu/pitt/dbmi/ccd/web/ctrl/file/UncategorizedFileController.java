@@ -18,17 +18,23 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.file;
 
+import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.file.UncategorizedFileService;
 import edu.pitt.dbmi.ccd.web.service.fs.FileManagementService;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
 /**
@@ -60,6 +66,30 @@ public class UncategorizedFileController implements ViewPath {
 
 //        model.addAttribute("files", uncategorizedFileService.getUncategorizedFiles(userAccount));
         return UNCATEGORIZED_FILE_VIEW;
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> listFiles(final AppUser appUser) {
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        if (userAccount == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<File> file = uncategorizedFileService.getUncategorizedFiles(userAccount);
+
+        return ResponseEntity.ok(file);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "delete", method = RequestMethod.POST)
+    public ResponseEntity<?> listFiles(
+            @RequestParam(value = "id") final Long id,
+            final AppUser appUser) {
+        System.out.println("================================================================================");
+        System.out.println(id);
+        System.out.println("================================================================================");
+        return ResponseEntity.ok().build();
     }
 
 }
