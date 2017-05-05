@@ -31,6 +31,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -38,6 +39,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -105,19 +107,20 @@ public class FileManagementController implements ViewPath {
         return CATEGORIZED_FILE_VIEW;
     }
 
+    @ResponseBody
     @RequestMapping(value = "delete", method = RequestMethod.POST)
-    public String delete(
+    public ResponseEntity<?> listFiles(
             @RequestParam(value = "id") final Long id,
-            @ModelAttribute("appUser") final AppUser appUser,
-            final HttpServletRequest req) {
+            final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
         File file = fileManagementService.retrieveFile(id, userAccount);
         if (file == null) {
-            throw new ResourceNotFoundException();
+            return ResponseEntity.notFound().build();
         }
+
         fileManagementService.deleteFile(file, userAccount);
 
-        return getRedirect(req, file.getFileType());
+        return ResponseEntity.ok(file.getId());
     }
 
     private String getRedirect(HttpServletRequest req, FileType fileType) {

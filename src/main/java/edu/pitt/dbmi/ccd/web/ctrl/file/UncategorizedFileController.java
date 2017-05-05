@@ -33,7 +33,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
@@ -64,7 +63,6 @@ public class UncategorizedFileController implements ViewPath {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
         fileManagementService.syncDatabaseWithDataDirectory(userAccount);
 
-//        model.addAttribute("files", uncategorizedFileService.getUncategorizedFiles(userAccount));
         return UNCATEGORIZED_FILE_VIEW;
     }
 
@@ -79,17 +77,6 @@ public class UncategorizedFileController implements ViewPath {
         List<File> file = uncategorizedFileService.getUncategorizedFiles(userAccount);
 
         return ResponseEntity.ok(file);
-    }
-
-    @ResponseBody
-    @RequestMapping(value = "delete", method = RequestMethod.POST)
-    public ResponseEntity<?> listFiles(
-            @RequestParam(value = "id") final Long id,
-            final AppUser appUser) {
-        System.out.println("================================================================================");
-        System.out.println(id);
-        System.out.println("================================================================================");
-        return ResponseEntity.ok().build();
     }
 
 }

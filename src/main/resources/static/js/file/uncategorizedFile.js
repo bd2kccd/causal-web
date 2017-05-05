@@ -1,14 +1,52 @@
 $(document).ready(function () {
-    $('#file_table').DataTable({
-        "order": [[2, "desc"]],
-        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+    var fileTable = $('#file_table').DataTable({
+        "sAjaxSource": listUrl,
+        "sAjaxDataProp": "",
+        "aoColumns": [
+            {"mData": "title"},
+            {"mData": "fileSize"},
+            {"mData": "creationTime"}
+        ],
         "columnDefs": [
-            {type: 'file-size', targets: 1},
-            {"orderable": false, "bSearchable": false, "targets": 3}
-        ]
+            {"render": function (data) {
+                    return toHumanReadableSize(data);
+                }, "type": 'file-size', "targets": 1
+            },
+            {"render": function (data) {
+                    return moment(data).format('MM/DD/YYYY hh:mm:ss a');
+                }, "targets": 2
+            },
+            {"render": function () {
+                    return '<button class="btn btn-danger btn-xs delete">'
+                            + '<span class="glyphicon glyphicon-trash"></span>'
+                            + '</button>';
+                }, "orderable": false, "bSearchable": false, "targets": 3
+            }
+        ],
+        "order": [[0, "asc"]]
     });
-});
-$('#confirm-delete').on('show.bs.modal', function (e) {
-    $(this).find('.modal-title').text('Delete File: ' + $(e.relatedTarget).data('title'));
-    $('input[name="id"]').val($(e.relatedTarget).data('id'));
+
+    $('#file_table tbody').on('click', 'tr td .delete', function () {
+        var rowNum = $(this).parents('tr')[0];
+        var row = fileTable.row(rowNum);
+        var rowData = row.data();
+        $('#confirm_delete').find('.modal-title').text('Delete File: ' + rowData['title']);
+        $('#del_btn').data('id', row.index());
+        $('#confirm_delete').modal('toggle');
+    });
+
+    $(document).on('click', '#del_btn', function (e) {
+        var rowNum = $('#del_btn').data('id');
+        var row = fileTable.row(rowNum);
+        var rowData = row.data();
+
+        $.ajax({
+            url: deleteUrl,
+            data: {"id": rowData['id']},
+            type: 'POST',
+            success: function () {
+                row.remove().draw();
+            }
+        });
+    });
 });

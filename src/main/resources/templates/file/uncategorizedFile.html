@@ -24,6 +24,10 @@
         <script src="../../static/vendors/datatables/Responsive-2.1.1/js/dataTables.responsive.min.js" th:src="@{/vendors/datatables/Responsive-2.1.1/js/dataTables.responsive.min.js}"></script>
         <script src="../../static/vendors/datatables/Responsive-2.1.1/js/responsive.bootstrap.min.js" th:src="@{/vendors/datatables/Responsive-2.1.1/js/responsive.bootstrap.min.js}"></script>
         <script src="../../static/vendors/datatables/plugins/file-size.min.js" th:src="@{/vendors/datatables/plugins/file-size.min.js}"></script>
+        <script th:inline="javascript">
+            var listUrl = /*[[@{/secured/file/uncategorized/list}]]*/ "";
+            var deleteUrl = /*[[@{/secured/file/mgmt/delete}]]*/ "";
+        </script>
     </head>
     <body>
         <div id="wrapper">
@@ -81,44 +85,6 @@
         </div>
         <script src="../../static/vendors/momentjs/moment.min.js" th:src="@{/vendors/momentjs/moment.min.js}"></script>
         <script src="../../static/js/file/fileUtils.min.js" th:src="@{/js/file/fileUtils.min.js}"></script>
-        <script th:inline="javascript">
-            $(document).ready(function () {
-                var fileTable = $('#file_table').DataTable({
-                    "sAjaxSource": /*[[@{/secured/file/uncategorized/list}]]*/ "",
-                    "sAjaxDataProp": "",
-                    "aoColumns": [
-                        {"mData": "title"},
-                        {"mData": "fileSize"},
-                        {"mData": "creationTime"}
-                    ],
-                    "columnDefs": [
-                        {"render": function (data) {
-                                return toHumanReadableSize(data);
-                            }, "type": 'file-size', "targets": 1
-                        },
-                        {"render": function (data) {
-                                return moment(data).format('MM/DD/YYYY hh:mm:ss a');
-                            }, "targets": 2
-                        },
-                        {"render": function () {
-                                return '<button class="btn btn-danger btn-xs delete">'
-                                        + '<span class="glyphicon glyphicon-trash"></span>'
-                                        + '</button>';
-                            }, "orderable": false, "bSearchable": false, "targets": 3
-                        }
-                    ],
-                    "order": [[0, "asc"]]
-                });
-
-                $('#file_table tbody').on('click', 'tr td .delete', function () {
-                    var row = $(this).parents('tr')[0];
-                    var rowData = (fileTable.row(row).data());
-                    $('#confirm_delete').find('.modal-title').text('Delete File: ' + rowData['title']);
-                    $('#confirm_delete').modal('toggle');
-                });
-                $(document).on('click', '#del_btn', function (e) {
-                });
-            });
-        </script>
+        <script src="../../static/js/file/uncategorizedFile.min.js" th:inline="javascript" th:src="@{/js/file/uncategorizedFile.min.js}"></script>
     </body>
 </html>
