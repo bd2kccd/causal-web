@@ -15,11 +15,11 @@ $(document).ready(function () {
                 }, "type": 'file-size', "targets": 1
             },
             {"render": function (data) {
-                    return moment(data).format('MM/DD/YYYY hh:mm:ss a');
+                    return moment(data).format('MMM DD, YYYY hh:mm:ss A');
                 }, "targets": 2
             },
             {"render": function () {
-                    return '<button class="btn btn-danger btn-xs delete">'
+                    return '<button class="btn btn-danger btn-xs delete" data-placement="top" data-toggle="tooltip" title="Delete File">'
                             + '<span class="glyphicon glyphicon-trash"></span>'
                             + '</button>';
                 }, "orderable": false, "bSearchable": false, "targets": 3
@@ -51,4 +51,6 @@ $(document).ready(function () {
             }
         });
     });
+
+    $('body').tooltip({selector: '[data-toggle="tooltip"]'});
 });

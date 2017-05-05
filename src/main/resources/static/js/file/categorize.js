@@ -11,6 +11,8 @@ function switchFileInfoForm() {
     $("#edit_file_info").toggle();
 }
 $(document).ready(function () {
+    $("[data-toggle=tooltip]").tooltip();
+
     fileTypeAction($("input[name='fileTypeId']:checked"));
 });
 $(document).on('click', '#categorize_file', function (e) {
