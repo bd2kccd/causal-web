@@ -3,7 +3,9 @@ $(document).ready(function () {
         "sAjaxSource": listUrl,
         "sAjaxDataProp": "",
         "aoColumns": [
-            {"mData": "title"},
+            {"mData": function (data) {
+                    return '<a href="' + categoryUrl + data.id + '">' + data.title + '</a>';
+                }},
             {"mData": "fileSize"},
             {"mData": "creationTime"}
         ],
