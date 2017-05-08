@@ -25,7 +25,6 @@ import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfos;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileService;
-import edu.pitt.dbmi.ccd.web.domain.file.FileInfoUpdate;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -68,8 +67,8 @@ public class FileManagementService {
         this.fileService = fileService;
     }
 
-    public File updateFileInfo(File file, FileInfoUpdate fileInfoUpdate) {
-        file.setTitle(fileInfoUpdate.getTitle());
+    public File updateFileTitle(File file, String title) {
+        file.setTitle(title);
 
         return fileService.getFileRepository().save(file);
     }

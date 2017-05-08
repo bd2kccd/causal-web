@@ -23,25 +23,25 @@ import edu.pitt.dbmi.ccd.db.entity.FileType;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.domain.file.FileInfoUpdate;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.fs.FileManagementService;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  *
@@ -54,6 +54,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping(value = "secured/file/mgmt")
 public class FileManagementController implements ViewPath {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileManagementController.class);
+
     private final FileManagementService fileManagementService;
     private final AppUserService appUserService;
 
@@ -62,30 +64,31 @@ public class FileManagementController implements ViewPath {
         this.appUserService = appUserService;
     }
 
-    @RequestMapping(value = "info/update", method = RequestMethod.POST)
-    public String updateFileInfo(
-            @Valid @ModelAttribute("fileInfoUpdate") final FileInfoUpdate fileInfoUpdate,
-            final BindingResult bindingResult,
-            @RequestParam(value = "id") final Long id,
-            @ModelAttribute("appUser") final AppUser appUser,
-            final RedirectAttributes redirectAttributes,
-            final HttpServletRequest req) {
+    @ResponseBody
+    @RequestMapping(value = "title", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> listFiles(
+            @RequestParam(value = "pk") final Long id,
+            @RequestParam(value = "value") final String title,
+            final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
         File file = fileManagementService.retrieveFile(id, userAccount);
         if (file == null) {
-            throw new ResourceNotFoundException();
+            return ResponseEntity.notFound().build();
         }
 
-        String redirectUrl = getRedirect(req, file.getFileType()) + "?id=" + file.getId();
-
-        if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.fileInfoUpdate", bindingResult);
-            redirectAttributes.addFlashAttribute("fileInfoUpdate", fileInfoUpdate);
+        if (title == null || title.trim().length() == 0) {
+            return ResponseEntity.badRequest().body("Title cannot be blank.");
         } else {
-            fileManagementService.updateFileInfo(file, fileInfoUpdate);
+            try {
+                fileManagementService.updateFileTitle(file, title);
+            } catch (Exception exception) {
+                LOGGER.error(exception.getMessage());
+
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to update file title.");
+            }
         }
 
-        return redirectUrl;
+        return ResponseEntity.ok().build();
     }
 
     @RequestMapping(value = "categorize", method = RequestMethod.GET)
@@ -99,9 +102,6 @@ public class FileManagementController implements ViewPath {
             throw new ResourceNotFoundException();
         }
 
-        if (!model.containsAttribute("fileInfoUpdate")) {
-            model.addAttribute("fileInfoUpdate", new FileInfoUpdate(file.getTitle()));
-        }
         model.addAttribute("file", file);
 
         return CATEGORIZED_FILE_VIEW;
@@ -118,7 +118,13 @@ public class FileManagementController implements ViewPath {
             return ResponseEntity.notFound().build();
         }
 
-        fileManagementService.deleteFile(file, userAccount);
+        try {
+            fileManagementService.deleteFile(file, userAccount);
+        } catch (Exception exception) {
+            LOGGER.error(exception.getMessage());
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to delete file.");
+        }
 
         return ResponseEntity.ok(file.getId());
     }

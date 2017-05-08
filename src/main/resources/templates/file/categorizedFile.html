@@ -15,10 +15,12 @@
         <link rel="stylesheet" href="../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
         <link rel="stylesheet" href="../../static/vendors/datatables/DataTables-1.10.15/css/dataTables.bootstrap.min.css" th:href="@{/vendors/datatables/DataTables-1.10.15/css/dataTables.bootstrap.min.css}" />
         <link rel="stylesheet" href="../../static/vendors/datatables/Responsive-2.1.1/css/responsive.bootstrap.min.css" th:href="@{/vendors/datatables/Responsive-2.1.1/css/responsive.bootstrap.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/x-editable/css/bootstrap-editable.min.css" th:href="@{/vendors/x-editable/css/bootstrap-editable.min.css}" />
         <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
         <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
         <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
+        <script src="../../static/vendors/x-editable/js/bootstrap-editable.min.js" th:src="@{/vendors/x-editable/js/bootstrap-editable.min.js}"></script>
         <script src="../../static/js/file/categorize.min.js" th:src="@{/js/file/categorize.min.js}"></script>
     </head>
     <body>
@@ -27,7 +29,7 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h3 class="page-header" th:text="${file.title}">File</h3>
+                        <h3 id="page_title" class="page-header" th:text="${file.title}">File</h3>
                     </div>
                 </div>
                 <div class="row">
@@ -42,33 +44,22 @@
                                         <tr>
                                             <td><b>Name:</b></td>
                                             <td th:text="${file.name}"></td>
-                                            <td></td>
                                         </tr>
                                         <tr>
                                             <td><b>Title:</b></td>
-                                            <td th:text="${file.title}"></td>
-                                            <td>
-                                                <p data-placement="top" data-toggle="tooltip" title="Edit">
-                                                    <button class="btn btn-success btn-xs">
-                                                        <span class="glyphicon glyphicon-edit"></span>
-                                                    </button>
-                                                </p>
-                                            </td>
+                                            <td><a href="#" class="editable editable-click" id="title" data-type="text" data-title="Enter file title." th:attr="data-pk=${file.id},data-url=@{/secured/file/mgmt/title}" th:text="${file.title}"></a></td>
                                         </tr>
                                         <tr>
                                             <td><b>Created:</b></td>
                                             <td th:text="${#dates.format(file.creationTime,'MMM dd, yyyy hh:mm:ss aaa')}"></td>
-                                            <td></td>
                                         </tr>
                                         <tr>
                                             <td><b>Size:</b></td>
                                             <td th:text="${@fileUtils.byteToSize(file.fileSize)}"></td>
-                                            <td></td>
                                         </tr>
                                         <tr>
                                             <td><b>MD5 Checksum:</b></td>
                                             <td th:text="${file.md5checkSum}"></td>
-                                            <td></td>
                                         </tr>
                                     </tbody>
                                 </table>
