@@ -19,9 +19,6 @@
         <script src="../../../../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
         <script>
             $(document).ready(function () {
-                $("#view_info_panel").show();
-                $("#edit_info_panel").hide();
-
                 $("#edit_info").click(function () {
                     $("#view_info_panel").hide();
                     $("#edit_info_panel").show();
@@ -30,48 +27,18 @@
                     $("#view_info_panel").show();
                     $("#edit_info_panel").hide();
                 });
-
-                $("#view_workspace_panel").show();
-                $("#edit_workspace_panel").hide();
-
-                $("#edit_workspace").click(function () {
-                    $("#view_workspace_panel").hide();
-                    $("#edit_workspace_panel").show();
-                });
-                $("#cancel_workspace").click(function () {
-                    $("#view_workspace_panel").show();
-                    $("#edit_workspace_panel").hide();
-                });
-
-                $("#view_usqa_panel").show();
-                $("#edit_usqa_panel").hide();
-
-                $("#edit_usqa").click(function () {
-                    $("#view_usqa_panel").hide();
-                    $("#edit_usqa_panel").show();
-                });
-                $("#cancel_usqa").click(function () {
-                    $("#view_usqa_panel").show();
-                    $("#edit_usqa_panel").hide();
-                });
             });
         </script>
     </head>
     <body>
         <div class="row">
             <div class="col-lg-12" id="user_info">
-                <div class="panel panel-default" id="view_info_panel">
+                <div class="panel panel-default" id="view_info_panel" style="display: block;">
                     <div class="panel-heading clearfix">
-                        <div class="pull-left">
-                            <h4><i class="fa fa-user fa-fw"></i> User Information</h4>
-                        </div>
-                        <div class="pull-right">
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-default" id="edit_info">
-                                    <span class="glyphicon glyphicon-edit"></span> Edit
-                                </button>
-                            </div>
-                        </div>
+                        <h4 class="panel-title pull-left"><i class="fa fa-user fa-fw"></i> User Information</h4>
+                        <button type="button" class="btn btn-default btn-sm pull-right" id="edit_info">
+                            <span class="glyphicon glyphicon-edit"></span> Edit
+                        </button>
                     </div>
                     <div class="panel-body">
                         <div class="alert alert-danger" role="alert" th:if="${errorMsgUserInfo}">
@@ -99,18 +66,12 @@
                         </table>
                     </div>
                 </div>
-                <div class="panel panel-default" id="edit_info_panel">
+                <div class="panel panel-default" id="edit_info_panel" style="display: none;">
                     <div class="panel-heading clearfix">
-                        <div class="pull-left">
-                            <h4><i class="fa fa-user fa-fw"></i> User Information</h4>
-                        </div>
-                        <div class="pull-right">
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-default" id="cancel_info">
-                                    <span class="glyphicon glyphicon-remove-sign"></span> Cancel
-                                </button>
-                            </div>
-                        </div>
+                        <h4 class="panel-title pull-left"><i class="fa fa-user fa-fw"></i> User Information</h4>
+                        <button type="button" class="btn btn-default btn-sm pull-right" id="cancel_info">
+                            <span class="glyphicon glyphicon-remove-sign"></span> Cancel
+                        </button>
                     </div>
                     <div class="panel-body">
                         <form role="form" method="post" action="" th:action="@{/secured/user/account/profile/info/change}" th:object="${userInfoForm}">
