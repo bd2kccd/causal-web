@@ -32,13 +32,13 @@ import org.hibernate.validator.constraints.NotBlank;
 public class UserRegistrationForm {
 
     @NotBlank(message = "Email is required.")
-    @Email(message = "Please enter a valid email")
+    @Email(message = "Please enter your email.")
     private String registerEmail;
 
     @Length(min = 4, max = 10, message = "Please enter a password (4-10 chars).")
     private String registerPassword;
 
-    @Length(min = 4, max = 10, message = "Please reenter the password.")
+    @Length(min = 4, max = 10, message = "Please re-enter your password.")
     private String confirmRegisterPassword;
 
     @AssertTrue(message = "You must agree to the terms and conditions.")

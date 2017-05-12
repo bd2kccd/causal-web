@@ -13,7 +13,7 @@ $(document).ready(function () {
         },
         messages: {
             password: "Please enter valid a password (4-10 chars).",
-            confirmPassword: "Please reenter the password.",
+            confirmPassword: "Please re-enter your password.",
         },
         highlight: function (element) {
             $(element).closest('.form-group').addClass('has-error');

@@ -18,7 +18,7 @@ $('#passwordChange').validate({
     },
     messages: {
         currentPassword: "Please enter your current password.",
-        newPassword: "Please enter valid a password (4-10 chars).",
+        newPassword: "Please enter a new password (4-10 chars).",
         newConfirmPassword: "Password does not match."
     },
     highlight: function (element) {

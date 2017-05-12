@@ -14,7 +14,7 @@ $(document).ready(function () {
         },
         messages: {
             email: {
-                email: "Please enter a valid email.",
+                email: "Please enter your email.",
                 required: "E-mail is required."
             },
             password: "Please enter your password."
@@ -44,7 +44,7 @@ $(document).ready(function () {
         },
         messages: {
             emailRecoverFrom: {
-                email: "Please enter a valid email.",
+                email: "Please enter your email.",
                 required: "Email is required."
             }
         },
@@ -81,9 +81,9 @@ $(document).ready(function () {
             }
         },
         messages: {
-            registerEmail: "Please enter a valid email.",
-            registerPassword: "Please enter valid a password (4-10 chars).",
-            confirmRegisterPassword: "Please reenter the password.",
+            registerEmail: "Please enter your email.",
+            registerPassword: "Please enter a password (4-10 chars).",
+            confirmRegisterPassword: "Please re-enter your password.",
         },
         highlight: function (element) {
             $(element).closest('.form-group').addClass('has-error');
