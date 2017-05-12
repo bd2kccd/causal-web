@@ -18,10 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.service.fs;
 
-import edu.pitt.dbmi.ccd.commons.file.FileMD5Hash;
 import edu.pitt.dbmi.ccd.commons.file.FileSys;
-import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
-import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfos;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileService;
@@ -30,8 +27,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -93,45 +88,41 @@ public class FileManagementService {
     }
 
     public void syncDatabaseWithDataDirectory(UserAccount userAccount) {
-        // grab all the files from the database
-        Map<String, File> dbFileMap = new HashMap<>();
-        List<File> dbFileList = fileService.getFileRepository().findByUserAccount(userAccount);
-        dbFileList.forEach(file -> {
-            dbFileMap.put(file.getName(), file);
-        });
-
-        List<File> filesToSave = new LinkedList<>();
+        List<Path> localFiles = new LinkedList<>();
         try {
             Path userDataDir = getUserDataDirectory(userAccount);
-            List<Path> localFiles = FileSys.listFilesInDirectory(userDataDir, false);
-            localFiles.forEach(localFile -> {
-                String fileName = localFile.getFileName().toString();
-
-                if (dbFileMap.containsKey(fileName)) {
-                    dbFileMap.remove(fileName);
-                } else {
-                    try {
-                        filesToSave.add(createFileEntity(localFile, userAccount));
-                    } catch (IOException exception) {
-                        LOGGER.error(exception.getMessage());
-                    }
-                }
-            });
+            localFiles.addAll(FileSys.listFilesInDirectory(userDataDir, false));
         } catch (IOException exception) {
             LOGGER.error(exception.getMessage());
         }
 
-        if (!dbFileMap.isEmpty()) {
-            List<File> files = new LinkedList<>();
-            dbFileMap.forEach((key, value) -> {
-                System.out.println(key);
-                files.add(value);
-            });
-            fileService.getFileRepository().delete(files);
-        }
+        if (localFiles.isEmpty()) {
+            fileService.getFileRepository().deleteAll();
+        } else {
+            // grab all the files from the database
+            Map<String, File> dbFileMap = fileService.getUserFiles(userAccount);
 
-        if (!filesToSave.isEmpty()) {
-            fileService.getFileRepository().save(filesToSave);
+            List<Path> filesToSave = new LinkedList<>();
+            localFiles.forEach(localFile -> {
+                String fileName = localFile.getFileName().toString();
+                if (dbFileMap.containsKey(fileName)) {
+                    dbFileMap.remove(fileName);
+                } else {
+                    filesToSave.add(localFile);
+                }
+            });
+
+            if (!dbFileMap.isEmpty()) {
+                List<File> files = new LinkedList<>();
+                dbFileMap.forEach((key, value) -> {
+                    files.add(value);
+                });
+                fileService.getFileRepository().delete(files);
+            }
+
+            if (!filesToSave.isEmpty()) {
+                fileService.persistLocalFiles(localFiles, userAccount);
+            }
         }
     }
 
@@ -186,25 +177,6 @@ public class FileManagementService {
                 }
             }
         });
-    }
-
-    public File createFileEntity(Path file, UserAccount userAccount) throws IOException {
-        BasicFileInfo fileInfo = BasicFileInfos.getBasicFileInfo(file);
-        String name = fileInfo.getFilename();
-        String title = fileInfo.getFilename();
-        Date creationTime = new Date(fileInfo.getCreationTime());
-        long fileSize = fileInfo.getSize();
-        String md5checkSum = FileMD5Hash.computeHash(file);
-
-        File fileEntity = new File();
-        fileEntity.setCreationTime(creationTime);
-        fileEntity.setFileSize(fileSize);
-        fileEntity.setMd5checkSum(md5checkSum);
-        fileEntity.setName(name);
-        fileEntity.setTitle(title);
-        fileEntity.setUserAccount(userAccount);
-
-        return fileEntity;
     }
 
 }

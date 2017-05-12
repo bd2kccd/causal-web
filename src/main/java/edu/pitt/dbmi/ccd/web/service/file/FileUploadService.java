@@ -57,16 +57,7 @@ public class FileUploadService {
     }
 
     public File saveFileToDatabase(Path file, UserAccount userAccount) {
-        File savedFileEntity = null;
-
-        try {
-            File fileEntity = fileManagementService.createFileEntity(file, userAccount);
-            savedFileEntity = fileService.getFileRepository().save(fileEntity);
-        } catch (IOException exception) {
-            LOGGER.error(exception.getMessage());
-        }
-
-        return savedFileEntity;
+        return fileService.persistLocalFile(file, userAccount);
     }
 
     public Path combineAllChunks(ResumableChunk chunk, UserAccount userAccount) {
