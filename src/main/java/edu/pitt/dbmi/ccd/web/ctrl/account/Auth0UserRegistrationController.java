@@ -19,6 +19,7 @@
 package edu.pitt.dbmi.ccd.web.ctrl.account;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.UserEventLogService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.account.UserRegistrationForm;
@@ -65,6 +66,7 @@ public class Auth0UserRegistrationController implements ViewPath {
     private final FileManagementService fileManagementService;
     private final AuthenticationService authenticationService;
     private final AppUserService appUserService;
+    private final UserEventLogService userEventLogService;
 
     @Autowired
     public Auth0UserRegistrationController(
@@ -73,13 +75,15 @@ public class Auth0UserRegistrationController implements ViewPath {
             UserRegistrationMailService userRegistrationMailService,
             FileManagementService fileManagementService,
             AuthenticationService authenticationService,
-            AppUserService appUserService) {
+            AppUserService appUserService,
+            UserEventLogService userEventLogService) {
         this.auth0UserRegistrationService = auth0UserRegistrationService;
         this.userRegistrationService = userRegistrationService;
         this.userRegistrationMailService = userRegistrationMailService;
         this.fileManagementService = fileManagementService;
         this.authenticationService = authenticationService;
         this.appUserService = appUserService;
+        this.userEventLogService = userEventLogService;
     }
 
     @RequestMapping(method = RequestMethod.POST)
@@ -97,6 +101,7 @@ public class Auth0UserRegistrationController implements ViewPath {
             if (userAccount == null) {
                 redirAttrs.addFlashAttribute("errorMsg", REGISTRATION_FAILED);
             } else {
+                userEventLogService.logUserRegistration(userAccount);
                 userRegistrationMailService.sendUserRegistrationAlertToAdmin(userAccount);
                 Subject subject = authenticationService.loginManually(userAccount, req, res);
                 if (subject.isAuthenticated()) {

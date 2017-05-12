@@ -19,6 +19,7 @@
 package edu.pitt.dbmi.ccd.web.ctrl;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.UserEventLogService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.LoginForm;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
@@ -54,15 +55,18 @@ public class ApplicationController implements ViewPath {
     private final AuthenticationService authenticationService;
     private final AppUserService appUserService;
     private final FileManagementService fileManagementService;
+    private final UserEventLogService userEventLogService;
 
     @Autowired
     public ApplicationController(
             AuthenticationService authenticationService,
             AppUserService appUserService,
-            FileManagementService fileManagementService) {
+            FileManagementService fileManagementService,
+            UserEventLogService userEventLogService) {
         this.authenticationService = authenticationService;
         this.appUserService = appUserService;
         this.fileManagementService = fileManagementService;
+        this.userEventLogService = userEventLogService;
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
@@ -88,6 +92,7 @@ public class ApplicationController implements ViewPath {
         if (currentUser.isAuthenticated()) {
             UserAccount userAccount = authenticationService.retrieveUserAccount(currentUser);
             if (userAccount != null && userAccount.isActivated()) {
+                userEventLogService.logUserLogin(userAccount);
                 fileManagementService.setupUserHomeDirectory(userAccount);
                 redirAttrs.addFlashAttribute("appUser", appUserService.create(userAccount, false));
                 authenticationService.setLoginInfo(userAccount, req.getRemoteAddr());

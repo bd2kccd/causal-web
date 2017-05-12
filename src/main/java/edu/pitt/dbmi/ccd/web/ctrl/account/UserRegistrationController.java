@@ -19,6 +19,7 @@
 package edu.pitt.dbmi.ccd.web.ctrl.account;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.UserEventLogService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.account.UserRegistrationForm;
 import edu.pitt.dbmi.ccd.web.domain.template.MessageTemplateData;
@@ -69,6 +70,7 @@ public class UserRegistrationController implements ViewPath {
     private final AuthenticationService authenticationService;
     private final AppUserService appUserService;
     private final FileManagementService fileManagementService;
+    private final UserEventLogService userEventLogService;
 
     @Autowired
     public UserRegistrationController(
@@ -76,12 +78,14 @@ public class UserRegistrationController implements ViewPath {
             UserRegistrationMailService userRegistrationMailService,
             AuthenticationService authenticationService,
             AppUserService appUserService,
-            FileManagementService fileManagementService) {
+            FileManagementService fileManagementService,
+            UserEventLogService userEventLogService) {
         this.userRegistrationService = userRegistrationService;
         this.userRegistrationMailService = userRegistrationMailService;
         this.authenticationService = authenticationService;
         this.appUserService = appUserService;
         this.fileManagementService = fileManagementService;
+        this.userEventLogService = userEventLogService;
     }
 
     @InitBinder
@@ -133,6 +137,7 @@ public class UserRegistrationController implements ViewPath {
                 if (userAccount == null) {
                     redirAttrs.addFlashAttribute("errorMsg", REGISTRATION_FAILED);
                 } else {
+                    userEventLogService.logUserRegistration(userAccount);
                     userRegistrationMailService.sendUserRegistrationAlertToAdmin(userAccount);
                     if (userAccount.isActivated()) {
                         Subject subject = authenticationService.loginManually(userAccount, req, res);

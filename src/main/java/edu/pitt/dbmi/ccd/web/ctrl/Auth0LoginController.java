@@ -22,6 +22,7 @@ import com.auth0.Auth0User;
 import com.auth0.NonceUtils;
 import com.auth0.SessionUtils;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.UserEventLogService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.LoginForm;
 import edu.pitt.dbmi.ccd.web.domain.account.PasswordResetRequestForm;
@@ -70,15 +71,18 @@ public class Auth0LoginController implements ViewPath {
     private final Auth0LoginService auth0LoginService;
     private final AuthenticationService authenticationService;
     private final AppUserService appUserService;
+    private final UserEventLogService userEventLogService;
 
     @Autowired
     public Auth0LoginController(
             Auth0LoginService auth0LoginService,
             AuthenticationService authenticationService,
-            AppUserService appUserService) {
+            AppUserService appUserService,
+            UserEventLogService userEventLogService) {
         this.auth0LoginService = auth0LoginService;
         this.authenticationService = authenticationService;
         this.appUserService = appUserService;
+        this.userEventLogService = userEventLogService;
     }
 
     @RequestMapping(value = LOGIN, method = RequestMethod.GET)
@@ -160,6 +164,7 @@ public class Auth0LoginController implements ViewPath {
                 appUser.setLastLogin((lastLogin == null) ? new Date(System.currentTimeMillis()) : lastLogin);
                 redirAttrs.addFlashAttribute("appUser", appUser);
 
+                userEventLogService.logUserLogin(userAccount);
                 authenticationService.setLoginInfo(userAccount, req.getRemoteAddr());
 
                 return REDIRECT_HOME;
