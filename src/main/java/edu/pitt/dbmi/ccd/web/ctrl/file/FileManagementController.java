@@ -31,11 +31,14 @@ import java.net.URL;
 import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -64,6 +67,11 @@ public class FileManagementController implements ViewPath {
         this.appUserService = appUserService;
     }
 
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
+    }
+
     @ResponseBody
     @RequestMapping(value = "title", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> listFiles(
@@ -76,15 +84,20 @@ public class FileManagementController implements ViewPath {
             return ResponseEntity.notFound().build();
         }
 
-        if (title == null || title.trim().length() == 0) {
-            return ResponseEntity.badRequest().body("Title cannot be blank.");
+        if (title == null || title.isEmpty()) {
+            return ResponseEntity.badRequest().body("Title is required.");
         } else {
-            try {
-                fileManagementService.updateFileTitle(file, title);
-            } catch (Exception exception) {
-                LOGGER.error(exception.getMessage());
-
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to update file title.");
+            if (file.getTitle().compareTo(title) != 0) {
+                if (fileManagementService.existTitle(title, userAccount)) {
+                    return ResponseEntity.badRequest().body("Title already in used. Plese enter a different title.");
+                } else {
+                    try {
+                        fileManagementService.updateFileTitle(file, title);
+                    } catch (Exception exception) {
+                        LOGGER.error(exception.getMessage());
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to update file title.");
+                    }
+                }
             }
         }
 
@@ -122,7 +135,6 @@ public class FileManagementController implements ViewPath {
             fileManagementService.deleteFile(file, userAccount);
         } catch (Exception exception) {
             LOGGER.error(exception.getMessage());
-
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to delete file.");
         }
 

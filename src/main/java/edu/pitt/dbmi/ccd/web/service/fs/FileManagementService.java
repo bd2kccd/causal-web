@@ -62,6 +62,10 @@ public class FileManagementService {
         this.fileService = fileService;
     }
 
+    public boolean existTitle(String title, UserAccount userAccount) {
+        return fileService.getFileRepository().existsByTitleAndUserAccount(title, userAccount);
+    }
+
     public File updateFileTitle(File file, String title) {
         file.setTitle(title);
 
