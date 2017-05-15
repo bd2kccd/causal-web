@@ -22,20 +22,17 @@ import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileFormat;
 import edu.pitt.dbmi.ccd.db.entity.FileType;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.FileDelimiterTypeService;
 import edu.pitt.dbmi.ccd.db.service.FileFormatService;
+import edu.pitt.dbmi.ccd.db.service.FileService;
 import edu.pitt.dbmi.ccd.db.service.FileTypeService;
+import edu.pitt.dbmi.ccd.db.service.FileVariableTypeService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.file.CategorizeFileForm;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.fs.FileManagementService;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,32 +67,28 @@ public class FileManagementController implements ViewPath {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileManagementController.class);
 
     private final FileManagementService fileManagementService;
+    private final FileService fileService;
     private final FileTypeService fileTypeService;
     private final FileFormatService fileFormatService;
+    private final FileDelimiterTypeService fileDelimiterTypeService;
+    private final FileVariableTypeService fileVariableTypeService;
     private final AppUserService appUserService;
 
-    private final Map<String, List<FileFormat>> fileFormatMap = new HashMap<>();
-
     @Autowired
-    public FileManagementController(FileManagementService fileManagementService, FileTypeService fileTypeService, FileFormatService fileFormatService, AppUserService appUserService) {
+    public FileManagementController(FileManagementService fileManagementService,
+            FileService fileService,
+            FileTypeService fileTypeService,
+            FileFormatService fileFormatService,
+            FileDelimiterTypeService fileDelimiterTypeService,
+            FileVariableTypeService fileVariableTypeService,
+            AppUserService appUserService) {
         this.fileManagementService = fileManagementService;
+        this.fileService = fileService;
         this.fileTypeService = fileTypeService;
         this.fileFormatService = fileFormatService;
+        this.fileDelimiterTypeService = fileDelimiterTypeService;
+        this.fileVariableTypeService = fileVariableTypeService;
         this.appUserService = appUserService;
-
-        init();
-    }
-
-    private void init() {
-        FileType dataFileType = fileTypeService.getFileTypeRepository().findByName(FileTypeService.DATA_NAME);
-        FileType knwlFileType = fileTypeService.getFileTypeRepository().findByName(FileTypeService.KNOWLEDGE_NAME);
-        FileType resultFileType = fileTypeService.getFileTypeRepository().findByName(FileTypeService.RESULT_NAME);
-        FileType varFileType = fileTypeService.getFileTypeRepository().findByName(FileTypeService.VARIABLE_NAME);
-
-        fileFormatMap.put("dataFileFormats", fileFormatService.getFileFormatRepository().findByFileType(dataFileType));
-        fileFormatMap.put("knwlFileFormats", fileFormatService.getFileFormatRepository().findByFileType(knwlFileType));
-        fileFormatMap.put("resultFileFormats", fileFormatService.getFileFormatRepository().findByFileType(resultFileType));
-        fileFormatMap.put("varFileFormats", fileFormatService.getFileFormatRepository().findByFileType(varFileType));
     }
 
     @InitBinder
@@ -110,7 +103,7 @@ public class FileManagementController implements ViewPath {
             @RequestParam(value = "value") final String title,
             final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        File file = fileManagementService.retrieveFile(id, userAccount);
+        File file = fileService.retrieveFile(id, userAccount);
         if (file == null) {
             return ResponseEntity.notFound().build();
         }
@@ -122,8 +115,9 @@ public class FileManagementController implements ViewPath {
                 if (fileManagementService.existTitle(title, userAccount)) {
                     return ResponseEntity.badRequest().body("Title already in used. Plese enter a different title.");
                 } else {
+                    file.setTitle(title);
                     try {
-                        fileManagementService.updateFileTitle(file, title);
+                        fileService.getFileRepository().save(file);
                     } catch (Exception exception) {
                         LOGGER.error(exception.getMessage());
                         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to update file title.");
@@ -142,11 +136,18 @@ public class FileManagementController implements ViewPath {
             @RequestParam(value = "id") final Long id,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        System.out.println("================================================================================");
-        System.out.println(categorizeFileForm);
-        System.out.println("================================================================================");
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        File file = fileService.retrieveFile(id, userAccount);
+        if (file == null) {
+            throw new ResourceNotFoundException();
+        }
 
-        return REDIRECT_HOME;
+        Long fileFmtId = categorizeFileForm.getFileFormatId();
+        FileFormat fileFormat = fileFormatService.getFileFormatRepository().findOne(fileFmtId);
+        if (fileFormat != null) {
+        }
+
+        return getRedirect(file);
     }
 
     @RequestMapping(value = "categorize", method = RequestMethod.GET)
@@ -155,7 +156,7 @@ public class FileManagementController implements ViewPath {
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        File file = fileManagementService.retrieveFile(id, userAccount);
+        File file = fileService.retrieveFile(id, userAccount);
         if (file == null) {
             throw new ResourceNotFoundException();
         }
@@ -164,9 +165,19 @@ public class FileManagementController implements ViewPath {
             model.addAttribute("categorizeFileForm", getDefaultCategorizeFileForm(file));
         }
 
+        FileType dataFileType = fileTypeService.getFileTypeRepository().findByName(FileTypeService.DATA_NAME);
+        FileType knwlFileType = fileTypeService.getFileTypeRepository().findByName(FileTypeService.KNOWLEDGE_NAME);
+        FileType resultFileType = fileTypeService.getFileTypeRepository().findByName(FileTypeService.RESULT_NAME);
+        FileType varFileType = fileTypeService.getFileTypeRepository().findByName(FileTypeService.VARIABLE_NAME);
+
         model.addAttribute("file", file);
         model.addAttribute("fileTypes", fileTypeService.getFileTypeRepository().findAll());
-        fileFormatMap.forEach((k, v) -> model.addAttribute(k, v));
+        model.addAttribute("dataFileFormats", fileFormatService.getFileFormatRepository().findByFileType(dataFileType));
+        model.addAttribute("knwlFileFormats", fileFormatService.getFileFormatRepository().findByFileType(knwlFileType));
+        model.addAttribute("resultFileFormats", fileFormatService.getFileFormatRepository().findByFileType(resultFileType));
+        model.addAttribute("varFileFormats", fileFormatService.getFileFormatRepository().findByFileType(varFileType));
+        model.addAttribute("fileDelimiterTypes", fileDelimiterTypeService.getFileDelimiterTypeRepository().findAll());
+        model.addAttribute("fileVariableTypes", fileVariableTypeService.getFileVariableTypeRepository().findAll());
 
         return CATEGORIZED_FILE_VIEW;
     }
@@ -177,7 +188,7 @@ public class FileManagementController implements ViewPath {
             @RequestParam(value = "id") final Long id,
             final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        File file = fileManagementService.retrieveFile(id, userAccount);
+        File file = fileService.retrieveFile(id, userAccount);
         if (file == null) {
             return ResponseEntity.notFound().build();
         }
@@ -192,28 +203,36 @@ public class FileManagementController implements ViewPath {
         return ResponseEntity.ok(file.getId());
     }
 
-    private String getRedirect(HttpServletRequest req, FileType fileType) {
-        String referer = req.getHeader("referer");
-        if (referer == null || referer.isEmpty()) {
-            if (fileType == null) {
-                return REDIRECT_UNCATEGORIZED_FILE;
-            }
-
-            switch (fileType.getName()) {
-                default:
-                    return REDIRECT_UNCATEGORIZED_FILE;
-            }
+    private String getRedirect(File file) {
+        FileFormat fileFmt = file.getFileFormat();
+        if (fileFmt == null) {
+            return REDIRECT_UNCATEGORIZED_FILE;
         } else {
-            try {
-                URL url = new URL(referer);
-
-                return "redirect:" + url.getPath().replaceFirst("/ccd", "");
-            } catch (MalformedURLException exception) {
-                return REDIRECT_UNCATEGORIZED_FILE;
-            }
+            return REDIRECT_UNCATEGORIZED_FILE;
         }
     }
 
+//    private String getRedirect(HttpServletRequest req, FileType fileType) {
+//        String referer = req.getHeader("referer");
+//        if (referer == null || referer.isEmpty()) {
+//            if (fileType == null) {
+//                return REDIRECT_UNCATEGORIZED_FILE;
+//            }
+//
+//            switch (fileType.getName()) {
+//                default:
+//                    return REDIRECT_UNCATEGORIZED_FILE;
+//            }
+//        } else {
+//            try {
+//                URL url = new URL(referer);
+//
+//                return "redirect:" + url.getPath().replaceFirst("/ccd", "");
+//            } catch (MalformedURLException exception) {
+//                return REDIRECT_UNCATEGORIZED_FILE;
+//            }
+//        }
+//    }
     private CategorizeFileForm getDefaultCategorizeFileForm(File file) {
         FileFormat fileFormat = file.getFileFormat();
         if (fileFormat == null) {

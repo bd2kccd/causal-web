@@ -66,12 +66,6 @@ public class FileManagementService {
         return fileService.getFileRepository().existsByTitleAndUserAccount(title, userAccount);
     }
 
-    public File updateFileTitle(File file, String title) {
-        file.setTitle(title);
-
-        return fileService.getFileRepository().save(file);
-    }
-
     public void deleteFile(File file, UserAccount userAccount) {
         try {
             Path physicalFile = getPhysicalFile(file, userAccount);
@@ -81,14 +75,6 @@ public class FileManagementService {
         } catch (IOException exception) {
             LOGGER.error(exception.getMessage());
         }
-    }
-
-    public File retrieveFile(Long id, UserAccount userAccount) {
-        if (id == null || userAccount == null) {
-            return null;
-        }
-
-        return fileService.getFileRepository().findByIdAndUserAccount(id, userAccount);
     }
 
     public void syncDatabaseWithDataDirectory(UserAccount userAccount) {

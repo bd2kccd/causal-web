@@ -34,12 +34,18 @@ public class CategorizeFileForm {
     @NotNull
     private Long fileFormatId;
 
+    @NotNull
+    private Long fileDelimiterTypeId;
+
+    @NotNull
+    private long fileVariableTypeId;
+
     public CategorizeFileForm() {
     }
 
     @Override
     public String toString() {
-        return "CategorizeFileForm{" + "fileTypeId=" + fileTypeId + ", fileFormatId=" + fileFormatId + '}';
+        return "CategorizeFileForm{" + "fileTypeId=" + fileTypeId + ", fileFormatId=" + fileFormatId + ", fileDelimiterTypeId=" + fileDelimiterTypeId + ", fileVariableTypeId=" + fileVariableTypeId + '}';
     }
 
     public Long getFileTypeId() {
@@ -56,6 +62,22 @@ public class CategorizeFileForm {
 
     public void setFileFormatId(Long fileFormatId) {
         this.fileFormatId = fileFormatId;
+    }
+
+    public Long getFileDelimiterTypeId() {
+        return fileDelimiterTypeId;
+    }
+
+    public void setFileDelimiterTypeId(Long fileDelimiterTypeId) {
+        this.fileDelimiterTypeId = fileDelimiterTypeId;
+    }
+
+    public long getFileVariableTypeId() {
+        return fileVariableTypeId;
+    }
+
+    public void setFileVariableTypeId(long fileVariableTypeId) {
+        this.fileVariableTypeId = fileVariableTypeId;
     }
 
 }

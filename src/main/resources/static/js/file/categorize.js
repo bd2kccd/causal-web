@@ -17,6 +17,23 @@ function fileTypeAction(chkOpt) {
     if (!optRadios.prop('checked')) {
         optRadios[0].checked = true;
     }
+    fileFormatAction($("input[name='fileFormatId']:checked"));
+}
+function fileFormatAction(chkOpt) {
+    if ($(chkOpt).val() == 1) {
+        $('#tetradDataOpts').show();
+    } else {
+        $('#tetradDataOpts').hide();
+    }
+
+    var optRadios = $('#tetradDataOpts').find('input[name=fileDelimiterTypeId]:radio');
+    if (!optRadios.prop('checked')) {
+        optRadios[0].checked = true;
+    }
+    optRadios = $('#tetradDataOpts').find('input[name=fileVariableTypeId]:radio');
+    if (!optRadios.prop('checked')) {
+        optRadios[0].checked = true;
+    }
 }
 $(document).ready(function () {
     $('#title').editable({
@@ -29,5 +46,6 @@ $(document).ready(function () {
         }
     });
     fileTypeAction($("input[name='fileTypeId']:checked"));
+    fileFormatAction($("input[name='fileFormatId']:checked"));
 });
 /*]]>*/
