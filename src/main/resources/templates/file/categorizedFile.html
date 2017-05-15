@@ -21,7 +21,6 @@
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
         <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
         <script src="../../static/vendors/x-editable/js/bootstrap-editable.min.js" th:src="@{/vendors/x-editable/js/bootstrap-editable.min.js}"></script>
-        <script src="../../static/js/file/categorize.min.js" th:src="@{/js/file/categorize.min.js}"></script>
     </head>
     <body>
         <div id="wrapper">
@@ -67,6 +66,79 @@
                         </div>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-primary">
+                            <a id="categorize_file" class="panel-primary" data-toggle="collapse" data-parent="#categorize" href="#collapseCategory">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">Categorize File<span class="pull-right"><i class="glyphicon glyphicon-chevron-down" th:class="${collapse} ? 'glyphicon glyphicon-chevron-down' : 'glyphicon glyphicon-chevron-up'"></i></span></h3>
+                                </div>
+                            </a>
+                            <div id="collapseCategory" class="panel-collapse collapse" th:class="${collapse} ? 'panel-collapse collapse' : 'panel-collapse collapse in'">
+                                <div class="panel-body">
+                                    <form id="categorizeFile" method="post" action="" th:action="@{/secured/file/mgmt/categorize(id=${file.id})}" role="form" th:object="${categorizeFileForm}">
+                                        <div class="form-group" th:class="${#fields.hasErrors('fileTypeId')} ? 'form-group has-error' : 'form-group'">
+                                            <label>File Type:</label>
+                                            <div class="radio-inline">
+                                                <label class="radio-inline" th:each="opt : ${fileTypes}">
+                                                    <input type="radio" th:field="*{fileTypeId}" th:value="${opt.id}" onclick="fileTypeAction(this);" required="required" /> <span th:text="${opt.displayName}">dataset</span>
+                                                </label>
+                                            </div>
+                                            <span class="help-block" th:if="${#fields.hasErrors('fileTypeId')}" th:errors="*{fileTypeId}">File ID is required.</span>
+                                        </div>
+                                        <div id="dataOpts" class="well well-sm" style="display: none">
+                                            <div class="form-group" th:class="${#fields.hasErrors('fileFormatId')} ? 'form-group has-error' : 'form-group'">
+                                                <label>File Format</label>
+                                                <div class="radio-inline">
+                                                    <label class="radio-inline" th:each="opt : ${dataFileFormats}">
+                                                        <input type="radio" th:field="*{fileFormatId}" th:value="${opt.id}" /> <span th:text="${opt.displayName}">tab</span>
+                                                    </label>
+                                                </div>
+                                                <span class="help-block" th:if="${#fields.hasErrors('fileFormatId')}" th:errors="*{fileFormatId}">File ID is required.</span>
+                                            </div>
+                                        </div>
+                                        <div id="varOpts" class="well well-sm" style="display: none">
+                                            <div class="form-group" th:class="${#fields.hasErrors('fileFormatId')} ? 'form-group has-error' : 'form-group'">
+                                                <label>File Format</label>
+                                                <div class="radio-inline">
+                                                    <label class="radio-inline" th:each="opt : ${varFileFormats}">
+                                                        <input type="radio" th:field="*{fileFormatId}" th:value="${opt.id}" /> <span th:text="${opt.displayName}">tab</span>
+                                                    </label>
+                                                </div>
+                                                <span class="help-block" th:if="${#fields.hasErrors('fileFormatId')}" th:errors="*{fileFormatId}">File ID is required.</span>
+                                            </div>
+                                        </div>
+                                        <div id="knwlOpts" class="well well-sm" style="display: none">
+                                            <div class="form-group" th:class="${#fields.hasErrors('fileFormatId')} ? 'form-group has-error' : 'form-group'">
+                                                <label>File Format</label>
+                                                <div class="radio-inline">
+                                                    <label class="radio-inline" th:each="opt : ${knwlFileFormats}">
+                                                        <input type="radio" th:field="*{fileFormatId}" th:value="${opt.id}" /> <span th:text="${opt.displayName}">tab</span>
+                                                    </label>
+                                                </div>
+                                                <span class="help-block" th:if="${#fields.hasErrors('fileFormatId')}" th:errors="*{fileFormatId}">File ID is required.</span>
+                                            </div>
+                                        </div>
+                                        <div id="resultOpts" class="well well-sm" style="display: none">
+                                            <div class="form-group" th:class="${#fields.hasErrors('fileFormatId')} ? 'form-group has-error' : 'form-group'">
+                                                <label>File Format</label>
+                                                <div class="radio-inline">
+                                                    <label class="radio-inline" th:each="opt : ${resultFileFormats}">
+                                                        <input type="radio" th:field="*{fileFormatId}" th:value="${opt.id}" /> <span th:text="${opt.displayName}">tab</span>
+                                                    </label>
+                                                </div>
+                                                <span class="help-block" th:if="${#fields.hasErrors('fileFormatId')}" th:errors="*{fileFormatId}">File ID is required.</span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="submit" class="btn btn-lg btn-block btn-success" value="Save" />
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <footer th:replace="fragments/footer :: footer">
                     <div class="row">
                         <div class="col-lg-12">
@@ -88,6 +160,7 @@
         <script src="../../static/vendors/datatables/DataTables-1.10.15/plugins/file-size.min.js" th:src="@{/vendors/datatables/DataTables-1.10.15/plugins/file-size.min.js}"></script>
         <script src="../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
         <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
+        <script src="../../static/js/file/categorize.min.js" th:src="@{/js/file/categorize.min.js}"></script>
         <script src="../../static/js/file/categorizeValid.min.js" th:src="@{/js/file/categorizeValid.min.js}"></script>
     </body>
 </html>
