@@ -16,6 +16,7 @@
         <link rel="stylesheet" href="../../static/vendors/datatables/DataTables-1.10.15/css/dataTables.bootstrap.min.css" th:href="@{/vendors/datatables/DataTables-1.10.15/css/dataTables.bootstrap.min.css}" />
         <link rel="stylesheet" href="../../static/vendors/datatables/Responsive-2.1.1/css/responsive.bootstrap.min.css" th:href="@{/vendors/datatables/Responsive-2.1.1/css/responsive.bootstrap.min.css}" />
         <link rel="stylesheet" href="../../static/vendors/x-editable/css/bootstrap-editable.min.css" th:href="@{/vendors/x-editable/css/bootstrap-editable.min.css}" />
+        <link rel="stylesheet" href="../../static/css/file/categorizedFile.min.css" th:href="@{/css/file/categorizedFile.min.css}" />
         <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{/vendors/jquery/jquery.min.js}"></script>
         <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{/vendors/bootstrap/js/bootstrap.min.js}"></script>
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
@@ -81,22 +82,22 @@
                                             <label>File Type:</label>
                                             <div class="radio-inline">
                                                 <label class="radio-inline" th:each="opt : ${fileTypes}">
-                                                    <input type="radio" th:field="*{fileTypeId}" th:value="${opt.id}" onclick="fileTypeAction(this);" required="required" /> <span th:text="${opt.displayName}">dataset</span>
+                                                    <input type="radio" th:field="*{fileTypeId}" th:value="${opt.id}" required="required" /> <span th:text="${opt.displayName}">dataset</span>
                                                 </label>
                                             </div>
                                             <span class="help-block" th:if="${#fields.hasErrors('fileTypeId')}" th:errors="*{fileTypeId}">File ID is required.</span>
                                         </div>
-                                        <div id="dataOpts" class="well well-sm" style="display: none">
+                                        <div id="dataOpts" class="alert alert-success fileTypeOpt">
                                             <div class="form-group" th:class="${#fields.hasErrors('fileFormatId')} ? 'form-group has-error' : 'form-group'">
                                                 <label>File Format</label>
                                                 <div class="radio-inline">
                                                     <label class="radio-inline" th:each="opt : ${dataFileFormats}">
-                                                        <input type="radio" th:field="*{fileFormatId}" th:value="${opt.id}" onclick="fileFormatAction(this);" /> <span th:text="${opt.displayName}">tab</span>
+                                                        <input type="radio" th:field="*{fileFormatId}" th:value="${opt.id}" /> <span th:text="${opt.displayName}">tab</span>
                                                     </label>
                                                 </div>
                                                 <span class="help-block" th:if="${#fields.hasErrors('fileFormatId')}" th:errors="*{fileFormatId}">File ID is required.</span>
                                             </div>
-                                            <div id="tetradDataOpts" class="well well-sm" style="display: none">
+                                            <div id="delimOpts" class="alert alert-warning fileDelimOpt">
                                                 <div class="form-group" th:class="${#fields.hasErrors('fileDelimiterTypeId')} ? 'form-group has-error' : 'form-group'">
                                                     <label>File Delimiter</label>
                                                     <div class="radio-inline">
@@ -117,7 +118,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div id="varOpts" class="well well-sm" style="display: none">
+                                        <div id="varOpts" class="alert alert-success fileTypeOpt">
                                             <div class="form-group" th:class="${#fields.hasErrors('fileFormatId')} ? 'form-group has-error' : 'form-group'">
                                                 <label>File Format</label>
                                                 <div class="radio-inline">
@@ -128,7 +129,7 @@
                                                 <span class="help-block" th:if="${#fields.hasErrors('fileFormatId')}" th:errors="*{fileFormatId}">File ID is required.</span>
                                             </div>
                                         </div>
-                                        <div id="knwlOpts" class="well well-sm" style="display: none">
+                                        <div id="knwlOpts" class="alert alert-success fileTypeOpt">
                                             <div class="form-group" th:class="${#fields.hasErrors('fileFormatId')} ? 'form-group has-error' : 'form-group'">
                                                 <label>File Format</label>
                                                 <div class="radio-inline">
@@ -139,7 +140,7 @@
                                                 <span class="help-block" th:if="${#fields.hasErrors('fileFormatId')}" th:errors="*{fileFormatId}">File ID is required.</span>
                                             </div>
                                         </div>
-                                        <div id="resultOpts" class="well well-sm" style="display: none">
+                                        <div id="resultOpts" class="alert alert-success fileTypeOpt">
                                             <div class="form-group" th:class="${#fields.hasErrors('fileFormatId')} ? 'form-group has-error' : 'form-group'">
                                                 <label>File Format</label>
                                                 <div class="radio-inline">
@@ -180,6 +181,7 @@
         <script src="../../static/vendors/datatables/DataTables-1.10.15/plugins/file-size.min.js" th:src="@{/vendors/datatables/DataTables-1.10.15/plugins/file-size.min.js}"></script>
         <script src="../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
         <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
+        <script src="../../static/js/collapse_panel.min.js" th:src="@{/js/collapse_panel.min.js}"></script>
         <script src="../../static/js/file/categorize.min.js" th:src="@{/js/file/categorize.min.js}"></script>
         <script src="../../static/js/file/categorizeValid.min.js" th:src="@{/js/file/categorizeValid.min.js}"></script>
     </body>

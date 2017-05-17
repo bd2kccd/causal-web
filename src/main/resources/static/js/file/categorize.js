@@ -1,40 +1,40 @@
 /*<![CDATA[*/
-var fmtOpts = [
-    $('#dataOpts'),
-    $('#dataOpts'),
-    $('#varOpts'),
-    $('#knwlOpts'),
-    $('#resultOpts')
-];
-function fileTypeAction(chkOpt) {
-    for (i = 0; i < fmtOpts.length; i++) {
-        fmtOpts[i].hide();
-    }
-    var opts = fmtOpts[$(chkOpt).val()];
-    opts.show();
+$('input:radio[name="fileTypeId"]').click(function () {
+    var val = $(this).val();
 
-    var optRadios = opts.find('input:radio');
-    if (!optRadios.prop('checked')) {
-        optRadios[0].checked = true;
+    var opt;
+    switch (val) {
+        case '1':
+            opt = $('#dataOpts');
+            break;
+        case '2':
+            opt = $('#varOpts');
+            break;
+        case '3':
+            opt = $('#knwlOpts');
+            break;
+        case '4':
+            opt = $('#resultOpts');
+            break;
+        default :
+            opt = $('#dataOpts');
     }
-    fileFormatAction($("input[name='fileFormatId']:checked"));
-}
-function fileFormatAction(chkOpt) {
-    if ($(chkOpt).val() == 1) {
-        $('#tetradDataOpts').show();
-    } else {
-        $('#tetradDataOpts').hide();
+    $(".fileTypeOpt").not(opt).hide();
+    $(opt).show();
+    opt.find('input:radio[name="fileFormatId"]:first').click();
+});
+$('input:radio[name="fileFormatId"]').click(function () {
+    var val = $(this).val();
+    switch (val) {
+        case '1':
+            $('#delimOpts').show();
+            $('#delimOpts').find('input:radio[name="fileDelimiterTypeId"]:first').click();
+            $('#delimOpts').find('input:radio[name="fileVariableTypeId"]:first').click();
+            break;
+        default :
+            $('#delimOpts').hide();
     }
-
-    var optRadios = $('#tetradDataOpts').find('input[name=fileDelimiterTypeId]:radio');
-    if (!optRadios.prop('checked')) {
-        optRadios[0].checked = true;
-    }
-    optRadios = $('#tetradDataOpts').find('input[name=fileVariableTypeId]:radio');
-    if (!optRadios.prop('checked')) {
-        optRadios[0].checked = true;
-    }
-}
+});
 $(document).ready(function () {
     $('#title').editable({
         success: function (response, newValue) {
@@ -45,7 +45,9 @@ $(document).ready(function () {
             }
         }
     });
-    fileTypeAction($("input[name='fileTypeId']:checked"));
-    fileFormatAction($("input[name='fileFormatId']:checked"));
+    $('input[name="fileTypeId"]:first').click();
+});
+$(document).on('click', '#categorize_file', function (e) {
+    collapseAction(this);
 });
 /*]]>*/
