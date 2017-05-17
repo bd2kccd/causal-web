@@ -35,6 +35,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -170,6 +171,23 @@ public class AlgorithmResultService {
         });
 
         return Arrays.asList(array);
+    }
+
+    public boolean isPagResult(final String fileName, final String username) {
+        boolean isPag = false;
+
+        Path file = Paths.get(workspace, username, resultFolder, algorithmResultFolder, fileName);
+        try (Scanner scanner = new Scanner(Files.newBufferedReader(file))) {
+            scanner.nextLine();  // skip the first line
+            String line = scanner.nextLine();
+            if (line != null) {
+                isPag = line.trim().contains("GFCI");
+            }
+        } catch (IOException exception) {
+            LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
+        }
+
+        return isPag;
     }
 
     public Map<String, Map<String, String>> extractDataCategories(final String fileName, final String username, final List<String> categoryNames) {
