@@ -19,6 +19,7 @@
 package edu.pitt.dbmi.ccd.web.ctrl.file;
 
 import edu.pitt.dbmi.ccd.db.entity.File;
+import edu.pitt.dbmi.ccd.db.entity.FileDelimiterType;
 import edu.pitt.dbmi.ccd.db.entity.FileFormat;
 import edu.pitt.dbmi.ccd.db.entity.FileType;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
@@ -145,6 +146,19 @@ public class FileManagementController implements ViewPath {
         Long fileFmtId = categorizeFileForm.getFileFormatId();
         FileFormat fileFormat = fileFormatService.getFileFormatRepository().findOne(fileFmtId);
         if (fileFormat != null) {
+            switch (fileFormat.getName()) {
+                case FileFormatService.TETRAD_TEXT_RESULT_FMT_NAME:
+                    Long fileDelimTypeId = categorizeFileForm.getFileDelimiterTypeId();
+                    Long fileVarTypeId = categorizeFileForm.getFileVariableTypeId();
+                    Character quoteChar = categorizeFileForm.getQuoteChar();
+                    String missValMark = categorizeFileForm.getMissingValueMarker();
+                    String cmntMark = categorizeFileForm.getCommentMarker();
+
+                    FileDelimiterType fileDelimiterType = fileDelimiterTypeService.getFileDelimiterTypeRepository().findOne(fileDelimTypeId);
+                    break;
+            }
+            file.setFileFormat(fileFormat);
+            fileService.getFileRepository().save(file);
         }
 
         return getRedirect(file);

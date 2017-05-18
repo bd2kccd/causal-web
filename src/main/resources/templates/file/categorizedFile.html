@@ -116,6 +116,18 @@
                                                     </div>
                                                     <span class="help-block" th:if="${#fields.hasErrors('fileVariableTypeId')}" th:errors="*{fileVariableTypeId}">File ID is required.</span>
                                                 </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" for="quote_char">Quote Char:</label>
+                                                    <input type="text" id="quote_char" class="form-control" maxlength="1" th:field="*{quoteChar}" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" for="miss_val_mrk">Missing Value Marker:</label>
+                                                    <input type="text" id="miss_val_mrk" class="form-control" maxlength="10" th:field="*{missingValueMarker}" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" for="cmnt_mrk">Comment Marker:</label>
+                                                    <input type="text" id="cmnt_mrk" class="form-control" maxlength="10" th:field="*{commentMarker}" />
+                                                </div>
                                             </div>
                                         </div>
                                         <div id="varOpts" class="alert alert-success fileTypeOpt">

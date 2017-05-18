@@ -38,14 +38,16 @@ public class CategorizeFileForm {
     private Long fileDelimiterTypeId;
 
     @NotNull
-    private long fileVariableTypeId;
+    private Long fileVariableTypeId;
+
+    private Character quoteChar;
+    private String missingValueMarker;
+    private String commentMarker;
 
     public CategorizeFileForm() {
-    }
-
-    @Override
-    public String toString() {
-        return "CategorizeFileForm{" + "fileTypeId=" + fileTypeId + ", fileFormatId=" + fileFormatId + ", fileDelimiterTypeId=" + fileDelimiterTypeId + ", fileVariableTypeId=" + fileVariableTypeId + '}';
+        this.quoteChar = '"';
+        this.missingValueMarker = "*";
+        this.commentMarker = "//";
     }
 
     public Long getFileTypeId() {
@@ -72,12 +74,36 @@ public class CategorizeFileForm {
         this.fileDelimiterTypeId = fileDelimiterTypeId;
     }
 
-    public long getFileVariableTypeId() {
+    public Long getFileVariableTypeId() {
         return fileVariableTypeId;
     }
 
-    public void setFileVariableTypeId(long fileVariableTypeId) {
+    public void setFileVariableTypeId(Long fileVariableTypeId) {
         this.fileVariableTypeId = fileVariableTypeId;
+    }
+
+    public Character getQuoteChar() {
+        return quoteChar;
+    }
+
+    public void setQuoteChar(Character quoteChar) {
+        this.quoteChar = quoteChar;
+    }
+
+    public String getMissingValueMarker() {
+        return missingValueMarker;
+    }
+
+    public void setMissingValueMarker(String missingValueMarker) {
+        this.missingValueMarker = missingValueMarker;
+    }
+
+    public String getCommentMarker() {
+        return commentMarker;
+    }
+
+    public void setCommentMarker(String commentMarker) {
+        this.commentMarker = commentMarker;
     }
 
 }
