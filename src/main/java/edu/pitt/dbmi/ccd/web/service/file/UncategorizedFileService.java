@@ -46,7 +46,7 @@ public class UncategorizedFileService {
     }
 
     public List<File> getUncategorizedFiles(UserAccount userAccount) {
-        return fileService.getFileRepository().findUntypedFilesByUserAccount(userAccount);
+        return fileService.getFileRepository().findByUserAccountAndFileFormatIsNull(userAccount);
     }
 
 }

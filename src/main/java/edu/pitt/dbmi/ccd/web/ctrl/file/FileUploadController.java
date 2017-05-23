@@ -76,7 +76,7 @@ public class FileUploadController implements ViewPath {
                         res.setStatus(FAIL_STATUS);
                     } else {
                         File fileEntity = fileUploadService.saveFileToDatabase(uploadedFile, userAccount);
-                        res.getWriter().println(fileEntity.getMd5checkSum());
+                        res.getWriter().println(fileEntity.getMd5CheckSum());
                     }
                 }
             } else {
