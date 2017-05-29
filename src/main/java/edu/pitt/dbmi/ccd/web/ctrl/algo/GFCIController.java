@@ -104,7 +104,7 @@ public class GFCIController implements ViewPath {
 
     @RequestMapping(value = "cont", method = RequestMethod.GET)
     public String showGfciContinuousView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        Map<String, String> dataset = algorithmService.getUserDataset(appUser.getUsername());
+        Map<String, String> dataset = algorithmService.getUserContinuousDataset(appUser.getUsername());
         Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
         GfciContinuousRunInfo algoInfo = createDefaultGfciContinuousRunInfo();
 

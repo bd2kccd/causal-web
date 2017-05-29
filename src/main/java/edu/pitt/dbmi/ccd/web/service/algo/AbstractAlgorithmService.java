@@ -101,20 +101,26 @@ public abstract class AbstractAlgorithmService {
         this.jobQueueInfoService = jobQueueInfoService;
     }
 
-    public Map<String, String> getUserDataset(String username) {
+    public Map<String, String> getUserContinuousDataset(String username) {
         VariableType variableType = variableTypeService.findByName("continuous");
 
         return dataService.listAlgorithmDataset(username, variableType);
-    }
-
-    public Map<String, String> getUserPriorKnowledgeFiles(String username) {
-        return dataService.listPriorKnowledge(username);
     }
 
     public Map<String, String> getUserDiscreteDataset(String username) {
         VariableType variableType = variableTypeService.findByName("discrete");
 
         return dataService.listAlgorithmDataset(username, variableType);
+    }
+
+    public Map<String, String> getUserMixedDataset(String username) {
+        VariableType variableType = variableTypeService.findByName("mixed");
+
+        return dataService.listAlgorithmDataset(username, variableType);
+    }
+
+    public Map<String, String> getUserPriorKnowledgeFiles(String username) {
+        return dataService.listPriorKnowledge(username);
     }
 
     public String getFileDelimiter(String fileName, String username) {

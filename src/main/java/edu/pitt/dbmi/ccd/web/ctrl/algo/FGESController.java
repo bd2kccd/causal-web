@@ -21,13 +21,11 @@ package edu.pitt.dbmi.ccd.web.ctrl.algo;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.model.AppUser;
 import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmJobRequest;
-import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmRunInfo;
-import edu.pitt.dbmi.ccd.web.model.algo.FgsContinuousRunInfo;
-import edu.pitt.dbmi.ccd.web.model.algo.FgsDiscreteRunInfo;
+import edu.pitt.dbmi.ccd.web.model.algo.FGEScAlgoOpt;
+import edu.pitt.dbmi.ccd.web.model.algo.FGESdAlgoOpt;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmService;
-import edu.pitt.dbmi.ccd.web.util.CmdOptions;
-import java.util.Collections;
+import edu.pitt.dbmi.ccd.web.util.TetradCmdOptions;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +46,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @Controller
 @SessionAttributes("appUser")
 @RequestMapping(value = "algorithm/fges")
-public class FGESController implements ViewPath {
+public class FGESController extends AbstractTetradAlgoController implements ViewPath, TetradCmdOptions {
 
     private final AlgorithmService algorithmService;
     private final CcdProperties ccdProperties;
@@ -59,42 +57,54 @@ public class FGESController implements ViewPath {
         this.ccdProperties = ccdProperties;
     }
 
+    @RequestMapping(value = "disc", method = RequestMethod.POST)
+    public String runFgesDiscrete(
+            @ModelAttribute("algoInfo") final FGESdAlgoOpt algoOpt,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("FGESd", ccdProperties.getAlgoJar(), ccdProperties.getAlgoFgesDisc());
+        jobRequest.setDataset(getDataset(algoOpt));
+        jobRequest.setPriorKnowledge(getPriorKnowledge(algoOpt));
+        jobRequest.setJvmOptions(getJvmOptions(algoOpt));
+        jobRequest.setParameters(getParametersForDiscrete(algoOpt, appUser.getUsername()));
+
+        algorithmService.addToQueue(jobRequest, appUser.getUsername());
+
+        return REDIRECT_JOB_QUEUE;
+    }
+
     @RequestMapping(value = "disc", method = RequestMethod.GET)
     public String showFgesDiscreteView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         Map<String, String> dataset = algorithmService.getUserDiscreteDataset(appUser.getUsername());
         Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
-        FgsDiscreteRunInfo algoInfo = createDefaultFgsDiscreteRunInfo();
+        FGESdAlgoOpt algoOpt = new FGESdAlgoOpt();
 
         // set the default dataset
-        if (dataset.isEmpty()) {
-            algoInfo.setDataset("");
-        } else {
-            algoInfo.setDataset(dataset.keySet().iterator().next());  // get one element
+        if (!dataset.isEmpty()) {
+            algoOpt.setDataset(dataset.keySet().iterator().next());  // get one element
         }
 
-        if (prior.isEmpty()) {
-            algoInfo.setPriorKnowledge("");
-        } else {
-            algoInfo.setPriorKnowledge(prior.keySet().iterator().next());
+        if (!prior.isEmpty()) {
+            algoOpt.setPriorKnowledge(prior.keySet().iterator().next());
         }
 
         model.addAttribute("datasetList", dataset);
         model.addAttribute("priorList", prior);
-        model.addAttribute("algoInfo", algoInfo);
+        model.addAttribute("algoOpt", algoOpt);
 
         return FGES_DISC_VIEW;
     }
 
-    @RequestMapping(value = "disc", method = RequestMethod.POST)
-    public String runFgesDiscrete(
-            @ModelAttribute("algoInfo") final FgsDiscreteRunInfo algoInfo,
+    @RequestMapping(value = "cont", method = RequestMethod.POST)
+    public String runFgesContinuous(
+            @ModelAttribute("algoOpt") final FGEScAlgoOpt algoOpt,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("FGESd", ccdProperties.getAlgoJar(), ccdProperties.getAlgoFgesDisc());
-        jobRequest.setDataset(getDataset(algoInfo));
-        jobRequest.setPriorKnowledge(getPriorKnowledge(algoInfo));
-        jobRequest.setJvmOptions(getJvmOptions(algoInfo));
-        jobRequest.setParameters(getParametersForDiscrete(algoInfo, appUser.getUsername()));
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("FGESc", ccdProperties.getAlgoJar(), ccdProperties.getAlgoFgesCont());
+        jobRequest.setDataset(getDataset(algoOpt));
+        jobRequest.setPriorKnowledge(getPriorKnowledge(algoOpt));
+        jobRequest.setJvmOptions(getJvmOptions(algoOpt));
+        jobRequest.setParameters(getParametersForContinuous(algoOpt, appUser.getUsername()));
 
         algorithmService.addToQueue(jobRequest, appUser.getUsername());
 
@@ -103,151 +113,88 @@ public class FGESController implements ViewPath {
 
     @RequestMapping(value = "cont", method = RequestMethod.GET)
     public String showFgesContinuousView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        Map<String, String> dataset = algorithmService.getUserDataset(appUser.getUsername());
+        Map<String, String> dataset = algorithmService.getUserContinuousDataset(appUser.getUsername());
         Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
-        FgsContinuousRunInfo algoInfo = createDefaultFgsContinuousRunInfo();
+        FGEScAlgoOpt algoOpt = new FGEScAlgoOpt();
 
         // set the default dataset
-        if (dataset.isEmpty()) {
-            algoInfo.setDataset("");
-        } else {
-            algoInfo.setDataset(dataset.keySet().iterator().next());  // get one element
+        if (!dataset.isEmpty()) {
+            algoOpt.setDataset(dataset.keySet().iterator().next());  // get one element
         }
 
-        if (prior.isEmpty()) {
-            algoInfo.setPriorKnowledge("");
-        } else {
-            algoInfo.setPriorKnowledge(prior.keySet().iterator().next());
+        if (!prior.isEmpty()) {
+            algoOpt.setPriorKnowledge(prior.keySet().iterator().next());
         }
 
         model.addAttribute("datasetList", dataset);
         model.addAttribute("priorList", prior);
-        model.addAttribute("algoInfo", algoInfo);
+        model.addAttribute("algoOpt", algoOpt);
 
         return FGES_CONT_VIEW;
     }
 
-    @RequestMapping(value = "cont", method = RequestMethod.POST)
-    public String runFgesContinuous(
-            @ModelAttribute("algoInfo") final FgsContinuousRunInfo algoInfo,
-            @ModelAttribute("appUser") final AppUser appUser,
-            final Model model) {
-        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("FGESc", ccdProperties.getAlgoJar(), ccdProperties.getAlgoFgesCont());
-        jobRequest.setDataset(getDataset(algoInfo));
-        jobRequest.setPriorKnowledge(getPriorKnowledge(algoInfo));
-        jobRequest.setJvmOptions(getJvmOptions(algoInfo));
-        jobRequest.setParameters(getParametersForContinuous(algoInfo, appUser.getUsername()));
-
-        algorithmService.addToQueue(jobRequest, appUser.getUsername());
-
-        return REDIRECT_JOB_QUEUE;
-    }
-
-    private List<String> getJvmOptions(AlgorithmRunInfo algoInfo) {
-        List<String> jvmOptions = new LinkedList<>();
-
-        int jvmMaxMem = algoInfo.getJvmMaxMem();
-        if (jvmMaxMem > 0) {
-            jvmOptions.add(String.format("-Xmx%dG", jvmMaxMem));
-        }
-
-        return jvmOptions;
-    }
-
-    private List<String> getDataset(AlgorithmRunInfo algoInfo) {
-        return Collections.singletonList(algoInfo.getDataset());
-    }
-
-    private List<String> getPriorKnowledge(AlgorithmRunInfo algoInfo) {
-        String priorKnowledge = algoInfo.getPriorKnowledge();
-        if (priorKnowledge.trim().length() == 0) {
-            return Collections.EMPTY_LIST;
-        } else {
-            return Collections.singletonList(algoInfo.getPriorKnowledge());
-        }
-    }
-
-    private List<String> getParametersForDiscrete(FgsDiscreteRunInfo algoInfo, String username) {
+    private List<String> getParametersForDiscrete(FGESdAlgoOpt algoOpt, String username) {
         List<String> parameters = new LinkedList<>();
-        String delimiter = algorithmService.getFileDelimiter(algoInfo.getDataset(), username);
-        parameters.add(CmdOptions.DELIMITER);
+        String delimiter = algorithmService.getFileDelimiter(algoOpt.getDataset(), username);
+        parameters.add(DELIMITER);
         parameters.add(delimiter);
-        parameters.add(CmdOptions.STRUCTURE_PRIOR);
-        parameters.add(Double.toString(algoInfo.getStructurePrior()));
-        parameters.add(CmdOptions.SAMPLE_PRIOR);
-        parameters.add(Double.toString(algoInfo.getSamplePrior()));
-        parameters.add(CmdOptions.MAX_DEGREE);
-        parameters.add(Integer.toString(algoInfo.getMaxDegree()));
-        if (algoInfo.isVerbose()) {
-            parameters.add(CmdOptions.VERBOSE);
+        parameters.add(STRUCTURE_PRIOR);
+        parameters.add(Double.toString(algoOpt.getStructurePrior()));
+        parameters.add(SAMPLE_PRIOR);
+        parameters.add(Double.toString(algoOpt.getSamplePrior()));
+        parameters.add(MAX_DEGREE);
+        parameters.add(Integer.toString(algoOpt.getMaxDegree()));
+        if (algoOpt.isFaithfulnessAssumed()) {
+            parameters.add(FAITHFULNESS_ASSUMED);
         }
-        if (algoInfo.isFaithfulnessAssumed()) {
-            parameters.add(CmdOptions.FAITHFULNESS_ASSUMED);
+        if (algoOpt.isSymmetricFirstStep()) {
+            parameters.add(SYMMETRIC_FIRST_STEP);
         }
-        if (algoInfo.isSkipCategoryLimit()) {
-            parameters.add(CmdOptions.SKIP_CATEGORY_LIMIT);
+        if (algoOpt.isVerbose()) {
+            parameters.add(VERBOSE);
         }
-        if (algoInfo.isSkipUniqueVarName()) {
-            parameters.add(CmdOptions.SKIP_UNIQUE_VAR_NAME);
+        if (algoOpt.isSkipCategoryLimit()) {
+            parameters.add(SKIP_CATEGORY_LIMIT);
+        }
+        if (algoOpt.isSkipUniqueVarName()) {
+            parameters.add(SKIP_UNIQUE_VAR_NAME);
         }
 
-        parameters.add(CmdOptions.TETRAD_GRAPH_JSON);
+        parameters.add(TETRAD_GRAPH_JSON);
 
         return parameters;
     }
 
-    private List<String> getParametersForContinuous(FgsContinuousRunInfo algoInfo, String username) {
+    private List<String> getParametersForContinuous(FGEScAlgoOpt algoOpt, String username) {
         List<String> parameters = new LinkedList<>();
-        String delimiter = algorithmService.getFileDelimiter(algoInfo.getDataset(), username);
-        parameters.add(CmdOptions.DELIMITER);
+        String delimiter = algorithmService.getFileDelimiter(algoOpt.getDataset(), username);
+        parameters.add(DELIMITER);
         parameters.add(delimiter);
-        parameters.add(CmdOptions.PENALTY_DISCOUNT);
-        parameters.add(Double.toString(algoInfo.getPenaltyDiscount()));
-        parameters.add(CmdOptions.MAX_DEGREE);
-        parameters.add(Integer.toString(algoInfo.getMaxDegree()));
-        if (algoInfo.isVerbose()) {
-            parameters.add(CmdOptions.VERBOSE);
+        parameters.add(PENALTY_DISCOUNT);
+        parameters.add(Double.toString(algoOpt.getPenaltyDiscount()));
+        parameters.add(STRUCTURE_PRIOR);
+        parameters.add(Double.toString(algoOpt.getStructurePrior()));
+        parameters.add(MAX_DEGREE);
+        parameters.add(Integer.toString(algoOpt.getMaxDegree()));
+        if (algoOpt.isFaithfulnessAssumed()) {
+            parameters.add(FAITHFULNESS_ASSUMED);
         }
-        if (algoInfo.isFaithfulnessAssumed()) {
-            parameters.add(CmdOptions.FAITHFULNESS_ASSUMED);
+        if (algoOpt.isSymmetricFirstStep()) {
+            parameters.add(SYMMETRIC_FIRST_STEP);
         }
-        if (algoInfo.isSkipNonzeroVariance()) {
-            parameters.add(CmdOptions.SKIP_NONZERO_VARIANCE);
+        if (algoOpt.isVerbose()) {
+            parameters.add(VERBOSE);
         }
-        if (algoInfo.isSkipUniqueVarName()) {
-            parameters.add(CmdOptions.SKIP_UNIQUE_VAR_NAME);
+        if (algoOpt.isSkipNonZeroVariance()) {
+            parameters.add(SKIP_NONZERO_VARIANCE);
+        }
+        if (algoOpt.isSkipUniqueVarName()) {
+            parameters.add(SKIP_UNIQUE_VAR_NAME);
         }
 
-        parameters.add(CmdOptions.TETRAD_GRAPH_JSON);
+        parameters.add(TETRAD_GRAPH_JSON);
 
         return parameters;
-    }
-
-    private FgsContinuousRunInfo createDefaultFgsContinuousRunInfo() {
-        FgsContinuousRunInfo runInfo = new FgsContinuousRunInfo();
-        runInfo.setPenaltyDiscount(CmdOptions.PENALTY_DISCOUNT_DEFAULT);
-        runInfo.setMaxDegree(CmdOptions.MAX_DEGREE_DEFAULT);
-        runInfo.setFaithfulnessAssumed(CmdOptions.FAITHFULNESS_ASSUMED_DEFAULT);
-        runInfo.setSkipUniqueVarName(CmdOptions.SKIP_UNIQUE_VAR_NAME_DEFAULT);
-        runInfo.setSkipNonzeroVariance(CmdOptions.SKIP_NONZERO_VARIANCE_DEFAULT);
-        runInfo.setVerbose(CmdOptions.VERBOSE_DEFAULT);
-        runInfo.setJvmMaxMem(1);
-
-        return runInfo;
-    }
-
-    private FgsDiscreteRunInfo createDefaultFgsDiscreteRunInfo() {
-        FgsDiscreteRunInfo runInfo = new FgsDiscreteRunInfo();
-        runInfo.setSamplePrior(CmdOptions.SAMPLE_PRIOR_DEFAULT);
-        runInfo.setStructurePrior(CmdOptions.STRUCTURE_PRIOR_DEFAULT);
-        runInfo.setFaithfulnessAssumed(CmdOptions.FAITHFULNESS_ASSUMED_DEFAULT);
-        runInfo.setMaxDegree(CmdOptions.MAX_DEGREE_DEFAULT);
-        runInfo.setSkipUniqueVarName(CmdOptions.SKIP_UNIQUE_VAR_NAME_DEFAULT);
-        runInfo.setSkipCategoryLimit(CmdOptions.SKIP_CATEGORY_LIMIT_DEFAULT);
-        runInfo.setVerbose(CmdOptions.VERBOSE_DEFAULT);
-        runInfo.setJvmMaxMem(1);
-
-        return runInfo;
     }
 
 }
