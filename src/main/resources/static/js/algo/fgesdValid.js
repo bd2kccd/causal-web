@@ -4,59 +4,46 @@ $(document).ready(function () {
             dataset: {
                 required: true
             },
-            alpha: {
-                required: true,
-                number: true,
-                min: 0.0,
-                max: 1.0
-            },
-            structurePrior: {
-                required: true,
-                number: true,
-                min: 1.0
-            },
-            samplePrior: {
-                required: true,
-                number: true,
-                min: 1.0
-            },
-            maxDegree: {
-                required: true,
-                number: true,
-                min: -1
-            },
             jvmMaxMem: {
                 required: true,
                 number: true,
                 min: 0,
                 max: 128
-            }
-        },
-        messages: {
-            dataset: {
-                required: "Please select a dataset."
-            },
-            alpha: {
-                required: "Please set the alpha.",
-                min: "Must be at least 0.0.",
-                max: "Must be at most 1.0."
             },
             structurePrior: {
-                required: "Please set the structure prior.",
-                min: "Must be at least 1.0."
+                required: true,
+                number: true,
+                min: 1
             },
             samplePrior: {
-                required: "Please set the sample prior.",
-                min: "Must be at least 1.0."
+                required: true,
+                number: true,
+                min: 1
             },
             maxDegree: {
-                required: "Please select the search max degree.",
-                min: "Must be at least -1."
-            },
-            jvmMaxMem: {
+                required: true,
+                number: true,
+                min: -1
+            }
+        }, messages: {
+            dataset: {
+                required: "Please select a dataset."
+            }, jvmMaxMem: {
                 required: "Must be a number between 0 and 128.",
                 min: "Must be at least 0.",
                 max: "Must be at most 128."
+            },
+            structurePrior: {
+                required: "Structure prior is required.",
+                min: "Must be at least 1."
+            },
+            samplePrior: {
+                required: "Sample prior is required.",
+                min: "Must be at least 1."
+            },
+            maxDegree: {
+                required: "Max degree is required.",
+                min: "Must be at least -1."
             }
         },
         highlight: function (element) {
