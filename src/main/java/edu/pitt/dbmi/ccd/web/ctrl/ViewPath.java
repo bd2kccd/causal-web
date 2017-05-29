@@ -73,6 +73,7 @@ public interface ViewPath {
 
     public static final String FGES_CONT_VIEW = "algorithm/fgesc";
     public static final String FGES_DISC_VIEW = "algorithm/fgesd";
+    public static final String FGES_MIXED_CG_VIEW = "algorithm/fgesmCG";
     public static final String GFCI_CONT_VIEW = "algorithm/gfcic";
     public static final String GFCI_DISC_VIEW = "algorithm/gfcid";
 

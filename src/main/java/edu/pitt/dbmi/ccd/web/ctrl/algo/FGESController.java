@@ -23,6 +23,7 @@ import edu.pitt.dbmi.ccd.web.model.AppUser;
 import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmJobRequest;
 import edu.pitt.dbmi.ccd.web.model.algo.FGEScAlgoOpt;
 import edu.pitt.dbmi.ccd.web.model.algo.FGESdAlgoOpt;
+import edu.pitt.dbmi.ccd.web.model.algo.FGESmCGAlgoOpt;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmService;
 import edu.pitt.dbmi.ccd.web.util.TetradCmdOptions;
@@ -55,6 +56,44 @@ public class FGESController extends AbstractTetradAlgoController implements View
     public FGESController(AlgorithmService algorithmService, CcdProperties ccdProperties) {
         this.algorithmService = algorithmService;
         this.ccdProperties = ccdProperties;
+    }
+
+    @RequestMapping(value = "fgesm_cg", method = RequestMethod.POST)
+    public String runshowFgesmCG(
+            @ModelAttribute("algoOpt") final FGESmCGAlgoOpt algoOpt,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("FGESm-CG", ccdProperties.getAlgoJar(), ccdProperties.getAlgoFgesmCG());
+        jobRequest.setDataset(getDataset(algoOpt));
+        jobRequest.setPriorKnowledge(getPriorKnowledge(algoOpt));
+        jobRequest.setJvmOptions(getJvmOptions(algoOpt));
+        jobRequest.setParameters(getParametersForMixedCG(algoOpt, appUser.getUsername()));
+
+        algorithmService.addToQueue(jobRequest, appUser.getUsername());
+
+        return REDIRECT_JOB_QUEUE;
+    }
+
+    @RequestMapping(value = "fgesm_cg", method = RequestMethod.GET)
+    public String showFgesmCGView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+        Map<String, String> dataset = algorithmService.getUserMixedDataset(appUser.getUsername());
+        Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
+        FGESmCGAlgoOpt algoOpt = new FGESmCGAlgoOpt();
+
+        // set the default dataset
+        if (!dataset.isEmpty()) {
+            algoOpt.setDataset(dataset.keySet().iterator().next());  // get one element
+        }
+
+        if (!prior.isEmpty()) {
+            algoOpt.setPriorKnowledge(prior.keySet().iterator().next());
+        }
+
+        model.addAttribute("datasetList", dataset);
+        model.addAttribute("priorList", prior);
+        model.addAttribute("algoOpt", algoOpt);
+
+        return FGES_MIXED_CG_VIEW;
     }
 
     @RequestMapping(value = "fgesd", method = RequestMethod.POST)
@@ -131,6 +170,39 @@ public class FGESController extends AbstractTetradAlgoController implements View
         model.addAttribute("algoOpt", algoOpt);
 
         return FGES_CONT_VIEW;
+    }
+
+    private List<String> getParametersForMixedCG(FGESmCGAlgoOpt algoOpt, String username) {
+        List<String> parameters = new LinkedList<>();
+        String delimiter = algorithmService.getFileDelimiter(algoOpt.getDataset(), username);
+        parameters.add(DELIMITER);
+        parameters.add(delimiter);
+        parameters.add(PENALTY_DISCOUNT);
+        parameters.add(Double.toString(algoOpt.getPenaltyDiscount()));
+        parameters.add(STRUCTURE_PRIOR);
+        parameters.add(Double.toString(algoOpt.getStructurePrior()));
+        parameters.add(NUM_CATEGORIES_TO_DISCRETIZE);
+        parameters.add(Integer.toString(algoOpt.getNumCategoriesToDiscretize()));
+        parameters.add(NUM_DISCRETE_CATEGORIES);
+        parameters.add(Integer.toString(algoOpt.getNumberOfDiscreteCategories()));
+        parameters.add(MAX_DEGREE);
+        parameters.add(Integer.toString(algoOpt.getMaxDegree()));
+        if (algoOpt.isDiscretize()) {
+            parameters.add(DISCRETIZE);
+        }
+        if (algoOpt.isFaithfulnessAssumed()) {
+            parameters.add(FAITHFULNESS_ASSUMED);
+        }
+        if (algoOpt.isSymmetricFirstStep()) {
+            parameters.add(SYMMETRIC_FIRST_STEP);
+        }
+        if (algoOpt.isVerbose()) {
+            parameters.add(VERBOSE);
+        }
+
+        parameters.add(TETRAD_GRAPH_JSON);
+
+        return parameters;
     }
 
     private List<String> getParametersForDiscrete(FGESdAlgoOpt algoOpt, String username) {
