@@ -57,9 +57,9 @@ public class FGESController extends AbstractTetradAlgoController implements View
         this.ccdProperties = ccdProperties;
     }
 
-    @RequestMapping(value = "disc", method = RequestMethod.POST)
+    @RequestMapping(value = "fgesd", method = RequestMethod.POST)
     public String runFgesDiscrete(
-            @ModelAttribute("algoInfo") final FGESdAlgoOpt algoOpt,
+            @ModelAttribute("algoOpt") final FGESdAlgoOpt algoOpt,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
         AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("FGESd", ccdProperties.getAlgoJar(), ccdProperties.getAlgoFgesDisc());
@@ -73,7 +73,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
         return REDIRECT_JOB_QUEUE;
     }
 
-    @RequestMapping(value = "disc", method = RequestMethod.GET)
+    @RequestMapping(value = "fgesd", method = RequestMethod.GET)
     public String showFgesDiscreteView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         Map<String, String> dataset = algorithmService.getUserDiscreteDataset(appUser.getUsername());
         Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
@@ -95,7 +95,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
         return FGES_DISC_VIEW;
     }
 
-    @RequestMapping(value = "cont", method = RequestMethod.POST)
+    @RequestMapping(value = "fgesc", method = RequestMethod.POST)
     public String runFgesContinuous(
             @ModelAttribute("algoOpt") final FGEScAlgoOpt algoOpt,
             @ModelAttribute("appUser") final AppUser appUser,
@@ -111,7 +111,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
         return REDIRECT_JOB_QUEUE;
     }
 
-    @RequestMapping(value = "cont", method = RequestMethod.GET)
+    @RequestMapping(value = "fgesc", method = RequestMethod.GET)
     public String showFgesContinuousView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         Map<String, String> dataset = algorithmService.getUserContinuousDataset(appUser.getUsername());
         Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
