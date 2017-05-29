@@ -23,6 +23,7 @@ import edu.pitt.dbmi.ccd.web.model.AppUser;
 import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmJobRequest;
 import edu.pitt.dbmi.ccd.web.model.algo.GFCIcAlgoOpt;
 import edu.pitt.dbmi.ccd.web.model.algo.GFCIdAlgoOpt;
+import edu.pitt.dbmi.ccd.web.model.algo.GFCImCGAlgoOpt;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmService;
 import edu.pitt.dbmi.ccd.web.util.TetradCmdOptions;
@@ -57,8 +58,46 @@ public class GFCIController extends AbstractTetradAlgoController implements View
         this.ccdProperties = ccdProperties;
     }
 
+    @RequestMapping(value = "gfcim_cg", method = RequestMethod.POST)
+    public String runGFCImCG(
+            @ModelAttribute("algoOpt") final GFCImCGAlgoOpt algoOpt,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("GFCIm-CG", ccdProperties.getAlgoJar(), ccdProperties.getAlgoGfcimCGS());
+        jobRequest.setDataset(getDataset(algoOpt));
+        jobRequest.setPriorKnowledge(getPriorKnowledge(algoOpt));
+        jobRequest.setJvmOptions(getJvmOptions(algoOpt));
+        jobRequest.setParameters(getParametersForMixedCG(algoOpt, appUser.getUsername()));
+
+        algorithmService.addToQueue(jobRequest, appUser.getUsername());
+
+        return REDIRECT_JOB_QUEUE;
+    }
+
+    @RequestMapping(value = "gfcim_cg", method = RequestMethod.GET)
+    public String showGFCImCGView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+        Map<String, String> dataset = algorithmService.getUserMixedDataset(appUser.getUsername());
+        Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
+        GFCImCGAlgoOpt algoOpt = new GFCImCGAlgoOpt();
+
+        // set the default dataset
+        if (!dataset.isEmpty()) {
+            algoOpt.setDataset(dataset.keySet().iterator().next());  // get one element
+        }
+
+        if (!prior.isEmpty()) {
+            algoOpt.setPriorKnowledge(prior.keySet().iterator().next());
+        }
+
+        model.addAttribute("datasetList", dataset);
+        model.addAttribute("priorList", prior);
+        model.addAttribute("algoOpt", algoOpt);
+
+        return GFCI_MIXED_CG_VIEW;
+    }
+
     @RequestMapping(value = "gfcid", method = RequestMethod.POST)
-    public String runFgesDiscrete(
+    public String runGfciDiscrete(
             @ModelAttribute("algoOpt") final GFCIdAlgoOpt algoOpt,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
@@ -74,7 +113,7 @@ public class GFCIController extends AbstractTetradAlgoController implements View
     }
 
     @RequestMapping(value = "gfcid", method = RequestMethod.GET)
-    public String showFgesDiscreteView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+    public String showGfciDiscreteView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         Map<String, String> dataset = algorithmService.getUserDiscreteDataset(appUser.getUsername());
         Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
         GFCIdAlgoOpt algoOpt = new GFCIdAlgoOpt();
@@ -160,6 +199,43 @@ public class GFCIController extends AbstractTetradAlgoController implements View
         }
         if (algoOpt.isSkipUniqueVarName()) {
             parameters.add(SKIP_UNIQUE_VAR_NAME);
+        }
+
+        parameters.add(TETRAD_GRAPH_JSON);
+
+        return parameters;
+    }
+
+    private List<String> getParametersForMixedCG(GFCImCGAlgoOpt algoOpt, String username) {
+        List<String> parameters = new LinkedList<>();
+        String delimiter = algorithmService.getFileDelimiter(algoOpt.getDataset(), username);
+        parameters.add(DELIMITER);
+        parameters.add(delimiter);
+        parameters.add(ALPHA);
+        parameters.add(Double.toString(algoOpt.getAlpha()));
+        parameters.add(PENALTY_DISCOUNT);
+        parameters.add(Double.toString(algoOpt.getPenaltyDiscount()));
+        parameters.add(STRUCTURE_PRIOR);
+        parameters.add(Double.toString(algoOpt.getStructurePrior()));
+        parameters.add(NUM_CATEGORIES_TO_DISCRETIZE);
+        parameters.add(Integer.toString(algoOpt.getNumCategoriesToDiscretize()));
+        parameters.add(NUM_DISCRETE_CATEGORIES);
+        parameters.add(Integer.toString(algoOpt.getNumberOfDiscreteCategories()));
+        if (algoOpt.isDiscretize()) {
+            parameters.add(DISCRETIZE);
+        }
+        parameters.add(MAX_DEGREE);
+        parameters.add(Integer.toString(algoOpt.getMaxDegree()));
+        parameters.add(MAX_PATH_LENGTH);
+        parameters.add(Integer.toString(algoOpt.getMaxPathLength()));
+        if (algoOpt.isFaithfulnessAssumed()) {
+            parameters.add(FAITHFULNESS_ASSUMED);
+        }
+        if (algoOpt.isCompleteRuleSetUsed()) {
+            parameters.add(COMPLETE_RULE_SET_USED);
+        }
+        if (algoOpt.isVerbose()) {
+            parameters.add(VERBOSE);
         }
 
         parameters.add(TETRAD_GRAPH_JSON);

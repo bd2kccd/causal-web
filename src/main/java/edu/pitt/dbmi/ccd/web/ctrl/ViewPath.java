@@ -76,6 +76,7 @@ public interface ViewPath {
     public static final String FGES_MIXED_CG_VIEW = "algorithm/fgesmCG";
     public static final String GFCI_CONT_VIEW = "algorithm/gfcic";
     public static final String GFCI_DISC_VIEW = "algorithm/gfcid";
+    public static final String GFCI_MIXED_CG_VIEW = "algorithm/gfcimCG";
 
     public static final String JOB_QUEUE = "jobQueue";
     public static final String REDIRECT_JOB_QUEUE = "redirect:/jobQueue";

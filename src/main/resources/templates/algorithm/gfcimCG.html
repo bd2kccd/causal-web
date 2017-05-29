@@ -4,7 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="description" content="Center for Causal Discovery" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>CCD: FGES Mixed with Conditional Gaussian</title>
+        <title>CCD: GFCI Continuous</title>
         <link rel="apple-touch-icon" href="../../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
         <link rel="icon" href="../../static/favicon.ico" th:href="@{/favicon.ico}" />
         <link rel="stylesheet" href="../../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{/vendors/bootstrap/css/bootstrap.min.css}" />
@@ -26,7 +26,7 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h3 class="page-header">FGES Mixed with Conditional Gaussian</h3>
+                        <h3 class="page-header">GFCI Continuous</h3>
                     </div>
                 </div>
                 <div class="row">
@@ -112,6 +112,10 @@
                                             </div>
                                             <div class="panel-body">
                                                 <div class="form-group">
+                                                    <label for="alpha" class="control-label">Alpha - Cutoff for p values.</label>
+                                                    <input type="number" id="alpha" name="alpha" min="0" max="1" class="form-control" data-ng-model="alpha" th:attr="data-ng-init='alpha=' + *{alpha}" th:field="*{alpha}" required="required" />
+                                                </div>
+                                                <div class="form-group">
                                                     <label for="penaltyDiscount" class="control-label">Penalty Discount - multiplier on the penalty term of the BIC score for continuous data. We suggest 2 for &lt;50 variables and 4 for &gt;50 variables.</label>
                                                     <input type="number" id="penaltyDiscount" name="penaltyDiscount" min="0" class="form-control" data-ng-model="penaltyDiscount" th:attr="data-ng-init='penaltyDiscount=' + *{penaltyDiscount}" th:field="*{penaltyDiscount}" required="required" />
                                                 </div>
@@ -135,9 +139,13 @@
                                                     <input type="number" id="maxDegree" name="maxDegree" min="-1" class="form-control" data-ng-model="maxDegree" th:attr="data-ng-init='maxDegree=' + *{maxDegree}" th:field="*{maxDegree}" required="required" />
                                                 </div>
                                                 <div class="form-group">
+                                                    <label for="maxPathLength" class="control-label">Maximum Path Length - The maximum length for any discriminating path. -1 if unlimited.</label>
+                                                    <input type="number" id="maxPathLength" name="maxPathLength" min="-1" class="form-control" data-ng-model="maxPathLength" th:attr="data-ng-init='maxPathLength=' + *{maxPathLength}" th:field="*{maxPathLength}" required="required" />
+                                                </div>
+                                                <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="symmetricFirstStep" class="control-label">
-                                                            <input type="checkbox" id="symmetricFirstStep" name="symmetricFirstStep" data-ng-model="symmetricFirstStep" th:attr="data-ng-init='symmetricFirstStep=' + *{symmetricFirstStep}" th:field="*{symmetricFirstStep}" /> Symmetric First Step - Yes if the first step step for FGES should do scoring for both X->Y and Y->X.
+                                                        <label for="completeRuleSetUsed" class="control-label">
+                                                            <input type="checkbox" id="completeRuleSetUsed" name="completeRuleSetUsed" data-ng-model="completeRuleSetUsed" th:attr="data-ng-init='completeRuleSetUsed=' + *{completeRuleSetUsed}" th:field="*{completeRuleSetUsed}" /> Complete Rule Set Use - Yes if the complete FCI rule set should be used
                                                         </label>
                                                     </div>
                                                 </div>
@@ -215,6 +223,10 @@
                                                         <caption>Parameters</caption>
                                                         <tbody>
                                                             <tr>
+                                                                <td class="col-md-3">Alpha:</td>
+                                                                <td data-ng-bind="alpha"></td>
+                                                            </tr>
+                                                            <tr>
                                                                 <td class="col-md-3">Penalty Discount:</td>
                                                                 <td data-ng-bind="penaltyDiscount"></td>
                                                             </tr>
@@ -235,8 +247,12 @@
                                                                 <td data-ng-bind="maxDegree"></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="col-md-3">Symmetric First Step:</td>
-                                                                <td data-ng-bind="symmetricFirstStep"></td>
+                                                                <td class="col-md-3">Max Path Length:</td>
+                                                                <td data-ng-bind="maxPathLength"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="col-md-3">Complete Rule Set Used:</td>
+                                                                <td data-ng-bind="completeRuleSetUsed"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td class="col-md-3">Faithfulness Assumed:</td>
@@ -276,7 +292,7 @@
         <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
         <script src="../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
         <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
-        <script src="../../static/js/algo/fgsValidate.min.js" th:src="@{/js/algo/fgsValidate.min.js}"></script>
+        <script src="../../static/js/algo/gfciValidate.min.js" th:src="@{/js/algo/gfciValidate.min.js}"></script>
         <script src="../../static/js/algo/stepwizard.min.js" th:src="@{/js/algo/stepwizard.min.js}"></script>
         <script src="../../static/js/collapse_panel.min.js" th:src="@{/js/collapse_panel.min.js}"></script>
         <script src="../../static/js/algo/algorithm.min.js" th:src="@{/js/algo/algorithm.min.js}"></script>
