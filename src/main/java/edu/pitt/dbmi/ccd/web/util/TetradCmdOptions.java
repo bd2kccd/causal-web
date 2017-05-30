@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 University of Pittsburgh.
+ * Copyright (C) 2017 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,30 +19,40 @@
 package edu.pitt.dbmi.ccd.web.util;
 
 /**
- * This is for temporary used.
  *
- * Oct 26, 2016 3:44:59 PM
+ * May 28, 2017 11:35:09 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class CmdOptions {
-
-    private CmdOptions() {
-    }
+public interface TetradCmdOptions {
 
     public static final String DATA = "--data";
+
+    public static final String KNOWLEDGE = "--knowledge";
     public static final String EXCLUDE_VARS = "--exclude-variables";
     public static final String DELIMITER = "--delimiter";
+    public static final String NUM_DISCRETE_CATEGORIES = "--num-discrete-categories";
     public static final String VERBOSE = "--verbose";
+    public static final String THREAD = "--thread";
+    public static final String JSON = "--json";
+    public static final String TETRAD_GRAPH_JSON = "--tetrad-graph-json";
+    public static final String OUT = "--out";
+    public static final String OUTPUT_PREFIX = "--output-prefix";
+    public static final String NO_VALIDATION_OUTPUT = "--no-validation-output";
+    public static final String HELP = "--help";
+    public static final String SKIP_LATEST = "--skip-latest";
 
     public static final String PENALTY_DISCOUNT = "--penalty-discount";
     public static final String MAX_DEGREE = "--max-degree";
     public static final String MAX_INDEGREE = "--max-indegree";
     public static final String MAX_OUTDEGREE = "--max-outdegree";
+    public static final String MAX_PATH_LENGTH = "--max-path-length";
     public static final String FAITHFULNESS_ASSUMED = "--faithfulness-assumed";
+    public static final String SYMMETRIC_FIRST_STEP = "--symmetric-first-step";
     public static final String ALPHA = "--alpha";
     public static final String STRUCTURE_PRIOR = "--structure-prior";
     public static final String SAMPLE_PRIOR = "--sample-prior";
+    public static final String COMPLETE_RULE_SET_USED = "--use-complete-rule-set";
 
     public static final String LATENT = "--latent";
     public static final String AVG_DEGREE = "--avg-degree";
@@ -50,25 +60,14 @@ public class CmdOptions {
 
     public static final String MIN_CATEGORIES = "--min-categories";
     public static final String MAX_CATEGORIES = "--max-categories";
+    public static final String NUM_CATEGORIES_TO_DISCRETIZE = "--num-categories-to-discretize";
+
+    public static final String DISCRETIZE = "--discretize";
+
+    public static final String PERCENT_DISCRETE = "--percent-discrete";
 
     public static final String SKIP_UNIQUE_VAR_NAME = "--skip-unique-var-name";
     public static final String SKIP_NONZERO_VARIANCE = "--skip-nonzero-variance";
     public static final String SKIP_CATEGORY_LIMIT = "--skip-category-limit";
-
-    public static final String TETRAD_GRAPH_JSON = "--tetrad-graph-json";
-
-    public static final double PENALTY_DISCOUNT_DEFAULT = 2.0;
-    public static final double ALPHA_DEFAULT = 0.01;
-    public static final double STRUCTURE_PRIOR_DEFAULT = 1.0;
-    public static final double SAMPLE_PRIOR_DEFAULT = 1.0;
-
-    public static final int MAX_DEGREE_DEFAULT = -1;
-
-    public static final boolean FAITHFULNESS_ASSUMED_DEFAULT = true;
-    public static final boolean VERBOSE_DEFAULT = true;
-
-    public static final boolean SKIP_NONZERO_VARIANCE_DEFAULT = false;
-    public static final boolean SKIP_CATEGORY_LIMIT_DEFAULT = false;
-    public static final boolean SKIP_UNIQUE_VAR_NAME_DEFAULT = false;
 
 }

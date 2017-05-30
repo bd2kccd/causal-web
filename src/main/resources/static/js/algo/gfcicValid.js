@@ -4,6 +4,12 @@ $(document).ready(function () {
             dataset: {
                 required: true
             },
+            jvmMaxMem: {
+                required: true,
+                number: true,
+                min: 0,
+                max: 128
+            },
             alpha: {
                 required: true,
                 number: true,
@@ -20,16 +26,18 @@ $(document).ready(function () {
                 number: true,
                 min: -1
             },
-            jvmMaxMem: {
+            maxPathLength: {
                 required: true,
                 number: true,
-                min: 0,
-                max: 128
+                min: -1
             }
-        },
-        messages: {
+        }, messages: {
             dataset: {
                 required: "Please select a dataset."
+            }, jvmMaxMem: {
+                required: "Must be a number between 0 and 128.",
+                min: "Must be at least 0.",
+                max: "Must be at most 128."
             },
             alpha: {
                 required: "Please set the alpha.",
@@ -37,17 +45,16 @@ $(document).ready(function () {
                 max: "Must be at most 1.0."
             },
             penaltyDiscount: {
-                required: "Please set the penalty discount.",
+                required: "Penalty discount is required.",
                 min: "Must be at least 0."
             },
             maxDegree: {
-                required: "Please select the search max degree.",
+                required: "Max degree is required.",
                 min: "Must be at least -1."
             },
-            jvmMaxMem: {
-                required: "Must be a number between 0 and 128.",
-                min: "Must be at least 0.",
-                max: "Must be at most 128."
+            maxPathLength: {
+                required: "Max path length is required.",
+                min: "Must be at least -1."
             }
         },
         highlight: function (element) {

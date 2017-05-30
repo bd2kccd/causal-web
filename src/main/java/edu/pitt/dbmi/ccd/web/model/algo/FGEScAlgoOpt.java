@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 University of Pittsburgh.
+ * Copyright (C) 2017 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,29 +20,19 @@ package edu.pitt.dbmi.ccd.web.model.algo;
 
 /**
  *
- * Nov 10, 2015 3:15:29 PM
+ * May 27, 2017 9:08:20 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class FgsRunInfo extends AlgorithmRunInfo {
+public class FGEScAlgoOpt extends CommonFGESAlgoOpt {
 
-    protected int depth;
+    protected double penaltyDiscount = 2.0;
+    protected double structurePrior = 1.0;
 
-    protected double penaltyDiscount;
+    protected boolean skipUniqueVarName = false;
+    protected boolean skipNonZeroVariance = false;
 
-    protected boolean faithful;
-
-    protected boolean ignoreLinearDependence;
-
-    public FgsRunInfo() {
-    }
-
-    public int getDepth() {
-        return depth;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
+    public FGEScAlgoOpt() {
     }
 
     public double getPenaltyDiscount() {
@@ -53,20 +43,28 @@ public class FgsRunInfo extends AlgorithmRunInfo {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    public boolean isFaithful() {
-        return faithful;
+    public double getStructurePrior() {
+        return structurePrior;
     }
 
-    public void setFaithful(boolean faithful) {
-        this.faithful = faithful;
+    public void setStructurePrior(double structurePrior) {
+        this.structurePrior = structurePrior;
     }
 
-    public boolean isIgnoreLinearDependence() {
-        return ignoreLinearDependence;
+    public boolean isSkipUniqueVarName() {
+        return skipUniqueVarName;
     }
 
-    public void setIgnoreLinearDependence(boolean ignoreLinearDependence) {
-        this.ignoreLinearDependence = ignoreLinearDependence;
+    public void setSkipUniqueVarName(boolean skipUniqueVarName) {
+        this.skipUniqueVarName = skipUniqueVarName;
+    }
+
+    public boolean isSkipNonZeroVariance() {
+        return skipNonZeroVariance;
+    }
+
+    public void setSkipNonZeroVariance(boolean skipNonZeroVariance) {
+        this.skipNonZeroVariance = skipNonZeroVariance;
     }
 
 }

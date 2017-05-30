@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 University of Pittsburgh.
+ * Copyright (C) 2017 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,15 +20,19 @@ package edu.pitt.dbmi.ccd.web.model.algo;
 
 /**
  *
- * Mar 15, 2017 11:18:57 PM
+ * May 28, 2017 9:27:45 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class GfciDiscreteRunInfo extends FgsDiscreteRunInfo {
+public class GFCIcAlgoOpt extends CommonGFCIAlgoOpt {
 
-    protected double alpha;
+    protected double alpha = 0.01;
+    protected double penaltyDiscount = 2.0;
 
-    public GfciDiscreteRunInfo() {
+    protected boolean skipUniqueVarName = false;
+    protected boolean skipNonZeroVariance = false;
+
+    public GFCIcAlgoOpt() {
     }
 
     public double getAlpha() {
@@ -37,6 +41,30 @@ public class GfciDiscreteRunInfo extends FgsDiscreteRunInfo {
 
     public void setAlpha(double alpha) {
         this.alpha = alpha;
+    }
+
+    public double getPenaltyDiscount() {
+        return penaltyDiscount;
+    }
+
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
+    }
+
+    public boolean isSkipUniqueVarName() {
+        return skipUniqueVarName;
+    }
+
+    public void setSkipUniqueVarName(boolean skipUniqueVarName) {
+        this.skipUniqueVarName = skipUniqueVarName;
+    }
+
+    public boolean isSkipNonZeroVariance() {
+        return skipNonZeroVariance;
+    }
+
+    public void setSkipNonZeroVariance(boolean skipNonZeroVariance) {
+        this.skipNonZeroVariance = skipNonZeroVariance;
     }
 
 }
