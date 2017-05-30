@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 University of Pittsburgh.
+ * Copyright (C) 2017 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,18 +20,18 @@ package edu.pitt.dbmi.ccd.web.model.algo;
 
 /**
  *
- * Apr 4, 2015 8:01:48 AM
+ * May 27, 2017 8:56:49 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public abstract class AlgorithmRunInfo {
+public abstract class TetradAlgoOpt {
 
-    protected String dataset;
-    protected String priorKnowledge;
-    protected boolean verbose;
-    protected int jvmMaxMem;
+    protected String dataset = "";
+    protected String priorKnowledge = "";
+    protected boolean verbose = true;
+    protected int jvmMaxMem = 1;
 
-    public AlgorithmRunInfo() {
+    public TetradAlgoOpt() {
     }
 
     public String getDataset() {
