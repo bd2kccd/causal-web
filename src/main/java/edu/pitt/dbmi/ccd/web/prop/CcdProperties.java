@@ -41,11 +41,17 @@ public class CcdProperties {
     @Value("${ccd.algorithm.fges.disc}")
     private String algoFgesDisc;
 
+    @Value("${ccd.algorithm.fges.mix.cg}")
+    private String algoFgesmCG;
+
     @Value("${ccd.algorithm.gfci.cont}")
     private String algoGfciCont;
 
     @Value("${ccd.algorithm.gfci.disc}")
     private String algoGfciDisc;
+
+    @Value("${ccd.algorithm.gfci.mix.cg}")
+    private String algoGfcimCGS;
 
     @Value("${ccd.queue.size:5}")
     private String jobQueueSize;
@@ -110,6 +116,14 @@ public class CcdProperties {
         this.algoFgesDisc = algoFgesDisc;
     }
 
+    public String getAlgoFgesmCG() {
+        return algoFgesmCG;
+    }
+
+    public void setAlgoFgesmCG(String algoFgesmCG) {
+        this.algoFgesmCG = algoFgesmCG;
+    }
+
     public String getAlgoGfciCont() {
         return algoGfciCont;
     }
@@ -124,6 +138,14 @@ public class CcdProperties {
 
     public void setAlgoGfciDisc(String algoGfciDisc) {
         this.algoGfciDisc = algoGfciDisc;
+    }
+
+    public String getAlgoGfcimCGS() {
+        return algoGfcimCGS;
+    }
+
+    public void setAlgoGfcimCGS(String algoGfcimCGS) {
+        this.algoGfcimCGS = algoGfcimCGS;
     }
 
     public String getJobQueueSize() {

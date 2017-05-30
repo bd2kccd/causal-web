@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 University of Pittsburgh.
+ * Copyright (C) 2017 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,22 +20,28 @@ package edu.pitt.dbmi.ccd.web.model.algo;
 
 /**
  *
- * Apr 20, 2016 4:53:29 PM
+ * May 28, 2017 9:25:34 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class FgsDiscreteRunInfo extends AlgorithmRunInfo {
+public class GFCIdAlgoOpt extends CommonGFCIAlgoOpt {
 
-    private double structurePrior;
-    private double samplePrior;
-    private int maxDegree;
-    private boolean faithfulnessAssumed;
+    protected double alpha = 0.01;
+    protected double structurePrior = 1;
+    protected double samplePrior = 1;
 
-    // data validation
-    protected boolean skipUniqueVarName;
-    protected boolean skipCategoryLimit;
+    protected boolean skipUniqueVarName = false;
+    protected boolean skipCategoryLimit = false;
 
-    public FgsDiscreteRunInfo() {
+    public GFCIdAlgoOpt() {
+    }
+
+    public double getAlpha() {
+        return alpha;
+    }
+
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
     }
 
     public double getStructurePrior() {
@@ -52,22 +58,6 @@ public class FgsDiscreteRunInfo extends AlgorithmRunInfo {
 
     public void setSamplePrior(double samplePrior) {
         this.samplePrior = samplePrior;
-    }
-
-    public int getMaxDegree() {
-        return maxDegree;
-    }
-
-    public void setMaxDegree(int maxDegree) {
-        this.maxDegree = maxDegree;
-    }
-
-    public boolean isFaithfulnessAssumed() {
-        return faithfulnessAssumed;
-    }
-
-    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
-        this.faithfulnessAssumed = faithfulnessAssumed;
     }
 
     public boolean isSkipUniqueVarName() {
