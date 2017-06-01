@@ -19,7 +19,6 @@
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
 import edu.pitt.dbmi.ccd.db.service.AlgorithmRunLogService;
-import edu.pitt.dbmi.ccd.db.service.AlgorithmService;
 import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.model.AppUser;
@@ -29,7 +28,6 @@ import edu.pitt.dbmi.ccd.web.model.algo.FGEScAlgoOpt;
 import edu.pitt.dbmi.ccd.web.model.algo.FGESdAlgoOpt;
 import edu.pitt.dbmi.ccd.web.model.algo.FGESmCGAlgoOpt;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
-import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmRunService;
 import edu.pitt.dbmi.ccd.web.util.TetradCmdOptions;
 import java.util.HashMap;
@@ -55,17 +53,19 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @RequestMapping(value = "algorithm/fges")
 public class FGESController extends AbstractTetradAlgoController implements ViewPath, TetradCmdOptions {
 
+    private final String FGESC_ALGO_NAME = "fgesc";
+    private final String FGESD_ALGO_NAME = "fgesd";
+    private final String FGESM_CG_ALGO_NAME = "fgesm-cg";
+
     private final AlgorithmRunLogService algorithmRunLogService;
     private final AlgorithmRunService algorithmRunService;
-    private final AppUserService appUserService;
     private final CcdProperties ccdProperties;
 
     @Autowired
-    public FGESController(AlgorithmRunLogService algorithmRunLogService, AlgorithmRunService algorithmRunService, AppUserService appUserService, CcdProperties ccdProperties, DataFileService dataFileService) {
+    public FGESController(AlgorithmRunLogService algorithmRunLogService, AlgorithmRunService algorithmRunService, CcdProperties ccdProperties, DataFileService dataFileService) {
         super(dataFileService);
         this.algorithmRunLogService = algorithmRunLogService;
         this.algorithmRunService = algorithmRunService;
-        this.appUserService = appUserService;
         this.ccdProperties = ccdProperties;
     }
 
@@ -81,7 +81,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
         jobRequest.setParameters(getParametersForMixedCG(algoOpt, appUser.getUsername()));
 
         algorithmRunService.addToQueue(jobRequest, appUser.getUsername());
-        algorithmRunLogService.logAlgorithmRun(AlgorithmService.FGESM_CG_ALGO_NAME, getFGESmCGParams(algoOpt), getFileSummary(algoOpt), appUserService.getUserAccount(appUser));
+        algorithmRunLogService.logAlgorithmRun(getFGESmCGParams(algoOpt), getFileSummary(algoOpt), FGESM_CG_ALGO_NAME, appUser.getUsername());
 
         return REDIRECT_JOB_QUEUE;
     }
@@ -120,7 +120,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
         jobRequest.setParameters(getParametersForDiscrete(algoOpt, appUser.getUsername()));
 
         algorithmRunService.addToQueue(jobRequest, appUser.getUsername());
-        algorithmRunLogService.logAlgorithmRun(AlgorithmService.FGESD_ALGO_NAME, getFGESdParams(algoOpt), getFileSummary(algoOpt), appUserService.getUserAccount(appUser));
+        algorithmRunLogService.logAlgorithmRun(getFGESdParams(algoOpt), getFileSummary(algoOpt), FGESD_ALGO_NAME, appUser.getUsername());
 
         return REDIRECT_JOB_QUEUE;
     }
@@ -159,7 +159,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
         jobRequest.setParameters(getParametersForContinuous(algoOpt, appUser.getUsername()));
 
         algorithmRunService.addToQueue(jobRequest, appUser.getUsername());
-        algorithmRunLogService.logAlgorithmRun(AlgorithmService.FGESC_ALGO_NAME, getFGEScParams(algoOpt), getFileSummary(algoOpt), appUserService.getUserAccount(appUser));
+        algorithmRunLogService.logAlgorithmRun(getFGEScParams(algoOpt), getFileSummary(algoOpt), FGESC_ALGO_NAME, appUser.getUsername());
 
         return REDIRECT_JOB_QUEUE;
     }

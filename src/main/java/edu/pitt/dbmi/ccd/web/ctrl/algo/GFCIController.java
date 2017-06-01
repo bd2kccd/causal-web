@@ -19,7 +19,6 @@
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
 import edu.pitt.dbmi.ccd.db.service.AlgorithmRunLogService;
-import edu.pitt.dbmi.ccd.db.service.AlgorithmService;
 import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.model.AppUser;
@@ -29,7 +28,6 @@ import edu.pitt.dbmi.ccd.web.model.algo.GFCIcAlgoOpt;
 import edu.pitt.dbmi.ccd.web.model.algo.GFCIdAlgoOpt;
 import edu.pitt.dbmi.ccd.web.model.algo.GFCImCGAlgoOpt;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
-import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmRunService;
 import edu.pitt.dbmi.ccd.web.util.TetradCmdOptions;
 import static edu.pitt.dbmi.ccd.web.util.TetradCmdOptions.PENALTY_DISCOUNT;
@@ -57,17 +55,19 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @RequestMapping(value = "algorithm/gfci")
 public class GFCIController extends AbstractTetradAlgoController implements ViewPath, TetradCmdOptions {
 
+    private final String GFCIC_ALGO_NAME = "gfcic";
+    private final String GFCID_ALGO_NAME = "gfcid";
+    private final String GFCIM_CG_ALGO_NAME = "gfcim-cg";
+
     private final AlgorithmRunLogService algorithmRunLogService;
     private final AlgorithmRunService algorithmRunService;
-    private final AppUserService appUserService;
     private final CcdProperties ccdProperties;
 
     @Autowired
-    public GFCIController(AlgorithmRunLogService algorithmRunLogService, AlgorithmRunService algorithmRunService, AppUserService appUserService, CcdProperties ccdProperties, DataFileService dataFileService) {
+    public GFCIController(AlgorithmRunLogService algorithmRunLogService, AlgorithmRunService algorithmRunService, CcdProperties ccdProperties, DataFileService dataFileService) {
         super(dataFileService);
         this.algorithmRunLogService = algorithmRunLogService;
         this.algorithmRunService = algorithmRunService;
-        this.appUserService = appUserService;
         this.ccdProperties = ccdProperties;
     }
 
@@ -83,7 +83,7 @@ public class GFCIController extends AbstractTetradAlgoController implements View
         jobRequest.setParameters(getParametersForMixedCG(algoOpt, appUser.getUsername()));
 
         algorithmRunService.addToQueue(jobRequest, appUser.getUsername());
-        algorithmRunLogService.logAlgorithmRun(AlgorithmService.GFCIM_CG_ALGO_NAME, getGFCImCGParams(algoOpt), getFileSummary(algoOpt), appUserService.getUserAccount(appUser));
+        algorithmRunLogService.logAlgorithmRun(getGFCImCGParams(algoOpt), getFileSummary(algoOpt), GFCIM_CG_ALGO_NAME, appUser.getUsername());
 
         return REDIRECT_JOB_QUEUE;
     }
@@ -122,7 +122,7 @@ public class GFCIController extends AbstractTetradAlgoController implements View
         jobRequest.setParameters(getParametersForDiscrete(algoOpt, appUser.getUsername()));
 
         algorithmRunService.addToQueue(jobRequest, appUser.getUsername());
-        algorithmRunLogService.logAlgorithmRun(AlgorithmService.GFCID_ALGO_NAME, getGFCIdParams(algoOpt), getFileSummary(algoOpt), appUserService.getUserAccount(appUser));
+        algorithmRunLogService.logAlgorithmRun(getGFCIdParams(algoOpt), getFileSummary(algoOpt), GFCID_ALGO_NAME, appUser.getUsername());
 
         return REDIRECT_JOB_QUEUE;
     }
@@ -161,7 +161,7 @@ public class GFCIController extends AbstractTetradAlgoController implements View
         jobRequest.setParameters(getParametersForContinuous(algoOpt, appUser.getUsername()));
 
         algorithmRunService.addToQueue(jobRequest, appUser.getUsername());
-        algorithmRunLogService.logAlgorithmRun(AlgorithmService.GFCIC_ALGO_NAME, getGFCIcParams(algoOpt), getFileSummary(algoOpt), appUserService.getUserAccount(appUser));
+        algorithmRunLogService.logAlgorithmRun(getGFCIcParams(algoOpt), getFileSummary(algoOpt), GFCIC_ALGO_NAME, appUser.getUsername());
 
         return REDIRECT_JOB_QUEUE;
     }
