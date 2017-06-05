@@ -92,3 +92,30 @@ a:link {
     font-size: 0.8em;
     line-height: 1em;
 }
+input[type="radio"],
+input[type="checkbox"] {
+    display:none;
+}
+
+input[type="radio"] + span:before,
+input[type="checkbox"] + span:before {
+    font-family: 'FontAwesome';
+    padding-right: 3px;
+    font-size: 20px;
+}
+
+input[type="radio"] + span:before {
+    content: "\f10c"; /* circle-blank */
+}
+
+input[type="radio"]:checked + span:before {
+    content:"\f192"; /* circle */
+}
+
+input[type="checkbox"] + span:before {
+    content: "\f096"; /* check-empty */
+}
+
+input[type="checkbox"]:checked + span:before {
+    content: "\f046"; /* check */
+}
