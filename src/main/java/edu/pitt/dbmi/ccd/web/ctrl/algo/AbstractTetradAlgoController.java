@@ -18,10 +18,15 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
+import edu.pitt.dbmi.ccd.db.entity.DataFile;
+import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
+import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.web.model.algo.TetradAlgoOpt;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -30,6 +35,29 @@ import java.util.List;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public abstract class AbstractTetradAlgoController {
+
+    private final DataFileService dataFileService;
+
+    public AbstractTetradAlgoController(DataFileService dataFileService) {
+        this.dataFileService = dataFileService;
+    }
+
+    protected Map<String, String> getFileSummary(TetradAlgoOpt algoOpt) {
+        Map<String, String> params = new HashMap<>();
+
+        DataFile dataFile = dataFileService.findByName(algoOpt.getDataset());
+        if (dataFile != null) {
+            params.put("fileSize", Long.toString(dataFile.getFileSize()));
+
+            DataFileInfo fileInfo = dataFile.getDataFileInfo();
+            if (fileInfo != null) {
+                params.put("numOfColumns", Integer.toString(fileInfo.getNumOfColumns()));
+                params.put("numOfRows", Integer.toString(fileInfo.getNumOfRows()));
+            }
+        }
+
+        return params;
+    }
 
     protected List<String> getDataset(TetradAlgoOpt tetradAlgoOpt) {
         return Collections.singletonList(tetradAlgoOpt.getDataset());

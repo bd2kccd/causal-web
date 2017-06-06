@@ -34,10 +34,10 @@ import org.springframework.stereotype.Service;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @Service
-public class AlgorithmService extends AbstractAlgorithmService {
+public class AlgorithmRunService extends AbstractAlgorithmRunService {
 
     @Autowired
-    public AlgorithmService(
+    public AlgorithmRunService(
             @Value("${ccd.server.workspace}") String workspace,
             @Value("${ccd.folder.data:data}") String dataFolder,
             @Value("${ccd.folder.results:results}") String resultFolder,
