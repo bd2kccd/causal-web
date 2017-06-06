@@ -18,15 +18,21 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
+import edu.pitt.dbmi.ccd.db.service.AlgorithmRunLogService;
+import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.model.AppUser;
 import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmJobRequest;
+import edu.pitt.dbmi.ccd.web.model.algo.CommonGFCIAlgoOpt;
 import edu.pitt.dbmi.ccd.web.model.algo.GFCIcAlgoOpt;
 import edu.pitt.dbmi.ccd.web.model.algo.GFCIdAlgoOpt;
 import edu.pitt.dbmi.ccd.web.model.algo.GFCImCGAlgoOpt;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
-import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmService;
+import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmRunService;
 import edu.pitt.dbmi.ccd.web.util.TetradCmdOptions;
+import static edu.pitt.dbmi.ccd.web.util.TetradCmdOptions.PENALTY_DISCOUNT;
+import static edu.pitt.dbmi.ccd.web.util.TetradCmdOptions.STRUCTURE_PRIOR;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -49,12 +55,19 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @RequestMapping(value = "algorithm/gfci")
 public class GFCIController extends AbstractTetradAlgoController implements ViewPath, TetradCmdOptions {
 
-    private final AlgorithmService algorithmService;
+    private final String GFCIC_ALGO_NAME = "gfcic";
+    private final String GFCID_ALGO_NAME = "gfcid";
+    private final String GFCIM_CG_ALGO_NAME = "gfcim-cg";
+
+    private final AlgorithmRunLogService algorithmRunLogService;
+    private final AlgorithmRunService algorithmRunService;
     private final CcdProperties ccdProperties;
 
     @Autowired
-    public GFCIController(AlgorithmService algorithmService, CcdProperties ccdProperties) {
-        this.algorithmService = algorithmService;
+    public GFCIController(AlgorithmRunLogService algorithmRunLogService, AlgorithmRunService algorithmRunService, CcdProperties ccdProperties, DataFileService dataFileService) {
+        super(dataFileService);
+        this.algorithmRunLogService = algorithmRunLogService;
+        this.algorithmRunService = algorithmRunService;
         this.ccdProperties = ccdProperties;
     }
 
@@ -69,15 +82,16 @@ public class GFCIController extends AbstractTetradAlgoController implements View
         jobRequest.setJvmOptions(getJvmOptions(algoOpt));
         jobRequest.setParameters(getParametersForMixedCG(algoOpt, appUser.getUsername()));
 
-        algorithmService.addToQueue(jobRequest, appUser.getUsername());
+        algorithmRunService.addToQueue(jobRequest, appUser.getUsername());
+        algorithmRunLogService.logAlgorithmRun(getGFCImCGParams(algoOpt), getFileSummary(algoOpt), GFCIM_CG_ALGO_NAME, appUser.getUsername());
 
         return REDIRECT_JOB_QUEUE;
     }
 
     @RequestMapping(value = "gfcim_cg", method = RequestMethod.GET)
     public String showGFCImCGView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        Map<String, String> dataset = algorithmService.getUserMixedDataset(appUser.getUsername());
-        Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
+        Map<String, String> dataset = algorithmRunService.getUserMixedDataset(appUser.getUsername());
+        Map<String, String> prior = algorithmRunService.getUserPriorKnowledgeFiles(appUser.getUsername());
         GFCImCGAlgoOpt algoOpt = new GFCImCGAlgoOpt();
 
         // set the default dataset
@@ -107,15 +121,16 @@ public class GFCIController extends AbstractTetradAlgoController implements View
         jobRequest.setJvmOptions(getJvmOptions(algoOpt));
         jobRequest.setParameters(getParametersForDiscrete(algoOpt, appUser.getUsername()));
 
-        algorithmService.addToQueue(jobRequest, appUser.getUsername());
+        algorithmRunService.addToQueue(jobRequest, appUser.getUsername());
+        algorithmRunLogService.logAlgorithmRun(getGFCIdParams(algoOpt), getFileSummary(algoOpt), GFCID_ALGO_NAME, appUser.getUsername());
 
         return REDIRECT_JOB_QUEUE;
     }
 
     @RequestMapping(value = "gfcid", method = RequestMethod.GET)
     public String showGfciDiscreteView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        Map<String, String> dataset = algorithmService.getUserDiscreteDataset(appUser.getUsername());
-        Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
+        Map<String, String> dataset = algorithmRunService.getUserDiscreteDataset(appUser.getUsername());
+        Map<String, String> prior = algorithmRunService.getUserPriorKnowledgeFiles(appUser.getUsername());
         GFCIdAlgoOpt algoOpt = new GFCIdAlgoOpt();
 
         // set the default dataset
@@ -145,15 +160,16 @@ public class GFCIController extends AbstractTetradAlgoController implements View
         jobRequest.setJvmOptions(getJvmOptions(algoOpt));
         jobRequest.setParameters(getParametersForContinuous(algoOpt, appUser.getUsername()));
 
-        algorithmService.addToQueue(jobRequest, appUser.getUsername());
+        algorithmRunService.addToQueue(jobRequest, appUser.getUsername());
+        algorithmRunLogService.logAlgorithmRun(getGFCIcParams(algoOpt), getFileSummary(algoOpt), GFCIC_ALGO_NAME, appUser.getUsername());
 
         return REDIRECT_JOB_QUEUE;
     }
 
     @RequestMapping(value = "gfcic", method = RequestMethod.GET)
     public String showGfciContinuousView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        Map<String, String> dataset = algorithmService.getUserContinuousDataset(appUser.getUsername());
-        Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
+        Map<String, String> dataset = algorithmRunService.getUserContinuousDataset(appUser.getUsername());
+        Map<String, String> prior = algorithmRunService.getUserPriorKnowledgeFiles(appUser.getUsername());
         GFCIcAlgoOpt algoOpt = new GFCIcAlgoOpt();
 
         // set the default dataset
@@ -174,7 +190,7 @@ public class GFCIController extends AbstractTetradAlgoController implements View
 
     private List<String> getParametersForContinuous(GFCIcAlgoOpt algoOpt, String username) {
         List<String> parameters = new LinkedList<>();
-        String delimiter = algorithmService.getFileDelimiter(algoOpt.getDataset(), username);
+        String delimiter = algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username);
         parameters.add(DELIMITER);
         parameters.add(delimiter);
         parameters.add(ALPHA);
@@ -208,7 +224,7 @@ public class GFCIController extends AbstractTetradAlgoController implements View
 
     private List<String> getParametersForMixedCG(GFCImCGAlgoOpt algoOpt, String username) {
         List<String> parameters = new LinkedList<>();
-        String delimiter = algorithmService.getFileDelimiter(algoOpt.getDataset(), username);
+        String delimiter = algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username);
         parameters.add(DELIMITER);
         parameters.add(delimiter);
         parameters.add(ALPHA);
@@ -245,7 +261,7 @@ public class GFCIController extends AbstractTetradAlgoController implements View
 
     private List<String> getParametersForDiscrete(GFCIdAlgoOpt algoOpt, String username) {
         List<String> parameters = new LinkedList<>();
-        String delimiter = algorithmService.getFileDelimiter(algoOpt.getDataset(), username);
+        String delimiter = algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username);
         parameters.add(DELIMITER);
         parameters.add(delimiter);
         parameters.add(ALPHA);
@@ -277,6 +293,47 @@ public class GFCIController extends AbstractTetradAlgoController implements View
         parameters.add(TETRAD_GRAPH_JSON);
 
         return parameters;
+    }
+
+    private Map<String, String> getGFCImCGParams(GFCImCGAlgoOpt algoOpt) {
+        Map<String, String> params = new HashMap<>();
+        params.put(ALPHA.replaceAll("--", ""), Double.toString(algoOpt.getAlpha()));
+        params.put(STRUCTURE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getStructurePrior()));
+        params.put(NUM_CATEGORIES_TO_DISCRETIZE.replaceAll("--", ""), Integer.toString(algoOpt.getNumCategoriesToDiscretize()));
+        params.put(NUM_DISCRETE_CATEGORIES.replaceAll("--", ""), Integer.toString(algoOpt.getNumberOfDiscreteCategories()));
+        params.put(DISCRETIZE.replaceAll("--", ""), algoOpt.isDiscretize() ? "true" : "false");
+
+        getCommonGFCIParams(params, algoOpt);
+
+        return params;
+    }
+
+    private Map<String, String> getGFCIdParams(GFCIdAlgoOpt algoOpt) {
+        Map<String, String> params = new HashMap<>();
+        params.put(ALPHA.replaceAll("--", ""), Double.toString(algoOpt.getAlpha()));
+        params.put(SAMPLE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getSamplePrior()));
+        params.put(STRUCTURE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getStructurePrior()));
+
+        getCommonGFCIParams(params, algoOpt);
+
+        return params;
+    }
+
+    private Map<String, String> getGFCIcParams(GFCIcAlgoOpt algoOpt) {
+        Map<String, String> params = new HashMap<>();
+        params.put(ALPHA.replaceAll("--", ""), Double.toString(algoOpt.getAlpha()));
+        params.put(PENALTY_DISCOUNT.replaceAll("--", ""), Double.toString(algoOpt.getPenaltyDiscount()));
+
+        getCommonGFCIParams(params, algoOpt);
+
+        return params;
+    }
+
+    private void getCommonGFCIParams(Map<String, String> params, CommonGFCIAlgoOpt algoOpt) {
+        params.put(MAX_DEGREE.replaceAll("--", ""), Integer.toString(algoOpt.getMaxDegree()));
+        params.put(MAX_PATH_LENGTH.replaceAll("--", ""), Integer.toString(algoOpt.getMaxPathLength()));
+        params.put(FAITHFULNESS_ASSUMED.replaceAll("--", ""), algoOpt.isFaithfulnessAssumed() ? "true" : "false");
+        params.put(COMPLETE_RULE_SET_USED.replaceAll("--", ""), algoOpt.isCompleteRuleSetUsed() ? "true" : "false");
     }
 
 }

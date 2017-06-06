@@ -20,8 +20,10 @@ package edu.pitt.dbmi.ccd.web.service;
 
 import edu.pitt.dbmi.ccd.db.entity.Person;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.repository.UserAccountRepository;
 import edu.pitt.dbmi.ccd.web.model.AppUser;
 import java.util.Date;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -33,7 +35,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class AppUserService {
 
-    public AppUserService() {
+    private final UserAccountRepository userAccountRepository;
+
+    @Autowired
+    public AppUserService(UserAccountRepository userAccountRepository) {
+        this.userAccountRepository = userAccountRepository;
+    }
+
+    public UserAccount getUserAccount(AppUser appUser) {
+        return userAccountRepository.findByUsername(appUser.getUsername());
     }
 
     public AppUser updateUserProfile(AppUser appUser, Person person) {

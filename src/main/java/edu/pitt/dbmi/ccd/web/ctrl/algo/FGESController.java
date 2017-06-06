@@ -18,15 +18,19 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
+import edu.pitt.dbmi.ccd.db.service.AlgorithmRunLogService;
+import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.model.AppUser;
 import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmJobRequest;
+import edu.pitt.dbmi.ccd.web.model.algo.CommonFGESAlgoOpt;
 import edu.pitt.dbmi.ccd.web.model.algo.FGEScAlgoOpt;
 import edu.pitt.dbmi.ccd.web.model.algo.FGESdAlgoOpt;
 import edu.pitt.dbmi.ccd.web.model.algo.FGESmCGAlgoOpt;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
-import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmService;
+import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmRunService;
 import edu.pitt.dbmi.ccd.web.util.TetradCmdOptions;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -49,12 +53,19 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @RequestMapping(value = "algorithm/fges")
 public class FGESController extends AbstractTetradAlgoController implements ViewPath, TetradCmdOptions {
 
-    private final AlgorithmService algorithmService;
+    private final String FGESC_ALGO_NAME = "fgesc";
+    private final String FGESD_ALGO_NAME = "fgesd";
+    private final String FGESM_CG_ALGO_NAME = "fgesm-cg";
+
+    private final AlgorithmRunLogService algorithmRunLogService;
+    private final AlgorithmRunService algorithmRunService;
     private final CcdProperties ccdProperties;
 
     @Autowired
-    public FGESController(AlgorithmService algorithmService, CcdProperties ccdProperties) {
-        this.algorithmService = algorithmService;
+    public FGESController(AlgorithmRunLogService algorithmRunLogService, AlgorithmRunService algorithmRunService, CcdProperties ccdProperties, DataFileService dataFileService) {
+        super(dataFileService);
+        this.algorithmRunLogService = algorithmRunLogService;
+        this.algorithmRunService = algorithmRunService;
         this.ccdProperties = ccdProperties;
     }
 
@@ -69,15 +80,16 @@ public class FGESController extends AbstractTetradAlgoController implements View
         jobRequest.setJvmOptions(getJvmOptions(algoOpt));
         jobRequest.setParameters(getParametersForMixedCG(algoOpt, appUser.getUsername()));
 
-        algorithmService.addToQueue(jobRequest, appUser.getUsername());
+        algorithmRunService.addToQueue(jobRequest, appUser.getUsername());
+        algorithmRunLogService.logAlgorithmRun(getFGESmCGParams(algoOpt), getFileSummary(algoOpt), FGESM_CG_ALGO_NAME, appUser.getUsername());
 
         return REDIRECT_JOB_QUEUE;
     }
 
     @RequestMapping(value = "fgesm_cg", method = RequestMethod.GET)
     public String showFgesmCGView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        Map<String, String> dataset = algorithmService.getUserMixedDataset(appUser.getUsername());
-        Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
+        Map<String, String> dataset = algorithmRunService.getUserMixedDataset(appUser.getUsername());
+        Map<String, String> prior = algorithmRunService.getUserPriorKnowledgeFiles(appUser.getUsername());
         FGESmCGAlgoOpt algoOpt = new FGESmCGAlgoOpt();
 
         // set the default dataset
@@ -107,15 +119,16 @@ public class FGESController extends AbstractTetradAlgoController implements View
         jobRequest.setJvmOptions(getJvmOptions(algoOpt));
         jobRequest.setParameters(getParametersForDiscrete(algoOpt, appUser.getUsername()));
 
-        algorithmService.addToQueue(jobRequest, appUser.getUsername());
+        algorithmRunService.addToQueue(jobRequest, appUser.getUsername());
+        algorithmRunLogService.logAlgorithmRun(getFGESdParams(algoOpt), getFileSummary(algoOpt), FGESD_ALGO_NAME, appUser.getUsername());
 
         return REDIRECT_JOB_QUEUE;
     }
 
     @RequestMapping(value = "fgesd", method = RequestMethod.GET)
     public String showFgesDiscreteView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        Map<String, String> dataset = algorithmService.getUserDiscreteDataset(appUser.getUsername());
-        Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
+        Map<String, String> dataset = algorithmRunService.getUserDiscreteDataset(appUser.getUsername());
+        Map<String, String> prior = algorithmRunService.getUserPriorKnowledgeFiles(appUser.getUsername());
         FGESdAlgoOpt algoOpt = new FGESdAlgoOpt();
 
         // set the default dataset
@@ -145,15 +158,16 @@ public class FGESController extends AbstractTetradAlgoController implements View
         jobRequest.setJvmOptions(getJvmOptions(algoOpt));
         jobRequest.setParameters(getParametersForContinuous(algoOpt, appUser.getUsername()));
 
-        algorithmService.addToQueue(jobRequest, appUser.getUsername());
+        algorithmRunService.addToQueue(jobRequest, appUser.getUsername());
+        algorithmRunLogService.logAlgorithmRun(getFGEScParams(algoOpt), getFileSummary(algoOpt), FGESC_ALGO_NAME, appUser.getUsername());
 
         return REDIRECT_JOB_QUEUE;
     }
 
     @RequestMapping(value = "fgesc", method = RequestMethod.GET)
     public String showFgesContinuousView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        Map<String, String> dataset = algorithmService.getUserContinuousDataset(appUser.getUsername());
-        Map<String, String> prior = algorithmService.getUserPriorKnowledgeFiles(appUser.getUsername());
+        Map<String, String> dataset = algorithmRunService.getUserContinuousDataset(appUser.getUsername());
+        Map<String, String> prior = algorithmRunService.getUserPriorKnowledgeFiles(appUser.getUsername());
         FGEScAlgoOpt algoOpt = new FGEScAlgoOpt();
 
         // set the default dataset
@@ -174,7 +188,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
 
     private List<String> getParametersForMixedCG(FGESmCGAlgoOpt algoOpt, String username) {
         List<String> parameters = new LinkedList<>();
-        String delimiter = algorithmService.getFileDelimiter(algoOpt.getDataset(), username);
+        String delimiter = algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username);
         parameters.add(DELIMITER);
         parameters.add(delimiter);
         parameters.add(PENALTY_DISCOUNT);
@@ -207,7 +221,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
 
     private List<String> getParametersForDiscrete(FGESdAlgoOpt algoOpt, String username) {
         List<String> parameters = new LinkedList<>();
-        String delimiter = algorithmService.getFileDelimiter(algoOpt.getDataset(), username);
+        String delimiter = algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username);
         parameters.add(DELIMITER);
         parameters.add(delimiter);
         parameters.add(STRUCTURE_PRIOR);
@@ -239,7 +253,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
 
     private List<String> getParametersForContinuous(FGEScAlgoOpt algoOpt, String username) {
         List<String> parameters = new LinkedList<>();
-        String delimiter = algorithmService.getFileDelimiter(algoOpt.getDataset(), username);
+        String delimiter = algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username);
         parameters.add(DELIMITER);
         parameters.add(delimiter);
         parameters.add(PENALTY_DISCOUNT);
@@ -267,6 +281,45 @@ public class FGESController extends AbstractTetradAlgoController implements View
         parameters.add(TETRAD_GRAPH_JSON);
 
         return parameters;
+    }
+
+    private Map<String, String> getFGESmCGParams(FGESmCGAlgoOpt algoOpt) {
+        Map<String, String> params = new HashMap<>();
+        params.put(PENALTY_DISCOUNT.replaceAll("--", ""), Double.toString(algoOpt.getPenaltyDiscount()));
+        params.put(STRUCTURE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getStructurePrior()));
+        params.put(NUM_CATEGORIES_TO_DISCRETIZE.replaceAll("--", ""), Integer.toString(algoOpt.getNumCategoriesToDiscretize()));
+        params.put(NUM_DISCRETE_CATEGORIES.replaceAll("--", ""), Integer.toString(algoOpt.getNumberOfDiscreteCategories()));
+        params.put(DISCRETIZE.replaceAll("--", ""), algoOpt.isDiscretize() ? "true" : "false");
+
+        getCommonFGESParams(params, algoOpt);
+
+        return params;
+    }
+
+    private Map<String, String> getFGESdParams(FGESdAlgoOpt algoOpt) {
+        Map<String, String> params = new HashMap<>();
+        params.put(SAMPLE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getSamplePrior()));
+        params.put(STRUCTURE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getStructurePrior()));
+
+        getCommonFGESParams(params, algoOpt);
+
+        return params;
+    }
+
+    private Map<String, String> getFGEScParams(FGEScAlgoOpt algoOpt) {
+        Map<String, String> params = new HashMap<>();
+        params.put(PENALTY_DISCOUNT.replaceAll("--", ""), Double.toString(algoOpt.getPenaltyDiscount()));
+        params.put(STRUCTURE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getStructurePrior()));
+
+        getCommonFGESParams(params, algoOpt);
+
+        return params;
+    }
+
+    private void getCommonFGESParams(Map<String, String> params, CommonFGESAlgoOpt algoOpt) {
+        params.put(MAX_DEGREE.replaceAll("--", ""), Integer.toString(algoOpt.getMaxDegree()));
+        params.put(FAITHFULNESS_ASSUMED.replaceAll("--", ""), algoOpt.isFaithfulnessAssumed() ? "true" : "false");
+        params.put(SYMMETRIC_FIRST_STEP.replaceAll("--", ""), algoOpt.isSymmetricFirstStep() ? "true" : "false");
     }
 
 }
