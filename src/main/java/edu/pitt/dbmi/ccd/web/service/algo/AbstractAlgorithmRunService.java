@@ -47,9 +47,9 @@ import org.springframework.core.env.Environment;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  * @author Chirayu (Kong) Wongchokprasitti, PhD (chw20@pitt.edu)
  */
-public abstract class AbstractAlgorithmService {
+public abstract class AbstractAlgorithmRunService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAlgorithmService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAlgorithmRunService.class);
 
     protected final String workspace;
     protected final String dataFolder;
@@ -76,7 +76,7 @@ public abstract class AbstractAlgorithmService {
     @Value("${ccd.remote.server.workspace:}")
     private String remoteworkspace;
 
-    public AbstractAlgorithmService(
+    public AbstractAlgorithmRunService(
             String workspace,
             String dataFolder,
             String resultFolder,
