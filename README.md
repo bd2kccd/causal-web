@@ -19,7 +19,7 @@ Download and uncompress the source code for each of following dependencies:
 
 * [ccd-job-queue-0.1.8](https://github.com/bd2kccd/ccd-job-queue/releases/tag/v0.1.8)
 * [ccd-mail-0.2.4](https://github.com/bd2kccd/ccd-mail/releases/tag/v0.2.4)
-* [ccd-db-0.6.6](https://github.com/bd2kccd/ccd-db/releases/tag/v0.6.5)
+* [ccd-db-0.6.6](https://github.com/bd2kccd/ccd-db/releases/tag/v0.6.6)
 * [ccd-commons-0.3.1](https://github.com/bd2kccd/ccd-commons/releases/tag/v0.3.1)
 To install the dependencies, go to the top directory of each project and do a maven install by typing **mvn install**.
 
