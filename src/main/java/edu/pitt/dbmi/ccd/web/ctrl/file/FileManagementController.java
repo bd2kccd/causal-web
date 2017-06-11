@@ -22,18 +22,25 @@ import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileDelimiterType;
 import edu.pitt.dbmi.ccd.db.entity.FileFormat;
 import edu.pitt.dbmi.ccd.db.entity.FileVariableType;
+import edu.pitt.dbmi.ccd.db.entity.TetradDataFile;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileDelimiterTypeService;
 import edu.pitt.dbmi.ccd.db.service.FileFormatService;
 import edu.pitt.dbmi.ccd.db.service.FileService;
 import edu.pitt.dbmi.ccd.db.service.FileTypeService;
 import edu.pitt.dbmi.ccd.db.service.FileVariableTypeService;
+import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
+import edu.pitt.dbmi.ccd.db.service.TetradVariableFileService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.file.CategorizeFileForm;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.fs.FileManagementService;
+import edu.pitt.dbmi.data.Delimiter;
+import edu.pitt.dbmi.data.reader.BasicDataFileReader;
+import java.io.IOException;
+import java.nio.file.Path;
 import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,15 +80,20 @@ public class FileManagementController implements ViewPath {
     private final FileFormatService fileFormatService;
     private final FileDelimiterTypeService fileDelimiterTypeService;
     private final FileVariableTypeService fileVariableTypeService;
+    private final TetradDataFileService tetradDataFileService;
+    private final TetradVariableFileService tetradVariableFileService;
     private final AppUserService appUserService;
 
     @Autowired
-    public FileManagementController(FileManagementService fileManagementService,
+    public FileManagementController(
+            FileManagementService fileManagementService,
             FileService fileService,
             FileTypeService fileTypeService,
             FileFormatService fileFormatService,
             FileDelimiterTypeService fileDelimiterTypeService,
             FileVariableTypeService fileVariableTypeService,
+            TetradDataFileService tetradDataFileService,
+            TetradVariableFileService tetradVariableFileService,
             AppUserService appUserService) {
         this.fileManagementService = fileManagementService;
         this.fileService = fileService;
@@ -89,6 +101,8 @@ public class FileManagementController implements ViewPath {
         this.fileFormatService = fileFormatService;
         this.fileDelimiterTypeService = fileDelimiterTypeService;
         this.fileVariableTypeService = fileVariableTypeService;
+        this.tetradDataFileService = tetradDataFileService;
+        this.tetradVariableFileService = tetradVariableFileService;
         this.appUserService = appUserService;
     }
 
@@ -147,7 +161,7 @@ public class FileManagementController implements ViewPath {
         FileFormat fileFormat = fileFormatService.getRepository().findOne(fileFmtId);
         if (fileFormat != null) {
             switch (fileFormat.getName()) {
-                case FileFormatService.TETRAD_TEXT_RESULT_FMT_NAME:
+                case FileFormatService.TETRAD_TAB_FMT_NAME:
                     Long fileDelimTypeId = categorizeFileForm.getFileDelimiterTypeId();
                     Long fileVarTypeId = categorizeFileForm.getFileVariableTypeId();
                     Character quoteChar = categorizeFileForm.getQuoteChar();
@@ -156,13 +170,53 @@ public class FileManagementController implements ViewPath {
 
                     FileDelimiterType delimiter = fileDelimiterTypeService.getRepository().findOne(fileDelimTypeId);
                     FileVariableType variable = fileVariableTypeService.getRepository().findOne(fileVarTypeId);
+
+                    TetradDataFile dataFile = new TetradDataFile(file, delimiter, variable);
+                    dataFile.setCommentMarker(cmntMark);
+                    dataFile.setMissingValueMarker(missValMark);
+                    dataFile.setQuoteChar(quoteChar);
+
+                    Path localFile = fileManagementService.getPhysicalFile(file, userAccount);
+                    try {
+                        BasicDataFileReader fileReader = new BasicDataFileReader(localFile.toFile(), getReaderFileDelimiter(delimiter));
+                        dataFile.setNumOfColumns(fileReader.getNumberOfColumns());
+                        dataFile.setNumOfRows(fileReader.getNumberOfLines());
+                    } catch (IOException exception) {
+                        String errMsg = String.format("Unable to get row and column counts from file %s.", localFile.getFileName().toString());
+                        LOGGER.error(errMsg, exception);
+                    }
+
+                    tetradDataFileService.getRepository().save(dataFile);
+                    break;
+                case FileFormatService.TETRAD_VAR_FMT_NAME:
                     break;
             }
             file.setFileFormat(fileFormat);
-            fileService.getRepository().save(file);
+            file = fileService.getRepository().save(file);
         }
 
         return getRedirect(file);
+    }
+
+    private Delimiter getReaderFileDelimiter(FileDelimiterType fileDelimiterType) {
+        switch (fileDelimiterType.getName()) {
+            case FileDelimiterTypeService.COLON_DELIM_NAME:
+                return Delimiter.COLON;
+            case FileDelimiterTypeService.COMMA_DELIM_NAME:
+                return Delimiter.COMMA;
+            case FileDelimiterTypeService.PIPE_DELIM_NAME:
+                return Delimiter.PIPE;
+            case FileDelimiterTypeService.SEMICOLON_DELIM_NAME:
+                return Delimiter.SEMICOLON;
+            case FileDelimiterTypeService.SPACE_DELIM_NAME:
+                return Delimiter.SPACE;
+            case FileDelimiterTypeService.TAB_DELIM_NAME:
+                return Delimiter.TAB;
+            case FileDelimiterTypeService.WHITESPACE_DELIM_NAME:
+                return Delimiter.WHITESPACE;
+            default:
+                return Delimiter.TAB;
+        }
     }
 
     @RequestMapping(value = "categorize", method = RequestMethod.GET)

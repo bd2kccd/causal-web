@@ -86,6 +86,11 @@
         </dependency>
         <dependency>
             <groupId>edu.pitt.dbmi</groupId>
+            <artifactId>data-reader</artifactId>
+            <version>0.2.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.pitt.dbmi</groupId>
             <artifactId>ccd-mail</artifactId>
             <version>0.2.5-SNAPSHOT</version>
         </dependency>
