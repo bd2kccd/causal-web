@@ -79,7 +79,7 @@ public class AuthenticationService {
     public UserAccount retrieveUserAccount(Subject subject) {
         String username = (String) subject.getPrincipals().getPrimaryPrincipal();
 
-        return userAccountService.getUserAccountRepository().findByUsername(username);
+        return userAccountService.getRepository().findByUsername(username);
     }
 
     public void setLoginInfo(UserAccount userAccount, String ipAddress) {
@@ -87,7 +87,7 @@ public class AuthenticationService {
         userLogin.setLoginDate(new Date(System.currentTimeMillis()));
         userLogin.setLoginLocation(InetUtils.getInetNTOA(ipAddress));
 
-        userLoginService.getUserLoginRepository().save(userLogin);
+        userLoginService.getRepository().save(userLogin);
     }
 
 }

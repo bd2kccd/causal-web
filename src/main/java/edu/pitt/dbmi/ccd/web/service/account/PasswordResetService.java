@@ -56,14 +56,14 @@ public class PasswordResetService {
     public boolean isValidActivationKey(String activation) {
         String activationKey = new String(Base64.getUrlDecoder().decode(activation));
 
-        return userAccountService.getUserAccountRepository().existsByActionKey(activationKey);
+        return userAccountService.getRepository().existsByActionKey(activationKey);
     }
 
     public boolean changePassword(PasswordResetForm passwordReset) {
         String activationKey = new String(Base64.getUrlDecoder().decode(passwordReset.getActivationKey()));
         String password = passwordReset.getPassword();
 
-        UserAccount userAccount = userAccountService.getUserAccountRepository().findByActionKey(activationKey);
+        UserAccount userAccount = userAccountService.getRepository().findByActionKey(activationKey);
         if (userAccount == null) {
             return false;
         }
@@ -71,7 +71,7 @@ public class PasswordResetService {
         userAccount.setPassword(passwordService.encryptPassword(password));
         userAccount.setActionKey(null);
         try {
-            userAccountService.getUserAccountRepository().save(userAccount);
+            userAccountService.getRepository().save(userAccount);
         } catch (Exception exception) {
             LOGGER.error("Unable to reset password for user.", exception);
             return false;
@@ -85,7 +85,7 @@ public class PasswordResetService {
 
         try {
             userAccount.setActionKey(UUID.randomUUID().toString());
-            userAccountService.getUserAccountRepository().save(userAccount);
+            userAccountService.getRepository().save(userAccount);
 
             String actionKey = userAccount.getActionKey();
             uri = UriTool.buildURI(req)
@@ -102,7 +102,7 @@ public class PasswordResetService {
     public UserAccount retrieveUserAccount(PasswordResetRequestForm passwordResetRequestForm) {
         String username = passwordResetRequestForm.getEmailToResetPassword();
 
-        return userAccountService.getUserAccountRepository().findByUsername(username);
+        return userAccountService.getRepository().findByUsername(username);
     }
 
 }

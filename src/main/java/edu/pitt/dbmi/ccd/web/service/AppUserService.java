@@ -54,7 +54,7 @@ public class AppUserService {
 
         String username = appUser.getUsername();
         try {
-            userAccount = userAccountService.getUserAccountRepository().findByUsername(username);
+            userAccount = userAccountService.getRepository().findByUsername(username);
         } catch (Exception exception) {
             LOGGER.error("Unable to retrieve user account.", exception);
         }

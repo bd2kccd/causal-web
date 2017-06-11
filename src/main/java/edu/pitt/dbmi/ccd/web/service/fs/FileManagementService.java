@@ -63,7 +63,7 @@ public class FileManagementService {
     }
 
     public boolean existTitle(String title, UserAccount userAccount) {
-        return fileService.getFileRepository().existsByTitleAndUserAccount(title, userAccount);
+        return fileService.getRepository().existsByTitleAndUserAccount(title, userAccount);
     }
 
     public void deleteFile(File file, UserAccount userAccount) {
@@ -71,7 +71,7 @@ public class FileManagementService {
             Path physicalFile = getPhysicalFile(file, userAccount);
             Files.deleteIfExists(physicalFile);
 
-            fileService.getFileRepository().delete(file);
+            fileService.getRepository().delete(file);
         } catch (IOException exception) {
             LOGGER.error(exception.getMessage());
         }
@@ -87,7 +87,7 @@ public class FileManagementService {
         }
 
         if (localFiles.isEmpty()) {
-            fileService.getFileRepository().deleteAll();
+            fileService.getRepository().deleteAll();
         } else {
             // grab all the files from the database
             Map<String, File> dbFileMap = fileService.getUserFiles(userAccount);
@@ -107,7 +107,7 @@ public class FileManagementService {
                 dbFileMap.forEach((key, value) -> {
                     files.add(value);
                 });
-                fileService.getFileRepository().delete(files);
+                fileService.getRepository().delete(files);
             }
 
             if (!filesToSave.isEmpty()) {

@@ -65,7 +65,7 @@ public class UserProfileService {
         String newPwd = passwordChangeForm.getNewPassword();
         userAccount.setPassword(passwordService.encryptPassword(newPwd));
         try {
-            userAccountService.getUserAccountRepository().save(userAccount);
+            userAccountService.getRepository().save(userAccount);
         } catch (Exception exception) {
             LOGGER.error("Unable to update user's password.", exception);
             return false;
@@ -85,7 +85,7 @@ public class UserProfileService {
         userInfo.setLastName(lastName);
 
         try {
-            userInfoService.getUserInfoRepository().save(userInfo);
+            userInfoService.getRepository().save(userInfo);
         } catch (Exception exception) {
             LOGGER.error("Unable to update user information.", exception);
             return false;
@@ -97,7 +97,7 @@ public class UserProfileService {
     public UserInfoForm populateUserInfoForm(AppUser appUser) {
         UserInfoForm userInfoForm = new UserInfoForm();
 
-        UserAccount userAccount = userAccountService.getUserAccountRepository().findByUsername(appUser.getUsername());
+        UserAccount userAccount = userAccountService.getRepository().findByUsername(appUser.getUsername());
         if (userAccount != null) {
             UserInfo userInfo = userAccount.getUserInfo();
             userInfoForm.setEmail(userInfo.getEmail());

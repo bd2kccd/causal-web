@@ -21,7 +21,7 @@ package edu.pitt.dbmi.ccd.web.ctrl.file;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileDelimiterType;
 import edu.pitt.dbmi.ccd.db.entity.FileFormat;
-import edu.pitt.dbmi.ccd.db.entity.FileType;
+import edu.pitt.dbmi.ccd.db.entity.FileVariableType;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileDelimiterTypeService;
 import edu.pitt.dbmi.ccd.db.service.FileFormatService;
@@ -118,7 +118,7 @@ public class FileManagementController implements ViewPath {
                 } else {
                     file.setTitle(title);
                     try {
-                        fileService.getFileRepository().save(file);
+                        fileService.getRepository().save(file);
                     } catch (Exception exception) {
                         LOGGER.error(exception.getMessage());
                         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to update file title.");
@@ -144,7 +144,7 @@ public class FileManagementController implements ViewPath {
         }
 
         Long fileFmtId = categorizeFileForm.getFileFormatId();
-        FileFormat fileFormat = fileFormatService.getFileFormatRepository().findOne(fileFmtId);
+        FileFormat fileFormat = fileFormatService.getRepository().findOne(fileFmtId);
         if (fileFormat != null) {
             switch (fileFormat.getName()) {
                 case FileFormatService.TETRAD_TEXT_RESULT_FMT_NAME:
@@ -154,11 +154,12 @@ public class FileManagementController implements ViewPath {
                     String missValMark = categorizeFileForm.getMissingValueMarker();
                     String cmntMark = categorizeFileForm.getCommentMarker();
 
-                    FileDelimiterType fileDelimiterType = fileDelimiterTypeService.getFileDelimiterTypeRepository().findOne(fileDelimTypeId);
+                    FileDelimiterType delimiter = fileDelimiterTypeService.getRepository().findOne(fileDelimTypeId);
+                    FileVariableType variable = fileVariableTypeService.getRepository().findOne(fileVarTypeId);
                     break;
             }
             file.setFileFormat(fileFormat);
-            fileService.getFileRepository().save(file);
+            fileService.getRepository().save(file);
         }
 
         return getRedirect(file);
@@ -179,19 +180,14 @@ public class FileManagementController implements ViewPath {
             model.addAttribute("categorizeFileForm", getDefaultCategorizeFileForm(file));
         }
 
-        FileType dataFileType = fileTypeService.getFileTypeRepository().findByName(FileTypeService.DATA_NAME);
-        FileType knwlFileType = fileTypeService.getFileTypeRepository().findByName(FileTypeService.KNOWLEDGE_NAME);
-        FileType resultFileType = fileTypeService.getFileTypeRepository().findByName(FileTypeService.RESULT_NAME);
-        FileType varFileType = fileTypeService.getFileTypeRepository().findByName(FileTypeService.VARIABLE_NAME);
-
         model.addAttribute("file", file);
-        model.addAttribute("fileTypes", fileTypeService.getFileTypeRepository().findAll());
-        model.addAttribute("dataFileFormats", fileFormatService.getFileFormatRepository().findByFileType(dataFileType));
-        model.addAttribute("knwlFileFormats", fileFormatService.getFileFormatRepository().findByFileType(knwlFileType));
-        model.addAttribute("resultFileFormats", fileFormatService.getFileFormatRepository().findByFileType(resultFileType));
-        model.addAttribute("varFileFormats", fileFormatService.getFileFormatRepository().findByFileType(varFileType));
-        model.addAttribute("fileDelimiterTypes", fileDelimiterTypeService.getFileDelimiterTypeRepository().findAll());
-        model.addAttribute("fileVariableTypes", fileVariableTypeService.getFileVariableTypeRepository().findAll());
+        model.addAttribute("fileTypes", fileTypeService.getRepository().findAll());
+        model.addAttribute("dataFileFormats", fileFormatService.findByFileTypeName(FileTypeService.DATA_NAME));
+        model.addAttribute("knwlFileFormats", fileFormatService.findByFileTypeName(FileTypeService.KNOWLEDGE_NAME));
+        model.addAttribute("resultFileFormats", fileFormatService.findByFileTypeName(FileTypeService.RESULT_NAME));
+        model.addAttribute("varFileFormats", fileFormatService.findByFileTypeName(FileTypeService.VARIABLE_NAME));
+        model.addAttribute("fileDelimiterTypes", fileDelimiterTypeService.getRepository().findAll());
+        model.addAttribute("fileVariableTypes", fileVariableTypeService.getRepository().findAll());
 
         return CATEGORIZED_FILE_VIEW;
     }
@@ -250,7 +246,7 @@ public class FileManagementController implements ViewPath {
     private CategorizeFileForm getDefaultCategorizeFileForm(File file) {
         FileFormat fileFormat = file.getFileFormat();
         if (fileFormat == null) {
-            fileFormat = fileFormatService.getFileFormatRepository().findByName(FileFormatService.TETRAD_TAB_FMT_NAME);
+            fileFormat = fileFormatService.getRepository().findByName(FileFormatService.TETRAD_TAB_FMT_NAME);
         }
 
         CategorizeFileForm form = new CategorizeFileForm();

@@ -57,7 +57,7 @@ public class UserRegistrationService {
     public boolean accountExists(UserRegistrationForm userRegistrationForm) {
         String username = userRegistrationForm.getRegisterEmail();
 
-        return userAccountService.getUserAccountRepository().existsByUsername(username);
+        return userAccountService.getRepository().existsByUsername(username);
     }
 
     public UserAccount registerRegularAccount(UserRegistrationForm userRegistrationForm, String ipAddress, boolean federatedUser) {
@@ -69,7 +69,7 @@ public class UserRegistrationService {
     public UserAccount findUserAccount(String activation) {
         String actionKey = new String(Base64.getUrlDecoder().decode(activation));
 
-        return userAccountService.getUserAccountRepository().findByActionKey(actionKey);
+        return userAccountService.getRepository().findByActionKey(actionKey);
     }
 
     public boolean activateUserAccount(UserAccount userAccount) {
@@ -78,7 +78,7 @@ public class UserRegistrationService {
         userAccount.setActivated(true);
         userAccount.setActionKey(null);
         try {
-            userAccountService.getUserAccountRepository().save(userAccount);
+            userAccountService.getRepository().save(userAccount);
             activated = true;
         } catch (Exception exception) {
             LOGGER.error(String.format("Unable to activate user account '%s'.", userAccount.getUsername()), exception);

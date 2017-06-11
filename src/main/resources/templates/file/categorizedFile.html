@@ -87,7 +87,7 @@
                                         </div>
                                         <div id="dataOpts" class="alert alert-success fileTypeOpt">
                                             <div class="form-group" th:class="${#fields.hasErrors('fileFormatId')} ? 'form-group has-error' : 'form-group'">
-                                                <label>File Format</label>
+                                                <label>File Format:</label>
                                                 <label class="radio-inline" th:each="opt : ${dataFileFormats}">
                                                     <input type="radio" th:field="*{fileFormatId}" th:value="${opt.id}" /> <span th:text="${opt.displayName}">tab</span>
                                                 </label>
@@ -95,14 +95,14 @@
                                             </div>
                                             <div id="delimOpts" class="alert alert-warning fileDelimOpt">
                                                 <div class="form-group" th:class="${#fields.hasErrors('fileDelimiterTypeId')} ? 'form-group has-error' : 'form-group'">
-                                                    <label>File Delimiter</label>
+                                                    <label>File Delimiter:</label>
                                                     <label class="radio-inline" th:each="opt : ${fileDelimiterTypes}">
                                                         <input type="radio" th:field="*{fileDelimiterTypeId}" th:value="${opt.id}" /> <span th:text="${opt.displayName}">tab</span>
                                                     </label>
                                                     <span class="help-block" th:if="${#fields.hasErrors('fileDelimiterTypeId')}" th:errors="*{fileDelimiterTypeId}">File ID is required.</span>
                                                 </div>
                                                 <div class="form-group" th:class="${#fields.hasErrors('fileVariableTypeId')} ? 'form-group has-error' : 'form-group'">
-                                                    <label>Variable Type</label>
+                                                    <label>Variable Type:</label>
                                                     <label class="radio-inline" th:each="opt : ${fileVariableTypes}">
                                                         <input type="radio" th:field="*{fileVariableTypeId}" th:value="${opt.id}" /> <span th:text="${opt.displayName}">tab</span>
                                                     </label>
@@ -124,7 +124,7 @@
                                         </div>
                                         <div id="varOpts" class="alert alert-success fileTypeOpt">
                                             <div class="form-group" th:class="${#fields.hasErrors('fileFormatId')} ? 'form-group has-error' : 'form-group'">
-                                                <label>File Format</label>
+                                                <label>File Format:</label>
                                                 <label class="radio-inline" th:each="opt : ${varFileFormats}">
                                                     <input type="radio" th:field="*{fileFormatId}" th:value="${opt.id}" /> <span th:text="${opt.displayName}">tab</span>
                                                 </label>
@@ -133,7 +133,7 @@
                                         </div>
                                         <div id="knwlOpts" class="alert alert-success fileTypeOpt">
                                             <div class="form-group" th:class="${#fields.hasErrors('fileFormatId')} ? 'form-group has-error' : 'form-group'">
-                                                <label>File Format</label>
+                                                <label>File Format:</label>
                                                 <label class="radio-inline" th:each="opt : ${knwlFileFormats}">
                                                     <input type="radio" th:field="*{fileFormatId}" th:value="${opt.id}" /> <span th:text="${opt.displayName}">tab</span>
                                                 </label>
@@ -142,7 +142,7 @@
                                         </div>
                                         <div id="resultOpts" class="alert alert-success fileTypeOpt">
                                             <div class="form-group" th:class="${#fields.hasErrors('fileFormatId')} ? 'form-group has-error' : 'form-group'">
-                                                <label>File Format</label>
+                                                <label>File Format:</label>
                                                 <label class="radio-inline" th:each="opt : ${resultFileFormats}">
                                                     <input type="radio" th:field="*{fileFormatId}" th:value="${opt.id}" /> <span th:text="${opt.displayName}">tab</span>
                                                 </label>

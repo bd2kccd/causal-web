@@ -42,11 +42,11 @@ public class UncategorizedFileService {
     }
 
     public List<File> getAllFiles(UserAccount userAccount) {
-        return fileService.getFileRepository().findByUserAccount(userAccount);
+        return fileService.getRepository().findByUserAccount(userAccount);
     }
 
     public List<File> getUncategorizedFiles(UserAccount userAccount) {
-        return fileService.getFileRepository().findByUserAccountAndFileFormatIsNull(userAccount);
+        return fileService.getRepository().findByUserAccountAndFileFormatIsNull(userAccount);
     }
 
 }
