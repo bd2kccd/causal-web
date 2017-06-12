@@ -118,7 +118,7 @@ public class FileManagementController implements ViewPath {
             @RequestParam(value = "value") final String title,
             final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        File file = fileService.retrieveFile(id, userAccount);
+        File file = fileService.findByIdAndUserAccount(id, userAccount);
         if (file == null) {
             return ResponseEntity.notFound().build();
         }
@@ -152,7 +152,7 @@ public class FileManagementController implements ViewPath {
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        File file = fileService.retrieveFile(id, userAccount);
+        File file = fileService.findByIdAndUserAccount(id, userAccount);
         if (file == null) {
             throw new ResourceNotFoundException();
         }
@@ -225,7 +225,7 @@ public class FileManagementController implements ViewPath {
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        File file = fileService.retrieveFile(id, userAccount);
+        File file = fileService.findByIdAndUserAccount(id, userAccount);
         if (file == null) {
             throw new ResourceNotFoundException();
         }
@@ -252,7 +252,7 @@ public class FileManagementController implements ViewPath {
             @RequestParam(value = "id") final Long id,
             final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        File file = fileService.retrieveFile(id, userAccount);
+        File file = fileService.findByIdAndUserAccount(id, userAccount);
         if (file == null) {
             return ResponseEntity.notFound().build();
         }
