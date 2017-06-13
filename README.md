@@ -19,12 +19,12 @@ Download and uncompress the source code for each of following dependencies:
 
 * [ccd-job-queue-0.1.8](https://github.com/bd2kccd/ccd-job-queue/releases/tag/v0.1.8)
 * [ccd-mail-0.2.4](https://github.com/bd2kccd/ccd-mail/releases/tag/v0.2.4)
-* [ccd-db-0.6.6](https://github.com/bd2kccd/ccd-db/releases/tag/v0.6.6)
+* [ccd-db-0.6.7](https://github.com/bd2kccd/ccd-db/releases/tag/v0.6.7)
 * [ccd-commons-0.3.1](https://github.com/bd2kccd/ccd-commons/releases/tag/v0.3.1)
 To install the dependencies, go to the top directory of each project and do a maven install by typing **mvn install**.
 
 #### Application
-Download and uncompress the application source code  [causal-web-1.3.6](https://github.com/bd2kccd/causal-web/releases/tag/v1.3.6).  To compile and build the application, go to the directory **causal-web-1.3.6** and type **mvn package**.
+Download and uncompress the application source code  [causal-web-1.3.7](https://github.com/bd2kccd/causal-web/releases/tag/v1.3.7).  To compile and build the application, go to the directory **causal-web-1.3.7** and type **mvn package**.
 
 #### External Dependencies
 * [causal-cmd-0.2.1-jar-with-dependencies.jar](https://github.com/bd2kccd/causal-cmd/releases/tag/v0.2.1)
@@ -38,7 +38,7 @@ Inside the workspace directory, create another folder called **lib**, for exampl
 Copy the **causal-cmd-0.2.1-jar-with-dependencies.jar** to the  **workspace/lib** folder.
 
 ### Configure
-There are 4 configuration files to configure located in causal-web-1.3.6/src/main/resources folder:
+There are 4 configuration files to configure located in causal-web-1.3.7/src/main/resources folder:
 1. **application-hsqldb.properties**: HSQLDB database configurations (for testing only).
 2. **application-mysql.properties**: MySQL database configurations
 3. **application.properties**: Spring Boot configurations
@@ -74,15 +74,15 @@ spring.profiles.active=scheduler,mysql
 Make sure you set **ccd.server.workspace=/home/tuser/workspace** and **ccd.folder.lib=lib** in the **ccd.properties** file.
 
 ## Compile the Program
-Go to the **causal-web** directory and run the command **mvn clean package**. This will create a jar file called **causal-web-1.3.6.jar** in the **/target** folder.
+Go to the **causal-web** directory and run the command **mvn clean package**. This will create a jar file called **causal-web-1.3.7.jar** in the **/target** folder.
 
 ### Launch the Program
 ```java
-java -jar causal-web-1.3.6.jar
+java -jar causal-web-1.3.7.jar
 ```
 To give the program 4GB of memory to run on, type the follow, using the jvm options:
 ```java
-java -Xmx4G -jar causal-web-1.3.6.jar
+java -Xmx4G -jar causal-web-1.3.7.jar
 ```
 
 To launch app in the browser
