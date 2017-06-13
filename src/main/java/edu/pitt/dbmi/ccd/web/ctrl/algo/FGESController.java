@@ -28,6 +28,7 @@ import edu.pitt.dbmi.ccd.web.model.algo.FGEScAlgoOpt;
 import edu.pitt.dbmi.ccd.web.model.algo.FGESdAlgoOpt;
 import edu.pitt.dbmi.ccd.web.model.algo.FGESmCGAlgoOpt;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
+import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmRunService;
 import edu.pitt.dbmi.ccd.web.util.TetradCmdOptions;
 import java.util.HashMap;
@@ -62,8 +63,8 @@ public class FGESController extends AbstractTetradAlgoController implements View
     private final CcdProperties ccdProperties;
 
     @Autowired
-    public FGESController(AlgorithmRunLogService algorithmRunLogService, AlgorithmRunService algorithmRunService, CcdProperties ccdProperties, DataFileService dataFileService) {
-        super(dataFileService);
+    public FGESController(AlgorithmRunLogService algorithmRunLogService, AlgorithmRunService algorithmRunService, CcdProperties ccdProperties, DataFileService dataFileService, AppUserService appUserService) {
+        super(dataFileService, appUserService);
         this.algorithmRunLogService = algorithmRunLogService;
         this.algorithmRunService = algorithmRunService;
         this.ccdProperties = ccdProperties;
@@ -81,7 +82,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
         jobRequest.setParameters(getParametersForMixedCG(algoOpt, appUser.getUsername()));
 
         algorithmRunService.addToQueue(jobRequest, appUser.getUsername());
-        algorithmRunLogService.logAlgorithmRun(getFGESmCGParams(algoOpt), getFileSummary(algoOpt), FGESM_CG_ALGO_NAME, appUser.getUsername());
+        algorithmRunLogService.logAlgorithmRun(getFGESmCGParams(algoOpt), getFileSummary(algoOpt, appUser), FGESM_CG_ALGO_NAME, appUser.getUsername());
 
         return REDIRECT_JOB_QUEUE;
     }
@@ -120,7 +121,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
         jobRequest.setParameters(getParametersForDiscrete(algoOpt, appUser.getUsername()));
 
         algorithmRunService.addToQueue(jobRequest, appUser.getUsername());
-        algorithmRunLogService.logAlgorithmRun(getFGESdParams(algoOpt), getFileSummary(algoOpt), FGESD_ALGO_NAME, appUser.getUsername());
+        algorithmRunLogService.logAlgorithmRun(getFGESdParams(algoOpt), getFileSummary(algoOpt, appUser), FGESD_ALGO_NAME, appUser.getUsername());
 
         return REDIRECT_JOB_QUEUE;
     }
@@ -159,7 +160,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
         jobRequest.setParameters(getParametersForContinuous(algoOpt, appUser.getUsername()));
 
         algorithmRunService.addToQueue(jobRequest, appUser.getUsername());
-        algorithmRunLogService.logAlgorithmRun(getFGEScParams(algoOpt), getFileSummary(algoOpt), FGESC_ALGO_NAME, appUser.getUsername());
+        algorithmRunLogService.logAlgorithmRun(getFGEScParams(algoOpt), getFileSummary(algoOpt, appUser), FGESC_ALGO_NAME, appUser.getUsername());
 
         return REDIRECT_JOB_QUEUE;
     }

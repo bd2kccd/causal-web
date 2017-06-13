@@ -20,8 +20,11 @@ package edu.pitt.dbmi.ccd.web.ctrl.algo;
 
 import edu.pitt.dbmi.ccd.db.entity.DataFile;
 import edu.pitt.dbmi.ccd.db.entity.DataFileInfo;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.DataFileService;
+import edu.pitt.dbmi.ccd.web.model.AppUser;
 import edu.pitt.dbmi.ccd.web.model.algo.TetradAlgoOpt;
+import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -37,15 +40,18 @@ import java.util.Map;
 public abstract class AbstractTetradAlgoController {
 
     private final DataFileService dataFileService;
+    private final AppUserService appUserService;
 
-    public AbstractTetradAlgoController(DataFileService dataFileService) {
+    public AbstractTetradAlgoController(DataFileService dataFileService, AppUserService appUserService) {
         this.dataFileService = dataFileService;
+        this.appUserService = appUserService;
     }
 
-    protected Map<String, String> getFileSummary(TetradAlgoOpt algoOpt) {
+    protected Map<String, String> getFileSummary(TetradAlgoOpt algoOpt, AppUser appUser) {
         Map<String, String> params = new HashMap<>();
 
-        DataFile dataFile = dataFileService.findByName(algoOpt.getDataset());
+        UserAccount userAccount = appUserService.getUserAccount(appUser);
+        DataFile dataFile = dataFileService.findByNameAndUserAccounts(algoOpt.getDataset(), Collections.singleton(userAccount));
         if (dataFile != null) {
             params.put("fileSize", Long.toString(dataFile.getFileSize()));
 
