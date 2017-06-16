@@ -52,6 +52,8 @@ public interface ViewPath {
     public static final String REDIRECT_UNCATEGORIZED_FILE = "redirect:/secured/file/uncategorized";
 
     public static final String CATEGORIZED_FILE_VIEW = "file/categorizedFile";
-    public static final String REDIRECT_CATEGORIZED_FILE = "redirect:/secured/file/mgmt/categorize";
+
+    public static final String FILE_LIST_VIEW = "file/fileList";
+    public static final String REDIRECT_TETRAD_DATA_FILE = "redirect:/secured/file/mgmt/list/tetrad-data";
 
 }

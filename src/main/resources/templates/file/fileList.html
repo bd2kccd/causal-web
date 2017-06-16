@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta http-equiv="x-ua-compatible" content="ie=edge" />
-        <title>Causal Web: Uncategorized Files</title>
+        <title th:text="${pageTitle}">Causal Web: File List</title>
         <meta name="description" content="causal" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="apple-touch-icon" href="../../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
@@ -25,10 +25,11 @@
         <script src="../../static/vendors/datatables/Responsive-2.1.1/js/responsive.bootstrap.min.js" th:src="@{https://cdn.datatables.net/responsive/2.1.1/js/responsive.bootstrap.min.js}"></script>        
         <script src="../../static/vendors/datatables/plugins/file-size.min.js" th:src="@{/vendors/datatables/plugins/file-size.min.js}"></script>
         <script th:inline="javascript">
-            var listUrl = /*[[@{/secured/file/uncategorized/list}]]*/ '';
+            var listUrl = /*[[@{'/secured/file/mgmt/list/file/' + ${fileType}}]]*/ '';
             var deleteUrl = /*[[@{/secured/file/mgmt/delete}]]*/ '';
             var categoryUrl = /*[[@{/secured/file/mgmt/categorize(id='')}]]*/ '';
         </script>
+
     </head>
     <body>
         <div id="wrapper">
@@ -36,7 +37,7 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h3 class="page-header">Uncategorized Files</h3>
+                        <h3 class="page-header" th:text="${title}">Title</h3>
                     </div>
                 </div>
                 <div class="row">
@@ -44,10 +45,10 @@
                         <table id="file_table" class="table table-hover table-responsive table-condensed" cellspacing="0" width="100%">
                             <thead>
                                 <tr>
-                                    <th><i class="fa fa-file-o"></i> Name</th>
-                                    <th><i class="fa fa-database"></i> Size</th>
-                                    <th><i class="fa fa-calendar-o"></i> Creation Time</th>
-                                    <th><i class="fa fa-trash-o"></i> Delete</th>
+                                    <th>Name</th>
+                                    <th>Size</th>
+                                    <th>Creation Time</th>
+                                    <th>Delete</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -84,8 +85,8 @@
             </div>
             <!-- /.modal-dialog --> 
         </div>
-        <script src="../../static/vendors/momentjs/moment.min.js" th:src="@{/vendors/momentjs/moment.min.js}"></script>
+        <script src="../../static/vendors/momentjs/moment.min.js" th:src="@{https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js}"></script>
         <script src="../../static/js/file/fileUtils.min.js" th:src="@{/js/file/fileUtils.min.js}"></script>
-        <script src="../../static/js/file/uncategorizedFile.min.js" th:inline="javascript" th:src="@{/js/file/uncategorizedFile.min.js}"></script>
+        <script src="../../static/js/file/fileList.min.js" th:inline="javascript" th:src="@{/js/file/fileList.min.js}"></script>
     </body>
 </html>

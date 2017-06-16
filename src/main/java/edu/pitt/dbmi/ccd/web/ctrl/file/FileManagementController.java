@@ -23,6 +23,7 @@ import edu.pitt.dbmi.ccd.db.entity.FileDelimiterType;
 import edu.pitt.dbmi.ccd.db.entity.FileFormat;
 import edu.pitt.dbmi.ccd.db.entity.FileVariableType;
 import edu.pitt.dbmi.ccd.db.entity.TetradDataFile;
+import edu.pitt.dbmi.ccd.db.entity.TetradVariableFile;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileDelimiterTypeService;
 import edu.pitt.dbmi.ccd.db.service.FileFormatService;
@@ -41,12 +42,13 @@ import edu.pitt.dbmi.data.Delimiter;
 import edu.pitt.dbmi.data.reader.BasicDataFileReader;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.LinkedList;
+import java.util.List;
 import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -55,6 +57,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -111,37 +114,29 @@ public class FileManagementController implements ViewPath {
         binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
     }
 
-    @ResponseBody
-    @RequestMapping(value = "title", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> listFiles(
-            @RequestParam(value = "pk") final Long id,
-            @RequestParam(value = "value") final String title,
-            final AppUser appUser) {
-        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        File file = fileService.findByIdAndUserAccount(id, userAccount);
-        if (file == null) {
-            return ResponseEntity.notFound().build();
-        }
+    private String getRedirect(File file) {
+        FileFormat fileFmt = file.getFileFormat();
+        String fileFmtName = (fileFmt == null) ? "new" : fileFmt.getName();
 
-        if (title == null || title.isEmpty()) {
-            return ResponseEntity.badRequest().body("Title is required.");
-        } else {
-            if (file.getTitle().compareTo(title) != 0) {
-                if (fileManagementService.existTitle(title, userAccount)) {
-                    return ResponseEntity.badRequest().body("Title already in used. Plese enter a different title.");
-                } else {
-                    file.setTitle(title);
-                    try {
-                        fileService.getRepository().save(file);
-                    } catch (Exception exception) {
-                        LOGGER.error(exception.getMessage());
-                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to update file title.");
-                    }
-                }
+        return String.format("redirect:/secured/file/mgmt/list/%s", fileFmtName);
+    }
+
+    private void removeAssociatedTables(File file) {
+        FileFormat fileFmt = file.getFileFormat();
+        String fileFmtName = (fileFmt == null) ? null : fileFmt.getName();
+
+        if (!FileFormatService.TETRAD_TABULAR.equals(fileFmtName)) {
+            TetradDataFile dataFile = tetradDataFileService.getRepository().findByFile(file);
+            if (dataFile != null) {
+                tetradDataFileService.getRepository().delete(dataFile);
             }
         }
-
-        return ResponseEntity.ok().build();
+        if (!FileFormatService.TETRAD_VARIABLE.equals(fileFmtName)) {
+            TetradVariableFile variableFile = tetradVariableFileService.getRepository().findByFile(file);
+            if (variableFile != null) {
+                tetradVariableFileService.getRepository().delete(variableFile);
+            }
+        }
     }
 
     @RequestMapping(value = "categorize", method = RequestMethod.POST)
@@ -161,7 +156,7 @@ public class FileManagementController implements ViewPath {
         FileFormat fileFormat = fileFormatService.getRepository().findOne(fileFmtId);
         if (fileFormat != null) {
             switch (fileFormat.getName()) {
-                case FileFormatService.TETRAD_TAB_FMT_NAME:
+                case FileFormatService.TETRAD_TABULAR:
                     Long fileDelimTypeId = categorizeFileForm.getFileDelimiterTypeId();
                     Long fileVarTypeId = categorizeFileForm.getFileVariableTypeId();
                     Character quoteChar = categorizeFileForm.getQuoteChar();
@@ -176,47 +171,39 @@ public class FileManagementController implements ViewPath {
                     dataFile.setMissingValueMarker(missValMark);
                     dataFile.setQuoteChar(quoteChar);
 
-                    Path localFile = fileManagementService.getPhysicalFile(file, userAccount);
+                    Path localDataFile = fileManagementService.getPhysicalFile(file, userAccount);
                     try {
-                        BasicDataFileReader fileReader = new BasicDataFileReader(localFile.toFile(), getReaderFileDelimiter(delimiter));
+                        BasicDataFileReader fileReader = new BasicDataFileReader(localDataFile.toFile(), getReaderFileDelimiter(delimiter));
                         dataFile.setNumOfColumns(fileReader.getNumberOfColumns());
                         dataFile.setNumOfRows(fileReader.getNumberOfLines());
                     } catch (IOException exception) {
-                        String errMsg = String.format("Unable to get row and column counts from file %s.", localFile.getFileName().toString());
+                        String errMsg = String.format("Unable to get row and column counts from file %s.", localDataFile.getFileName().toString());
                         LOGGER.error(errMsg, exception);
                     }
 
                     tetradDataFileService.getRepository().save(dataFile);
                     break;
-                case FileFormatService.TETRAD_VAR_FMT_NAME:
+                case FileFormatService.TETRAD_VARIABLE:
+                    TetradVariableFile variableFile = new TetradVariableFile(file);
+                    Path localVarFile = fileManagementService.getPhysicalFile(file, userAccount);
+                    try {
+                        BasicDataFileReader fileReader = new BasicDataFileReader(localVarFile.toFile(), getReaderFileDelimiter(null));
+                        variableFile.setNumOfVariables(fileReader.getNumberOfLines());
+                    } catch (IOException exception) {
+                        String errMsg = String.format("Unable to get row counts from file %s.", localVarFile.getFileName().toString());
+                        LOGGER.error(errMsg, exception);
+                    }
+
+                    tetradVariableFileService.getRepository().save(variableFile);
                     break;
             }
             file.setFileFormat(fileFormat);
             file = fileService.getRepository().save(file);
         }
 
-        return getRedirect(file);
-    }
+        removeAssociatedTables(file);
 
-    private Delimiter getReaderFileDelimiter(FileDelimiterType fileDelimiterType) {
-        switch (fileDelimiterType.getName()) {
-            case FileDelimiterTypeService.COLON_DELIM_NAME:
-                return Delimiter.COLON;
-            case FileDelimiterTypeService.COMMA_DELIM_NAME:
-                return Delimiter.COMMA;
-            case FileDelimiterTypeService.PIPE_DELIM_NAME:
-                return Delimiter.PIPE;
-            case FileDelimiterTypeService.SEMICOLON_DELIM_NAME:
-                return Delimiter.SEMICOLON;
-            case FileDelimiterTypeService.SPACE_DELIM_NAME:
-                return Delimiter.SPACE;
-            case FileDelimiterTypeService.TAB_DELIM_NAME:
-                return Delimiter.TAB;
-            case FileDelimiterTypeService.WHITESPACE_DELIM_NAME:
-                return Delimiter.WHITESPACE;
-            default:
-                return Delimiter.TAB;
-        }
+        return getRedirect(file);
     }
 
     @RequestMapping(value = "categorize", method = RequestMethod.GET)
@@ -236,71 +223,98 @@ public class FileManagementController implements ViewPath {
 
         model.addAttribute("file", file);
         model.addAttribute("fileTypes", fileTypeService.getRepository().findAll());
-        model.addAttribute("dataFileFormats", fileFormatService.findByFileTypeName(FileTypeService.DATA_NAME));
-        model.addAttribute("knwlFileFormats", fileFormatService.findByFileTypeName(FileTypeService.KNOWLEDGE_NAME));
-        model.addAttribute("resultFileFormats", fileFormatService.findByFileTypeName(FileTypeService.RESULT_NAME));
-        model.addAttribute("varFileFormats", fileFormatService.findByFileTypeName(FileTypeService.VARIABLE_NAME));
+        model.addAttribute("dataFileFormats", fileFormatService.findByFileTypeName(FileTypeService.DATA));
+        model.addAttribute("knwlFileFormats", fileFormatService.findByFileTypeName(FileTypeService.KNOWLEDGE));
+        model.addAttribute("resultFileFormats", fileFormatService.findByFileTypeName(FileTypeService.RESULT));
+        model.addAttribute("varFileFormats", fileFormatService.findByFileTypeName(FileTypeService.VARIABLE));
         model.addAttribute("fileDelimiterTypes", fileDelimiterTypeService.getRepository().findAll());
         model.addAttribute("fileVariableTypes", fileVariableTypeService.getRepository().findAll());
 
         return CATEGORIZED_FILE_VIEW;
     }
 
-    @ResponseBody
-    @RequestMapping(value = "delete", method = RequestMethod.POST)
-    public ResponseEntity<?> listFiles(
-            @RequestParam(value = "id") final Long id,
-            final AppUser appUser) {
+    @RequestMapping(value = "list/{fileType}", method = RequestMethod.GET)
+    public String showFiles(@PathVariable String fileType, final AppUser appUser, final Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        File file = fileService.findByIdAndUserAccount(id, userAccount);
-        if (file == null) {
+        fileManagementService.syncDatabaseWithDataDirectory(userAccount);
+
+        String pageTitle;
+        String title;
+        switch (fileType) {
+            case FileFormatService.TETRAD_TABULAR:
+                pageTitle = "CCD: Tetrad Tabular Data";
+                title = "Tetrad Tabular Data Files";
+                break;
+            case FileFormatService.TETRAD_COVARIANCE:
+                pageTitle = "CCD: Tetrad Covariance";
+                title = "Tetrad Covariance Files";
+                break;
+            case FileFormatService.TETRAD_VARIABLE:
+                pageTitle = "CCD: Tetrad Variable";
+                title = "Tetrad Variable Files";
+                break;
+            case FileFormatService.TETRAD_KNOWLEDGE:
+                pageTitle = "CCD: Tetrad Knowledge";
+                title = "Tetrad Knowledge Files";
+                break;
+            case FileFormatService.TDI_TABULAR:
+                pageTitle = "CCD: TDI Tabular Data";
+                title = "TDI Tabular Data Files";
+                break;
+            case "new":
+                pageTitle = "CCD: Uncategorize File";
+                title = "Uncategorized Files";
+                break;
+            default:
+                throw new ResourceNotFoundException();
+        }
+
+        model.addAttribute("pageTitle", pageTitle);
+        model.addAttribute("title", title);
+        model.addAttribute("fileType", fileType);
+
+        return FILE_LIST_VIEW;
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "list/file/{fileType}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> listFiles(final @PathVariable String fileType, final AppUser appUser) {
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        if (userAccount == null) {
             return ResponseEntity.notFound().build();
         }
 
-        try {
-            fileManagementService.deleteFile(file, userAccount);
-        } catch (Exception exception) {
-            LOGGER.error(exception.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to delete file.");
+        List<File> files = new LinkedList<>();
+        switch (fileType) {
+            case FileFormatService.TETRAD_TABULAR:
+                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TETRAD_TABULAR, userAccount));
+                break;
+            case FileFormatService.TETRAD_COVARIANCE:
+                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TETRAD_COVARIANCE, userAccount));
+                break;
+            case FileFormatService.TETRAD_VARIABLE:
+                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TETRAD_VARIABLE, userAccount));
+                break;
+            case FileFormatService.TETRAD_KNOWLEDGE:
+                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TETRAD_KNOWLEDGE, userAccount));
+                break;
+            case FileFormatService.TDI_TABULAR:
+                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TDI_TABULAR, userAccount));
+                break;
+            case "new":
+                files.addAll(fileService.findByUserAccountAndFileFormatName(null, userAccount));
+                break;
+            default:
+                return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(file.getId());
+        return ResponseEntity.ok(files);
     }
 
-    private String getRedirect(File file) {
-        FileFormat fileFmt = file.getFileFormat();
-        if (fileFmt == null) {
-            return REDIRECT_UNCATEGORIZED_FILE;
-        } else {
-            return REDIRECT_UNCATEGORIZED_FILE;
-        }
-    }
-
-//    private String getRedirect(HttpServletRequest req, FileType fileType) {
-//        String referer = req.getHeader("referer");
-//        if (referer == null || referer.isEmpty()) {
-//            if (fileType == null) {
-//                return REDIRECT_UNCATEGORIZED_FILE;
-//            }
-//
-//            switch (fileType.getName()) {
-//                default:
-//                    return REDIRECT_UNCATEGORIZED_FILE;
-//            }
-//        } else {
-//            try {
-//                URL url = new URL(referer);
-//
-//                return "redirect:" + url.getPath().replaceFirst("/ccd", "");
-//            } catch (MalformedURLException exception) {
-//                return REDIRECT_UNCATEGORIZED_FILE;
-//            }
-//        }
-//    }
     private CategorizeFileForm getDefaultCategorizeFileForm(File file) {
         FileFormat fileFormat = file.getFileFormat();
         if (fileFormat == null) {
-            fileFormat = fileFormatService.getRepository().findByName(FileFormatService.TETRAD_TAB_FMT_NAME);
+            fileFormat = fileFormatService.getRepository().findByName(FileFormatService.TETRAD_TABULAR);
         }
 
         CategorizeFileForm form = new CategorizeFileForm();
@@ -308,6 +322,28 @@ public class FileManagementController implements ViewPath {
         form.setFileTypeId(fileFormat.getFileType().getId());
 
         return form;
+    }
+
+    private Delimiter getReaderFileDelimiter(FileDelimiterType fileDelimiterType) {
+        String fileDelimName = (fileDelimiterType == null) ? "" : fileDelimiterType.getName();
+        switch (fileDelimName) {
+            case FileDelimiterTypeService.COLON_DELIM_NAME:
+                return Delimiter.COLON;
+            case FileDelimiterTypeService.COMMA_DELIM_NAME:
+                return Delimiter.COMMA;
+            case FileDelimiterTypeService.PIPE_DELIM_NAME:
+                return Delimiter.PIPE;
+            case FileDelimiterTypeService.SEMICOLON_DELIM_NAME:
+                return Delimiter.SEMICOLON;
+            case FileDelimiterTypeService.SPACE_DELIM_NAME:
+                return Delimiter.SPACE;
+            case FileDelimiterTypeService.TAB_DELIM_NAME:
+                return Delimiter.TAB;
+            case FileDelimiterTypeService.WHITESPACE_DELIM_NAME:
+                return Delimiter.WHITESPACE;
+            default:
+                return Delimiter.TAB;
+        }
     }
 
 }
