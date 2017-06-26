@@ -32,7 +32,16 @@ public class CategorizeFileForm {
     private Long fileTypeId;
 
     @NotNull
-    private Long fileFormatId;
+    private Long dataFileFormatId;
+
+    @NotNull
+    private Long variableFileFormatId;
+
+    @NotNull
+    private Long knowledgeFileFormatId;
+
+    @NotNull
+    private Long resultFileFormatId;
 
     @NotNull
     private Long fileDelimiterTypeId;
@@ -45,6 +54,13 @@ public class CategorizeFileForm {
     private String commentMarker;
 
     public CategorizeFileForm() {
+        this.fileTypeId = 1L;
+        this.dataFileFormatId = 1L;
+        this.variableFileFormatId = 1L;
+        this.knowledgeFileFormatId = 1L;
+        this.resultFileFormatId = 1L;
+        this.fileDelimiterTypeId = 1L;
+        this.fileVariableTypeId = 1L;
         this.quoteChar = '"';
         this.missingValueMarker = "*";
         this.commentMarker = "//";
@@ -58,12 +74,36 @@ public class CategorizeFileForm {
         this.fileTypeId = fileTypeId;
     }
 
-    public Long getFileFormatId() {
-        return fileFormatId;
+    public Long getDataFileFormatId() {
+        return dataFileFormatId;
     }
 
-    public void setFileFormatId(Long fileFormatId) {
-        this.fileFormatId = fileFormatId;
+    public void setDataFileFormatId(Long dataFileFormatId) {
+        this.dataFileFormatId = dataFileFormatId;
+    }
+
+    public Long getVariableFileFormatId() {
+        return variableFileFormatId;
+    }
+
+    public void setVariableFileFormatId(Long variableFileFormatId) {
+        this.variableFileFormatId = variableFileFormatId;
+    }
+
+    public Long getKnowledgeFileFormatId() {
+        return knowledgeFileFormatId;
+    }
+
+    public void setKnowledgeFileFormatId(Long knowledgeFileFormatId) {
+        this.knowledgeFileFormatId = knowledgeFileFormatId;
+    }
+
+    public Long getResultFileFormatId() {
+        return resultFileFormatId;
+    }
+
+    public void setResultFileFormatId(Long resultFileFormatId) {
+        this.resultFileFormatId = resultFileFormatId;
     }
 
     public Long getFileDelimiterTypeId() {

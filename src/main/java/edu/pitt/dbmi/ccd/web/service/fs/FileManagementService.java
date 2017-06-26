@@ -20,13 +20,25 @@ package edu.pitt.dbmi.ccd.web.service.fs;
 
 import edu.pitt.dbmi.ccd.commons.file.FileSys;
 import edu.pitt.dbmi.ccd.db.entity.File;
+import edu.pitt.dbmi.ccd.db.entity.FileDelimiterType;
+import edu.pitt.dbmi.ccd.db.entity.FileVariableType;
+import edu.pitt.dbmi.ccd.db.entity.TetradDataFile;
+import edu.pitt.dbmi.ccd.db.entity.TetradVariableFile;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.FileDelimiterTypeService;
 import edu.pitt.dbmi.ccd.db.service.FileService;
+import edu.pitt.dbmi.ccd.db.service.FileVariableTypeService;
+import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
+import edu.pitt.dbmi.ccd.db.service.TetradVariableFileService;
+import edu.pitt.dbmi.ccd.web.domain.file.CategorizeFileForm;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
+import edu.pitt.dbmi.data.Delimiter;
+import edu.pitt.dbmi.data.reader.BasicDataFileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -55,11 +67,24 @@ public class FileManagementService {
 
     private final CcdProperties ccdProperties;
     private final FileService fileService;
+    private final TetradDataFileService tetradDataFileService;
+    private final TetradVariableFileService tetradVariableFileService;
+    private final FileDelimiterTypeService fileDelimiterTypeService;
+    private final FileVariableTypeService fileVariableTypeService;
 
     @Autowired
-    public FileManagementService(CcdProperties ccdProperties, FileService fileService) {
+    public FileManagementService(CcdProperties ccdProperties,
+            FileService fileService,
+            TetradDataFileService tetradDataFileService,
+            TetradVariableFileService tetradVariableFileService,
+            FileDelimiterTypeService fileDelimiterTypeService,
+            FileVariableTypeService fileVariableTypeService) {
         this.ccdProperties = ccdProperties;
         this.fileService = fileService;
+        this.tetradDataFileService = tetradDataFileService;
+        this.tetradVariableFileService = tetradVariableFileService;
+        this.fileDelimiterTypeService = fileDelimiterTypeService;
+        this.fileVariableTypeService = fileVariableTypeService;
     }
 
     public boolean existTitle(String title, UserAccount userAccount) {
@@ -70,10 +95,74 @@ public class FileManagementService {
         try {
             Path physicalFile = getPhysicalFile(file, userAccount);
             Files.deleteIfExists(physicalFile);
-
-            fileService.getRepository().delete(file);
         } catch (IOException exception) {
             LOGGER.error(exception.getMessage());
+        }
+
+        fileService.getRepository().delete(file);
+    }
+
+    public File createTetradVariableFileAssociation(CategorizeFileForm categorizeFileForm, File file, UserAccount userAccount) {
+        TetradVariableFile variableFile = new TetradVariableFile(file);
+        Path localVarFile = getPhysicalFile(file, userAccount);
+        try {
+            BasicDataFileReader fileReader = new BasicDataFileReader(localVarFile.toFile(), getReaderFileDelimiter(null));
+            variableFile.setNumOfVariables(fileReader.getNumberOfLines());
+        } catch (IOException exception) {
+            String errMsg = String.format("Unable get counts for number of variables for file '%s'.", localVarFile.toString());
+            LOGGER.error(errMsg, exception);
+        }
+
+        return tetradVariableFileService.save(variableFile).getFile();
+    }
+
+    public File createTetradDataFileAssociation(CategorizeFileForm categorizeFileForm, File file, UserAccount userAccount) {
+        Long fileDelimTypeId = categorizeFileForm.getFileDelimiterTypeId();
+        Long fileVarTypeId = categorizeFileForm.getFileVariableTypeId();
+        Character quoteChar = categorizeFileForm.getQuoteChar();
+        String missValMark = categorizeFileForm.getMissingValueMarker();
+        String cmntMark = categorizeFileForm.getCommentMarker();
+
+        FileDelimiterType delimiter = fileDelimiterTypeService.getRepository().findOne(fileDelimTypeId);
+        FileVariableType variable = fileVariableTypeService.getRepository().findOne(fileVarTypeId);
+
+        TetradDataFile dataFile = new TetradDataFile(file, delimiter, variable);
+        dataFile.setCommentMarker(cmntMark);
+        dataFile.setMissingValueMarker(missValMark);
+        dataFile.setQuoteChar(quoteChar);
+
+        Path localDataFile = getPhysicalFile(file, userAccount);
+        try {
+            BasicDataFileReader fileReader = new BasicDataFileReader(localDataFile.toFile(), getReaderFileDelimiter(delimiter));
+            dataFile.setNumOfColumns(fileReader.getNumberOfColumns());
+            dataFile.setNumOfRows(fileReader.getNumberOfLines());
+        } catch (IOException exception) {
+            String errMsg = String.format("Unable to get row and column counts from file %s.", localDataFile.toString());
+            LOGGER.error(errMsg, exception);
+        }
+
+        return tetradDataFileService.save(dataFile).getFile();
+    }
+
+    public Delimiter getReaderFileDelimiter(FileDelimiterType fileDelimiterType) {
+        String fileDelimName = (fileDelimiterType == null) ? "" : fileDelimiterType.getName();
+        switch (fileDelimName) {
+            case FileDelimiterTypeService.COLON_DELIM_NAME:
+                return Delimiter.COLON;
+            case FileDelimiterTypeService.COMMA_DELIM_NAME:
+                return Delimiter.COMMA;
+            case FileDelimiterTypeService.PIPE_DELIM_NAME:
+                return Delimiter.PIPE;
+            case FileDelimiterTypeService.SEMICOLON_DELIM_NAME:
+                return Delimiter.SEMICOLON;
+            case FileDelimiterTypeService.SPACE_DELIM_NAME:
+                return Delimiter.SPACE;
+            case FileDelimiterTypeService.TAB_DELIM_NAME:
+                return Delimiter.TAB;
+            case FileDelimiterTypeService.WHITESPACE_DELIM_NAME:
+                return Delimiter.WHITESPACE;
+            default:
+                return Delimiter.TAB;
         }
     }
 
@@ -90,7 +179,11 @@ public class FileManagementService {
             fileService.getRepository().deleteAll();
         } else {
             // grab all the files from the database
-            Map<String, File> dbFileMap = fileService.getUserFiles(userAccount);
+            Map<String, File> dbFileMap = new HashMap<>();
+            List<File> dbFileList = fileService.getRepository().findByUserAccount(userAccount);
+            dbFileList.forEach(file -> {
+                dbFileMap.put(file.getName(), file);
+            });
 
             List<Path> filesToSave = new LinkedList<>();
             localFiles.forEach(localFile -> {
@@ -111,7 +204,7 @@ public class FileManagementService {
             }
 
             if (!filesToSave.isEmpty()) {
-                fileService.persistLocalFiles(localFiles, userAccount);
+                fileService.persistLocalFiles(filesToSave, userAccount);
             }
         }
     }

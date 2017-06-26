@@ -1,41 +1,30 @@
 /*<![CDATA[*/
+var fileTypes = [
+    $('#dataTypeOpts'),
+    $('#dataTypeOpts'),
+    $('#varTypeOpts'),
+    $('#knwlTypeOpts'),
+    $('#resultTypeOpts')
+];
 $('input:radio[name="fileTypeId"]').click(function () {
-    var val = $(this).val();
-
-    var opt;
-    switch (val) {
-        case '1':
-            opt = $('#dataOpts');
-            break;
-        case '2':
-            opt = $('#varOpts');
-            break;
-        case '3':
-            opt = $('#knwlOpts');
-            break;
-        case '4':
-            opt = $('#resultOpts');
-            break;
-        default :
-            opt = $('#dataOpts');
-    }
+    var opt = fileTypes[$(this).val()];
     $(".fileTypeOpt").not(opt).hide();
-    $(opt).show();
-    opt.find('input:radio[name="fileFormatId"]:first').click();
+    opt.show();
 });
-$('input:radio[name="fileFormatId"]').click(function () {
+$('input:radio[name="dataFileFormatId"]').click(function () {
     var val = $(this).val();
     switch (val) {
         case '1':
-            $('#delimOpts').show();
-            $('#delimOpts').find('input:radio[name="fileDelimiterTypeId"]:first').click();
-            $('#delimOpts').find('input:radio[name="fileVariableTypeId"]:first').click();
+            $('#dataOpts').show();
             break;
         default :
-            $('#delimOpts').hide();
+            $('#dataOpts').hide();
     }
 });
 $(document).ready(function () {
+    $('input:radio[name="fileTypeId"]:checked').click();
+    $('input:radio[name="dataFileFormatId"]:checked').click();
+
     $('#title').editable({
         success: function (response, newValue) {
             if (response.status === 'error') {
@@ -45,7 +34,6 @@ $(document).ready(function () {
             }
         }
     });
-    $('input[name="fileTypeId"]:first').click();
 });
 $(document).on('click', '#categorize_file', function (e) {
     collapseAction(this);

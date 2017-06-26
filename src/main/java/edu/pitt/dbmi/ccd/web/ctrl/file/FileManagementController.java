@@ -19,11 +19,9 @@
 package edu.pitt.dbmi.ccd.web.ctrl.file;
 
 import edu.pitt.dbmi.ccd.db.entity.File;
-import edu.pitt.dbmi.ccd.db.entity.FileDelimiterType;
 import edu.pitt.dbmi.ccd.db.entity.FileFormat;
-import edu.pitt.dbmi.ccd.db.entity.FileVariableType;
+import edu.pitt.dbmi.ccd.db.entity.FileType;
 import edu.pitt.dbmi.ccd.db.entity.TetradDataFile;
-import edu.pitt.dbmi.ccd.db.entity.TetradVariableFile;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileDelimiterTypeService;
 import edu.pitt.dbmi.ccd.db.service.FileFormatService;
@@ -38,10 +36,6 @@ import edu.pitt.dbmi.ccd.web.domain.file.CategorizeFileForm;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.fs.FileManagementService;
-import edu.pitt.dbmi.data.Delimiter;
-import edu.pitt.dbmi.data.reader.BasicDataFileReader;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 import javax.validation.Valid;
@@ -49,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -88,16 +83,7 @@ public class FileManagementController implements ViewPath {
     private final AppUserService appUserService;
 
     @Autowired
-    public FileManagementController(
-            FileManagementService fileManagementService,
-            FileService fileService,
-            FileTypeService fileTypeService,
-            FileFormatService fileFormatService,
-            FileDelimiterTypeService fileDelimiterTypeService,
-            FileVariableTypeService fileVariableTypeService,
-            TetradDataFileService tetradDataFileService,
-            TetradVariableFileService tetradVariableFileService,
-            AppUserService appUserService) {
+    public FileManagementController(FileManagementService fileManagementService, FileService fileService, FileTypeService fileTypeService, FileFormatService fileFormatService, FileDelimiterTypeService fileDelimiterTypeService, FileVariableTypeService fileVariableTypeService, TetradDataFileService tetradDataFileService, TetradVariableFileService tetradVariableFileService, AppUserService appUserService) {
         this.fileManagementService = fileManagementService;
         this.fileService = fileService;
         this.fileTypeService = fileTypeService;
@@ -114,29 +100,52 @@ public class FileManagementController implements ViewPath {
         binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
     }
 
-    private String getRedirect(File file) {
-        FileFormat fileFmt = file.getFileFormat();
-        String fileFmtName = (fileFmt == null) ? "new" : fileFmt.getName();
+    @ResponseBody
+    @RequestMapping(value = "title", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> listFiles(
+            @RequestParam(value = "pk") final Long id,
+            @RequestParam(value = "value") final String title,
+            final AppUser appUser) {
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        File file = getUserFileByFileId(id, userAccount);
 
-        return String.format("redirect:/secured/file/mgmt/list/%s", fileFmtName);
+        if (title == null || title.isEmpty()) {
+            return ResponseEntity.badRequest().body("Title is required.");
+        } else {
+            if (file.getTitle().compareTo(title) != 0) {
+                if (fileManagementService.existTitle(title, userAccount)) {
+                    return ResponseEntity.badRequest().body("Title already in used. Plese enter a different title.");
+                } else {
+                    file.setTitle(title);
+                    try {
+                        fileService.getRepository().save(file);
+                    } catch (Exception exception) {
+                        LOGGER.error(exception.getMessage());
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to update file title.");
+                    }
+                }
+            }
+        }
+
+        return ResponseEntity.ok().build();
     }
 
-    private void removeAssociatedTables(File file) {
-        FileFormat fileFmt = file.getFileFormat();
-        String fileFmtName = (fileFmt == null) ? null : fileFmt.getName();
+    @ResponseBody
+    @RequestMapping(value = "delete", method = RequestMethod.POST)
+    public ResponseEntity<?> listFiles(
+            @RequestParam(value = "id") final Long id,
+            final AppUser appUser) {
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        File file = getUserFileByFileId(id, userAccount);
 
-        if (!FileFormatService.TETRAD_TABULAR.equals(fileFmtName)) {
-            TetradDataFile dataFile = tetradDataFileService.getRepository().findByFile(file);
-            if (dataFile != null) {
-                tetradDataFileService.getRepository().delete(dataFile);
-            }
+        try {
+            fileManagementService.deleteFile(file, userAccount);
+        } catch (Exception exception) {
+            LOGGER.error(exception.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to delete file.");
         }
-        if (!FileFormatService.TETRAD_VARIABLE.equals(fileFmtName)) {
-            TetradVariableFile variableFile = tetradVariableFileService.getRepository().findByFile(file);
-            if (variableFile != null) {
-                tetradVariableFileService.getRepository().delete(variableFile);
-            }
-        }
+
+        return ResponseEntity.ok(file.getId());
     }
 
     @RequestMapping(value = "categorize", method = RequestMethod.POST)
@@ -147,61 +156,38 @@ public class FileManagementController implements ViewPath {
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        File file = fileService.findByIdAndUserAccount(id, userAccount);
-        if (file == null) {
-            throw new ResourceNotFoundException();
+        File file = getUserFileByFileId(id, userAccount);
+
+        FileFormat fileFormat;
+        FileType fileType = fileTypeService.getRepository().findOne(categorizeFileForm.getFileTypeId());
+        switch (fileType.getName()) {
+            case FileTypeService.DATA:
+                fileFormat = fileFormatService.getRepository().findOne(categorizeFileForm.getDataFileFormatId());
+                break;
+            case FileTypeService.KNOWLEDGE:
+                fileFormat = fileFormatService.getRepository().findOne(categorizeFileForm.getKnowledgeFileFormatId());
+                break;
+            case FileTypeService.RESULT:
+                fileFormat = fileFormatService.getRepository().findOne(categorizeFileForm.getResultFileFormatId());
+                break;
+            case FileTypeService.VARIABLE:
+                fileFormat = fileFormatService.getRepository().findOne(categorizeFileForm.getVariableFileFormatId());
+                break;
+            default:
+                fileFormat = null;
         }
 
-        Long fileFmtId = categorizeFileForm.getFileFormatId();
-        FileFormat fileFormat = fileFormatService.getRepository().findOne(fileFmtId);
-        if (fileFormat != null) {
-            switch (fileFormat.getName()) {
-                case FileFormatService.TETRAD_TABULAR:
-                    Long fileDelimTypeId = categorizeFileForm.getFileDelimiterTypeId();
-                    Long fileVarTypeId = categorizeFileForm.getFileVariableTypeId();
-                    Character quoteChar = categorizeFileForm.getQuoteChar();
-                    String missValMark = categorizeFileForm.getMissingValueMarker();
-                    String cmntMark = categorizeFileForm.getCommentMarker();
-
-                    FileDelimiterType delimiter = fileDelimiterTypeService.getRepository().findOne(fileDelimTypeId);
-                    FileVariableType variable = fileVariableTypeService.getRepository().findOne(fileVarTypeId);
-
-                    TetradDataFile dataFile = new TetradDataFile(file, delimiter, variable);
-                    dataFile.setCommentMarker(cmntMark);
-                    dataFile.setMissingValueMarker(missValMark);
-                    dataFile.setQuoteChar(quoteChar);
-
-                    Path localDataFile = fileManagementService.getPhysicalFile(file, userAccount);
-                    try {
-                        BasicDataFileReader fileReader = new BasicDataFileReader(localDataFile.toFile(), getReaderFileDelimiter(delimiter));
-                        dataFile.setNumOfColumns(fileReader.getNumberOfColumns());
-                        dataFile.setNumOfRows(fileReader.getNumberOfLines());
-                    } catch (IOException exception) {
-                        String errMsg = String.format("Unable to get row and column counts from file %s.", localDataFile.getFileName().toString());
-                        LOGGER.error(errMsg, exception);
-                    }
-
-                    tetradDataFileService.getRepository().save(dataFile);
-                    break;
-                case FileFormatService.TETRAD_VARIABLE:
-                    TetradVariableFile variableFile = new TetradVariableFile(file);
-                    Path localVarFile = fileManagementService.getPhysicalFile(file, userAccount);
-                    try {
-                        BasicDataFileReader fileReader = new BasicDataFileReader(localVarFile.toFile(), getReaderFileDelimiter(null));
-                        variableFile.setNumOfVariables(fileReader.getNumberOfLines());
-                    } catch (IOException exception) {
-                        String errMsg = String.format("Unable to get row counts from file %s.", localVarFile.getFileName().toString());
-                        LOGGER.error(errMsg, exception);
-                    }
-
-                    tetradVariableFileService.getRepository().save(variableFile);
-                    break;
-            }
-            file.setFileFormat(fileFormat);
-            file = fileService.getRepository().save(file);
+        String fileFmtName = (fileFormat == null) ? "" : fileFormat.getName();
+        switch (fileFmtName) {
+            case FileFormatService.TETRAD_TABULAR:
+                file = fileManagementService.createTetradDataFileAssociation(categorizeFileForm, file, userAccount);
+                break;
+            case FileFormatService.TETRAD_VARIABLE:
+                file = fileManagementService.createTetradVariableFileAssociation(categorizeFileForm, file, userAccount);
+                break;
+            default:
+                file = fileService.updateFileFormat(file, fileFormat);
         }
-
-        removeAssociatedTables(file);
 
         return getRedirect(file);
     }
@@ -212,21 +198,20 @@ public class FileManagementController implements ViewPath {
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        File file = fileService.findByIdAndUserAccount(id, userAccount);
-        if (file == null) {
-            throw new ResourceNotFoundException();
-        }
+        File file = getUserFileByFileId(id, userAccount);
+
+        List<FileFormat> fileFormats = fileFormatService.getRepository().findAll();
 
         if (!model.containsAttribute("categorizeFileForm")) {
-            model.addAttribute("categorizeFileForm", getDefaultCategorizeFileForm(file));
+            model.addAttribute("categorizeFileForm", getDefaultCategorizeFileForm(file, fileFormats));
         }
 
         model.addAttribute("file", file);
         model.addAttribute("fileTypes", fileTypeService.getRepository().findAll());
-        model.addAttribute("dataFileFormats", fileFormatService.findByFileTypeName(FileTypeService.DATA));
-        model.addAttribute("knwlFileFormats", fileFormatService.findByFileTypeName(FileTypeService.KNOWLEDGE));
-        model.addAttribute("resultFileFormats", fileFormatService.findByFileTypeName(FileTypeService.RESULT));
-        model.addAttribute("varFileFormats", fileFormatService.findByFileTypeName(FileTypeService.VARIABLE));
+        model.addAttribute("dataFileFormats", extractFileFormat(fileFormats, FileTypeService.DATA));
+        model.addAttribute("knwlFileFormats", extractFileFormat(fileFormats, FileTypeService.KNOWLEDGE));
+        model.addAttribute("resultFileFormats", extractFileFormat(fileFormats, FileTypeService.RESULT));
+        model.addAttribute("varFileFormats", extractFileFormat(fileFormats, FileTypeService.VARIABLE));
         model.addAttribute("fileDelimiterTypes", fileDelimiterTypeService.getRepository().findAll());
         model.addAttribute("fileVariableTypes", fileVariableTypeService.getRepository().findAll());
 
@@ -257,9 +242,21 @@ public class FileManagementController implements ViewPath {
                 pageTitle = "CCD: Tetrad Knowledge";
                 title = "Tetrad Knowledge Files";
                 break;
+            case FileFormatService.TETRAD_RESULT_TXT:
+                pageTitle = "CCD: Tetrad Result TXT";
+                title = "Tetrad Result Text Files";
+                break;
+            case FileFormatService.TETRAD_RESULT_JSON:
+                pageTitle = "CCD: Tetrad Result JSON";
+                title = "Tetrad Result JSON Files";
+                break;
             case FileFormatService.TDI_TABULAR:
                 pageTitle = "CCD: TDI Tabular Data";
                 title = "TDI Tabular Data Files";
+                break;
+            case FileFormatService.TDI_RESULT_TXT:
+                pageTitle = "CCD: TDI Result TXT";
+                title = "TDI Result Text Files";
                 break;
             case "new":
                 pageTitle = "CCD: Uncategorize File";
@@ -298,8 +295,17 @@ public class FileManagementController implements ViewPath {
             case FileFormatService.TETRAD_KNOWLEDGE:
                 files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TETRAD_KNOWLEDGE, userAccount));
                 break;
+            case FileFormatService.TETRAD_RESULT_TXT:
+                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TETRAD_RESULT_TXT, userAccount));
+                break;
+            case FileFormatService.TETRAD_RESULT_JSON:
+                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TETRAD_RESULT_JSON, userAccount));
+                break;
             case FileFormatService.TDI_TABULAR:
                 files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TDI_TABULAR, userAccount));
+                break;
+            case FileFormatService.TDI_RESULT_TXT:
+                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TDI_RESULT_TXT, userAccount));
                 break;
             case "new":
                 files.addAll(fileService.findByUserAccountAndFileFormatName(null, userAccount));
@@ -311,39 +317,95 @@ public class FileManagementController implements ViewPath {
         return ResponseEntity.ok(files);
     }
 
-    private CategorizeFileForm getDefaultCategorizeFileForm(File file) {
+    private List<FileFormat> extractFileFormat(List<FileFormat> fileFormats, String fileTypeName) {
+        List<FileFormat> results = new LinkedList<>();
+
+        fileFormats.forEach(fileFormat -> {
+            if (fileFormat.getFileType().getName().equals(fileTypeName)) {
+                results.add(fileFormat);
+            }
+        });
+
+        return results;
+    }
+
+    private File getUserFileByFileId(Long id, UserAccount userAccount) {
+        if (id == null || userAccount == null) {
+            throw new ResourceNotFoundException();
+        }
+
+        File file = fileService.findByIdAndUserAccount(id, userAccount);
+        if (file == null) {
+            throw new ResourceNotFoundException();
+        } else {
+            return file;
+        }
+    }
+
+    private CategorizeFileForm getDefaultCategorizeFileForm(File file, List<FileFormat> fileFormats) {
+        CategorizeFileForm form = new CategorizeFileForm();
+
+        // set default file format ids
+        List<FileFormat> list = extractFileFormat(fileFormats, FileTypeService.DATA);
+        if (!list.isEmpty()) {
+            form.setDataFileFormatId(list.get(0).getId());
+        }
+        list = extractFileFormat(fileFormats, FileTypeService.KNOWLEDGE);
+        if (!list.isEmpty()) {
+            form.setKnowledgeFileFormatId(list.get(0).getId());
+        }
+        list = extractFileFormat(fileFormats, FileTypeService.RESULT);
+        if (!list.isEmpty()) {
+            form.setResultFileFormatId(list.get(0).getId());
+        }
+        list = extractFileFormat(fileFormats, FileTypeService.VARIABLE);
+        if (!list.isEmpty()) {
+            form.setVariableFileFormatId(list.get(0).getId());
+        }
+
         FileFormat fileFormat = file.getFileFormat();
         if (fileFormat == null) {
             fileFormat = fileFormatService.getRepository().findByName(FileFormatService.TETRAD_TABULAR);
         }
 
-        CategorizeFileForm form = new CategorizeFileForm();
-        form.setFileFormatId(fileFormat.getId());
-        form.setFileTypeId(fileFormat.getFileType().getId());
+        switch (fileFormat.getName()) {
+            case FileFormatService.TETRAD_TABULAR:
+                TetradDataFile dataFile = tetradDataFileService.getRepository().findByFile(file);
+                if (dataFile != null) {
+                    form.setFileDelimiterTypeId(dataFile.getFileDelimiterType().getId());
+                    form.setFileVariableTypeId(dataFile.getFileVariableType().getId());
+                    form.setCommentMarker(dataFile.getCommentMarker());
+                    form.setMissingValueMarker(dataFile.getMissingValueMarker());
+                    form.setQuoteChar(dataFile.getQuoteChar());
+                }
+                break;
+        }
+
+        FileType fileType = fileFormat.getFileType();
+        form.setFileTypeId(fileType.getId());
+        switch (fileType.getName()) {
+            case FileTypeService.DATA:
+                form.setDataFileFormatId(fileFormat.getId());
+                break;
+            case FileTypeService.KNOWLEDGE:
+                form.setKnowledgeFileFormatId(fileFormat.getId());
+                break;
+            case FileTypeService.RESULT:
+                form.setResultFileFormatId(fileFormat.getId());
+                break;
+            case FileTypeService.VARIABLE:
+                form.setVariableFileFormatId(fileFormat.getId());
+                break;
+        }
 
         return form;
     }
 
-    private Delimiter getReaderFileDelimiter(FileDelimiterType fileDelimiterType) {
-        String fileDelimName = (fileDelimiterType == null) ? "" : fileDelimiterType.getName();
-        switch (fileDelimName) {
-            case FileDelimiterTypeService.COLON_DELIM_NAME:
-                return Delimiter.COLON;
-            case FileDelimiterTypeService.COMMA_DELIM_NAME:
-                return Delimiter.COMMA;
-            case FileDelimiterTypeService.PIPE_DELIM_NAME:
-                return Delimiter.PIPE;
-            case FileDelimiterTypeService.SEMICOLON_DELIM_NAME:
-                return Delimiter.SEMICOLON;
-            case FileDelimiterTypeService.SPACE_DELIM_NAME:
-                return Delimiter.SPACE;
-            case FileDelimiterTypeService.TAB_DELIM_NAME:
-                return Delimiter.TAB;
-            case FileDelimiterTypeService.WHITESPACE_DELIM_NAME:
-                return Delimiter.WHITESPACE;
-            default:
-                return Delimiter.TAB;
-        }
+    private String getRedirect(File file) {
+        FileFormat fileFmt = file.getFileFormat();
+        String fileFmtName = (fileFmt == null) ? "new" : fileFmt.getName();
+
+        return String.format("redirect:/secured/file/mgmt/list/%s", fileFmtName);
     }
 
 }
