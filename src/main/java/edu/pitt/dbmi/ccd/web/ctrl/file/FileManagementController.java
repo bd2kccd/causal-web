@@ -52,7 +52,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -218,105 +217,6 @@ public class FileManagementController implements ViewPath {
         return CATEGORIZED_FILE_VIEW;
     }
 
-    @RequestMapping(value = "list/{fileType}", method = RequestMethod.GET)
-    public String showFiles(@PathVariable String fileType, final AppUser appUser, final Model model) {
-        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        fileManagementService.syncDatabaseWithDataDirectory(userAccount);
-
-        String pageTitle;
-        String title;
-        switch (fileType) {
-            case FileFormatService.TETRAD_TABULAR:
-                pageTitle = "CCD: Tetrad Tabular Data";
-                title = "Tetrad Tabular Data Files";
-                break;
-            case FileFormatService.TETRAD_COVARIANCE:
-                pageTitle = "CCD: Tetrad Covariance";
-                title = "Tetrad Covariance Files";
-                break;
-            case FileFormatService.TETRAD_VARIABLE:
-                pageTitle = "CCD: Tetrad Variable";
-                title = "Tetrad Variable Files";
-                break;
-            case FileFormatService.TETRAD_KNOWLEDGE:
-                pageTitle = "CCD: Tetrad Knowledge";
-                title = "Tetrad Knowledge Files";
-                break;
-            case FileFormatService.TETRAD_RESULT_TXT:
-                pageTitle = "CCD: Tetrad Result TXT";
-                title = "Tetrad Result Text Files";
-                break;
-            case FileFormatService.TETRAD_RESULT_JSON:
-                pageTitle = "CCD: Tetrad Result JSON";
-                title = "Tetrad Result JSON Files";
-                break;
-            case FileFormatService.TDI_TABULAR:
-                pageTitle = "CCD: TDI Tabular Data";
-                title = "TDI Tabular Data Files";
-                break;
-            case FileFormatService.TDI_RESULT_TXT:
-                pageTitle = "CCD: TDI Result TXT";
-                title = "TDI Result Text Files";
-                break;
-            case "new":
-                pageTitle = "CCD: Uncategorize File";
-                title = "Uncategorized Files";
-                break;
-            default:
-                throw new ResourceNotFoundException();
-        }
-
-        model.addAttribute("pageTitle", pageTitle);
-        model.addAttribute("title", title);
-        model.addAttribute("fileType", fileType);
-
-        return FILE_LIST_VIEW;
-    }
-
-    @ResponseBody
-    @RequestMapping(value = "list/file/{fileType}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> listFiles(final @PathVariable String fileType, final AppUser appUser) {
-        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        if (userAccount == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        List<File> files = new LinkedList<>();
-        switch (fileType) {
-            case FileFormatService.TETRAD_TABULAR:
-                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TETRAD_TABULAR, userAccount));
-                break;
-            case FileFormatService.TETRAD_COVARIANCE:
-                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TETRAD_COVARIANCE, userAccount));
-                break;
-            case FileFormatService.TETRAD_VARIABLE:
-                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TETRAD_VARIABLE, userAccount));
-                break;
-            case FileFormatService.TETRAD_KNOWLEDGE:
-                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TETRAD_KNOWLEDGE, userAccount));
-                break;
-            case FileFormatService.TETRAD_RESULT_TXT:
-                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TETRAD_RESULT_TXT, userAccount));
-                break;
-            case FileFormatService.TETRAD_RESULT_JSON:
-                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TETRAD_RESULT_JSON, userAccount));
-                break;
-            case FileFormatService.TDI_TABULAR:
-                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TDI_TABULAR, userAccount));
-                break;
-            case FileFormatService.TDI_RESULT_TXT:
-                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TDI_RESULT_TXT, userAccount));
-                break;
-            case "new":
-                files.addAll(fileService.findByUserAccountAndFileFormatName(null, userAccount));
-                break;
-            default:
-                return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(files);
-    }
-
     private List<FileFormat> extractFileFormat(List<FileFormat> fileFormats, String fileTypeName) {
         List<FileFormat> results = new LinkedList<>();
 
@@ -403,9 +303,9 @@ public class FileManagementController implements ViewPath {
 
     private String getRedirect(File file) {
         FileFormat fileFmt = file.getFileFormat();
-        String fileFmtName = (fileFmt == null) ? "new" : fileFmt.getName();
+        String fileFmtName = (fileFmt == null) ? "uncategorized" : fileFmt.getName();
 
-        return String.format("redirect:/secured/file/mgmt/list/%s", fileFmtName);
+        return String.format("redirect:/secured/file/%s", fileFmtName);
     }
 
 }

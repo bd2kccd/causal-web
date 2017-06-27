@@ -25,7 +25,7 @@
         <script src="../../static/vendors/datatables/Responsive-2.1.1/js/responsive.bootstrap.min.js" th:src="@{https://cdn.datatables.net/responsive/2.1.1/js/responsive.bootstrap.min.js}"></script>        
         <script src="../../static/vendors/datatables/plugins/file-size.min.js" th:src="@{/vendors/datatables/plugins/file-size.min.js}"></script>
         <script th:inline="javascript">
-            var listUrl = /*[[@{'/secured/file/mgmt/list/file/' + ${fileType}}]]*/ '';
+            var listUrl = /*[[@{'/secured/file/list/' + ${fileType}}]]*/ '';
             var deleteUrl = /*[[@{/secured/file/mgmt/delete}]]*/ '';
             var categoryUrl = /*[[@{/secured/file/mgmt/categorize(id='')}]]*/ '';
         </script>
