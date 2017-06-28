@@ -41,9 +41,6 @@ public class CategorizeFileForm {
     private Long knowledgeFileFormatId;
 
     @NotNull
-    private Long resultFileFormatId;
-
-    @NotNull
     private Long fileDelimiterTypeId;
 
     @NotNull
@@ -58,7 +55,6 @@ public class CategorizeFileForm {
         this.dataFileFormatId = 1L;
         this.variableFileFormatId = 1L;
         this.knowledgeFileFormatId = 1L;
-        this.resultFileFormatId = 1L;
         this.fileDelimiterTypeId = 1L;
         this.fileVariableTypeId = 1L;
         this.quoteChar = '"';
@@ -96,14 +92,6 @@ public class CategorizeFileForm {
 
     public void setKnowledgeFileFormatId(Long knowledgeFileFormatId) {
         this.knowledgeFileFormatId = knowledgeFileFormatId;
-    }
-
-    public Long getResultFileFormatId() {
-        return resultFileFormatId;
-    }
-
-    public void setResultFileFormatId(Long resultFileFormatId) {
-        this.resultFileFormatId = resultFileFormatId;
     }
 
     public Long getFileDelimiterTypeId() {

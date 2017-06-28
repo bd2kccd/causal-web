@@ -23,7 +23,6 @@ import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileFormatService;
 import edu.pitt.dbmi.ccd.db.service.FileService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import static edu.pitt.dbmi.ccd.web.ctrl.ViewPath.FILE_LIST_VIEW;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;

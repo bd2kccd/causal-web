@@ -36,8 +36,8 @@ import edu.pitt.dbmi.ccd.web.domain.file.CategorizeFileForm;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.fs.FileManagementService;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -166,9 +166,6 @@ public class FileManagementController implements ViewPath {
             case FileTypeService.KNOWLEDGE:
                 fileFormat = fileFormatService.getRepository().findOne(categorizeFileForm.getKnowledgeFileFormatId());
                 break;
-            case FileTypeService.RESULT:
-                fileFormat = fileFormatService.getRepository().findOne(categorizeFileForm.getResultFileFormatId());
-                break;
             case FileTypeService.VARIABLE:
                 fileFormat = fileFormatService.getRepository().findOne(categorizeFileForm.getVariableFileFormatId());
                 break;
@@ -199,7 +196,7 @@ public class FileManagementController implements ViewPath {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
         File file = getUserFileByFileId(id, userAccount);
 
-        List<FileFormat> fileFormats = fileFormatService.getRepository().findAll();
+        List<FileFormat> fileFormats = fileFormatService.findAll();
 
         if (!model.containsAttribute("categorizeFileForm")) {
             model.addAttribute("categorizeFileForm", getDefaultCategorizeFileForm(file, fileFormats));
@@ -208,27 +205,26 @@ public class FileManagementController implements ViewPath {
         model.addAttribute("file", file);
         model.addAttribute("addInfo", fileManagementService.getAdditionalInformation(file));
         model.addAttribute("collapse", file.getFileFormat() != null);
-        model.addAttribute("fileTypes", fileTypeService.getRepository().findAll());
+        model.addAttribute("fileTypes", filterFileType(fileTypeService.findAll(), FileTypeService.RESULT));
         model.addAttribute("dataFileFormats", extractFileFormat(fileFormats, FileTypeService.DATA));
         model.addAttribute("knwlFileFormats", extractFileFormat(fileFormats, FileTypeService.KNOWLEDGE));
-        model.addAttribute("resultFileFormats", extractFileFormat(fileFormats, FileTypeService.RESULT));
         model.addAttribute("varFileFormats", extractFileFormat(fileFormats, FileTypeService.VARIABLE));
-        model.addAttribute("fileDelimiterTypes", fileDelimiterTypeService.getRepository().findAll());
-        model.addAttribute("fileVariableTypes", fileVariableTypeService.getRepository().findAll());
+        model.addAttribute("fileDelimiterTypes", fileDelimiterTypeService.findAll());
+        model.addAttribute("fileVariableTypes", fileVariableTypeService.findAll());
 
         return CATEGORIZED_FILE_VIEW;
     }
 
+    private List<FileType> filterFileType(List<FileType> fileTypes, String fileTypeName) {
+        return fileTypes.stream()
+                .filter(fileType -> !fileType.getName().equals(fileTypeName))
+                .collect(Collectors.toList());
+    }
+
     private List<FileFormat> extractFileFormat(List<FileFormat> fileFormats, String fileTypeName) {
-        List<FileFormat> results = new LinkedList<>();
-
-        fileFormats.forEach(fileFormat -> {
-            if (fileFormat.getFileType().getName().equals(fileTypeName)) {
-                results.add(fileFormat);
-            }
-        });
-
-        return results;
+        return fileFormats.stream()
+                .filter(fileFormat -> fileFormat.getFileType().getName().equals(fileTypeName))
+                .collect(Collectors.toList());
     }
 
     private File getUserFileByFileId(Long id, UserAccount userAccount) {
@@ -255,10 +251,6 @@ public class FileManagementController implements ViewPath {
         list = extractFileFormat(fileFormats, FileTypeService.KNOWLEDGE);
         if (!list.isEmpty()) {
             form.setKnowledgeFileFormatId(list.get(0).getId());
-        }
-        list = extractFileFormat(fileFormats, FileTypeService.RESULT);
-        if (!list.isEmpty()) {
-            form.setResultFileFormatId(list.get(0).getId());
         }
         list = extractFileFormat(fileFormats, FileTypeService.VARIABLE);
         if (!list.isEmpty()) {
@@ -291,9 +283,6 @@ public class FileManagementController implements ViewPath {
                 break;
             case FileTypeService.KNOWLEDGE:
                 form.setKnowledgeFileFormatId(fileFormat.getId());
-                break;
-            case FileTypeService.RESULT:
-                form.setResultFileFormatId(fileFormat.getId());
                 break;
             case FileTypeService.VARIABLE:
                 form.setVariableFileFormatId(fileFormat.getId());
