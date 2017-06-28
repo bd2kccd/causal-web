@@ -206,6 +206,8 @@ public class FileManagementController implements ViewPath {
         }
 
         model.addAttribute("file", file);
+        model.addAttribute("addInfo", fileManagementService.getAdditionalInformation(file));
+        model.addAttribute("collapse", file.getFileFormat() != null);
         model.addAttribute("fileTypes", fileTypeService.getRepository().findAll());
         model.addAttribute("dataFileFormats", extractFileFormat(fileFormats, FileTypeService.DATA));
         model.addAttribute("knwlFileFormats", extractFileFormat(fileFormats, FileTypeService.KNOWLEDGE));

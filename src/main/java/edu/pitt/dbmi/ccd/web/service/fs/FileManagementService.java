@@ -21,15 +21,18 @@ package edu.pitt.dbmi.ccd.web.service.fs;
 import edu.pitt.dbmi.ccd.commons.file.FileSys;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileDelimiterType;
+import edu.pitt.dbmi.ccd.db.entity.FileFormat;
 import edu.pitt.dbmi.ccd.db.entity.FileVariableType;
 import edu.pitt.dbmi.ccd.db.entity.TetradDataFile;
 import edu.pitt.dbmi.ccd.db.entity.TetradVariableFile;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileDelimiterTypeService;
+import edu.pitt.dbmi.ccd.db.service.FileFormatService;
 import edu.pitt.dbmi.ccd.db.service.FileService;
 import edu.pitt.dbmi.ccd.db.service.FileVariableTypeService;
 import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
 import edu.pitt.dbmi.ccd.db.service.TetradVariableFileService;
+import edu.pitt.dbmi.ccd.web.domain.AttrValue;
 import edu.pitt.dbmi.ccd.web.domain.file.CategorizeFileForm;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import edu.pitt.dbmi.data.Delimiter;
@@ -85,6 +88,32 @@ public class FileManagementService {
         this.tetradVariableFileService = tetradVariableFileService;
         this.fileDelimiterTypeService = fileDelimiterTypeService;
         this.fileVariableTypeService = fileVariableTypeService;
+    }
+
+    public List<AttrValue> getAdditionalInformation(File file) {
+        List<AttrValue> attrValues = new LinkedList<>();
+
+        FileFormat fileFormat = file.getFileFormat();
+        if (fileFormat != null) {
+            switch (fileFormat.getName()) {
+                case FileFormatService.TETRAD_TABULAR:
+                    TetradDataFile dataFile = tetradDataFileService.getRepository().findByFile(file);
+                    attrValues.add(new AttrValue("Number of Columns", String.valueOf(dataFile.getNumOfColumns())));
+                    attrValues.add(new AttrValue("Number of Rows", String.valueOf(dataFile.getNumOfRows())));
+                    attrValues.add(new AttrValue("Delimiter", dataFile.getFileDelimiterType().getDisplayName()));
+                    attrValues.add(new AttrValue("Variable Type", dataFile.getFileVariableType().getDisplayName()));
+                    attrValues.add(new AttrValue("Quote Character", String.valueOf(dataFile.getQuoteChar())));
+                    attrValues.add(new AttrValue("Missing Value Marker", dataFile.getMissingValueMarker()));
+                    attrValues.add(new AttrValue("Comment Marker", dataFile.getCommentMarker()));
+                    break;
+                case FileFormatService.TETRAD_VARIABLE:
+                    TetradVariableFile varFile = tetradVariableFileService.getRepository().findByFile(file);
+                    attrValues.add(new AttrValue("Number of Variables", String.valueOf(varFile.getNumOfVariables())));
+                    break;
+            }
+        }
+
+        return attrValues;
     }
 
     public boolean existTitle(String title, UserAccount userAccount) {
