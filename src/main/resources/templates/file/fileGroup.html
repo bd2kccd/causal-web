@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <title>Causal Web: Categorized Files</title>
+        <meta name="description" content="causal" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="apple-touch-icon" href="../../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
+        <link rel="icon" href="../../static/favicon.ico" th:href="@{/favicon.ico}" />
+        <link rel="stylesheet" href="../../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/bootstrap/css/bootstrap-theme.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css}"/>
+        <link rel="stylesheet" href="../../static/vendors/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/bootstrap-duallistbox/bootstrap-duallistbox.min.css" th:href="@{/vendors/bootstrap-duallistbox/bootstrap-duallistbox.min.css}" />
+        <link rel="stylesheet" href="../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
+        <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{https://code.jquery.com/jquery-2.2.4.min.js}"></script>
+        <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
+        <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
+        <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
+    </head>
+    <body>
+        <div id="wrapper">
+            <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0" th:replace="fragments/navigation :: nav"></nav>
+            <div id="page-wrapper">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h3 id="page_title" class="page-header">File</h3>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <form id="fileGroupForm" method="post" action="" role="form" th:object="${fileGroupForm}">
+                            <fieldset>
+                                <div class="form-group" th:class="${#fields.hasErrors('groupName')} ? 'form-group has-error' : 'form-group'">
+                                    <label for="groupName">File Group Name:</label>
+                                    <input id="groupName" name="groupName" class="form-control" type="text" value="" th:value="*{groupName}" th:field="*{groupName}" required="required" />
+                                    <span class="help-block" th:if="${#fields.hasErrors('groupName')}" th:errors="*{groupName}">Please enter a name for the file group.</span>
+                                </div>
+                                <div class="well">
+                                    <div class="form-group" th:class="${#fields.hasErrors('fileIds')} ? 'form-group has-error' : 'form-group'">
+                                        <label for="fileIds">Click on file from the left to move to the right for grouping.</label>
+                                        <select multiple="multiple" id="fileIds" class="form-control" th:size="${#lists.size(files)}" th:field="*{fileIds}" required="required">
+                                            <option value=""
+                                                    th:each="file : ${files}"
+                                                    th:value="${file.id}"
+                                                    th:text="${file.title}">sim_data_100vars_100_cases.txt</option>
+                                        </select>
+                                        <span class="help-block" th:if="${#fields.hasErrors('fileIds')}" th:errors="*{fileIds}">Please select at least one file.</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-success btn-lg btn-block">Submit</button>
+                                </div>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
+                <footer th:replace="fragments/footer :: footer">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="page-header"></div>
+                            <p class="text-muted">Copyright &copy; 1900 University of Pittsburgh Department of Biomedical Informatics</p>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <script src="../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.16.0/jquery.validate.min.js}"></script>
+        <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
+        <script src="../../static/vendors/bootstrap-duallistbox/jquery.bootstrap-duallistbox.min.js" th:src="@{/vendors/bootstrap-duallistbox/jquery.bootstrap-duallistbox.min.js}"></script>
+        <script src="../../static/js/file/fileGroupValid.min.js" th:src="@{/js/file/fileGroupValid.min.js}"></script>
+        <script>
+            $('select[id="fileIds"]').bootstrapDualListbox();
+        </script>
+    </body>
+</html>

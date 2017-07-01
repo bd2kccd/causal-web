@@ -131,7 +131,7 @@ public class FileManagementController implements ViewPath {
 
     @ResponseBody
     @RequestMapping(value = "delete", method = RequestMethod.POST)
-    public ResponseEntity<?> listFiles(
+    public ResponseEntity<?> deleteFile(
             @RequestParam(value = "id") final Long id,
             final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
