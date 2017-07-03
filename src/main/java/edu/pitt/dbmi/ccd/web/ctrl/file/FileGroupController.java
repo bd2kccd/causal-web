@@ -78,7 +78,15 @@ public class FileGroupController implements ViewPath {
         }
 
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        fileGroupingService.addFileGroup(fileGroupForm, userAccount);
+        if (fileGroupingService.existed(fileGroupForm, userAccount)) {
+            bindingResult.rejectValue("groupName", "fileGroupForm.groupName", "Name already existed.");
+            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.fileGroupForm", bindingResult);
+            redirAttrs.addFlashAttribute("fileGroupForm", fileGroupForm);
+
+            return REDIRECT_FILEGROUP_VIEW;
+        } else {
+            fileGroupingService.addFileGroup(fileGroupForm, userAccount);
+        }
 
         return REDIRECT_FILEGROUP_LIST;
     }

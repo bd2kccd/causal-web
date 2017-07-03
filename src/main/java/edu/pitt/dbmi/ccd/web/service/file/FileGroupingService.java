@@ -67,4 +67,8 @@ public class FileGroupingService {
         }
     }
 
+    public boolean existed(FileGroupForm fileGroupForm, UserAccount userAccount) {
+        return fileGroupService.getRepository().existsByNameAndUserAccount(fileGroupForm.getGroupName(), userAccount);
+    }
+
 }
