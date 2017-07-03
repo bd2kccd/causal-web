@@ -29,7 +29,6 @@ import edu.pitt.dbmi.ccd.db.service.FileService;
 import edu.pitt.dbmi.ccd.db.service.FileTypeService;
 import edu.pitt.dbmi.ccd.db.service.FileVariableTypeService;
 import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
-import edu.pitt.dbmi.ccd.db.service.TetradVariableFileService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.file.CategorizeFileForm;
@@ -78,11 +77,10 @@ public class FileManagementController implements ViewPath {
     private final FileDelimiterTypeService fileDelimiterTypeService;
     private final FileVariableTypeService fileVariableTypeService;
     private final TetradDataFileService tetradDataFileService;
-    private final TetradVariableFileService tetradVariableFileService;
     private final AppUserService appUserService;
 
     @Autowired
-    public FileManagementController(FileManagementService fileManagementService, FileService fileService, FileTypeService fileTypeService, FileFormatService fileFormatService, FileDelimiterTypeService fileDelimiterTypeService, FileVariableTypeService fileVariableTypeService, TetradDataFileService tetradDataFileService, TetradVariableFileService tetradVariableFileService, AppUserService appUserService) {
+    public FileManagementController(FileManagementService fileManagementService, FileService fileService, FileTypeService fileTypeService, FileFormatService fileFormatService, FileDelimiterTypeService fileDelimiterTypeService, FileVariableTypeService fileVariableTypeService, TetradDataFileService tetradDataFileService, AppUserService appUserService) {
         this.fileManagementService = fileManagementService;
         this.fileService = fileService;
         this.fileTypeService = fileTypeService;
@@ -90,7 +88,6 @@ public class FileManagementController implements ViewPath {
         this.fileDelimiterTypeService = fileDelimiterTypeService;
         this.fileVariableTypeService = fileVariableTypeService;
         this.tetradDataFileService = tetradDataFileService;
-        this.tetradVariableFileService = tetradVariableFileService;
         this.appUserService = appUserService;
     }
 
@@ -136,15 +133,18 @@ public class FileManagementController implements ViewPath {
             final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
         File file = getUserFileByFileId(id, userAccount);
+        if (file == null) {
+            return ResponseEntity.notFound().build();
+        } else {
+            try {
+                fileManagementService.deleteFile(file, userAccount);
+            } catch (Exception exception) {
+                LOGGER.error(exception.getMessage());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to delete file.");
+            }
 
-        try {
-            fileManagementService.deleteFile(file, userAccount);
-        } catch (Exception exception) {
-            LOGGER.error(exception.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to delete file.");
+            return ResponseEntity.ok(id);
         }
-
-        return ResponseEntity.ok(file.getId());
     }
 
     @RequestMapping(value = "categorize", method = RequestMethod.POST)

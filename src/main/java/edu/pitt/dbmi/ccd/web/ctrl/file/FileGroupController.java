@@ -19,8 +19,10 @@
 package edu.pitt.dbmi.ccd.web.ctrl.file;
 
 import edu.pitt.dbmi.ccd.db.entity.File;
+import edu.pitt.dbmi.ccd.db.entity.FileGroup;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileFormatService;
+import edu.pitt.dbmi.ccd.db.service.FileGroupService;
 import edu.pitt.dbmi.ccd.db.service.FileService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
@@ -29,7 +31,10 @@ import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.file.FileGroupingService;
 import java.util.List;
 import javax.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -37,6 +42,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -52,15 +58,40 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping(value = "secured/file/group")
 public class FileGroupController implements ViewPath {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileGroupController.class);
+
     private final FileService fileService;
+    private final FileGroupService fileGroupService;
     private final FileGroupingService fileGroupingService;
     private final AppUserService appUserService;
 
     @Autowired
-    public FileGroupController(FileService fileService, FileGroupingService fileGroupingService, AppUserService appUserService) {
+    public FileGroupController(FileService fileService, FileGroupService fileGroupService, FileGroupingService fileGroupingService, AppUserService appUserService) {
         this.fileService = fileService;
+        this.fileGroupService = fileGroupService;
         this.fileGroupingService = fileGroupingService;
         this.appUserService = appUserService;
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "delete", method = RequestMethod.POST)
+    public ResponseEntity<?> deleteFile(
+            @RequestParam(value = "id") final Long id,
+            final AppUser appUser) {
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        FileGroup fileGroup = fileGroupService.getRepository().findByIdAndUserAccount(id, userAccount);
+        if (fileGroup == null) {
+            return ResponseEntity.notFound().build();
+        } else {
+            try {
+                fileGroupService.getRepository().delete(fileGroup);
+            } catch (Exception exception) {
+                LOGGER.error(exception.getMessage());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to delete file group.");
+            }
+
+            return ResponseEntity.ok(id);
+        }
     }
 
     @RequestMapping(value = "create", method = RequestMethod.POST)
@@ -78,7 +109,7 @@ public class FileGroupController implements ViewPath {
         }
 
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        if (fileGroupingService.existed(fileGroupForm, userAccount)) {
+        if (fileGroupService.getRepository().existsByNameAndUserAccount(fileGroupForm.getGroupName(), userAccount)) {
             bindingResult.rejectValue("groupName", "fileGroupForm.groupName", "Name already existed.");
             redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.fileGroupForm", bindingResult);
             redirAttrs.addFlashAttribute("fileGroupForm", fileGroupForm);
