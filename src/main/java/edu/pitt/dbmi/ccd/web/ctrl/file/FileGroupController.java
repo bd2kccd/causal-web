@@ -19,15 +19,19 @@
 package edu.pitt.dbmi.ccd.web.ctrl.file;
 
 import edu.pitt.dbmi.ccd.db.entity.File;
+import edu.pitt.dbmi.ccd.db.entity.FileVariableType;
+import edu.pitt.dbmi.ccd.db.entity.TetradDataFile;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.service.FileFormatService;
 import edu.pitt.dbmi.ccd.db.service.FileGroupService;
 import edu.pitt.dbmi.ccd.db.service.FileService;
+import edu.pitt.dbmi.ccd.db.service.FileVariableTypeService;
+import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.file.FileGroupForm;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.file.FileGroupingService;
+import java.util.LinkedList;
 import java.util.List;
 import javax.validation.Valid;
 import org.slf4j.Logger;
@@ -61,13 +65,17 @@ public class FileGroupController implements ViewPath {
 
     private final FileService fileService;
     private final FileGroupService fileGroupService;
+    private final TetradDataFileService tetradDataFileService;
+    private final FileVariableTypeService fileVariableTypeService;
     private final FileGroupingService fileGroupingService;
     private final AppUserService appUserService;
 
     @Autowired
-    public FileGroupController(FileService fileService, FileGroupService fileGroupService, FileGroupingService fileGroupingService, AppUserService appUserService) {
+    public FileGroupController(FileService fileService, FileGroupService fileGroupService, TetradDataFileService tetradDataFileService, FileVariableTypeService fileVariableTypeService, FileGroupingService fileGroupingService, AppUserService appUserService) {
         this.fileService = fileService;
         this.fileGroupService = fileGroupService;
+        this.tetradDataFileService = tetradDataFileService;
+        this.fileVariableTypeService = fileVariableTypeService;
         this.fileGroupingService = fileGroupingService;
         this.appUserService = appUserService;
     }
@@ -123,12 +131,41 @@ public class FileGroupController implements ViewPath {
     @RequestMapping(value = "new", method = RequestMethod.GET)
     public String showFileGroup(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        List<File> files = fileService.getRepository().findByUserAccountAndFileFormatName(userAccount, FileFormatService.TETRAD_TABULAR);
 
+        List<File> continuousData = new LinkedList<>();
+        List<File> discreteData = new LinkedList<>();
+        List<File> mixedData = new LinkedList<>();
+        List<TetradDataFile> tetradDataFiles = tetradDataFileService.getRepository().findByUserAccount(userAccount);
+        tetradDataFiles.forEach(tetradDataFile -> {
+            FileVariableType variableType = tetradDataFile.getFileVariableType();
+            switch (variableType.getName()) {
+                case FileVariableTypeService.CONTINUOUS_NAME:
+                    continuousData.add(tetradDataFile.getFile());
+                    break;
+                case FileVariableTypeService.DISCRETE_NAME:
+                    discreteData.add(tetradDataFile.getFile());
+                    break;
+                case FileVariableTypeService.MIXED_NAME:
+                    mixedData.add(tetradDataFile.getFile());
+                    break;
+            }
+        });
+
+        List<FileVariableType> fileVariableTypes = fileVariableTypeService.findAll();
         if (!model.containsAttribute("fileGroupForm")) {
-            model.addAttribute("fileGroupForm", new FileGroupForm());
+            FileGroupForm fileGroupForm = new FileGroupForm();
+
+            if (!fileVariableTypes.isEmpty()) {
+                fileGroupForm.setFileVariableTypeId(fileVariableTypes.get(0).getId());
+            }
+
+            model.addAttribute("fileGroupForm", fileGroupForm);
         }
-        model.addAttribute("files", files);
+
+        model.addAttribute("fileVariableTypes", fileVariableTypes);
+        model.addAttribute("continuousData", continuousData);
+        model.addAttribute("discreteData", discreteData);
+        model.addAttribute("mixedData", mixedData);
 
         return FILEGROUP_VIEW;
     }

@@ -19,6 +19,7 @@
 package edu.pitt.dbmi.ccd.web.domain.file;
 
 import java.util.List;
+import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -33,6 +34,9 @@ public class FileGroupForm {
     @NotBlank(message = "Please enter a name for the file group.")
     private String groupName;
 
+    @NotNull
+    private Long fileVariableTypeId;
+
     @NotEmpty(message = "Please select at least one file.")
     private List<Long> fileIds;
 
@@ -45,6 +49,14 @@ public class FileGroupForm {
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
+    }
+
+    public Long getFileVariableTypeId() {
+        return fileVariableTypeId;
+    }
+
+    public void setFileVariableTypeId(Long fileVariableTypeId) {
+        this.fileVariableTypeId = fileVariableTypeId;
     }
 
     public List<Long> getFileIds() {

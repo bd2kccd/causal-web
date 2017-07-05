@@ -37,12 +37,43 @@
                                     <input id="groupName" name="groupName" class="form-control" type="text" required="required" autofocus="autofocus" value="" th:value="*{groupName}" th:field="*{groupName}" />
                                     <span class="help-block" th:if="${#fields.hasErrors('groupName')}" th:errors="*{groupName}">Please enter a name for the file group.</span>
                                 </div>
-                                <div class="well">
+                                <div class="form-group" th:class="${#fields.hasErrors('fileVariableTypeId')} ? 'form-group has-error' : 'form-group'">
+                                    <label>Variable Type:</label>
+                                    <label class="radio-inline" th:each="opt : ${fileVariableTypes}">
+                                        <input type="radio" th:field="*{fileVariableTypeId}" th:value="${opt.id}" /> <span th:text="${opt.displayName}">tetrad variable</span>
+                                    </label>
+                                    <span class="help-block" th:if="${#fields.hasErrors('fileVariableTypeId')}" th:errors="*{fileVariableTypeId}">Variable type is required.</span>
+                                </div>
+                                <div id="continuousData" class="well dataOpts">
                                     <div class="form-group" th:class="${#fields.hasErrors('fileIds')} ? 'form-group has-error' : 'form-group'">
                                         <label for="fileIds">Click on file from the left to move to the right for grouping.</label>
-                                        <select multiple="multiple" id="fileIds" class="form-control" th:size="${#lists.size(files)}" th:field="*{fileIds}" required="required">
+                                        <select multiple="multiple" id="continuousFileIds" class="form-control" th:size="${#lists.size(continuousData)}" th:field="*{fileIds}" required="required">
                                             <option value=""
-                                                    th:each="file : ${files}"
+                                                    th:each="file : ${continuousData}"
+                                                    th:value="${file.id}"
+                                                    th:text="${file.title}">sim_data_100vars_100_cases.txt</option>
+                                        </select>
+                                        <span class="help-block" th:if="${#fields.hasErrors('fileIds')}" th:errors="*{fileIds}">Please select at least one file.</span>
+                                    </div>
+                                </div>
+                                <div id="discreteData" class="well dataOpts">
+                                    <div class="form-group" th:class="${#fields.hasErrors('fileIds')} ? 'form-group has-error' : 'form-group'">
+                                        <label for="fileIds">Click on file from the left to move to the right for grouping.</label>
+                                        <select multiple="multiple" id="discreteFileIds" class="form-control" th:size="${#lists.size(discreteData)}" th:field="*{fileIds}" required="required">
+                                            <option value=""
+                                                    th:each="file : ${discreteData}"
+                                                    th:value="${file.id}"
+                                                    th:text="${file.title}">sim_data_100vars_100_cases.txt</option>
+                                        </select>
+                                        <span class="help-block" th:if="${#fields.hasErrors('fileIds')}" th:errors="*{fileIds}">Please select at least one file.</span>
+                                    </div>
+                                </div>
+                                <div id="mixedData" class="well dataOpts">
+                                    <div class="form-group" th:class="${#fields.hasErrors('fileIds')} ? 'form-group has-error' : 'form-group'">
+                                        <label for="fileIds">Click on file from the left to move to the right for grouping.</label>
+                                        <select multiple="multiple" id="mixedFileIds" class="form-control" th:size="${#lists.size(mixedData)}" th:field="*{fileIds}" required="required">
+                                            <option value=""
+                                                    th:each="file : ${mixedData}"
                                                     th:value="${file.id}"
                                                     th:text="${file.title}">sim_data_100vars_100_cases.txt</option>
                                         </select>
@@ -71,7 +102,31 @@
         <script src="../../static/vendors/bootstrap-duallistbox/jquery.bootstrap-duallistbox.min.js" th:src="@{/vendors/bootstrap-duallistbox/jquery.bootstrap-duallistbox.min.js}"></script>
         <script src="../../static/js/file/fileGroupValid.min.js" th:src="@{/js/file/fileGroupValid.min.js}"></script>
         <script>
-            $('select[id="fileIds"]').bootstrapDualListbox();
+            $('select[id="continuousFileIds"]').bootstrapDualListbox();
+            $('select[id="discreteFileIds"]').bootstrapDualListbox();
+            $('select[id="mixedFileIds"]').bootstrapDualListbox();
+
+            var dataTypes = [
+                $('#continuousData'),
+                $('#continuousData'),
+                $('#discreteData'),
+                $('#mixedData')
+            ];
+            $('input:radio[name="fileVariableTypeId"]').click(function () {
+                var opt = dataTypes[$(this).val()];
+                $(".dataOpts").not(opt).hide();
+                $(".dataOpts").find('option').prop('selected', false);
+
+                $('select[id="continuousFileIds"]').bootstrapDualListbox('refresh', true);
+                $('select[id="discreteFileIds"]').bootstrapDualListbox('refresh', true);
+                $('select[id="mixedFileIds"]').bootstrapDualListbox('refresh', true);
+
+                opt.show();
+            });
+
+            $(document).ready(function () {
+                $('input:radio[name="fileVariableTypeId"]:checked').click();
+            });
         </script>
     </body>
 </html>

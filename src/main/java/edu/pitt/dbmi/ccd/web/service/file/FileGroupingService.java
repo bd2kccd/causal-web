@@ -21,13 +21,18 @@ package edu.pitt.dbmi.ccd.web.service.file;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileGroup;
 import edu.pitt.dbmi.ccd.db.entity.FileType;
+import edu.pitt.dbmi.ccd.db.entity.FileVariableType;
+import edu.pitt.dbmi.ccd.db.entity.TetradDataFile;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileGroupService;
 import edu.pitt.dbmi.ccd.db.service.FileService;
 import edu.pitt.dbmi.ccd.db.service.FileTypeService;
+import edu.pitt.dbmi.ccd.db.service.FileVariableTypeService;
+import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
 import edu.pitt.dbmi.ccd.web.domain.file.FileGroupForm;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,12 +48,16 @@ public class FileGroupingService {
     private final FileGroupService fileGroupService;
     private final FileService fileService;
     private final FileTypeService fileTypeService;
+    private final FileVariableTypeService fileVariableTypeService;
+    private final TetradDataFileService tetradDataFileService;
 
     @Autowired
-    public FileGroupingService(FileGroupService fileGroupService, FileService fileService, FileTypeService fileTypeService) {
+    public FileGroupingService(FileGroupService fileGroupService, FileService fileService, FileTypeService fileTypeService, FileVariableTypeService fileVariableTypeService, TetradDataFileService tetradDataFileService) {
         this.fileGroupService = fileGroupService;
         this.fileService = fileService;
         this.fileTypeService = fileTypeService;
+        this.fileVariableTypeService = fileVariableTypeService;
+        this.tetradDataFileService = tetradDataFileService;
     }
 
     public List<FileGroup> getFileGroups(UserAccount userAccount) {
@@ -57,13 +66,21 @@ public class FileGroupingService {
 
     public void addFileGroup(FileGroupForm fileGroupForm, UserAccount userAccount) {
         String name = fileGroupForm.getGroupName();
+        Long fileVariableTypeId = fileGroupForm.getFileVariableTypeId();
         List<Long> fileIds = fileGroupForm.getFileIds();
 
-        List<File> files = fileService.getRepository().findByIdsAndUserAccount(fileIds, userAccount);
-        if (!files.isEmpty()) {
-            FileType fileType = fileTypeService.getRepository().findByName(FileTypeService.DATA);
+        FileVariableType fileVariableType = fileVariableTypeService.getRepository().findOne(fileVariableTypeId);
+        if (fileVariableType != null) {
+            List<TetradDataFile> dataFiles = tetradDataFileService.getRepository()
+                    .findByFileVariableTypeAndAndFileIdsAndUserAccount(fileVariableType, fileIds, userAccount);
+            if (!dataFiles.isEmpty()) {
+                FileType fileType = fileTypeService.getRepository().findByName(FileTypeService.DATA);
+                List<File> files = dataFiles.stream()
+                        .map(TetradDataFile::getFile)
+                        .collect(Collectors.toList());
 
-            fileGroupService.getRepository().save(new FileGroup(name, new Date(System.currentTimeMillis()), fileType, userAccount, files));
+                fileGroupService.getRepository().save(new FileGroup(name, new Date(System.currentTimeMillis()), fileType, userAccount, files));
+            }
         }
     }
 
