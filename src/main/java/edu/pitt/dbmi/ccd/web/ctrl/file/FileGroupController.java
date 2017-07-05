@@ -19,7 +19,6 @@
 package edu.pitt.dbmi.ccd.web.ctrl.file;
 
 import edu.pitt.dbmi.ccd.db.entity.File;
-import edu.pitt.dbmi.ccd.db.entity.FileGroup;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileFormatService;
 import edu.pitt.dbmi.ccd.db.service.FileGroupService;
@@ -79,22 +78,21 @@ public class FileGroupController implements ViewPath {
             @RequestParam(value = "id") final Long id,
             final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        FileGroup fileGroup = fileGroupService.getRepository().findByIdAndUserAccount(id, userAccount);
-        if (fileGroup == null) {
-            return ResponseEntity.notFound().build();
-        } else {
+        if (fileGroupService.getRepository().existsByIdAndUserAccount(id, userAccount)) {
             try {
-                fileGroupService.getRepository().delete(fileGroup);
+                fileGroupService.getRepository().deleteByIdAndUserAccount(id, userAccount);
             } catch (Exception exception) {
                 LOGGER.error(exception.getMessage());
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to delete file group.");
             }
 
             return ResponseEntity.ok(id);
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 
-    @RequestMapping(value = "create", method = RequestMethod.POST)
+    @RequestMapping(value = "new", method = RequestMethod.POST)
     public String createFileGroup(
             @Valid @ModelAttribute("fileGroupForm") final FileGroupForm fileGroupForm,
             final BindingResult bindingResult,
@@ -122,7 +120,7 @@ public class FileGroupController implements ViewPath {
         return REDIRECT_FILEGROUP_LIST;
     }
 
-    @RequestMapping(value = "create", method = RequestMethod.GET)
+    @RequestMapping(value = "new", method = RequestMethod.GET)
     public String showFileGroup(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
         List<File> files = fileService.getRepository().findByUserAccountAndFileFormatName(userAccount, FileFormatService.TETRAD_TABULAR);

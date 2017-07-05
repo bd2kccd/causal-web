@@ -25,7 +25,7 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h3 id="page_title" class="page-header">File</h3>
+                        <h3 id="page_title" class="page-header">New File Group</h3>
                     </div>
                 </div>
                 <div class="row">
@@ -34,7 +34,7 @@
                             <fieldset>
                                 <div class="form-group" th:class="${#fields.hasErrors('groupName')} ? 'form-group has-error' : 'form-group'">
                                     <label for="groupName">File Group Name:</label>
-                                    <input id="groupName" name="groupName" class="form-control" type="text" value="" th:value="*{groupName}" th:field="*{groupName}" required="required" />
+                                    <input id="groupName" name="groupName" class="form-control" type="text" required="required" autofocus="autofocus" value="" th:value="*{groupName}" th:field="*{groupName}" />
                                     <span class="help-block" th:if="${#fields.hasErrors('groupName')}" th:errors="*{groupName}">Please enter a name for the file group.</span>
                                 </div>
                                 <div class="well">
