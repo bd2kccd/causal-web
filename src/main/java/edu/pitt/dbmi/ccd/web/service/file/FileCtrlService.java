@@ -24,6 +24,7 @@ import edu.pitt.dbmi.ccd.db.service.FileFormatService;
 import edu.pitt.dbmi.ccd.db.service.FileService;
 import edu.pitt.dbmi.ccd.web.domain.file.FileCategory;
 import edu.pitt.dbmi.ccd.web.domain.file.FileCategoryPanel;
+import edu.pitt.dbmi.ccd.web.domain.file.FileListView;
 import edu.pitt.dbmi.ccd.web.service.fs.FileManagementService;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,6 +47,23 @@ public class FileCtrlService {
     public FileCtrlService(FileService fileService, FileManagementService fileManagementService) {
         this.fileService = fileService;
         this.fileManagementService = fileManagementService;
+    }
+
+    public FileListView getFileListView(String fileFormatName) {
+        switch (fileFormatName) {
+            case FileFormatService.TETRAD_TABULAR:
+                return new FileListView("CCD: Tetrad Tabular Data", "Tetrad Tabular Data Files", fileFormatName);
+            case FileFormatService.TETRAD_COVARIANCE:
+                return new FileListView("CCD: Tetrad Covariance", "Tetrad Covariance Files", fileFormatName);
+            case FileFormatService.TETRAD_VARIABLE:
+                return new FileListView("CCD: Tetrad Variable", "Tetrad Variable Files", fileFormatName);
+            case FileFormatService.TETRAD_KNOWLEDGE:
+                return new FileListView("CCD: Tetrad Knowledge", "Tetrad Knowledge Files", fileFormatName);
+            case FileFormatService.TDI_TABULAR:
+                return new FileListView("CCD: TDI Tabular Data", "TDI Tabular Data Files", fileFormatName);
+            default:
+                return new FileListView("CCD: Uncategorize File", "Uncategorized Files", fileFormatName);
+        }
     }
 
     public List<FileCategoryPanel> getFileCategoryPanels(UserAccount userAccount) {

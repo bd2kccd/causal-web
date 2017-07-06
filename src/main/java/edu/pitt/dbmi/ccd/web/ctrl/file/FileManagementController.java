@@ -232,7 +232,7 @@ public class FileManagementController implements ViewPath {
             throw new ResourceNotFoundException();
         }
 
-        File file = fileService.findByIdAndUserAccount(id, userAccount);
+        File file = fileService.getRepository().findByIdAndUserAccount(id, userAccount);
         if (file == null) {
             throw new ResourceNotFoundException();
         } else {

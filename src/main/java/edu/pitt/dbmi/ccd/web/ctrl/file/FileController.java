@@ -18,7 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.file;
 
-import edu.pitt.dbmi.ccd.db.entity.File;
+import edu.pitt.dbmi.ccd.db.entity.FileFormat;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileFormatService;
 import edu.pitt.dbmi.ccd.db.service.FileService;
@@ -28,8 +28,6 @@ import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.file.FileCtrlService;
 import edu.pitt.dbmi.ccd.web.service.fs.FileManagementService;
-import java.util.LinkedList;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -56,19 +54,24 @@ public class FileController implements ViewPath {
     private final FileService fileService;
     private final FileManagementService fileManagementService;
     private final FileCtrlService fileCtrlService;
+    private final FileFormatService fileFormatService;
     private final AppUserService appUserService;
 
     @Autowired
-    public FileController(FileService fileService, FileManagementService fileManagementService, FileCtrlService fileCtrlService, AppUserService appUserService) {
+    public FileController(FileService fileService, FileManagementService fileManagementService, FileCtrlService fileCtrlService, FileFormatService fileFormatService, AppUserService appUserService) {
         this.fileService = fileService;
         this.fileManagementService = fileManagementService;
         this.fileCtrlService = fileCtrlService;
+        this.fileFormatService = fileFormatService;
         this.appUserService = appUserService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
     public String categorizeFile(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        if (userAccount == null) {
+            throw new ResourceNotFoundException();
+        }
 
         model.addAttribute("fileCategoryPanels", fileCtrlService.getFileCategoryPanels(userAccount));
 
@@ -76,79 +79,32 @@ public class FileController implements ViewPath {
     }
 
     @ResponseBody
-    @RequestMapping(value = "list/{fileType}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> listFiles(final @PathVariable String fileType, final AppUser appUser) {
+    @RequestMapping(value = "list/{fileFormatName}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> listFiles(final @PathVariable String fileFormatName, final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
         if (userAccount == null) {
             return ResponseEntity.notFound().build();
         }
 
-        List<File> files = new LinkedList<>();
-        switch (fileType) {
-            case FileFormatService.TETRAD_TABULAR:
-                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TETRAD_TABULAR, userAccount));
-                break;
-            case FileFormatService.TETRAD_COVARIANCE:
-                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TETRAD_COVARIANCE, userAccount));
-                break;
-            case FileFormatService.TETRAD_VARIABLE:
-                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TETRAD_VARIABLE, userAccount));
-                break;
-            case FileFormatService.TETRAD_KNOWLEDGE:
-                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TETRAD_KNOWLEDGE, userAccount));
-                break;
-            case FileFormatService.TDI_TABULAR:
-                files.addAll(fileService.findByUserAccountAndFileFormatName(FileFormatService.TDI_TABULAR, userAccount));
-                break;
-            case "uncategorized":
-                files.addAll(fileService.findByUserAccountAndFileFormatName(null, userAccount));
-                break;
-            default:
-                return ResponseEntity.notFound().build();
-        }
+        if ("uncategorized".equals(fileFormatName)) {
+            return ResponseEntity.ok(fileService.getRepository().findByUserAccountAndFileFormatIsNull(userAccount));
+        } else {
+            FileFormat fileFormat = fileFormatService.getRepository().findByName(fileFormatName);
 
-        return ResponseEntity.ok(files);
+            return (fileFormat == null)
+                    ? ResponseEntity.notFound().build()
+                    : ResponseEntity.ok(fileService.getRepository().findByUserAccountAndFileFormat(userAccount, fileFormat));
+        }
     }
 
-    @RequestMapping(value = "{fileType}", method = RequestMethod.GET)
-    public String showFiles(@PathVariable String fileType, final AppUser appUser, final Model model) {
-        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        fileManagementService.syncDatabaseWithDataDirectory(userAccount);
-
-        String pageTitle;
-        String title;
-        switch (fileType) {
-            case FileFormatService.TETRAD_TABULAR:
-                pageTitle = "CCD: Tetrad Tabular Data";
-                title = "Tetrad Tabular Data Files";
-                break;
-            case FileFormatService.TETRAD_COVARIANCE:
-                pageTitle = "CCD: Tetrad Covariance";
-                title = "Tetrad Covariance Files";
-                break;
-            case FileFormatService.TETRAD_VARIABLE:
-                pageTitle = "CCD: Tetrad Variable";
-                title = "Tetrad Variable Files";
-                break;
-            case FileFormatService.TETRAD_KNOWLEDGE:
-                pageTitle = "CCD: Tetrad Knowledge";
-                title = "Tetrad Knowledge Files";
-                break;
-            case FileFormatService.TDI_TABULAR:
-                pageTitle = "CCD: TDI Tabular Data";
-                title = "TDI Tabular Data Files";
-                break;
-            case "uncategorized":
-                pageTitle = "CCD: Uncategorize File";
-                title = "Uncategorized Files";
-                break;
-            default:
-                throw new ResourceNotFoundException();
+    @RequestMapping(value = "{fileFormatName}", method = RequestMethod.GET)
+    public String showFiles(@PathVariable String fileFormatName, final Model model) {
+        FileFormat fileFormat = fileFormatService.getRepository().findByName(fileFormatName);
+        if (fileFormat == null) {
+            throw new ResourceNotFoundException();
         }
 
-        model.addAttribute("pageTitle", pageTitle);
-        model.addAttribute("title", title);
-        model.addAttribute("fileType", fileType);
+        model.addAttribute("fileListView", fileCtrlService.getFileListView(fileFormatName));
 
         return FILE_LIST_VIEW;
     }

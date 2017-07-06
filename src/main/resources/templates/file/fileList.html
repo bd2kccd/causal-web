@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta http-equiv="x-ua-compatible" content="ie=edge" />
-        <title th:text="${pageTitle}">Causal Web: File List</title>
+        <title th:text="${fileListView.pageTitle}">Causal Web: File List</title>
         <meta name="description" content="causal" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="apple-touch-icon" href="../../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
@@ -25,7 +25,7 @@
         <script src="../../static/vendors/datatables/Responsive-2.1.1/js/responsive.bootstrap.min.js" th:src="@{https://cdn.datatables.net/responsive/2.1.1/js/responsive.bootstrap.min.js}"></script>        
         <script src="../../static/vendors/datatables/plugins/file-size.min.js" th:src="@{/vendors/datatables/plugins/file-size.min.js}"></script>
         <script th:inline="javascript">
-            var listUrl = /*[[@{'/secured/file/list/' + ${fileType}}]]*/ '';
+            var listUrl = /*[[@{'/secured/file/list/' + ${fileListView.fileFormatName}}]]*/ '';
             var deleteUrl = /*[[@{/secured/file/mgmt/delete}]]*/ '';
             var categoryUrl = /*[[@{/secured/file/mgmt/categorize(id='')}]]*/ '';
         </script>
@@ -36,7 +36,7 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h3 class="page-header" th:text="${title}">Title</h3>
+                        <h3 class="page-header" th:text="${fileListView.title}">Title</h3>
                     </div>
                 </div>
                 <div class="row">
