@@ -19,6 +19,7 @@
 package edu.pitt.dbmi.ccd.web.ctrl.file;
 
 import edu.pitt.dbmi.ccd.db.entity.File;
+import edu.pitt.dbmi.ccd.db.entity.FileGroup;
 import edu.pitt.dbmi.ccd.db.entity.FileVariableType;
 import edu.pitt.dbmi.ccd.db.entity.TetradDataFile;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
@@ -29,10 +30,12 @@ import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.file.FileGroupForm;
+import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.file.FileGroupingService;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,6 +89,10 @@ public class FileGroupController implements ViewPath {
             @RequestParam(value = "id") final Long id,
             final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        if (userAccount == null) {
+            return ResponseEntity.notFound().build();
+        }
+
         if (fileGroupService.getRepository().existsByIdAndUserAccount(id, userAccount)) {
             try {
                 fileGroupService.getRepository().deleteByIdAndUserAccount(id, userAccount);
@@ -98,6 +105,69 @@ public class FileGroupController implements ViewPath {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @RequestMapping(value = "update", method = RequestMethod.POST)
+    public String saveUpdatedFileGroup(
+            @Valid @ModelAttribute("fileGroupForm") final FileGroupForm fileGroupForm,
+            final BindingResult bindingResult,
+            @RequestParam(value = "id") final Long id,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model,
+            final RedirectAttributes redirAttrs) {
+        if (bindingResult.hasErrors()) {
+            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.fileGroupForm", bindingResult);
+            redirAttrs.addFlashAttribute("fileGroupForm", fileGroupForm);
+
+            return REDIRECT_FILEGROUP_VIEW;
+        }
+
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        if (userAccount == null) {
+            throw new ResourceNotFoundException();
+        }
+
+        FileGroup fileGroup = fileGroupService.getRepository().findByIdAndUserAccount(id, userAccount);
+        if (fileGroup == null) {
+            throw new ResourceNotFoundException();
+        }
+
+        fileGroupingService.updateFileGroup(fileGroupForm, fileGroup, userAccount);
+
+        return REDIRECT_FILEGROUP_LIST;
+    }
+
+    @RequestMapping(value = "update", method = RequestMethod.GET)
+    public String updateFileGroup(
+            @RequestParam(value = "id") final Long id,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        if (userAccount == null) {
+            throw new ResourceNotFoundException();
+        }
+
+        FileGroup fileGroup = fileGroupService.getRepository().findByIdAndUserAccount(id, userAccount);
+        if (fileGroup == null) {
+            throw new ResourceNotFoundException();
+        }
+
+        List<File> files = fileGroup.getFiles();
+        List<Long> fileIds = files.stream().map(File::getId).collect(Collectors.toList());
+
+        TetradDataFile tetradDataFile = tetradDataFileService.getRepository().findByFile(files.get(0));
+
+        FileGroupForm fileGroupForm = new FileGroupForm();
+        fileGroupForm.setGroupName(fileGroup.getName());
+        fileGroupForm.setFileVariableTypeId(tetradDataFile.getFileVariableType().getId());
+        fileGroupForm.setFileIds(fileIds);
+
+        model.addAttribute("pageTitle", "Update File Group");
+        model.addAttribute("fileGroupForm", fileGroupForm);
+
+        setupFileGroupView(userAccount, model);
+
+        return FILEGROUP_VIEW;
     }
 
     @RequestMapping(value = "new", method = RequestMethod.POST)
@@ -115,6 +185,10 @@ public class FileGroupController implements ViewPath {
         }
 
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        if (userAccount == null) {
+            throw new ResourceNotFoundException();
+        }
+
         if (fileGroupService.getRepository().existsByNameAndUserAccount(fileGroupForm.getGroupName(), userAccount)) {
             bindingResult.rejectValue("groupName", "fileGroupForm.groupName", "Name already existed.");
             redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.fileGroupForm", bindingResult);
@@ -131,7 +205,35 @@ public class FileGroupController implements ViewPath {
     @RequestMapping(value = "new", method = RequestMethod.GET)
     public String showFileGroup(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        if (userAccount == null) {
+            throw new ResourceNotFoundException();
+        }
 
+        setupFileGroupView(userAccount, model);
+
+        model.addAttribute("pageTitle", "Update File Group");
+
+        return FILEGROUP_VIEW;
+    }
+
+    @RequestMapping(method = RequestMethod.GET)
+    public String showFileGroupList(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+        return FILEGROUP_LIST_VIEW;
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "list", method = RequestMethod.GET)
+    public ResponseEntity<?> listFileGrops(
+            final AppUser appUser) {
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        if (userAccount == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(fileGroupingService.getFileGroups(userAccount));
+    }
+
+    private void setupFileGroupView(final UserAccount userAccount, final Model model) {
         List<File> continuousData = new LinkedList<>();
         List<File> discreteData = new LinkedList<>();
         List<File> mixedData = new LinkedList<>();
@@ -152,6 +254,12 @@ public class FileGroupController implements ViewPath {
         });
 
         List<FileVariableType> fileVariableTypes = fileVariableTypeService.findAll();
+
+        model.addAttribute("fileVariableTypes", fileVariableTypes);
+        model.addAttribute("continuousData", continuousData);
+        model.addAttribute("discreteData", discreteData);
+        model.addAttribute("mixedData", mixedData);
+
         if (!model.containsAttribute("fileGroupForm")) {
             FileGroupForm fileGroupForm = new FileGroupForm();
 
@@ -161,30 +269,6 @@ public class FileGroupController implements ViewPath {
 
             model.addAttribute("fileGroupForm", fileGroupForm);
         }
-
-        model.addAttribute("fileVariableTypes", fileVariableTypes);
-        model.addAttribute("continuousData", continuousData);
-        model.addAttribute("discreteData", discreteData);
-        model.addAttribute("mixedData", mixedData);
-
-        return FILEGROUP_VIEW;
-    }
-
-    @RequestMapping(method = RequestMethod.GET)
-    public String showFileGroupList(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        return FILEGROUP_LIST_VIEW;
-    }
-
-    @ResponseBody
-    @RequestMapping(value = "list", method = RequestMethod.GET)
-    public ResponseEntity<?> listFileGrops(
-            final AppUser appUser) {
-        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        if (userAccount == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(fileGroupingService.getFileGroups(userAccount));
     }
 
 }

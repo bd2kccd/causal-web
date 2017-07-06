@@ -64,6 +64,31 @@ public class FileGroupingService {
         return fileGroupService.getRepository().findByUserAccount(userAccount);
     }
 
+    public void updateFileGroup(FileGroupForm fileGroupForm, FileGroup fileGroup, UserAccount userAccount) {
+        String name = fileGroupForm.getGroupName();
+        Long fileVariableTypeId = fileGroupForm.getFileVariableTypeId();
+        List<Long> fileIds = fileGroupForm.getFileIds();
+
+        FileVariableType fileVariableType = fileVariableTypeService.getRepository().findOne(fileVariableTypeId);
+        if (fileVariableType != null) {
+            List<TetradDataFile> dataFiles = tetradDataFileService.getRepository()
+                    .findByFileVariableTypeAndAndFileIdsAndUserAccount(fileVariableType, fileIds, userAccount);
+            if (!dataFiles.isEmpty()) {
+                FileType fileType = fileTypeService.getRepository().findByName(FileTypeService.DATA);
+                List<File> files = dataFiles.stream()
+                        .map(TetradDataFile::getFile)
+                        .collect(Collectors.toList());
+
+                // update file group
+                fileGroup.setName(name);
+                fileGroup.setFileType(fileType);
+                fileGroup.setFiles(files);
+
+                fileGroupService.getRepository().save(fileGroup);
+            }
+        }
+    }
+
     public void addFileGroup(FileGroupForm fileGroupForm, UserAccount userAccount) {
         String name = fileGroupForm.getGroupName();
         Long fileVariableTypeId = fileGroupForm.getFileVariableTypeId();

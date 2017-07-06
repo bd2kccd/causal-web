@@ -16,11 +16,6 @@ $('input:radio[name="fileVariableTypeId"]').click(function () {
             opt = $('#mixedData');
     }
     $(".dataOpts").not(opt).hide();
-    $(".dataOpts").find('option').prop('selected', false);
-
-    $('select[id="continuousFileIds"]').bootstrapDualListbox('refresh', true);
-    $('select[id="discreteFileIds"]').bootstrapDualListbox('refresh', true);
-    $('select[id="mixedFileIds"]').bootstrapDualListbox('refresh', true);
 
     opt.show();
 });
