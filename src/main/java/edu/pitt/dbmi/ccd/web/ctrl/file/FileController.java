@@ -26,6 +26,7 @@ import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
+import edu.pitt.dbmi.ccd.web.service.file.FileCtrlService;
 import edu.pitt.dbmi.ccd.web.service.fs.FileManagementService;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,12 +55,14 @@ public class FileController implements ViewPath {
 
     private final FileService fileService;
     private final FileManagementService fileManagementService;
+    private final FileCtrlService fileCtrlService;
     private final AppUserService appUserService;
 
     @Autowired
-    public FileController(FileService fileService, FileManagementService fileManagementService, AppUserService appUserService) {
+    public FileController(FileService fileService, FileManagementService fileManagementService, FileCtrlService fileCtrlService, AppUserService appUserService) {
         this.fileService = fileService;
         this.fileManagementService = fileManagementService;
+        this.fileCtrlService = fileCtrlService;
         this.appUserService = appUserService;
     }
 
@@ -67,19 +70,7 @@ public class FileController implements ViewPath {
     public String categorizeFile(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
 
-        long uncatCount = fileService.getRepository().countByUserAccountAndFileFormatIsNull(userAccount);
-        long tetradTabCount = fileService.getRepository().countByFileFormatNameAndUserAccount(FileFormatService.TETRAD_TABULAR, userAccount);
-        long tetradCovCount = fileService.getRepository().countByFileFormatNameAndUserAccount(FileFormatService.TETRAD_COVARIANCE, userAccount);
-        long tetradVarCount = fileService.getRepository().countByFileFormatNameAndUserAccount(FileFormatService.TETRAD_VARIABLE, userAccount);
-        long tetradKnowCount = fileService.getRepository().countByFileFormatNameAndUserAccount(FileFormatService.TETRAD_KNOWLEDGE, userAccount);
-        long tdiTabCount = fileService.getRepository().countByFileFormatNameAndUserAccount(FileFormatService.TDI_TABULAR, userAccount);
-
-        model.addAttribute("uncatCount", uncatCount);
-        model.addAttribute("tetradTabCount", tetradTabCount);
-        model.addAttribute("tetradCovCount", tetradCovCount);
-        model.addAttribute("tetradVarCount", tetradVarCount);
-        model.addAttribute("tetradKnowCount", tetradKnowCount);
-        model.addAttribute("tdiTabCount", tdiTabCount);
+        model.addAttribute("fileCategoryPanels", fileCtrlService.getFileCategoryPanels(userAccount));
 
         return FILE_VIEW;
     }

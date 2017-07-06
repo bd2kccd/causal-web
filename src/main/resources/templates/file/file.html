@@ -27,167 +27,29 @@
                         <h3 class="page-header">Files</h3>
                     </div>
                 </div>
-                <div class="row">
+                <div class="row" th:each="panel : ${fileCategoryPanels}">
                     <div class="col-lg-12">
-                        <div class="panel panel-yellow">
+                        <div class="panel panel-default" th:class="'panel ' + ${panel.panelColor}">
                             <div class="panel-heading">
-                                <h3 class="panel-title">Uncategorized Files</h3>
+                                <h3 class="panel-title" th:text="${panel.title}">Uncategorized Files</h3>
                             </div>
                             <div class="panel-body">
-                                <p>Uploaded files that have not been categorized.</p>
+                                <p th:text="${panel.description}">Uploaded files that have not been categorized.</p>
                                 <div class="row">
-                                    <div class="col-lg-3 col-md-6">
-                                        <div class="panel panel-yellow">
+                                    <div class="col-lg-3 col-md-6" th:each="category : ${panel.fileCategories}">
+                                        <div class="panel panel-default" th:class="'panel ' + ${panel.panelColor}">
                                             <div class="panel-heading">
                                                 <div class="row">
                                                     <div class="col-xs-3">
                                                         <i class="fa fa-file-o fa-5x white"></i>
                                                     </div>
                                                     <div class="col-xs-9 text-right">
-                                                        <div class="huge" th:text="${uncatCount}"></div>
-                                                        <div>Uncategorized</div>
+                                                        <div class="huge" th:text="${category.count}"></div>
+                                                        <div th:text="${category.title}">Uncategorized</div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <a href="../file/fileList.html" th:href="@{/secured/file/uncategorized}">
-                                                <div class="panel-footer">
-                                                    <span class="pull-left">View List</span>
-                                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-                                                    <div class="clearfix"></div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="panel panel-primary">
-                            <div class="panel-heading">
-                                <h3 class="panel-title">Tetrad Files</h3>
-                            </div>
-                            <div class="panel-body">
-                                <p>Files that are associated with Tetrad algorithms.</p>
-                                <div class="row">
-                                    <div class="col-lg-3 col-md-6">
-                                        <div class="panel panel-primary">
-                                            <div class="panel-heading">
-                                                <div class="row">
-                                                    <div class="col-xs-3">
-                                                        <i class="fa fa-file-o fa-5x white"></i>
-                                                    </div>
-                                                    <div class="col-xs-9 text-right">
-                                                        <div class="huge" th:text="${tetradTabCount}"></div>
-                                                        <div>Tabular Data</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <a href="../file/fileList.html" th:href="@{/secured/file/tetrad-tabular}">
-                                                <div class="panel-footer">
-                                                    <span class="pull-left">View List</span>
-                                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-                                                    <div class="clearfix"></div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-3 col-md-6">
-                                        <div class="panel panel-primary">
-                                            <div class="panel-heading">
-                                                <div class="row">
-                                                    <div class="col-xs-3">
-                                                        <i class="fa fa-file-o fa-5x white"></i>
-                                                    </div>
-                                                    <div class="col-xs-9 text-right">
-                                                        <div class="huge" th:text="${tetradCovCount}"></div>
-                                                        <div>Covariance</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <a href="../file/fileList.html" th:href="@{/secured/file/tetrad-covariance}">
-                                                <div class="panel-footer">
-                                                    <span class="pull-left">View List</span>
-                                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-                                                    <div class="clearfix"></div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-3 col-md-6">
-                                        <div class="panel panel-primary">
-                                            <div class="panel-heading">
-                                                <div class="row">
-                                                    <div class="col-xs-3">
-                                                        <i class="fa fa-file-o fa-5x white"></i>
-                                                    </div>
-                                                    <div class="col-xs-9 text-right">
-                                                        <div class="huge" th:text="${tetradVarCount}"></div>
-                                                        <div>Variable</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <a href="../file/fileList.html" th:href="@{/secured/file/tetrad-variable}">
-                                                <div class="panel-footer">
-                                                    <span class="pull-left">View List</span>
-                                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-                                                    <div class="clearfix"></div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-3 col-md-6">
-                                        <div class="panel panel-primary">
-                                            <div class="panel-heading">
-                                                <div class="row">
-                                                    <div class="col-xs-3">
-                                                        <i class="fa fa-file-o fa-5x white"></i>
-                                                    </div>
-                                                    <div class="col-xs-9 text-right">
-                                                        <div class="huge" th:text="${tetradKnowCount}"></div>
-                                                        <div>Knowledge</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <a href="../file/fileList.html" th:href="@{/secured/file/tetrad-knowledge}">
-                                                <div class="panel-footer">
-                                                    <span class="pull-left">View List</span>
-                                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-                                                    <div class="clearfix"></div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="panel panel-green">
-                            <div class="panel-heading">
-                                <h3 class="panel-title">TDI Files</h3>
-                            </div>
-                            <div class="panel-body">
-                                <p>Files that are associated with TDI algorithms.</p>
-                                <div class="row">
-                                    <div class="col-lg-3 col-md-6">
-                                        <div class="panel panel-green">
-                                            <div class="panel-heading">
-                                                <div class="row">
-                                                    <div class="col-xs-3">
-                                                        <i class="fa fa-file-o fa-5x white"></i>
-                                                    </div>
-                                                    <div class="col-xs-9 text-right">
-                                                        <div class="huge" th:text="${tdiTabCount}"></div>
-                                                        <div>Tabular Data</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <a href="../file/fileList.html" th:href="@{/secured/file/tdi-tabular}">
+                                            <a href="../file/fileList.html" th:href="@{'/secured/file/' + ${category.uriPath}}">
                                                 <div class="panel-footer">
                                                     <span class="pull-left">View List</span>
                                                     <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>

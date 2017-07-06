@@ -25,6 +25,8 @@ import edu.pitt.dbmi.ccd.db.entity.UserLogin;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.account.UserInfoForm;
+import edu.pitt.dbmi.ccd.web.exception.InternalErrorException;
+import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,13 +52,16 @@ public class AppUserService {
     }
 
     public UserAccount retrieveUserAccount(AppUser appUser) {
-        UserAccount userAccount = null;
-
-        String username = appUser.getUsername();
+        UserAccount userAccount;
         try {
-            userAccount = userAccountService.getRepository().findByUsername(username);
+            userAccount = userAccountService.getRepository().findByUsername(appUser.getUsername());
         } catch (Exception exception) {
             LOGGER.error("Unable to retrieve user account.", exception);
+            throw new InternalErrorException();
+        }
+
+        if (userAccount == null) {
+            throw new ResourceNotFoundException();
         }
 
         return userAccount;
