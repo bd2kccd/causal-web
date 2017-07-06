@@ -30,7 +30,7 @@
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
-                        <form id="fileGroupForm" method="post" action="" role="form" th:object="${fileGroupForm}">
+                        <form id="fileGroupForm" method="post" role="form" action="" th:object="${fileGroupForm}">
                             <fieldset>
                                 <div class="form-group" th:class="${#fields.hasErrors('groupName')} ? 'form-group has-error' : 'form-group'">
                                     <label for="groupName">File Group Name:</label>
@@ -101,32 +101,6 @@
         <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
         <script src="../../static/vendors/bootstrap-duallistbox/jquery.bootstrap-duallistbox.min.js" th:src="@{/vendors/bootstrap-duallistbox/jquery.bootstrap-duallistbox.min.js}"></script>
         <script src="../../static/js/file/fileGroupValid.min.js" th:src="@{/js/file/fileGroupValid.min.js}"></script>
-        <script>
-            $('select[id="continuousFileIds"]').bootstrapDualListbox();
-            $('select[id="discreteFileIds"]').bootstrapDualListbox();
-            $('select[id="mixedFileIds"]').bootstrapDualListbox();
-
-            var dataTypes = [
-                $('#continuousData'),
-                $('#continuousData'),
-                $('#discreteData'),
-                $('#mixedData')
-            ];
-            $('input:radio[name="fileVariableTypeId"]').click(function () {
-                var opt = dataTypes[$(this).val()];
-                $(".dataOpts").not(opt).hide();
-                $(".dataOpts").find('option').prop('selected', false);
-
-                $('select[id="continuousFileIds"]').bootstrapDualListbox('refresh', true);
-                $('select[id="discreteFileIds"]').bootstrapDualListbox('refresh', true);
-                $('select[id="mixedFileIds"]').bootstrapDualListbox('refresh', true);
-
-                opt.show();
-            });
-
-            $(document).ready(function () {
-                $('input:radio[name="fileVariableTypeId"]:checked').click();
-            });
-        </script>
+        <script src="../../static/js/file/fileGroup.min.js" th:src="@{/js/file/fileGroup.min.js}"></script>
     </body>
 </html>

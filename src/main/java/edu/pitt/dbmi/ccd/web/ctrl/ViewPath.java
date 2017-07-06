@@ -53,7 +53,7 @@ public interface ViewPath {
     public static final String REDIRECT_FILEGROUP_LIST = "redirect:/secured/file/group";
 
     public static final String FILEGROUP_VIEW = "file/fileGroup";
-    public static final String REDIRECT_FILEGROUP_VIEW = "redirect:/secured/file/group/create";
+    public static final String REDIRECT_FILEGROUP_VIEW = "redirect:/secured/file/group/new";
 
     public static final String REDIRECT_UNCATEGORIZED_FILE = "redirect:/secured/file/uncategorized";
 
