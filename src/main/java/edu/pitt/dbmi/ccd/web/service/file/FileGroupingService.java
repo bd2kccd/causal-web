@@ -74,7 +74,7 @@ public class FileGroupingService {
             List<TetradDataFile> dataFiles = tetradDataFileService.getRepository()
                     .findByFileVariableTypeAndAndFileIdsAndUserAccount(fileVariableType, fileIds, userAccount);
             if (!dataFiles.isEmpty()) {
-                FileType fileType = fileTypeService.getRepository().findByName(FileTypeService.DATA);
+                FileType fileType = fileTypeService.findByName(FileTypeService.DATA);
                 List<File> files = dataFiles.stream()
                         .map(TetradDataFile::getFile)
                         .collect(Collectors.toList());
@@ -99,7 +99,7 @@ public class FileGroupingService {
             List<TetradDataFile> dataFiles = tetradDataFileService.getRepository()
                     .findByFileVariableTypeAndAndFileIdsAndUserAccount(fileVariableType, fileIds, userAccount);
             if (!dataFiles.isEmpty()) {
-                FileType fileType = fileTypeService.getRepository().findByName(FileTypeService.DATA);
+                FileType fileType = fileTypeService.findByName(FileTypeService.DATA);
                 List<File> files = dataFiles.stream()
                         .map(TetradDataFile::getFile)
                         .collect(Collectors.toList());

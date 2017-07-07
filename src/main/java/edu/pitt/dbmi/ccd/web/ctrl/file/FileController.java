@@ -27,7 +27,6 @@ import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.file.FileCtrlService;
-import edu.pitt.dbmi.ccd.web.service.fs.FileManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -52,15 +51,13 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 public class FileController implements ViewPath {
 
     private final FileService fileService;
-    private final FileManagementService fileManagementService;
     private final FileCtrlService fileCtrlService;
     private final FileFormatService fileFormatService;
     private final AppUserService appUserService;
 
     @Autowired
-    public FileController(FileService fileService, FileManagementService fileManagementService, FileCtrlService fileCtrlService, FileFormatService fileFormatService, AppUserService appUserService) {
+    public FileController(FileService fileService, FileCtrlService fileCtrlService, FileFormatService fileFormatService, AppUserService appUserService) {
         this.fileService = fileService;
-        this.fileManagementService = fileManagementService;
         this.fileCtrlService = fileCtrlService;
         this.fileFormatService = fileFormatService;
         this.appUserService = appUserService;
@@ -89,7 +86,7 @@ public class FileController implements ViewPath {
         if ("uncategorized".equals(fileFormatName)) {
             return ResponseEntity.ok(fileService.getRepository().findByUserAccountAndFileFormatIsNull(userAccount));
         } else {
-            FileFormat fileFormat = fileFormatService.getRepository().findByName(fileFormatName);
+            FileFormat fileFormat = fileFormatService.findByName(fileFormatName);
 
             return (fileFormat == null)
                     ? ResponseEntity.notFound().build()
@@ -99,7 +96,7 @@ public class FileController implements ViewPath {
 
     @RequestMapping(value = "{fileFormatName}", method = RequestMethod.GET)
     public String showFiles(@PathVariable String fileFormatName, final Model model) {
-        FileFormat fileFormat = fileFormatService.getRepository().findByName(fileFormatName);
+        FileFormat fileFormat = fileFormatService.findByName(fileFormatName);
         if (fileFormat == null) {
             throw new ResourceNotFoundException();
         }

@@ -259,7 +259,7 @@ public class FileManagementController implements ViewPath {
 
         FileFormat fileFormat = file.getFileFormat();
         if (fileFormat == null) {
-            fileFormat = fileFormatService.getRepository().findByName(FileFormatService.TETRAD_TABULAR);
+            fileFormat = fileFormatService.findByName(FileFormatService.TETRAD_TABULAR);
         }
 
         switch (fileFormat.getName()) {
