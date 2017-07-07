@@ -35,12 +35,18 @@ public class FileGroupForm {
     private String groupName;
 
     @NotNull
-    private Long fileVariableTypeId;
+    private Long varTypeId;
 
     @NotEmpty(message = "Please select at least one file.")
     private List<Long> fileIds;
 
     public FileGroupForm() {
+    }
+
+    public FileGroupForm(String groupName, Long varTypeId, List<Long> fileIds) {
+        this.groupName = groupName;
+        this.varTypeId = varTypeId;
+        this.fileIds = fileIds;
     }
 
     public String getGroupName() {
@@ -51,12 +57,12 @@ public class FileGroupForm {
         this.groupName = groupName;
     }
 
-    public Long getFileVariableTypeId() {
-        return fileVariableTypeId;
+    public Long getVarTypeId() {
+        return varTypeId;
     }
 
-    public void setFileVariableTypeId(Long fileVariableTypeId) {
-        this.fileVariableTypeId = fileVariableTypeId;
+    public void setVarTypeId(Long varTypeId) {
+        this.varTypeId = varTypeId;
     }
 
     public List<Long> getFileIds() {

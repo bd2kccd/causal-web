@@ -31,9 +31,9 @@ import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.domain.file.FileGroupForm;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
-import edu.pitt.dbmi.ccd.web.service.file.FileGroupingService;
-import java.util.LinkedList;
+import edu.pitt.dbmi.ccd.web.service.file.FileGroupCtrlService;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
 import org.slf4j.Logger;
@@ -68,15 +68,15 @@ public class FileGroupController implements ViewPath {
     private final FileGroupService fileGroupService;
     private final TetradDataFileService tetradDataFileService;
     private final FileVariableTypeService fileVariableTypeService;
-    private final FileGroupingService fileGroupingService;
+    private final FileGroupCtrlService fileGroupCtrlService;
     private final AppUserService appUserService;
 
     @Autowired
-    public FileGroupController(FileGroupService fileGroupService, TetradDataFileService tetradDataFileService, FileVariableTypeService fileVariableTypeService, FileGroupingService fileGroupingService, AppUserService appUserService) {
+    public FileGroupController(FileGroupService fileGroupService, TetradDataFileService tetradDataFileService, FileVariableTypeService fileVariableTypeService, FileGroupCtrlService fileGroupCtrlService, AppUserService appUserService) {
         this.fileGroupService = fileGroupService;
         this.tetradDataFileService = tetradDataFileService;
         this.fileVariableTypeService = fileVariableTypeService;
-        this.fileGroupingService = fileGroupingService;
+        this.fileGroupCtrlService = fileGroupCtrlService;
         this.appUserService = appUserService;
     }
 
@@ -124,12 +124,36 @@ public class FileGroupController implements ViewPath {
             throw new ResourceNotFoundException();
         }
 
+        FileVariableType varType = fileVariableTypeService.getRepository().findOne(fileGroupForm.getVarTypeId());
+        if (varType == null) {
+            throw new ResourceNotFoundException();
+        }
+
+        List<TetradDataFile> dataFiles = tetradDataFileService.getRepository()
+                .findByFileVariableTypeAndAndFileIdsAndUserAccount(varType, fileGroupForm.getFileIds(), userAccount);
+        if (dataFiles.isEmpty()) {
+            String errMsg = String.format("Please select file(s) for '%s' variable type.", varType.getDisplayName());
+            bindingResult.rejectValue("fileIds", "fileGroupForm.fileIds", errMsg);
+            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.fileGroupForm", bindingResult);
+            redirAttrs.addFlashAttribute("fileGroupForm", fileGroupForm);
+
+            return REDIRECT_UPDATE_FILEGROUP_VIEW + id;
+        }
+
+        if (fileGroupService.getRepository().existsByNameAndUserAccountAndIdNot(fileGroupForm.getGroupName(), userAccount, id)) {
+            bindingResult.rejectValue("groupName", "fileGroupForm.groupName", "Name already existed.");
+            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.fileGroupForm", bindingResult);
+            redirAttrs.addFlashAttribute("fileGroupForm", fileGroupForm);
+
+            return REDIRECT_UPDATE_FILEGROUP_VIEW + id;
+        }
+
         FileGroup fileGroup = fileGroupService.getRepository().findByIdAndUserAccount(id, userAccount);
         if (fileGroup == null) {
             throw new ResourceNotFoundException();
         }
 
-        fileGroupingService.updateFileGroup(fileGroupForm, fileGroup, userAccount);
+        fileGroupCtrlService.updateFileGroup(fileGroupForm.getGroupName(), dataFiles, fileGroup);
 
         return REDIRECT_FILEGROUP_LIST;
     }
@@ -144,6 +168,14 @@ public class FileGroupController implements ViewPath {
             throw new ResourceNotFoundException();
         }
 
+        List<FileVariableType> varTypes = fileVariableTypeService.findAll();
+        Map<Long, List<File>> dataGroups = fileGroupCtrlService.getTetradGroupedData(varTypes, userAccount);
+
+        model.addAttribute("pageTitle", "Update File Group");
+        model.addAttribute("varTypes", varTypes);
+        model.addAttribute("dataGroups", dataGroups);
+
+        // add form if not exists
         if (!model.containsAttribute("fileGroupForm")) {
             FileGroup fileGroup = fileGroupService.getRepository().findByIdAndUserAccount(id, userAccount);
             if (fileGroup == null) {
@@ -157,14 +189,10 @@ public class FileGroupController implements ViewPath {
 
             FileGroupForm fileGroupForm = new FileGroupForm();
             fileGroupForm.setGroupName(fileGroup.getName());
-            fileGroupForm.setFileVariableTypeId(tetradDataFile.getFileVariableType().getId());
+            fileGroupForm.setVarTypeId(tetradDataFile.getFileVariableType().getId());
             fileGroupForm.setFileIds(fileIds);
             model.addAttribute("fileGroupForm", fileGroupForm);
         }
-
-        model.addAttribute("pageTitle", "Update File Group");
-
-        setupFileGroupView(userAccount, model);
 
         return FILEGROUP_VIEW;
     }
@@ -194,9 +222,25 @@ public class FileGroupController implements ViewPath {
             redirAttrs.addFlashAttribute("fileGroupForm", fileGroupForm);
 
             return REDIRECT_FILEGROUP_VIEW;
-        } else {
-            fileGroupingService.addFileGroup(fileGroupForm, userAccount);
         }
+
+        FileVariableType varType = fileVariableTypeService.getRepository().findOne(fileGroupForm.getVarTypeId());
+        if (varType == null) {
+            throw new ResourceNotFoundException();
+        }
+
+        List<TetradDataFile> dataFiles = tetradDataFileService.getRepository()
+                .findByFileVariableTypeAndAndFileIdsAndUserAccount(varType, fileGroupForm.getFileIds(), userAccount);
+        if (dataFiles.isEmpty()) {
+            String errMsg = String.format("Please select file(s) for '%s' variable type.", varType.getDisplayName());
+            bindingResult.rejectValue("fileIds", "fileGroupForm.fileIds", errMsg);
+            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.fileGroupForm", bindingResult);
+            redirAttrs.addFlashAttribute("fileGroupForm", fileGroupForm);
+
+            return REDIRECT_FILEGROUP_VIEW;
+        }
+
+        fileGroupCtrlService.addNewFileGroup(fileGroupForm.getGroupName(), dataFiles, userAccount);
 
         return REDIRECT_FILEGROUP_LIST;
     }
@@ -208,9 +252,23 @@ public class FileGroupController implements ViewPath {
             throw new ResourceNotFoundException();
         }
 
-        setupFileGroupView(userAccount, model);
+        List<FileVariableType> varTypes = fileVariableTypeService.findAll();
+        Map<Long, List<File>> dataGroups = fileGroupCtrlService.getTetradGroupedData(varTypes, userAccount);
 
         model.addAttribute("pageTitle", "New File Group");
+        model.addAttribute("varTypes", varTypes);
+        model.addAttribute("dataGroups", dataGroups);
+
+        // add form if not exists
+        if (!model.containsAttribute("fileGroupForm")) {
+            FileGroupForm fileGroupForm = new FileGroupForm();
+
+            if (!varTypes.isEmpty()) {
+                fileGroupForm.setVarTypeId(varTypes.get(0).getId());
+            }
+
+            model.addAttribute("fileGroupForm", fileGroupForm);
+        }
 
         return FILEGROUP_VIEW;
     }
@@ -229,45 +287,7 @@ public class FileGroupController implements ViewPath {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(fileGroupingService.getFileGroups(userAccount));
-    }
-
-    private void setupFileGroupView(final UserAccount userAccount, final Model model) {
-        List<File> continuousData = new LinkedList<>();
-        List<File> discreteData = new LinkedList<>();
-        List<File> mixedData = new LinkedList<>();
-        List<TetradDataFile> tetradDataFiles = tetradDataFileService.getRepository().findByUserAccount(userAccount);
-        tetradDataFiles.forEach(tetradDataFile -> {
-            FileVariableType variableType = tetradDataFile.getFileVariableType();
-            switch (variableType.getName()) {
-                case FileVariableTypeService.CONTINUOUS_NAME:
-                    continuousData.add(tetradDataFile.getFile());
-                    break;
-                case FileVariableTypeService.DISCRETE_NAME:
-                    discreteData.add(tetradDataFile.getFile());
-                    break;
-                case FileVariableTypeService.MIXED_NAME:
-                    mixedData.add(tetradDataFile.getFile());
-                    break;
-            }
-        });
-
-        List<FileVariableType> fileVariableTypes = fileVariableTypeService.findAll();
-
-        model.addAttribute("fileVariableTypes", fileVariableTypes);
-        model.addAttribute("continuousData", continuousData);
-        model.addAttribute("discreteData", discreteData);
-        model.addAttribute("mixedData", mixedData);
-
-        if (!model.containsAttribute("fileGroupForm")) {
-            FileGroupForm fileGroupForm = new FileGroupForm();
-
-            if (!fileVariableTypes.isEmpty()) {
-                fileGroupForm.setFileVariableTypeId(fileVariableTypes.get(0).getId());
-            }
-
-            model.addAttribute("fileGroupForm", fileGroupForm);
-        }
+        return ResponseEntity.ok(fileGroupService.getRepository().findByUserAccount(userAccount));
     }
 
 }

@@ -1,25 +1,16 @@
-$('select[id="continuousFileIds"]').bootstrapDualListbox();
-$('select[id="discreteFileIds"]').bootstrapDualListbox();
-$('select[id="mixedFileIds"]').bootstrapDualListbox();
+var varTypes = $('input:radio[name="varTypeId"]');
+for (i = 1; i <= varTypes.length; i++) {
+    $('select[id="selectOpt_' + i + '"]').bootstrapDualListbox();
+}
 
-$('input:radio[name="fileVariableTypeId"]').click(function () {
+varTypes.click(function () {
     var val = $(this).val();
-    var opt;
-    switch (val) {
-        case '1':
-            opt = $('#continuousData');
-            break;
-        case '2':
-            opt = $('#discreteData');
-            break;
-        default :
-            opt = $('#mixedData');
-    }
-    $(".dataOpts").not(opt).hide();
+    var selectOpt = $('#dataGroup_' + val);
 
-    opt.show();
+    $(".dataGroup").not(selectOpt).hide();
+    selectOpt.show();
 });
 
 $(document).ready(function () {
-    $('input:radio[name="fileVariableTypeId"]:checked').click();
+    $('input:radio[name="varTypeId"]:checked').click();
 });
