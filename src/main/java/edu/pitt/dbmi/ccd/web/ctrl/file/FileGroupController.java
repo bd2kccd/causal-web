@@ -24,7 +24,6 @@ import edu.pitt.dbmi.ccd.db.entity.FileVariableType;
 import edu.pitt.dbmi.ccd.db.entity.TetradDataFile;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileGroupService;
-import edu.pitt.dbmi.ccd.db.service.FileService;
 import edu.pitt.dbmi.ccd.db.service.FileVariableTypeService;
 import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
@@ -66,7 +65,6 @@ public class FileGroupController implements ViewPath {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileGroupController.class);
 
-    private final FileService fileService;
     private final FileGroupService fileGroupService;
     private final TetradDataFileService tetradDataFileService;
     private final FileVariableTypeService fileVariableTypeService;
@@ -74,8 +72,7 @@ public class FileGroupController implements ViewPath {
     private final AppUserService appUserService;
 
     @Autowired
-    public FileGroupController(FileService fileService, FileGroupService fileGroupService, TetradDataFileService tetradDataFileService, FileVariableTypeService fileVariableTypeService, FileGroupingService fileGroupingService, AppUserService appUserService) {
-        this.fileService = fileService;
+    public FileGroupController(FileGroupService fileGroupService, TetradDataFileService tetradDataFileService, FileVariableTypeService fileVariableTypeService, FileGroupingService fileGroupingService, AppUserService appUserService) {
         this.fileGroupService = fileGroupService;
         this.tetradDataFileService = tetradDataFileService;
         this.fileVariableTypeService = fileVariableTypeService;
@@ -119,7 +116,7 @@ public class FileGroupController implements ViewPath {
             redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.fileGroupForm", bindingResult);
             redirAttrs.addFlashAttribute("fileGroupForm", fileGroupForm);
 
-            return REDIRECT_FILEGROUP_VIEW;
+            return REDIRECT_UPDATE_FILEGROUP_VIEW + id;
         }
 
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
@@ -147,23 +144,25 @@ public class FileGroupController implements ViewPath {
             throw new ResourceNotFoundException();
         }
 
-        FileGroup fileGroup = fileGroupService.getRepository().findByIdAndUserAccount(id, userAccount);
-        if (fileGroup == null) {
-            throw new ResourceNotFoundException();
+        if (!model.containsAttribute("fileGroupForm")) {
+            FileGroup fileGroup = fileGroupService.getRepository().findByIdAndUserAccount(id, userAccount);
+            if (fileGroup == null) {
+                throw new ResourceNotFoundException();
+            }
+
+            List<File> files = fileGroup.getFiles();
+            List<Long> fileIds = files.stream().map(File::getId).collect(Collectors.toList());
+
+            TetradDataFile tetradDataFile = tetradDataFileService.getRepository().findByFile(files.get(0));
+
+            FileGroupForm fileGroupForm = new FileGroupForm();
+            fileGroupForm.setGroupName(fileGroup.getName());
+            fileGroupForm.setFileVariableTypeId(tetradDataFile.getFileVariableType().getId());
+            fileGroupForm.setFileIds(fileIds);
+            model.addAttribute("fileGroupForm", fileGroupForm);
         }
 
-        List<File> files = fileGroup.getFiles();
-        List<Long> fileIds = files.stream().map(File::getId).collect(Collectors.toList());
-
-        TetradDataFile tetradDataFile = tetradDataFileService.getRepository().findByFile(files.get(0));
-
-        FileGroupForm fileGroupForm = new FileGroupForm();
-        fileGroupForm.setGroupName(fileGroup.getName());
-        fileGroupForm.setFileVariableTypeId(tetradDataFile.getFileVariableType().getId());
-        fileGroupForm.setFileIds(fileIds);
-
         model.addAttribute("pageTitle", "Update File Group");
-        model.addAttribute("fileGroupForm", fileGroupForm);
 
         setupFileGroupView(userAccount, model);
 
@@ -211,7 +210,7 @@ public class FileGroupController implements ViewPath {
 
         setupFileGroupView(userAccount, model);
 
-        model.addAttribute("pageTitle", "Update File Group");
+        model.addAttribute("pageTitle", "New File Group");
 
         return FILEGROUP_VIEW;
     }
