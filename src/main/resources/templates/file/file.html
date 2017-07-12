@@ -27,39 +27,31 @@
                         <h3 class="page-header">Files</h3>
                     </div>
                 </div>
-                <div class="row" th:each="panel : ${fileCategoryPanels}">
-                    <div class="col-lg-12">
-                        <div class="panel panel-default" th:class="'panel ' + ${panel.panelColor}">
+                <div class="row" th:each="group : ${fileSummaryGroups}">
+                    <div class="col-lg-3 col-md-6" th:each="summary : ${group.fileSummaries}">
+                        <div class="panel panel-default_pitt" th:class="'panel ' + ${group.cssPanel}">
                             <div class="panel-heading">
-                                <h3 class="panel-title" th:text="${panel.title}">Uncategorized Files</h3>
-                            </div>
-                            <div class="panel-body">
-                                <p th:text="${panel.description}">Uploaded files that have not been categorized.</p>
                                 <div class="row">
-                                    <div class="col-lg-3 col-md-6" th:each="category : ${panel.fileCategories}">
-                                        <div class="panel panel-default" th:class="'panel ' + ${panel.panelColor}">
-                                            <div class="panel-heading">
-                                                <div class="row">
-                                                    <div class="col-xs-3">
-                                                        <i class="fa fa-file-o fa-5x white"></i>
-                                                    </div>
-                                                    <div class="col-xs-9 text-right">
-                                                        <div class="huge" th:text="${category.count}"></div>
-                                                        <div th:text="${category.title}">Uncategorized</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <a href="../file/fileList.html" th:href="@{'/secured/file/' + ${category.uriPath}}">
-                                                <div class="panel-footer">
-                                                    <span class="pull-left">View List</span>
-                                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-                                                    <div class="clearfix"></div>
-                                                </div>
-                                            </a>
-                                        </div>
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-file-o fa-5x white"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge" th:text="${summary.count}"></div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xs-9">
+                                        <p th:text="${summary.title}">Uncategorized</p>
                                     </div>
                                 </div>
                             </div>
+                            <a href="../file/fileList.html" th:href="@{'/secured/file/' + ${summary.fileFormat}}">
+                                <div class="panel-footer">
+                                    <span class="pull-left">View List</span>
+                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
                         </div>
                     </div>
                 </div>

@@ -20,31 +20,25 @@ package edu.pitt.dbmi.ccd.web.domain.file;
 
 /**
  *
- * Jul 6, 2017 2:19:37 PM
+ * Jul 12, 2017 2:18:48 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class FileCategory {
+public class FileSummary {
 
     private String title;
-    private long count;
-    private String uriPath;
 
-    public FileCategory() {
+    private String fileFormat;
+
+    private Long count;
+
+    public FileSummary() {
     }
 
-    public FileCategory(String title, long count, String uriPath) {
+    public FileSummary(String title, String fileFormat, Long count) {
         this.title = title;
+        this.fileFormat = fileFormat;
         this.count = count;
-        this.uriPath = uriPath;
-    }
-
-    public String getUriPath() {
-        return uriPath;
-    }
-
-    public void setUriPath(String uriPath) {
-        this.uriPath = uriPath;
     }
 
     public String getTitle() {
@@ -55,11 +49,19 @@ public class FileCategory {
         this.title = title;
     }
 
-    public long getCount() {
+    public String getFileFormat() {
+        return fileFormat;
+    }
+
+    public void setFileFormat(String fileFormat) {
+        this.fileFormat = fileFormat;
+    }
+
+    public Long getCount() {
         return count;
     }
 
-    public void setCount(long count) {
+    public void setCount(Long count) {
         this.count = count;
     }
 

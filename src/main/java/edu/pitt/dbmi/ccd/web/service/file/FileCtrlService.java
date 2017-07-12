@@ -18,14 +18,18 @@
  */
 package edu.pitt.dbmi.ccd.web.service.file;
 
+import edu.pitt.dbmi.ccd.db.entity.FileFormat;
+import edu.pitt.dbmi.ccd.db.entity.FileType;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.repository.FileRepository;
 import edu.pitt.dbmi.ccd.db.service.FileFormatService;
 import edu.pitt.dbmi.ccd.db.service.FileService;
-import edu.pitt.dbmi.ccd.web.domain.file.FileCategory;
-import edu.pitt.dbmi.ccd.web.domain.file.FileCategoryPanel;
+import edu.pitt.dbmi.ccd.db.service.FileTypeService;
 import edu.pitt.dbmi.ccd.web.domain.file.FileListView;
+import edu.pitt.dbmi.ccd.web.domain.file.FileSummary;
+import edu.pitt.dbmi.ccd.web.domain.file.FileSummaryGroup;
 import edu.pitt.dbmi.ccd.web.service.fs.FileManagementService;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,11 +45,15 @@ import org.springframework.stereotype.Service;
 public class FileCtrlService {
 
     private final FileService fileService;
+    private final FileFormatService fileFormatService;
+    private final FileTypeService fileTypeService;
     private final FileManagementService fileManagementService;
 
     @Autowired
-    public FileCtrlService(FileService fileService, FileManagementService fileManagementService) {
+    public FileCtrlService(FileService fileService, FileFormatService fileFormatService, FileTypeService fileTypeService, FileManagementService fileManagementService) {
         this.fileService = fileService;
+        this.fileFormatService = fileFormatService;
+        this.fileTypeService = fileTypeService;
         this.fileManagementService = fileManagementService;
     }
 
@@ -66,33 +74,38 @@ public class FileCtrlService {
         }
     }
 
-    public List<FileCategoryPanel> getFileCategoryPanels(UserAccount userAccount) {
-        List<FileCategoryPanel> fileCategoryPanels = new LinkedList<>();
+    public List<FileSummaryGroup> getFileSummaryGroups(UserAccount userAccount) {
+        List<FileSummaryGroup> groups = new LinkedList<>();
+
+        FileSummaryGroup uncatGroup = new FileSummaryGroup("panel-yellow", new LinkedList<>());
+        FileSummaryGroup tetradGroup = new FileSummaryGroup("panel-primary", new LinkedList<>());
+        FileSummaryGroup tdiGroup = new FileSummaryGroup("panel-green", new LinkedList<>());
 
         FileRepository fileRepository = fileService.getRepository();
-        long uncatCount = fileRepository.countByUserAccountAndFileFormatIsNull(userAccount);
-        long tetradTabCount = fileRepository.countByFileFormatNameAndUserAccount(FileFormatService.TETRAD_TABULAR, userAccount);
-        long tetradCovCount = fileRepository.countByFileFormatNameAndUserAccount(FileFormatService.TETRAD_COVARIANCE, userAccount);
-        long tetradVarCount = fileRepository.countByFileFormatNameAndUserAccount(FileFormatService.TETRAD_VARIABLE, userAccount);
-        long tetradKnowCount = fileRepository.countByFileFormatNameAndUserAccount(FileFormatService.TETRAD_KNOWLEDGE, userAccount);
-        long tdiTabCount = fileRepository.countByFileFormatNameAndUserAccount(FileFormatService.TDI_TABULAR, userAccount);
 
-        List<FileCategory> fileCategories = new LinkedList<>();
-        fileCategories.add(new FileCategory("Uncategorized", uncatCount, "uncategorized"));
-        fileCategoryPanels.add(new FileCategoryPanel("Uncategorized Files", "Uploaded files that have not been categorized.", "panel-yellow", fileCategories));
+        FileType excludeFileType = fileTypeService.findByName(FileTypeService.RESULT);
+        List<FileFormat> fileFormats = fileFormatService.findByFileTypeNot(excludeFileType);
+        fileFormats.forEach(fileFormat -> {
+            String title = fileFormat.getDisplayName();
+            String fileFormatName = fileFormat.getName();
+            Long count = fileRepository.countByFileFormatAndUserAccount(fileFormat, userAccount);
 
-        fileCategories = new LinkedList<>();
-        fileCategories.add(new FileCategory("Tabular Data", tetradTabCount, FileFormatService.TETRAD_TABULAR));
-        fileCategories.add(new FileCategory("Covariance", tetradCovCount, FileFormatService.TETRAD_COVARIANCE));
-        fileCategories.add(new FileCategory("Variable", tetradVarCount, FileFormatService.TETRAD_VARIABLE));
-        fileCategories.add(new FileCategory("Knowledge", tetradKnowCount, FileFormatService.TETRAD_KNOWLEDGE));
-        fileCategoryPanels.add(new FileCategoryPanel("Tetrad Files", "Files that are associated with Tetrad algorithms.", "panel-primary", fileCategories));
+            FileSummary fileSummary = new FileSummary(title, fileFormatName, count);
+            switch (fileFormatName) {
+                case FileFormatService.TDI_TABULAR:
+                    tdiGroup.getFileSummaries().add(fileSummary);
+                    break;
+                default:
+                    tetradGroup.getFileSummaries().add(fileSummary);
+            }
+        });
 
-        fileCategories = new LinkedList<>();
-        fileCategories.add(new FileCategory("Tabular Data", tdiTabCount, FileFormatService.TDI_TABULAR));
-        fileCategoryPanels.add(new FileCategoryPanel("TDI Files", "Files that are associated with TDI algorithms.", "panel-green", fileCategories));
+        String title = "Uncategorized";
+        String fileFormatName = "uncategorized";
+        Long count = fileRepository.countByUserAccountAndFileFormatIsNull(userAccount);
+        uncatGroup.getFileSummaries().add(new FileSummary(title, fileFormatName, count));
 
-        return fileCategoryPanels;
+        return Arrays.asList(uncatGroup, tetradGroup, tdiGroup);
     }
 
 }

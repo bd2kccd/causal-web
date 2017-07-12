@@ -118,7 +118,7 @@ public class FileController implements ViewPath {
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public String categorizeFile(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+    public String showFiles(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
         if (userAccount == null) {
             throw new ResourceNotFoundException();
@@ -126,7 +126,7 @@ public class FileController implements ViewPath {
 
         fileManagementService.syncDatabaseWithDataDirectory(userAccount);
 
-        model.addAttribute("fileCategoryPanels", fileCtrlService.getFileCategoryPanels(userAccount));
+        model.addAttribute("fileSummaryGroups", fileCtrlService.getFileSummaryGroups(userAccount));
 
         return FILE_VIEW;
     }
@@ -151,7 +151,7 @@ public class FileController implements ViewPath {
     }
 
     @RequestMapping(value = "{fileFormatName}", method = RequestMethod.GET)
-    public String showFiles(@PathVariable String fileFormatName, final Model model) {
+    public String showFileList(@PathVariable String fileFormatName, final Model model) {
         if ("uncategorized".equals(fileFormatName) || fileFormatService.findByName(fileFormatName) != null) {
             model.addAttribute("fileListView", fileCtrlService.getFileListView(fileFormatName));
         } else {
