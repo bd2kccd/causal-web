@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta http-equiv="x-ua-compatible" content="ie=edge" />
-        <title th:text="${fileListView.pageTitle}">Causal Web: File List</title>
+        <title th:text="'Causal Web: ' + ${fileFormat == null} ? 'Uncategorized File' : ${fileFormat.displayName}">Causal Web: File List</title>
         <meta name="description" content="causal" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="apple-touch-icon" href="../../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
@@ -25,7 +25,7 @@
         <script src="../../static/vendors/datatables/Responsive-2.1.1/js/responsive.bootstrap.min.js" th:src="@{https://cdn.datatables.net/responsive/2.1.1/js/responsive.bootstrap.min.js}"></script>        
         <script src="../../static/vendors/datatables/plugins/file-size.min.js" th:src="@{/vendors/datatables/plugins/file-size.min.js}"></script>
         <script th:inline="javascript">
-            var listUrl = /*[[@{'/secured/file/list/' + ${fileListView.fileFormatName}}]]*/ '';
+            var listUrl = /*[[@{${fileFormat == null} ? '/secured/file/list/uncategorized' : '/secured/file/list/' + ${fileFormat.name}}]]*/ '';
             var deleteUrl = /*[[@{/secured/file/mgmt/delete}]]*/ '';
             var categoryUrl = /*[[@{/secured/file/categorize(id='')}]]*/ '';
         </script>
@@ -36,23 +36,38 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h3 class="page-header" th:text="${fileListView.title}">Title</h3>
+                        <h3 class="page-header" th:text="${fileFormat == null} ? 'Uncategorized File' : ${fileFormat.displayName}">Title</h3>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
-                        <table id="file_table" class="table table-hover table-responsive table-condensed" cellspacing="0" width="100%">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Size</th>
-                                    <th>Creation Time</th>
-                                    <th>Delete</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
+                        <ul class="breadcrumb">
+                            <li><a href="#" th:href="@{/secured/home}">Home</a></li>
+                            <li><a href="#" th:href="@{/secured/file}">Files</a></li>
+                            <li class="active" th:text="${fileFormat == null} ? 'Uncategorized File' : ${fileFormat.displayName}">Current Page</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div class="table-responsive">
+                                    <table id="file_table" class="table table-hover table-condensed" cellspacing="0" width="100%">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Size</th>
+                                                <th>Creation Time</th>
+                                                <th>Delete</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <footer th:replace="fragments/footer :: footer">

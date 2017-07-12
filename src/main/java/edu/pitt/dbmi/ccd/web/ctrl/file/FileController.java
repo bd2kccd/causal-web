@@ -152,8 +152,9 @@ public class FileController implements ViewPath {
 
     @RequestMapping(value = "{fileFormatName}", method = RequestMethod.GET)
     public String showFileList(@PathVariable String fileFormatName, final Model model) {
-        if ("uncategorized".equals(fileFormatName) || fileFormatService.findByName(fileFormatName) != null) {
-            model.addAttribute("fileListView", fileCtrlService.getFileListView(fileFormatName));
+        FileFormat fileFormat = fileFormatService.findByName(fileFormatName);
+        if ("uncategorized".equals(fileFormatName) || fileFormat != null) {
+            model.addAttribute("fileFormat", fileFormat);
         } else {
             throw new ResourceNotFoundException();
         }

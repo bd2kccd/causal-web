@@ -34,6 +34,18 @@
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
+                        <ul class="breadcrumb">
+                            <li><a href="#" th:href="@{/secured/home}">Home</a></li>
+                            <li><a href="#" th:href="@{/secured/file}">Files</a></li>
+                            <li><a href="#"
+                                   th:href="${file.fileFormat == null} ? @{/secured/file/uncategorized} : @{'/secured/file/' + ${file.fileFormat.name}}"
+                                   th:text="${file.fileFormat == null} ? 'Uncategorized File' : ${file.fileFormat.displayName}">File Format</a></li>
+                            <li class="active" th:text="${file.title}">Current Page</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
                         <div id="view_file_info" class="panel panel-default" style="display: block;">
                             <div class="panel-heading">
                                 <h4 class="panel-title"><i class="fa fa-file fa-fw"></i> File Information</h4>

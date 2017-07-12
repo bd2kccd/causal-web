@@ -26,42 +26,55 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h3 id="page_title" class="page-header" th:text="${pageTitle}">File Group</h3>
+                        <h3 id="page_title" class="page-header" th:text="${pageTitle}">Group File</h3>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
-                        <form id="fileGroupForm" method="post" role="form" action="" th:object="${fileGroupForm}">
-                            <fieldset>
-                                <div class="form-group" th:class="${#fields.hasErrors('groupName')} ? 'form-group has-error' : 'form-group'">
-                                    <label for="groupName">File Group Name:</label>
-                                    <input id="groupName" name="groupName" class="form-control" type="text" required="required" autofocus="autofocus" value="" th:value="*{groupName}" th:field="*{groupName}" />
-                                    <span class="help-block" th:if="${#fields.hasErrors('groupName')}" th:errors="*{groupName}">Please enter a name for the file group.</span>
-                                </div>
-                                <div class="form-group" th:class="${#fields.hasErrors('varTypeId')} ? 'form-group has-error' : 'form-group'">
-                                    <label>Variable Type:</label>
-                                    <label class="radio-inline" th:each="opt : ${varTypes}">
-                                        <input type="radio" th:field="*{varTypeId}" th:value="${opt.id}" /> <span th:text="${opt.displayName}">tetrad variable</span>
-                                    </label>
-                                    <span class="help-block" th:if="${#fields.hasErrors('varTypeId')}" th:errors="*{varTypeId}">Variable type is required.</span>
-                                </div>
-                                <div class="well dataGroup" th:id="'dataGroup_' + ${element.key}" th:each="element : ${dataGroups}">
-                                    <div class="form-group" th:class="${#fields.hasErrors('fileIds')} ? 'form-group has-error' : 'form-group'">
-                                        <label for="fileIds">Click on file from the left to move to the right for grouping.</label>
-                                        <select multiple="multiple" th:id="'selectOpt_' + ${element.key}" class="form-control" th:size="${#lists.size(element.value)}" th:field="*{fileIds}" required="required">
-                                            <option value=""
-                                                    th:each="file : ${element.value}"
-                                                    th:value="${file.id}"
-                                                    th:text="${file.title}">sim_data_100vars_100_cases.txt</option>
-                                        </select>
-                                        <span class="help-block" th:if="${#fields.hasErrors('fileIds')}" th:errors="*{fileIds}">Please select at least one file.</span>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <button type="submit" class="btn btn-success btn-lg btn-block">Submit</button>
-                                </div>
-                            </fieldset>
-                        </form>
+                        <ul class="breadcrumb">
+                            <li><a href="#" th:href="@{/secured/home}">Home</a></li>
+                            <li><a href="#" th:href="@{/secured/file/group}">File Groups</a></li>
+                            <li class="active" th:text="${pageTitle}">Group File</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <form id="fileGroupForm" method="post" role="form" action="" th:object="${fileGroupForm}">
+                                    <fieldset>
+                                        <div class="form-group" th:class="${#fields.hasErrors('groupName')} ? 'form-group has-error' : 'form-group'">
+                                            <label for="groupName">File Group Name:</label>
+                                            <input id="groupName" name="groupName" class="form-control" type="text" required="required" autofocus="autofocus" value="" th:value="*{groupName}" th:field="*{groupName}" />
+                                            <span class="help-block" th:if="${#fields.hasErrors('groupName')}" th:errors="*{groupName}">Please enter a name for the file group.</span>
+                                        </div>
+                                        <div class="form-group" th:class="${#fields.hasErrors('varTypeId')} ? 'form-group has-error' : 'form-group'">
+                                            <label>Variable Type:</label>
+                                            <label class="radio-inline" th:each="opt : ${varTypes}">
+                                                <input type="radio" th:field="*{varTypeId}" th:value="${opt.id}" /> <span th:text="${opt.displayName}">tetrad variable</span>
+                                            </label>
+                                            <span class="help-block" th:if="${#fields.hasErrors('varTypeId')}" th:errors="*{varTypeId}">Variable type is required.</span>
+                                        </div>
+                                        <div class="well dataGroup" th:id="'dataGroup_' + ${element.key}" th:each="element : ${dataGroups}">
+                                            <div class="form-group" th:class="${#fields.hasErrors('fileIds')} ? 'form-group has-error' : 'form-group'">
+                                                <label for="fileIds">Click on file from the left to move to the right for grouping.</label>
+                                                <select multiple="multiple" th:id="'selectOpt_' + ${element.key}" class="form-control" th:size="${#lists.size(element.value)}" th:field="*{fileIds}" required="required">
+                                                    <option value=""
+                                                            th:each="file : ${element.value}"
+                                                            th:value="${file.id}"
+                                                            th:text="${file.title}">sim_data_100vars_100_cases.txt</option>
+                                                </select>
+                                                <span class="help-block" th:if="${#fields.hasErrors('fileIds')}" th:errors="*{fileIds}">Please select at least one file.</span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <button type="submit" class="btn btn-success btn-lg btn-block">Submit</button>
+                                        </div>
+                                    </fieldset>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <footer th:replace="fragments/footer :: footer">
