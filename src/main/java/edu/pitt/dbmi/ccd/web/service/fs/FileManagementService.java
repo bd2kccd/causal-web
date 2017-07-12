@@ -21,22 +21,11 @@ package edu.pitt.dbmi.ccd.web.service.fs;
 import edu.pitt.dbmi.ccd.commons.file.FileSys;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileDelimiterType;
-import edu.pitt.dbmi.ccd.db.entity.FileFormat;
-import edu.pitt.dbmi.ccd.db.entity.FileVariableType;
-import edu.pitt.dbmi.ccd.db.entity.TetradDataFile;
-import edu.pitt.dbmi.ccd.db.entity.TetradVariableFile;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileDelimiterTypeService;
-import edu.pitt.dbmi.ccd.db.service.FileFormatService;
 import edu.pitt.dbmi.ccd.db.service.FileService;
-import edu.pitt.dbmi.ccd.db.service.FileVariableTypeService;
-import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
-import edu.pitt.dbmi.ccd.db.service.TetradVariableFileService;
-import edu.pitt.dbmi.ccd.web.domain.AttrValue;
-import edu.pitt.dbmi.ccd.web.domain.file.CategorizeFileForm;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import edu.pitt.dbmi.data.Delimiter;
-import edu.pitt.dbmi.data.reader.BasicDataFileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -70,54 +59,11 @@ public class FileManagementService {
 
     private final CcdProperties ccdProperties;
     private final FileService fileService;
-    private final TetradDataFileService tetradDataFileService;
-    private final TetradVariableFileService tetradVariableFileService;
-    private final FileDelimiterTypeService fileDelimiterTypeService;
-    private final FileVariableTypeService fileVariableTypeService;
 
     @Autowired
-    public FileManagementService(CcdProperties ccdProperties,
-            FileService fileService,
-            TetradDataFileService tetradDataFileService,
-            TetradVariableFileService tetradVariableFileService,
-            FileDelimiterTypeService fileDelimiterTypeService,
-            FileVariableTypeService fileVariableTypeService) {
+    public FileManagementService(CcdProperties ccdProperties, FileService fileService) {
         this.ccdProperties = ccdProperties;
         this.fileService = fileService;
-        this.tetradDataFileService = tetradDataFileService;
-        this.tetradVariableFileService = tetradVariableFileService;
-        this.fileDelimiterTypeService = fileDelimiterTypeService;
-        this.fileVariableTypeService = fileVariableTypeService;
-    }
-
-    public List<AttrValue> getAdditionalInformation(File file) {
-        List<AttrValue> attrValues = new LinkedList<>();
-
-        FileFormat fileFormat = file.getFileFormat();
-        if (fileFormat != null) {
-            switch (fileFormat.getName()) {
-                case FileFormatService.TETRAD_TABULAR:
-                    TetradDataFile dataFile = tetradDataFileService.getRepository().findByFile(file);
-                    attrValues.add(new AttrValue("Number of Columns", String.valueOf(dataFile.getNumOfColumns())));
-                    attrValues.add(new AttrValue("Number of Rows", String.valueOf(dataFile.getNumOfRows())));
-                    attrValues.add(new AttrValue("Delimiter", dataFile.getFileDelimiterType().getDisplayName()));
-                    attrValues.add(new AttrValue("Variable Type", dataFile.getFileVariableType().getDisplayName()));
-                    attrValues.add(new AttrValue("Quote Character", String.valueOf(dataFile.getQuoteChar())));
-                    attrValues.add(new AttrValue("Missing Value Marker", dataFile.getMissingValueMarker()));
-                    attrValues.add(new AttrValue("Comment Marker", dataFile.getCommentMarker()));
-                    break;
-                case FileFormatService.TETRAD_VARIABLE:
-                    TetradVariableFile varFile = tetradVariableFileService.getRepository().findByFile(file);
-                    attrValues.add(new AttrValue("Number of Variables", String.valueOf(varFile.getNumOfVariables())));
-                    break;
-            }
-        }
-
-        return attrValues;
-    }
-
-    public boolean existTitle(String title, UserAccount userAccount) {
-        return fileService.getRepository().existsByTitleAndUserAccount(title, userAccount);
     }
 
     public void deleteFile(File file, UserAccount userAccount) {
@@ -129,48 +75,6 @@ public class FileManagementService {
         }
 
         fileService.getRepository().delete(file);
-    }
-
-    public File createTetradVariableFileAssociation(CategorizeFileForm categorizeFileForm, File file, UserAccount userAccount) {
-        TetradVariableFile variableFile = new TetradVariableFile(file);
-        Path localVarFile = getPhysicalFile(file, userAccount);
-        try {
-            BasicDataFileReader fileReader = new BasicDataFileReader(localVarFile.toFile(), getReaderFileDelimiter(null));
-            variableFile.setNumOfVariables(fileReader.getNumberOfLines());
-        } catch (IOException exception) {
-            String errMsg = String.format("Unable get counts for number of variables for file '%s'.", localVarFile.toString());
-            LOGGER.error(errMsg, exception);
-        }
-
-        return tetradVariableFileService.save(variableFile).getFile();
-    }
-
-    public File createTetradDataFileAssociation(CategorizeFileForm categorizeFileForm, File file, UserAccount userAccount) {
-        Long fileDelimTypeId = categorizeFileForm.getFileDelimiterTypeId();
-        Long fileVarTypeId = categorizeFileForm.getFileVariableTypeId();
-        Character quoteChar = categorizeFileForm.getQuoteChar();
-        String missValMark = categorizeFileForm.getMissingValueMarker();
-        String cmntMark = categorizeFileForm.getCommentMarker();
-
-        FileDelimiterType delimiter = fileDelimiterTypeService.getRepository().findOne(fileDelimTypeId);
-        FileVariableType variable = fileVariableTypeService.getRepository().findOne(fileVarTypeId);
-
-        TetradDataFile dataFile = new TetradDataFile(file, delimiter, variable);
-        dataFile.setCommentMarker(cmntMark);
-        dataFile.setMissingValueMarker(missValMark);
-        dataFile.setQuoteChar(quoteChar);
-
-        Path localDataFile = getPhysicalFile(file, userAccount);
-        try {
-            BasicDataFileReader fileReader = new BasicDataFileReader(localDataFile.toFile(), getReaderFileDelimiter(delimiter));
-            dataFile.setNumOfColumns(fileReader.getNumberOfColumns());
-            dataFile.setNumOfRows(fileReader.getNumberOfLines());
-        } catch (IOException exception) {
-            String errMsg = String.format("Unable to get row and column counts from file %s.", localDataFile.toString());
-            LOGGER.error(errMsg, exception);
-        }
-
-        return tetradDataFileService.save(dataFile).getFile();
     }
 
     public Delimiter getReaderFileDelimiter(FileDelimiterType fileDelimiterType) {
