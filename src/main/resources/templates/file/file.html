@@ -36,16 +36,16 @@
                                         <i class="fa fa-file-o fa-5x white"></i>
                                     </div>
                                     <div class="col-xs-9 text-right">
-                                        <div class="huge" th:text="${summary.count}"></div>
+                                        <div class="huge" th:text="${summary.numOfFiles}"></div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-xs-9">
-                                        <p th:text="${summary.title}">Uncategorized</p>
+                                        <p th:text="${summary.fileFormat == null} ? 'Uncategorized' : ${summary.fileFormat.displayName}">Uncategorized</p>
                                     </div>
                                 </div>
                             </div>
-                            <a href="../file/fileList.html" th:href="@{'/secured/file/' + ${summary.fileFormat}}">
+                            <a href="../file/fileList.html" th:href="@{${summary.fileFormat == null} ? '/secured/file/uncategorized' : '/secured/file/' + ${summary.fileFormat.name}}">
                                 <div class="panel-footer">
                                     <span class="pull-left">View List</span>
                                     <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>

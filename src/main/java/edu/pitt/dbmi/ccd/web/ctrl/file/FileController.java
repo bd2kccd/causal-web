@@ -23,6 +23,7 @@ import edu.pitt.dbmi.ccd.db.entity.FileFormat;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileFormatService;
 import edu.pitt.dbmi.ccd.db.service.FileService;
+import edu.pitt.dbmi.ccd.db.service.FileTypeService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
@@ -100,7 +101,7 @@ public class FileController implements ViewPath {
             return ResponseEntity.notFound().build();
         }
 
-        if (!title.equals(file)) {
+        if (!title.equals(file.getTitle())) {
             if (fileService.getRepository().existsByTitleAndUserAccount(title, userAccount)) {
                 return ResponseEntity.badRequest().body("Title already in used. Plese enter a different title.");
             } else {
@@ -126,8 +127,7 @@ public class FileController implements ViewPath {
 
         fileManagementService.syncDatabaseWithDataDirectory(userAccount);
 
-        model.addAttribute("fileSummaryGroups", fileCtrlService.getFileSummaryGroups(userAccount));
-
+        model.addAttribute("fileSummaryGroups", fileCtrlService.retrieveFileSummaries(userAccount));
         return FILE_VIEW;
     }
 
@@ -135,16 +135,13 @@ public class FileController implements ViewPath {
     @RequestMapping(value = "list/{fileFormatName}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> listFiles(final @PathVariable String fileFormatName, final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        if (userAccount == null) {
-            return ResponseEntity.notFound().build();
-        }
 
         if ("uncategorized".equals(fileFormatName)) {
             return ResponseEntity.ok(fileService.getRepository().findByUserAccountAndFileFormatIsNull(userAccount));
         } else {
             FileFormat fileFormat = fileFormatService.findByName(fileFormatName);
 
-            return (fileFormat == null)
+            return (fileFormat == null || FileTypeService.RESULT.equals(fileFormat.getFileType().getName()))
                     ? ResponseEntity.notFound().build()
                     : ResponseEntity.ok(fileService.getRepository().findByUserAccountAndFileFormat(userAccount, fileFormat));
         }
@@ -153,7 +150,7 @@ public class FileController implements ViewPath {
     @RequestMapping(value = "{fileFormatName}", method = RequestMethod.GET)
     public String showFileList(@PathVariable String fileFormatName, final Model model) {
         FileFormat fileFormat = fileFormatService.findByName(fileFormatName);
-        if ("uncategorized".equals(fileFormatName) || fileFormat != null) {
+        if ("uncategorized".equals(fileFormatName) || !(fileFormat == null || FileTypeService.RESULT.equals(fileFormat.getFileType().getName()))) {
             model.addAttribute("fileFormat", fileFormat);
         } else {
             throw new ResourceNotFoundException();

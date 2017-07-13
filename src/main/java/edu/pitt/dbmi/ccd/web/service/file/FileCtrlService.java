@@ -21,13 +21,11 @@ package edu.pitt.dbmi.ccd.web.service.file;
 import edu.pitt.dbmi.ccd.db.entity.FileFormat;
 import edu.pitt.dbmi.ccd.db.entity.FileType;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.repository.FileRepository;
 import edu.pitt.dbmi.ccd.db.service.FileFormatService;
 import edu.pitt.dbmi.ccd.db.service.FileService;
 import edu.pitt.dbmi.ccd.db.service.FileTypeService;
 import edu.pitt.dbmi.ccd.web.domain.file.FileSummary;
 import edu.pitt.dbmi.ccd.web.domain.file.FileSummaryGroup;
-import edu.pitt.dbmi.ccd.web.service.fs.FileManagementService;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,46 +44,34 @@ public class FileCtrlService {
     private final FileService fileService;
     private final FileFormatService fileFormatService;
     private final FileTypeService fileTypeService;
-    private final FileManagementService fileManagementService;
 
     @Autowired
-    public FileCtrlService(FileService fileService, FileFormatService fileFormatService, FileTypeService fileTypeService, FileManagementService fileManagementService) {
+    public FileCtrlService(FileService fileService, FileFormatService fileFormatService, FileTypeService fileTypeService) {
         this.fileService = fileService;
         this.fileFormatService = fileFormatService;
         this.fileTypeService = fileTypeService;
-        this.fileManagementService = fileManagementService;
     }
 
-    public List<FileSummaryGroup> getFileSummaryGroups(UserAccount userAccount) {
-        List<FileSummaryGroup> groups = new LinkedList<>();
-
+    public List<FileSummaryGroup> retrieveFileSummaries(UserAccount userAccount) {
         FileSummaryGroup uncatGroup = new FileSummaryGroup("panel-yellow", new LinkedList<>());
         FileSummaryGroup tetradGroup = new FileSummaryGroup("panel-primary", new LinkedList<>());
         FileSummaryGroup tdiGroup = new FileSummaryGroup("panel-green", new LinkedList<>());
 
-        FileRepository fileRepository = fileService.getRepository();
-
-        FileType excludeFileType = fileTypeService.findByName(FileTypeService.RESULT);
-        List<FileFormat> fileFormats = fileFormatService.findByFileTypeNot(excludeFileType);
+        FileType fileType = fileTypeService.findByName(FileTypeService.RESULT);
+        List<FileFormat> fileFormats = fileFormatService.findByFileTypeNot(fileType);
         fileFormats.forEach(fileFormat -> {
-            String title = fileFormat.getDisplayName();
-            String fileFormatName = fileFormat.getName();
-            Long count = fileRepository.countByFileFormatAndUserAccount(fileFormat, userAccount);
-
-            FileSummary fileSummary = new FileSummary(title, fileFormatName, count);
-            switch (fileFormatName) {
+            Long numOfFiles = fileService.getRepository().countByFileFormatAndUserAccount(fileFormat, userAccount);
+            switch (fileFormat.getName()) {
                 case FileFormatService.TDI_TABULAR:
-                    tdiGroup.getFileSummaries().add(fileSummary);
+                    tdiGroup.getFileSummaries().add(new FileSummary(numOfFiles, fileFormat));
                     break;
                 default:
-                    tetradGroup.getFileSummaries().add(fileSummary);
+                    tetradGroup.getFileSummaries().add(new FileSummary(numOfFiles, fileFormat));
             }
         });
 
-        String title = "Uncategorized";
-        String fileFormatName = "uncategorized";
-        Long count = fileRepository.countByUserAccountAndFileFormatIsNull(userAccount);
-        uncatGroup.getFileSummaries().add(new FileSummary(title, fileFormatName, count));
+        Long numOfFiles = fileService.getRepository().countByUserAccountAndFileFormatIsNull(userAccount);
+        uncatGroup.getFileSummaries().add(new FileSummary(numOfFiles, null));
 
         return Arrays.asList(uncatGroup, tetradGroup, tdiGroup);
     }

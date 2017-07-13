@@ -18,6 +18,8 @@
  */
 package edu.pitt.dbmi.ccd.web.domain.file;
 
+import edu.pitt.dbmi.ccd.db.entity.FileFormat;
+
 /**
  *
  * Jul 12, 2017 2:18:48 PM
@@ -26,43 +28,32 @@ package edu.pitt.dbmi.ccd.web.domain.file;
  */
 public class FileSummary {
 
-    private String title;
+    private Long numOfFiles;
 
-    private String fileFormat;
-
-    private Long count;
+    private FileFormat fileFormat;
 
     public FileSummary() {
     }
 
-    public FileSummary(String title, String fileFormat, Long count) {
-        this.title = title;
+    public FileSummary(Long numOfFiles, FileFormat fileFormat) {
+        this.numOfFiles = numOfFiles;
         this.fileFormat = fileFormat;
-        this.count = count;
     }
 
-    public String getTitle() {
-        return title;
+    public Long getNumOfFiles() {
+        return numOfFiles;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setNumOfFiles(Long numOfFiles) {
+        this.numOfFiles = numOfFiles;
     }
 
-    public String getFileFormat() {
+    public FileFormat getFileFormat() {
         return fileFormat;
     }
 
-    public void setFileFormat(String fileFormat) {
+    public void setFileFormat(FileFormat fileFormat) {
         this.fileFormat = fileFormat;
-    }
-
-    public Long getCount() {
-        return count;
-    }
-
-    public void setCount(Long count) {
-        this.count = count;
     }
 
 }
