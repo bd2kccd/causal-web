@@ -58,13 +58,12 @@ public interface ViewPath {
 
     public static final String REDIRECT_UNCATEGORIZED_FILE = "redirect:/secured/file/uncategorized";
 
-    // to be removed
-    public static final String CATEGORIZED_FILE_VIEW = "file/categorizedFile";
-
     public static final String FILE_CATEGORIZE_VIEW = "file/fileCategorize";
     public static final String REDIRECT_FILE_CATEGORIZE = "redirect:/secured/file/categorize?id=";
 
     public static final String FILE_LIST_VIEW = "file/fileList";
     public static final String REDIRECT_TETRAD_DATA_FILE = "redirect:/secured/file/mgmt/list/tetrad-data";
+
+    public static final String CAUSAL_DISCOVER_VIEW = "algo/causalDiscovery";
 
 }
