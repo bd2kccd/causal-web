@@ -13,7 +13,7 @@
         <link rel="stylesheet" href="../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css}"/>
         <link rel="stylesheet" href="../../static/vendors/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.min.css}" />
         <link rel="stylesheet" href="../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
-        <link rel="stylesheet" href="../../static/css/algo/causalDiscovery.min.css" th:href="@{/css/algo/causalDiscovery.min.css}" />
+        <link rel="stylesheet" href="../../static/css/divSquare.min.css" th:href="@{/css/divSquare.min.css}" />
         <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{https://code.jquery.com/jquery-2.2.4.min.js}"></script>
         <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
@@ -29,12 +29,16 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-4 algorithm-item" th:each="algorithm : ${algorithms}">
-                        <div class="div-square">
+                    <div class="col-md-4 div_square_item" th:each="algorithm : ${algorithms}">
+                        <div class="div_square">
                             <a href="#" th:href="@{'/secured/algorithm/tetrad/fges/' + ${algorithm.name}}">
-                                <i class="fa fa-random fa-5x"></i>
-                                <h4 th:text="${algorithm.title}">FGES Continuous</h4>
-                                <p class="description" th:text="${algorithm.description}">Fast Greedy Equivalence Search (FGES) algorithm for continuous variables.</p>
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-random fa-5x"></i>
+                                    </div>
+                                </div>
+                                <h4 class="page-header" th:text="${algorithm.title}">FGES Continuous</h4>
+                                <p th:text="${algorithm.description}">Fast Greedy Equivalence Search (FGES) algorithm for continuous variables.</p>
                             </a>
                         </div>
                     </div>
