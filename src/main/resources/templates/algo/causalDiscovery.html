@@ -30,8 +30,8 @@
                 </div>
                 <div class="row">
                     <div class="col-md-4 div_square_item" th:each="algorithm : ${algorithms}">
-                        <div class="div_square">
-                            <a href="#" th:href="@{'/secured/algorithm/tetrad/fges/' + ${algorithm.name}}">
+                        <a href="#" th:href="@{'/secured/algorithm/tetrad/fges/' + ${algorithm.name}}">
+                            <div class="div_square">
                                 <div class="row">
                                     <div class="col-xs-3">
                                         <i class="fa fa-random fa-5x"></i>
@@ -39,8 +39,8 @@
                                 </div>
                                 <h4 class="page-header" th:text="${algorithm.title}">FGES Continuous</h4>
                                 <p th:text="${algorithm.description}">Fast Greedy Equivalence Search (FGES) algorithm for continuous variables.</p>
-                            </a>
-                        </div>
+                            </div>
+                        </a>
                     </div>
                 </div>
                 <footer th:replace="fragments/footer :: footer">

@@ -26,3 +26,6 @@ $(document).ready(function () {
         }
     });
 });
+$(document).on('click', '#categorize_file', function (e) {
+    collapseAction(this);
+});

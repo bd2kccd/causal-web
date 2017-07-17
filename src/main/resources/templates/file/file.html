@@ -13,6 +13,7 @@
         <link rel="stylesheet" href="../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css}"/>
         <link rel="stylesheet" href="../../static/vendors/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.min.css}" />
         <link rel="stylesheet" href="../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
+        <link rel="stylesheet" href="../../static/css/divSquare.min.css" th:href="@{/css/divSquare.min.css}" />
         <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{https://code.jquery.com/jquery-2.2.4.min.js}"></script>
         <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
@@ -28,31 +29,20 @@
                     </div>
                 </div>
                 <div class="row" th:each="group : ${fileSummaryGroups}">
-                    <div class="col-lg-3 col-md-6" th:each="summary : ${group.fileSummaries}">
-                        <div class="panel panel-default_pitt" th:class="'panel ' + ${group.cssPanel}">
-                            <div class="panel-heading">
+                    <div class="col-md-3 div_square_item" th:each="summary : ${group.fileSummaries}">
+                        <a href="#" th:href="@{${summary.fileFormat == null} ? '/secured/file/uncategorized' : '/secured/file/' + ${summary.fileFormat.name}}">
+                            <div class="div_square">
                                 <div class="row">
                                     <div class="col-xs-3">
-                                        <i class="fa fa-file-o fa-5x white"></i>
+                                        <i class="fa fa-file-o fa-5x"></i>
                                     </div>
                                     <div class="col-xs-9 text-right">
                                         <div class="huge" th:text="${summary.numOfFiles}"></div>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-xs-9">
-                                        <p th:text="${summary.fileFormat == null} ? 'Uncategorized' : ${summary.fileFormat.displayName}">Uncategorized</p>
-                                    </div>
-                                </div>
+                                <h4 th:text="${summary.fileFormat == null} ? 'Uncategorized' : ${summary.fileFormat.displayName}">Uncategorized</h4>
                             </div>
-                            <a href="../file/fileList.html" th:href="@{${summary.fileFormat == null} ? '/secured/file/uncategorized' : '/secured/file/' + ${summary.fileFormat.name}}">
-                                <div class="panel-footer">
-                                    <span class="pull-left">View List</span>
-                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-                                    <div class="clearfix"></div>
-                                </div>
-                            </a>
-                        </div>
+                        </a>
                     </div>
                 </div>
                 <footer th:replace="fragments/footer :: footer">
