@@ -65,5 +65,6 @@ public interface ViewPath {
     public static final String REDIRECT_TETRAD_DATA_FILE = "redirect:/secured/file/mgmt/list/tetrad-data";
 
     public static final String CAUSAL_DISCOVER_VIEW = "algo/causalDiscovery";
+    public static final String FGES_VIEW = "algo/fgesc";
 
 }

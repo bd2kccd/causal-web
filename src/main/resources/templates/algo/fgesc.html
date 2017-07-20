@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <title>Causal Web: FGES</title>
+        <meta name="description" content="causal" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="apple-touch-icon" href="../../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
+        <link rel="icon" href="../../static/favicon.ico" th:href="@{/favicon.ico}" />
+        <link rel="stylesheet" href="../../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/bootstrap/css/bootstrap-theme.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css}"/>
+        <link rel="stylesheet" href="../../static/vendors/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.min.css}" />
+        <link rel="stylesheet" href="../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
+        <link rel="stylesheet" href="../../static/css/stepwizard.min.css" th:href="@{/css/stepwizard.min.css}" /> 
+        <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{https://code.jquery.com/jquery-2.2.4.min.js}"></script>
+        <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
+        <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
+        <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
+        <script src="../../static/js/algo/stepwizard-tetrad.min.js" th:src="@{/js/algo/stepwizard-tetrad.min.js}"></script>
+    </head>
+    <body data-ng-app="">
+        <div id="wrapper">
+            <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0" th:replace="fragments/navigation :: nav"></nav>
+            <div id="page-wrapper">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h3 class="page-header" th:text="${title}">FGES Continuous</h3>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <p class="text-muted" th:text="${description}">Fast Greedy Equivalence Search (FGES) Algorithm for Continuous Variables</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="stepwizard">
+                            <div class="stepwizard-row setup-panel">
+                                <div class="stepwizard-step">
+                                    <button id="step1btn" class="btn btn-primary btn-circle" onclick="window.location.href = '#step1'">1</button>
+                                    <p>Select Dataset</p>
+                                </div>
+                                <div class="stepwizard-step">
+                                    <button id="step2btn" class="btn btn-default btn-circle" onclick="window.location.href = '#step2'" disabled="disabled">2</button>
+                                    <p>Set Parameters</p>
+                                </div>
+                                <div class="stepwizard-step">
+                                    <button id="step3btn" class="btn btn-default btn-circle" onclick="window.location.href = '#step3'" disabled="disabled">3</button>
+                                    <p>Run Algorithm</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <form id="fgescForm" method="post" action="" role="form" th:object="${fgescForm}">
+                            <div class="row setup-content" id="step1">
+                                <div class="col-xs-12">
+                                    <div class="col-md-12">
+                                        <h3>Step 1: Select Dataset</h3>
+                                        <div class="panel panel-primary">
+                                            <div class="panel-heading">
+                                                <h3 class="panel-title">Dataset</h3>
+                                            </div>
+                                            <div class="panel-body">
+                                                <div class="form-group">
+                                                    <label for="dataset">Dataset: (Data must be summarized before appearing here. Only continuous data is analyzable by this algorithm.)</label>
+                                                    <select id="dataset" name="dataset" class="form-control" data-ng-model="dataset" required="required"
+                                                            th:field="*{dataset}"
+                                                            th:attr="data-ng-init='dataset = \'' + *{dataset} + '\''"
+                                                            th:disabled="${#strings.isEmpty(fgescForm.dataset)}">
+                                                        <option value=""
+                                                                th:each="dataset : ${datasetList}"
+                                                                th:value="${dataset.title}"
+                                                                th:text="${dataset.title}"
+                                                                th:disabled="${#strings.isEmpty(fgescForm.dataset)}">sim_data_100vars_100_cases.txt (75.48 kB)</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-primary btn-lg btn-block nextBtn">Next</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row setup-content" id="step2">
+                                <div class="col-xs-12">
+                                    <div class="col-md-12">
+                                        <h3> Step 2: Set Parameters</h3>
+                                        <button type="button" class="btn btn-primary btn-lg btn-block nextBtn">Next</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row setup-content" id="step3">
+                                <div class="col-xs-12">
+                                    <div class="col-md-12">
+                                        <h3> Step 3: Run Algorithm</h3>
+                                        <button type="submit" class="btn btn-success btn-lg btn-block nextBtn">Run Algorithm!</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <footer th:replace="fragments/footer :: footer">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="page-header"></div>
+                            <p class="text-muted">Copyright &copy; 1900 University of Pittsburgh Department of Biomedical Informatics</p>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <script src="../../static/vendors/angularjs/angular.min.js" th:src="@{https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js}"></script>
+        <script src="../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.16.0/jquery.validate.min.js}"></script>
+        <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
+    </body>
+</html>

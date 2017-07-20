@@ -69,7 +69,7 @@ public class FileGroupCtrlService {
     }
 
     public void addNewFileGroup(String fileGroupName, List<TetradDataFile> tetradDataFiles, UserAccount userAccount) {
-        FileType fileType = fileTypeService.findByName(FileTypeService.DATA);
+        FileType fileType = fileTypeService.findByName(FileTypeService.DATA_NAME);
         List<File> files = tetradDataFiles.stream()
                 .map(TetradDataFile::getFile)
                 .collect(Collectors.toList());

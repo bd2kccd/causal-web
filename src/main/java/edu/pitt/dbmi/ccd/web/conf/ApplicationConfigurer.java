@@ -18,6 +18,12 @@
  */
 package edu.pitt.dbmi.ccd.web.conf;
 
+import edu.pitt.dbmi.ccd.web.domain.algo.Algorithm;
+import edu.pitt.dbmi.ccd.web.prop.TetradProperties;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import org.springframework.boot.web.servlet.ErrorPage;
 import org.springframework.boot.web.servlet.ErrorPageRegistrar;
 import org.springframework.context.annotation.Bean;
@@ -45,6 +51,30 @@ public class ApplicationConfigurer extends WebMvcConfigurerAdapter {
                     new ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/500")
             );
         };
+    }
+
+    @Bean
+    public Map<String, List<Algorithm>> algorithms(final TetradProperties tetradProperties) {
+        Map<String, List<Algorithm>> map = new LinkedHashMap<>();
+
+        Map<String, String> titles = tetradProperties.getAlgoTypeTitles();
+        Map<String, String> descriptions = tetradProperties.getAlgoTypeDescription();
+
+        List<Algorithm> fgesAlgo = new LinkedList<>();
+        String[] fgesTypes = tetradProperties.getFgesTypes();
+        for (String name : fgesTypes) {
+            fgesAlgo.add(new Algorithm(name, titles.get(name), descriptions.get(name)));
+        }
+        map.put("fges", fgesAlgo);
+
+        List<Algorithm> gfciAlgo = new LinkedList<>();
+        String[] gfciTypes = tetradProperties.getGfciTypes();
+        for (String name : gfciTypes) {
+            gfciAlgo.add(new Algorithm(name, titles.get(name), descriptions.get(name)));
+        }
+        map.put("gfci", gfciAlgo);
+
+        return map;
     }
 
     @Override

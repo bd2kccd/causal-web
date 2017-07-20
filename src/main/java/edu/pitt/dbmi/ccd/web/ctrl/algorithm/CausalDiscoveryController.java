@@ -19,7 +19,9 @@
 package edu.pitt.dbmi.ccd.web.ctrl.algorithm;
 
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import edu.pitt.dbmi.ccd.web.service.algo.CausalDiscoveryCtrlService;
+import edu.pitt.dbmi.ccd.web.domain.algo.Algorithm;
+import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -38,16 +40,16 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @RequestMapping(value = "secured/algorithm/causal-discover")
 public class CausalDiscoveryController implements ViewPath {
 
-    private final CausalDiscoveryCtrlService causalDiscoveryCtrlService;
+    private final Map<String, List<Algorithm>> algorithms;
 
     @Autowired
-    public CausalDiscoveryController(CausalDiscoveryCtrlService causalDiscoveryCtrlService) {
-        this.causalDiscoveryCtrlService = causalDiscoveryCtrlService;
+    public CausalDiscoveryController(Map<String, List<Algorithm>> algorithms) {
+        this.algorithms = algorithms;
     }
 
     @RequestMapping(method = RequestMethod.GET)
     public String showCausalDiscoveryAlgorithms(final Model model) {
-        model.addAttribute("algorithms", causalDiscoveryCtrlService.retrieveAlgorithms());
+        model.addAttribute("algorithms", algorithms);
 
         return CAUSAL_DISCOVER_VIEW;
     }

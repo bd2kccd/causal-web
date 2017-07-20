@@ -28,9 +28,9 @@
                         <h3 class="page-header">Causal Discovery</h3>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-4 div_square_item" th:each="algorithm : ${algorithms}">
-                        <a href="#" th:href="@{'/secured/algorithm/tetrad/fges/' + ${algorithm.name}}">
+                <div class="row" th:each="element : ${algorithms}">
+                    <div class="col-md-4 div_square_item" th:each="algorithm : ${element.value}">
+                        <a href="#" th:href="@{'/secured/algorithm/causal-discover/' + ${element.key} + '/' + ${algorithm.name}}">
                             <div class="div_square">
                                 <div class="row">
                                     <div class="col-xs-3">

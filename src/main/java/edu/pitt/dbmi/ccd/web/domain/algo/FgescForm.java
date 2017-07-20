@@ -16,20 +16,27 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.service.algo;
-
-import org.springframework.stereotype.Service;
+package edu.pitt.dbmi.ccd.web.domain.algo;
 
 /**
  *
- * Jul 14, 2017 6:27:44 PM
+ * Jul 20, 2017 6:02:52 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-@Service
-public class FGESCtrlService {
+public class FgescForm {
 
-    public FGESCtrlService() {
+    private String dataset;
+
+    public FgescForm() {
+    }
+
+    public String getDataset() {
+        return dataset;
+    }
+
+    public void setDataset(String dataset) {
+        this.dataset = dataset;
     }
 
 }

@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.prop;
 
+import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -33,40 +34,51 @@ import org.springframework.stereotype.Component;
 @PropertySource("classpath:tetrad.properties")
 public class TetradProperties {
 
-    @Value("${tetrad.algorithm.name:}")
-    private String[] algorithNames;
+    @Value("${algo.fges.types}")
+    private String[] fgesTypes;
 
-    @Value("#{${tetrad.algorithm.title:}}")
-    private Map<String, String> algorithmTitles;
+    @Value("${algo.gfci.types}")
+    private String[] gfciTypes;
 
-    @Value("#{${tetrad.algorithm.description:}}")
-    private Map<String, String> algorithmDescriptions;
+    @Value("#{${algo.type.titles}}")
+    private Map<String, String> algoTypeTitles;
+
+    @Value("#{${algo.type.desc}}")
+    private Map<String, String> algoTypeDescription;
 
     public TetradProperties() {
     }
 
-    public String[] getAlgorithNames() {
-        return algorithNames;
+    public String[] getFgesTypes() {
+        return fgesTypes;
     }
 
-    public void setAlgorithNames(String[] algorithNames) {
-        this.algorithNames = algorithNames;
+    public void setFgesTypes(String[] fgesTypes) {
+        this.fgesTypes = fgesTypes;
     }
 
-    public Map<String, String> getAlgorithmTitles() {
-        return algorithmTitles;
+    public String[] getGfciTypes() {
+        return gfciTypes;
     }
 
-    public void setAlgorithmTitles(Map<String, String> algorithmTitles) {
-        this.algorithmTitles = algorithmTitles;
+    public void setGfciTypes(String[] gfciTypes) {
+        this.gfciTypes = gfciTypes;
     }
 
-    public Map<String, String> getAlgorithmDescriptions() {
-        return algorithmDescriptions;
+    public Map<String, String> getAlgoTypeTitles() {
+        return algoTypeTitles;
     }
 
-    public void setAlgorithmDescriptions(Map<String, String> algorithmDescriptions) {
-        this.algorithmDescriptions = algorithmDescriptions;
+    public void setAlgoTypeTitles(Map<String, String> algoTypeTitles) {
+        this.algoTypeTitles = algoTypeTitles;
     }
 
+    public Map<String, String> getAlgoTypeDescription() {
+        return algoTypeDescription;
+    }
+
+    public void setAlgoTypeDescription(Map<String, String> algoTypeDescription) {
+        this.algoTypeDescription = algoTypeDescription;
+    }
+    
 }

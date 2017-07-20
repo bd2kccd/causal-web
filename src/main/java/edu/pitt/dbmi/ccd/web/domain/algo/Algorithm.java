@@ -16,31 +16,53 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.ctrl.algorithm.tetrad.fges;
-
-import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import edu.pitt.dbmi.ccd.web.service.algo.FGESCtrlService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.SessionAttributes;
+package edu.pitt.dbmi.ccd.web.domain.algo;
 
 /**
  *
- * Jul 14, 2017 6:18:15 PM
+ * Jul 20, 2017 3:17:19 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-@Controller
-@SessionAttributes("appUser")
-@RequestMapping(value = "secured/algorithm/tetrad/fges")
-public class FGESController implements ViewPath {
+public class Algorithm {
 
-    private final FGESCtrlService fgesCtrlService;
+    private String name;
 
-    @Autowired
-    public FGESController(FGESCtrlService fgesCtrlService) {
-        this.fgesCtrlService = fgesCtrlService;
+    private String title;
+
+    private String description;
+
+    public Algorithm() {
+    }
+
+    public Algorithm(String name, String title, String description) {
+        this.name = name;
+        this.title = title;
+        this.description = description;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
 }

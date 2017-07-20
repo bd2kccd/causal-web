@@ -57,12 +57,12 @@ public class FileCtrlService {
         FileSummaryGroup tetradGroup = new FileSummaryGroup("panel-primary", new LinkedList<>());
         FileSummaryGroup tdiGroup = new FileSummaryGroup("panel-green", new LinkedList<>());
 
-        FileType fileType = fileTypeService.findByName(FileTypeService.RESULT);
+        FileType fileType = fileTypeService.findByName(FileTypeService.RESULT_NAME);
         List<FileFormat> fileFormats = fileFormatService.findByFileTypeNot(fileType);
         fileFormats.forEach(fileFormat -> {
             Long numOfFiles = fileService.getRepository().countByFileFormatAndUserAccount(fileFormat, userAccount);
             switch (fileFormat.getName()) {
-                case FileFormatService.TDI_TABULAR:
+                case FileFormatService.TDI_TABULAR_NAME:
                     tdiGroup.getFileSummaries().add(new FileSummary(numOfFiles, fileFormat));
                     break;
                 default:

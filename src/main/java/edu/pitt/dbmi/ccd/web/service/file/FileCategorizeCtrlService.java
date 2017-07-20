@@ -135,12 +135,12 @@ public class FileCategorizeCtrlService {
     public File categorizeFile(FileCategorizeForm fileCategorizeForm, File file, UserAccount userAccount) {
         FileFormat fileFormat = fileFormatService.getRepository().findOne(fileCategorizeForm.getFileFormatId());
         switch (fileFormat.getName()) {
-            case FileFormatService.TETRAD_TABULAR:
+            case FileFormatService.TETRAD_TABULAR_NAME:
                 TetradDataFile dataFile = createTetradDataFile(fileCategorizeForm, file, userAccount);
                 dataFile = tetradDataFileService.save(dataFile);
 
                 return dataFile.getFile();
-            case FileFormatService.TETRAD_VARIABLE:
+            case FileFormatService.TETRAD_VARIABLE_NAME:
                 TetradVariableFile variableFile = createTetradVariableFile(fileCategorizeForm, file, userAccount);
                 variableFile = tetradVariableFileService.save(variableFile);
 
@@ -151,7 +151,7 @@ public class FileCategorizeCtrlService {
     }
 
     public Long getTetradDataGroupId() {
-        FileFormat fileFormat = fileFormatService.findByName(FileFormatService.TETRAD_TABULAR);
+        FileFormat fileFormat = fileFormatService.findByName(FileFormatService.TETRAD_TABULAR_NAME);
 
         return (fileFormat == null) ? 0 : fileFormat.getId();
     }
@@ -159,7 +159,7 @@ public class FileCategorizeCtrlService {
     public Map<String, List<FileFormat>> getFileFormatGroupOpts() {
         Map<String, List<FileFormat>> map = new TreeMap<>();
 
-        FileType fileType = fileTypeService.findByName(FileTypeService.RESULT);
+        FileType fileType = fileTypeService.findByName(FileTypeService.RESULT_NAME);
         List<FileFormat> fileFormats = fileFormatService.findByFileTypeNot(fileType);
         fileFormats.forEach(fileFormat -> {
             String key = fileFormat.getFileType().getDisplayName();
@@ -181,7 +181,7 @@ public class FileCategorizeCtrlService {
         if (fileFormat != null) {
             form.setFileFormatId(fileFormat.getId());
 
-            if (FileFormatService.TETRAD_TABULAR.equals(fileFormat.getName())) {
+            if (FileFormatService.TETRAD_TABULAR_NAME.equals(fileFormat.getName())) {
                 TetradDataFile dataFile = tetradDataFileService.getRepository().findByFile(file);
                 if (dataFile != null) {
                     form.setFileDelimiterId(dataFile.getFileDelimiterType().getId());
@@ -227,7 +227,7 @@ public class FileCategorizeCtrlService {
         FileFormat fileFormat = file.getFileFormat();
         if (fileFormat != null) {
             switch (fileFormat.getName()) {
-                case FileFormatService.TETRAD_TABULAR:
+                case FileFormatService.TETRAD_TABULAR_NAME:
                     TetradDataFile dataFile = tetradDataFileService.getRepository().findByFile(file);
                     attrValues.add(new AttrValue("Number of Columns", String.valueOf(dataFile.getNumOfColumns())));
                     attrValues.add(new AttrValue("Number of Rows", String.valueOf(dataFile.getNumOfRows())));
@@ -237,7 +237,7 @@ public class FileCategorizeCtrlService {
                     attrValues.add(new AttrValue("Missing Value Marker", dataFile.getMissingValueMarker()));
                     attrValues.add(new AttrValue("Comment Marker", dataFile.getCommentMarker()));
                     break;
-                case FileFormatService.TETRAD_VARIABLE:
+                case FileFormatService.TETRAD_VARIABLE_NAME:
                     TetradVariableFile varFile = tetradVariableFileService.getRepository().findByFile(file);
                     attrValues.add(new AttrValue("Number of Variables", String.valueOf(varFile.getNumOfVariables())));
                     break;

@@ -121,9 +121,6 @@ public class FileController implements ViewPath {
     @RequestMapping(method = RequestMethod.GET)
     public String showFiles(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        if (userAccount == null) {
-            throw new ResourceNotFoundException();
-        }
 
         fileManagementService.syncDatabaseWithDataDirectory(userAccount);
 
@@ -141,7 +138,7 @@ public class FileController implements ViewPath {
         } else {
             FileFormat fileFormat = fileFormatService.findByName(fileFormatName);
 
-            return (fileFormat == null || FileTypeService.RESULT.equals(fileFormat.getFileType().getName()))
+            return (fileFormat == null || FileTypeService.RESULT_NAME.equals(fileFormat.getFileType().getName()))
                     ? ResponseEntity.notFound().build()
                     : ResponseEntity.ok(fileService.getRepository().findByUserAccountAndFileFormat(userAccount, fileFormat));
         }
@@ -150,7 +147,7 @@ public class FileController implements ViewPath {
     @RequestMapping(value = "{fileFormatName}", method = RequestMethod.GET)
     public String showFileList(@PathVariable String fileFormatName, final Model model) {
         FileFormat fileFormat = fileFormatService.findByName(fileFormatName);
-        if ("uncategorized".equals(fileFormatName) || !(fileFormat == null || FileTypeService.RESULT.equals(fileFormat.getFileType().getName()))) {
+        if ("uncategorized".equals(fileFormatName) || !(fileFormat == null || FileTypeService.RESULT_NAME.equals(fileFormat.getFileType().getName()))) {
             model.addAttribute("fileFormat", fileFormat);
         } else {
             throw new ResourceNotFoundException();
