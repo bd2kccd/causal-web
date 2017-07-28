@@ -16,19 +16,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.domain.algo;
+package edu.pitt.dbmi.ccd.web.domain.algorithm;
+
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
- * Jul 20, 2017 6:02:52 PM
+ * Jul 21, 2017 12:23:34 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class FgescForm {
+public abstract class TetradJobForm {
 
-    private String dataset;
+    @NotBlank
+    protected String dataset;
 
-    public FgescForm() {
+    protected String knowledge;
+
+    protected boolean verbose = false;
+
+    @Min(value = 0, message = "Value must be at least 0.")
+    @Max(value = 128, message = "Value must be at most 128.")
+    protected int jvmMaxMem = 0;
+
+    public TetradJobForm() {
     }
 
     public String getDataset() {
@@ -37,6 +50,30 @@ public class FgescForm {
 
     public void setDataset(String dataset) {
         this.dataset = dataset;
+    }
+
+    public String getKnowledge() {
+        return knowledge;
+    }
+
+    public void setKnowledge(String knowledge) {
+        this.knowledge = knowledge;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    public int getJvmMaxMem() {
+        return jvmMaxMem;
+    }
+
+    public void setJvmMaxMem(int jvmMaxMem) {
+        this.jvmMaxMem = jvmMaxMem;
     }
 
 }

@@ -65,6 +65,13 @@ public interface ViewPath {
     public static final String REDIRECT_TETRAD_DATA_FILE = "redirect:/secured/file/mgmt/list/tetrad-data";
 
     public static final String CAUSAL_DISCOVER_VIEW = "algo/causalDiscovery";
-    public static final String FGES_VIEW = "algo/fgesc";
+    public static final String FGESC_VIEW = "algo/fgesc";
+    public static final String FGESD_VIEW = "algo/fgesd";
+    public static final String FGESM_VIEW = "algo/fgesm";
+    public static final String GFCIC_VIEW = "algo/gfcic";
+    public static final String GFCID_VIEW = "algo/gfcid";
+    public static final String GFCIM_VIEW = "algo/gfcim";
+    public static final String REDIRECT_FGES_VIEW = "redirect:/secured/algorithm/causal-discover/fges/";
+    public static final String REDIRECT_GFCI_VIEW = "redirect:/secured/algorithm/causal-discover/gfci/";
 
 }

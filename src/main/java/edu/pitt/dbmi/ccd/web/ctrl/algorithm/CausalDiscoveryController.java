@@ -18,8 +18,8 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.algorithm;
 
+import edu.pitt.dbmi.ccd.web.domain.algorithm.AlgorithmItem;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import edu.pitt.dbmi.ccd.web.domain.algo.Algorithm;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,10 +40,10 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @RequestMapping(value = "secured/algorithm/causal-discover")
 public class CausalDiscoveryController implements ViewPath {
 
-    private final Map<String, List<Algorithm>> algorithms;
+    private final Map<String, List<AlgorithmItem>> algorithms;
 
     @Autowired
-    public CausalDiscoveryController(Map<String, List<Algorithm>> algorithms) {
+    public CausalDiscoveryController(Map<String, List<AlgorithmItem>> algorithms) {
         this.algorithms = algorithms;
     }
 

@@ -18,28 +18,28 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.algorithm;
 
-import edu.pitt.dbmi.ccd.db.entity.File;
-import edu.pitt.dbmi.ccd.db.entity.FileFormat;
-import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.service.FileFormatService;
-import edu.pitt.dbmi.ccd.db.service.FileService;
+import edu.pitt.dbmi.ccd.db.service.FileVariableTypeService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.domain.algo.FgescForm;
-import edu.pitt.dbmi.ccd.web.prop.TetradProperties;
+import edu.pitt.dbmi.ccd.web.domain.algorithm.FgescJobForm;
+import edu.pitt.dbmi.ccd.web.domain.algorithm.FgesdJobForm;
+import edu.pitt.dbmi.ccd.web.domain.algorithm.FgesmJobForm;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
-import java.util.List;
+import edu.pitt.dbmi.ccd.web.service.algorithm.TetradJobService;
+import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  *
@@ -50,46 +50,100 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @Controller
 @SessionAttributes("appUser")
 @RequestMapping(value = "secured/algorithm/causal-discover/fges")
-public class FGESController implements ViewPath {
+public class FGESController extends AbstractTetradController implements ViewPath {
 
-    private final FileService fileService;
-    private final FileFormatService fileFormatService;
-    private final AppUserService appUserService;
-    private final TetradProperties tetradProperties;
+    private final String fgesc;
+    private final String fgesd;
+    private final String fgesm;
 
     @Autowired
-    public FGESController(FileService fileService, FileFormatService fileFormatService, AppUserService appUserService, TetradProperties tetradProperties) {
-        this.fileService = fileService;
-        this.fileFormatService = fileFormatService;
-        this.appUserService = appUserService;
-        this.tetradProperties = tetradProperties;
+    public FGESController(
+            @Value("${tetrad.algo.fges.fgesc}") String fgesc,
+            @Value("${tetrad.algo.fges.fgesd}") String fgesd,
+            @Value("${tetrad.algo.fges.fgesm}") String fgesm,
+            TetradJobService tetradJobService,
+            AppUserService appUserService) {
+        super(tetradJobService, appUserService);
+        this.fgesc = fgesc;
+        this.fgesd = fgesd;
+        this.fgesm = fgesm;
     }
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {
-        binder.registerCustomEditor(String.class, new StringTrimmerEditor(false));
+        binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
     }
 
-    @RequestMapping(value = "${algo.fges.fgesc}", method = RequestMethod.GET)
-    public String showFGEScView(@Value("${algo.fges.fgesc}") final String algoName, @ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        String title = tetradProperties.getAlgoTypeTitles().get(algoName);
-        String description = tetradProperties.getAlgoTypeDescription().get(algoName);
+    @RequestMapping(value = "${tetrad.algo.fges.fgesm}", method = RequestMethod.POST)
+    public String submitFGESmJob(
+            @Valid @ModelAttribute("tetradJobForm") final FgesmJobForm fgesmJobForm,
+            final BindingResult bindingResult,
+            final RedirectAttributes redirAttrs,
+            @ModelAttribute("appUser") final AppUser appUser, final Model model) {
+        if (bindingResult.hasErrors()) {
+            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.tetradJobForm", bindingResult);
+            redirAttrs.addFlashAttribute("tetradJobForm", fgesmJobForm);
 
-        FgescForm fgescForm = new FgescForm();
-
-        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        FileFormat fileFormat = fileFormatService.findByName(FileFormatService.TETRAD_TABULAR_NAME);
-        List<File> datasetList = fileService.getRepository().findByUserAccountAndFileFormat(userAccount, fileFormat);
-        if (!datasetList.isEmpty()) {
-            fgescForm.setDataset(datasetList.get(0).getTitle());
+            return REDIRECT_FGES_VIEW + fgesm;
         }
 
-        model.addAttribute("title", title);
-        model.addAttribute("description", description);
-        model.addAttribute("fgescForm", fgescForm);
-        model.addAttribute("datasetList", datasetList);
+        return CAUSAL_DISCOVER_VIEW;
+    }
 
-        return FGES_VIEW;
+    @RequestMapping(value = "${tetrad.algo.fges.fgesd}", method = RequestMethod.POST)
+    public String submitFGESdJob(
+            @Valid @ModelAttribute("tetradJobForm") final FgesdJobForm fgesdJobForm,
+            final BindingResult bindingResult,
+            final RedirectAttributes redirAttrs,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        if (bindingResult.hasErrors()) {
+            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.tetradJobForm", bindingResult);
+            redirAttrs.addFlashAttribute("tetradJobForm", fgesdJobForm);
+
+            return REDIRECT_FGES_VIEW + fgesd;
+        }
+
+        return CAUSAL_DISCOVER_VIEW;
+    }
+
+    @RequestMapping(value = "${tetrad.algo.fges.fgesc}", method = RequestMethod.POST)
+    public String submitFGEScJob(
+            @Valid @ModelAttribute("tetradJobForm") final FgescJobForm fgescJobForm,
+            final BindingResult bindingResult,
+            final RedirectAttributes redirAttrs,
+            @ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        if (bindingResult.hasErrors()) {
+            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.tetradJobForm", bindingResult);
+            redirAttrs.addFlashAttribute("tetradJobForm", fgescJobForm);
+
+            return REDIRECT_FGES_VIEW + fgesc;
+        }
+
+        return CAUSAL_DISCOVER_VIEW;
+    }
+
+    @RequestMapping(value = "${tetrad.algo.fges.fgesm}", method = RequestMethod.GET)
+    public String showFGESmView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+        setupView(new FgesmJobForm(), FileVariableTypeService.MIXED_NAME, fgesm, appUser, model);
+
+        return FGESM_VIEW;
+    }
+
+    @RequestMapping(value = "${tetrad.algo.fges.fgesd}", method = RequestMethod.GET)
+    public String showFGESdView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+        setupView(new FgesdJobForm(), FileVariableTypeService.DISCRETE_NAME, fgesd, appUser, model);
+
+        return FGESD_VIEW;
+    }
+
+    @RequestMapping(value = "${tetrad.algo.fges.fgesc}", method = RequestMethod.GET)
+    public String showFGEScView(@ModelAttribute("appUser") final AppUser appUser,
+            final Model model) {
+        setupView(new FgescJobForm(), FileVariableTypeService.CONTINUOUS_NAME, fgesc, appUser, model);
+
+        return FGESC_VIEW;
     }
 
 }

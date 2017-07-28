@@ -18,8 +18,9 @@
  */
 package edu.pitt.dbmi.ccd.web.conf;
 
-import edu.pitt.dbmi.ccd.web.domain.algo.Algorithm;
+import edu.pitt.dbmi.ccd.web.domain.algorithm.AlgorithmItem;
 import edu.pitt.dbmi.ccd.web.prop.TetradProperties;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,25 +55,42 @@ public class ApplicationConfigurer extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public Map<String, List<Algorithm>> algorithms(final TetradProperties tetradProperties) {
-        Map<String, List<Algorithm>> map = new LinkedHashMap<>();
+    public Map<String, String> params(final TetradProperties tetradProperties) {
+        return tetradProperties.getAlgoParamLabels();
+    }
 
-        Map<String, String> titles = tetradProperties.getAlgoTypeTitles();
-        Map<String, String> descriptions = tetradProperties.getAlgoTypeDescription();
+    @Bean
+    public Map<String, AlgorithmItem> alorithmItems(final TetradProperties tetradProperties) {
+        Map<String, AlgorithmItem> map = new HashMap<>();
 
-        List<Algorithm> fgesAlgo = new LinkedList<>();
-        String[] fgesTypes = tetradProperties.getFgesTypes();
-        for (String name : fgesTypes) {
-            fgesAlgo.add(new Algorithm(name, titles.get(name), descriptions.get(name)));
+        Map<String, String> titles = tetradProperties.getAlgoTitles();
+        Map<String, String> descriptions = tetradProperties.getAlgoDescriptions();
+        titles.forEach((k, v) -> {
+            map.put(k, new AlgorithmItem(k, v, descriptions.get(k)));
+        });
+
+        return map;
+    }
+
+    @Bean
+    public Map<String, List<AlgorithmItem>> algorithms(final TetradProperties tetradProperties) {
+        Map<String, List<AlgorithmItem>> map = new LinkedHashMap<>();
+
+        Map<String, AlgorithmItem> alorithmItems = alorithmItems(tetradProperties);
+
+        List<AlgorithmItem> fgesAlgoItems = new LinkedList<>();
+        String[] fgesAlgorithms = tetradProperties.getFgesAlgos();
+        for (String name : fgesAlgorithms) {
+            fgesAlgoItems.add(alorithmItems.get(name));
         }
-        map.put("fges", fgesAlgo);
+        map.put("fges", fgesAlgoItems);
 
-        List<Algorithm> gfciAlgo = new LinkedList<>();
-        String[] gfciTypes = tetradProperties.getGfciTypes();
-        for (String name : gfciTypes) {
-            gfciAlgo.add(new Algorithm(name, titles.get(name), descriptions.get(name)));
+        List<AlgorithmItem> gfciAlgoItems = new LinkedList<>();
+        String[] gfciAlgorithms = tetradProperties.getGfciAlgos();
+        for (String name : gfciAlgorithms) {
+            gfciAlgoItems.add(alorithmItems.get(name));
         }
-        map.put("gfci", gfciAlgo);
+        map.put("gfci", gfciAlgoItems);
 
         return map;
     }

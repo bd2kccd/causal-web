@@ -1,0 +1,8 @@
+.chevon:after {
+    font-family:'Glyphicons Halflings';
+    float: right;
+    content:"\e114";
+}
+a.collapsed .chevon:after {
+    content:"\e080";
+}

@@ -18,7 +18,6 @@
  */
 package edu.pitt.dbmi.ccd.web.prop;
 
-import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -34,51 +33,62 @@ import org.springframework.stereotype.Component;
 @PropertySource("classpath:tetrad.properties")
 public class TetradProperties {
 
-    @Value("${algo.fges.types}")
-    private String[] fgesTypes;
+    @Value("${tetrad.algo.fges}")
+    private String[] fgesAlgos;
 
-    @Value("${algo.gfci.types}")
-    private String[] gfciTypes;
+    @Value("${tetrad.algo.gfci}")
+    private String[] gfciAlgos;
 
-    @Value("#{${algo.type.titles}}")
-    private Map<String, String> algoTypeTitles;
+    @Value("#{${tetrad.algo.titles}}")
+    private Map<String, String> algoTitles;
 
-    @Value("#{${algo.type.desc}}")
-    private Map<String, String> algoTypeDescription;
+    @Value("#{${tetrad.algo.descriptions}}")
+    private Map<String, String> algoDescriptions;
+
+    @Value("#{${tetrad.algo.param.labels}}")
+    private Map<String, String> algoParamLabels;
 
     public TetradProperties() {
     }
 
-    public String[] getFgesTypes() {
-        return fgesTypes;
+    public String[] getFgesAlgos() {
+        return fgesAlgos;
     }
 
-    public void setFgesTypes(String[] fgesTypes) {
-        this.fgesTypes = fgesTypes;
+    public void setFgesAlgos(String[] fgesAlgos) {
+        this.fgesAlgos = fgesAlgos;
     }
 
-    public String[] getGfciTypes() {
-        return gfciTypes;
+    public String[] getGfciAlgos() {
+        return gfciAlgos;
     }
 
-    public void setGfciTypes(String[] gfciTypes) {
-        this.gfciTypes = gfciTypes;
+    public void setGfciAlgos(String[] gfciAlgos) {
+        this.gfciAlgos = gfciAlgos;
     }
 
-    public Map<String, String> getAlgoTypeTitles() {
-        return algoTypeTitles;
+    public Map<String, String> getAlgoTitles() {
+        return algoTitles;
     }
 
-    public void setAlgoTypeTitles(Map<String, String> algoTypeTitles) {
-        this.algoTypeTitles = algoTypeTitles;
+    public void setAlgoTitles(Map<String, String> algoTitles) {
+        this.algoTitles = algoTitles;
     }
 
-    public Map<String, String> getAlgoTypeDescription() {
-        return algoTypeDescription;
+    public Map<String, String> getAlgoDescriptions() {
+        return algoDescriptions;
     }
 
-    public void setAlgoTypeDescription(Map<String, String> algoTypeDescription) {
-        this.algoTypeDescription = algoTypeDescription;
+    public void setAlgoDescriptions(Map<String, String> algoDescriptions) {
+        this.algoDescriptions = algoDescriptions;
     }
-    
+
+    public Map<String, String> getAlgoParamLabels() {
+        return algoParamLabels;
+    }
+
+    public void setAlgoParamLabels(Map<String, String> algoParamLabels) {
+        this.algoParamLabels = algoParamLabels;
+    }
+
 }

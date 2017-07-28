@@ -35,11 +35,12 @@ $(document).ready(function () {
             }
         }
 
-        var validator = $("#tetradSearchForm").validate();
+        var validator = $("#agorithmJobForm").validate();
         isValid = validator.form();
 
-        if (isValid)
+        if (isValid) {
             nextStepWizard.removeAttr('disabled').trigger('click');
+        }
     });
 
     $('div.setup-panel div button.btn-primary').trigger('click');

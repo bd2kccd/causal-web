@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.ccd.web.domain.algo;
+package edu.pitt.dbmi.ccd.web.domain.algorithm;
 
 /**
  *
@@ -24,7 +24,7 @@ package edu.pitt.dbmi.ccd.web.domain.algo;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class Algorithm {
+public class AlgorithmItem {
 
     private String name;
 
@@ -32,10 +32,10 @@ public class Algorithm {
 
     private String description;
 
-    public Algorithm() {
+    public AlgorithmItem() {
     }
 
-    public Algorithm(String name, String title, String description) {
+    public AlgorithmItem(String name, String title, String description) {
         this.name = name;
         this.title = title;
         this.description = description;
