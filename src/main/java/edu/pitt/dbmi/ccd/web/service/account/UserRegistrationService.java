@@ -22,7 +22,7 @@ import edu.pitt.dbmi.ccd.commons.uri.InetUtils;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.model.AccountRegistration;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
-import edu.pitt.dbmi.ccd.web.domain.account.UserRegistrationForm;
+import edu.pitt.dbmi.ccd.web.model.account.UserRegistrationForm;
 import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import java.util.Base64;
 import org.apache.shiro.authc.credential.DefaultPasswordService;

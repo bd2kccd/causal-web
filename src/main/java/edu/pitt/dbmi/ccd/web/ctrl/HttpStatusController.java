@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl;
 
+import edu.pitt.dbmi.ccd.web.model.HttpStatusModel;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,33 +34,41 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @RequestMapping(method = {RequestMethod.GET, RequestMethod.POST})
 public class HttpStatusController {
 
-    private static final String ERROR_MSG_TITLE = "Oh, snap!";
+    private static final String STATUS_TITLE = "Oh, snap!";
+    private static final String HTTP_STATUS_MODEL = "httpStatus";
+    private static final String HTTP_STATUS_VIEW = "httpStatus";
 
-    @RequestMapping(value = "/401")
+    private static final HttpStatusModel BAD_REQ = new HttpStatusModel("Bad Request", STATUS_TITLE, "Bad request.");
+    private static final HttpStatusModel UNAUTH_ACCESS = new HttpStatusModel("Unauthorized Access", STATUS_TITLE, "Sorry, you need to sign in to view this page.");
+    private static final HttpStatusModel PAGE_NOT_FOUND = new HttpStatusModel("Page Not Found", STATUS_TITLE, "Sorry, but the page you were trying to view does not exist.");
+    private static final HttpStatusModel INTERNAL_SERV_ERR = new HttpStatusModel("Internal Server Error", STATUS_TITLE, "Sorry, we are currently experiencing an internal issue.");
+
+    @RequestMapping(value = "400")
+    public String showBadRequest(final Model model) {
+        model.addAttribute(HTTP_STATUS_MODEL, BAD_REQ);
+
+        return HTTP_STATUS_VIEW;
+    }
+
+    @RequestMapping(value = "401")
     public String showUnauthorizedAccess(final Model model) {
-        model.addAttribute("pageTitle", "Unauthorized Access");
-        model.addAttribute("msgTitle", ERROR_MSG_TITLE);
-        model.addAttribute("msg", "Sorry, you need to sign in to view this page.");
+        model.addAttribute(HTTP_STATUS_MODEL, UNAUTH_ACCESS);
 
-        return "status/htmlStatus";
+        return HTTP_STATUS_VIEW;
     }
 
-    @RequestMapping(value = "/404")
+    @RequestMapping(value = "404")
     public String showPageNotFound(final Model model) {
-        model.addAttribute("pageTitle", "Page Not Found");
-        model.addAttribute("msgTitle", ERROR_MSG_TITLE);
-        model.addAttribute("msg", "Sorry, but the page you were trying to view does not exist.");
+        model.addAttribute(HTTP_STATUS_MODEL, PAGE_NOT_FOUND);
 
-        return "status/htmlStatus";
+        return HTTP_STATUS_VIEW;
     }
 
-    @RequestMapping(value = "/500")
+    @RequestMapping(value = "500")
     public String showInternalServerError(final Model model) {
-        model.addAttribute("pageTitle", "Internal Server Error");
-        model.addAttribute("msgTitle", ERROR_MSG_TITLE);
-        model.addAttribute("msg", "Sorry, we are currently experiencing an internal issue.");
+        model.addAttribute(HTTP_STATUS_MODEL, INTERNAL_SERV_ERR);
 
-        return "status/htmlStatus";
+        return HTTP_STATUS_VIEW;
     }
 
 }

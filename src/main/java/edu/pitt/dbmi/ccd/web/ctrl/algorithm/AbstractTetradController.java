@@ -20,8 +20,8 @@ package edu.pitt.dbmi.ccd.web.ctrl.algorithm;
 
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.domain.algorithm.TetradJobForm;
+import edu.pitt.dbmi.ccd.web.model.AppUser;
+import edu.pitt.dbmi.ccd.web.model.algorithm.TetradJobForm;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.algorithm.TetradJobService;
 import java.util.List;

@@ -20,9 +20,9 @@ package edu.pitt.dbmi.ccd.web.ctrl.account;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.domain.account.PasswordChangeForm;
-import edu.pitt.dbmi.ccd.web.domain.account.UserInfoForm;
+import edu.pitt.dbmi.ccd.web.model.AppUser;
+import edu.pitt.dbmi.ccd.web.model.account.PasswordChangeForm;
+import edu.pitt.dbmi.ccd.web.model.account.UserInfoForm;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.account.UserProfileService;
 import org.springframework.beans.factory.annotation.Autowired;

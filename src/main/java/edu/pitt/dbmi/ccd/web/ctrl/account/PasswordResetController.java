@@ -20,9 +20,9 @@ package edu.pitt.dbmi.ccd.web.ctrl.account;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import edu.pitt.dbmi.ccd.web.domain.account.PasswordResetForm;
-import edu.pitt.dbmi.ccd.web.domain.account.PasswordResetRequestForm;
-import edu.pitt.dbmi.ccd.web.domain.template.MessageTemplateData;
+import edu.pitt.dbmi.ccd.web.model.account.PasswordResetForm;
+import edu.pitt.dbmi.ccd.web.model.account.PasswordResetRequestForm;
+import edu.pitt.dbmi.ccd.web.model.template.MessageTemplateData;
 import edu.pitt.dbmi.ccd.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.ccd.web.service.account.PasswordResetService;
 import edu.pitt.dbmi.ccd.web.service.mail.PasswordResetMailService;

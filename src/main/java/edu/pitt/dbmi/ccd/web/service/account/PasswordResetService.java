@@ -20,8 +20,8 @@ package edu.pitt.dbmi.ccd.web.service.account;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
-import edu.pitt.dbmi.ccd.web.domain.account.PasswordResetForm;
-import edu.pitt.dbmi.ccd.web.domain.account.PasswordResetRequestForm;
+import edu.pitt.dbmi.ccd.web.model.account.PasswordResetForm;
+import edu.pitt.dbmi.ccd.web.model.account.PasswordResetRequestForm;
 import edu.pitt.dbmi.ccd.web.util.UriTool;
 import java.net.URI;
 import java.util.Base64;

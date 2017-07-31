@@ -20,7 +20,7 @@ package edu.pitt.dbmi.ccd.web.service.mail;
 
 import edu.pitt.dbmi.ccd.commons.uri.InetUtils;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.web.domain.template.UserRegistrationTemplateData;
+import edu.pitt.dbmi.ccd.web.model.template.UserRegistrationTemplateData;
 import edu.pitt.dbmi.ccd.web.prop.CcdEmailProperties;
 import edu.pitt.dbmi.ccd.web.util.UriTool;
 import java.net.URI;

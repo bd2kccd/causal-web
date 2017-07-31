@@ -8,6 +8,3 @@ $(document).ready(function () {
         $("#edit_info_panel").hide();
     });
 });
-$(document).on('click', '#collapse_link', function (e) {
-    collapseAction(this);
-});

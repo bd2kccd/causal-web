@@ -18,10 +18,10 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl;
 
-import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.domain.LoginForm;
-import edu.pitt.dbmi.ccd.web.domain.account.PasswordResetRequestForm;
-import edu.pitt.dbmi.ccd.web.domain.account.UserRegistrationForm;
+import edu.pitt.dbmi.ccd.web.model.AppUser;
+import edu.pitt.dbmi.ccd.web.model.LoginForm;
+import edu.pitt.dbmi.ccd.web.model.account.PasswordResetRequestForm;
+import edu.pitt.dbmi.ccd.web.model.account.UserRegistrationForm;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.apache.shiro.SecurityUtils;

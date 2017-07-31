@@ -23,7 +23,7 @@ import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.entity.UserLogin;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.db.service.UserLoginService;
-import edu.pitt.dbmi.ccd.web.domain.LoginForm;
+import edu.pitt.dbmi.ccd.web.model.LoginForm;
 import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

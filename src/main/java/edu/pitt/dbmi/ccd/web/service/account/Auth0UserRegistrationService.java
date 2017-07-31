@@ -18,8 +18,8 @@
  */
 package edu.pitt.dbmi.ccd.web.service.account;
 
-import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.domain.account.UserRegistrationForm;
+import edu.pitt.dbmi.ccd.web.model.AppUser;
+import edu.pitt.dbmi.ccd.web.model.account.UserRegistrationForm;
 import edu.pitt.dbmi.ccd.web.util.PasswordUtils;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;

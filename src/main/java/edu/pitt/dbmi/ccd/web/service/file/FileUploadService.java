@@ -22,7 +22,7 @@ import edu.pitt.dbmi.ccd.commons.file.FileSys;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileService;
-import edu.pitt.dbmi.ccd.web.domain.file.ResumableChunk;
+import edu.pitt.dbmi.ccd.web.model.file.ResumableChunk;
 import edu.pitt.dbmi.ccd.web.service.fs.FileManagementService;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;

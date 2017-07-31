@@ -20,10 +20,10 @@ package edu.pitt.dbmi.ccd.web.ctrl.algorithm;
 
 import edu.pitt.dbmi.ccd.db.service.FileVariableTypeService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.domain.algorithm.GfcicJobForm;
-import edu.pitt.dbmi.ccd.web.domain.algorithm.GfcidJobForm;
-import edu.pitt.dbmi.ccd.web.domain.algorithm.GfcimJobForm;
+import edu.pitt.dbmi.ccd.web.model.AppUser;
+import edu.pitt.dbmi.ccd.web.model.algorithm.GfcicJobForm;
+import edu.pitt.dbmi.ccd.web.model.algorithm.GfcidJobForm;
+import edu.pitt.dbmi.ccd.web.model.algorithm.GfcimJobForm;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.algorithm.TetradJobService;
 import org.springframework.beans.factory.annotation.Autowired;

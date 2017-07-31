@@ -20,10 +20,10 @@ package edu.pitt.dbmi.ccd.web.ctrl.algorithm;
 
 import edu.pitt.dbmi.ccd.db.service.FileVariableTypeService;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
-import edu.pitt.dbmi.ccd.web.domain.AppUser;
-import edu.pitt.dbmi.ccd.web.domain.algorithm.FgescJobForm;
-import edu.pitt.dbmi.ccd.web.domain.algorithm.FgesdJobForm;
-import edu.pitt.dbmi.ccd.web.domain.algorithm.FgesmJobForm;
+import edu.pitt.dbmi.ccd.web.model.AppUser;
+import edu.pitt.dbmi.ccd.web.model.algorithm.FgescJobForm;
+import edu.pitt.dbmi.ccd.web.model.algorithm.FgesdJobForm;
+import edu.pitt.dbmi.ccd.web.model.algorithm.FgesmJobForm;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.algorithm.TetradJobService;
 import javax.validation.Valid;

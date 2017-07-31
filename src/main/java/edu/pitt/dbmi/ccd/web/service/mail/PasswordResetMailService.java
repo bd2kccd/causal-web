@@ -19,7 +19,7 @@
 package edu.pitt.dbmi.ccd.web.service.mail;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.web.domain.template.PasswordResetTemplateData;
+import edu.pitt.dbmi.ccd.web.model.template.PasswordResetTemplateData;
 import edu.pitt.dbmi.ccd.web.prop.CcdEmailProperties;
 import java.net.URI;
 import javax.mail.MessagingException;

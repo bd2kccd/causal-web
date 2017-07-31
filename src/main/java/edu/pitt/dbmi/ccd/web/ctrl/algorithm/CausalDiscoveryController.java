@@ -18,7 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.ctrl.algorithm;
 
-import edu.pitt.dbmi.ccd.web.domain.algorithm.AlgorithmItem;
+import edu.pitt.dbmi.ccd.web.model.algorithm.AlgorithmItem;
 import edu.pitt.dbmi.ccd.web.ctrl.ViewPath;
 import java.util.List;
 import java.util.Map;

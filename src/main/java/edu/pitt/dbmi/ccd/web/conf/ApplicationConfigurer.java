@@ -18,7 +18,7 @@
  */
 package edu.pitt.dbmi.ccd.web.conf;
 
-import edu.pitt.dbmi.ccd.web.domain.algorithm.AlgorithmItem;
+import edu.pitt.dbmi.ccd.web.model.algorithm.AlgorithmItem;
 import edu.pitt.dbmi.ccd.web.prop.TetradProperties;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
