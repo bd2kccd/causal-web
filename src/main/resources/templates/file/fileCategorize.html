@@ -14,6 +14,7 @@
         <link rel="stylesheet" href="../../static/vendors/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.min.css}" />
         <link rel="stylesheet" href="../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
         <link rel="stylesheet" href="../../static/vendors/x-editable/css/bootstrap-editable.min.css" th:href="@{/vendors/x-editable/css/bootstrap-editable.min.css}" />
+        <link rel="stylesheet" href="../../static/css/collapse-panel.min.css" th:href="@{/css/collapse-panel.min.css}" />
         <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{https://code.jquery.com/jquery-2.2.4.min.js}"></script>
         <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
@@ -105,9 +106,9 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="panel panel-primary">
-                            <a id="categorize_file" class="panel-primary" data-toggle="collapse" data-parent="#categorize" href="#collapseCategory">
+                            <a id="categorize_file" class="panel-primary collapsed" th:class="${collapse} ? 'panel-primary collapsed' : 'panel-primary'" data-toggle="collapse" data-parent="#categorize" href="#collapseCategory">
                                 <div class="panel-heading">
-                                    <h3 class="panel-title">Categorize File<span class="pull-right"><i class="glyphicon glyphicon-chevron-down" th:class="${collapse} ? 'glyphicon glyphicon-chevron-down' : 'glyphicon glyphicon-chevron-up'"></i></span></h3>
+                                    <h3 class="panel-title chevon">Categorize File</h3>
                                 </div>
                             </a>
                             <div id="collapseCategory" class="panel-collapse collapse" th:class="${collapse} ? 'panel-collapse collapse' : 'panel-collapse collapse in'">
@@ -183,7 +184,6 @@
         </div>
         <script src="../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.16.0/jquery.validate.min.js}"></script>
         <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
-        <script src="../../static/js/collapse_panel.min.js" th:src="@{/js/collapse_panel.min.js}"></script>
         <script src="../../static/js/file/fileCategorizeValid.min.js" th:src="@{/js/file/fileCategorizeValid.min.js}"></script>
         <script src="../../static/js/file/fileCategorize.min.js" th:src="@{/js/file/fileCategorize.min.js}"></script>
     </body>
