@@ -28,6 +28,9 @@ public interface ViewPath {
 
     public static final String TERMS_VIEW = "terms";
 
+    public static final String FEEDBACK_VIEW = "feedback";
+    public static final String REDIRECT_FEEDBACK_VIEW = "redirect:/secured/feedback";
+
     public static final String LOGIN = "login";
     public static final String REDIRECT_LOGIN = "redirect:/login";
 
