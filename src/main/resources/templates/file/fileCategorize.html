@@ -117,7 +117,7 @@
                                         <fieldset>
                                             <div class="panel panel-default">
                                                 <div class="panel-body">
-                                                    <h4 class="page-header">File Format</h4>
+                                                    <h4 class="title-header">File Format</h4>
                                                     <div class="form-group" th:class="${#fields.hasErrors('fileFormatId')} ? 'form-group has-error' : 'form-group'">
                                                         <div class="col-sm-4" th:each="element : ${fileFormatGroups}">
                                                             <label th:text="${element.key}">Data</label>
@@ -133,7 +133,14 @@
                                             </div>
                                             <div class="panel panel-default" id="tetrad_tab_data">
                                                 <div class="panel-body">
-                                                    <h4 class="page-header">Tetrad Data File</h4>
+                                                    <h4 class="title-header">Tetrad Data File</h4>
+                                                    <div class="form-group">
+                                                        <div class="checkbox">
+                                                            <label for="hasHeader">
+                                                                <input type="checkbox" id="hasHeader" name="hasHeader" value="true" checked="checked" th:field="*{hasHeader}" /> Header on First Row
+                                                            </label>
+                                                        </div>
+                                                    </div>
                                                     <div class="form-group" th:class="${#fields.hasErrors('fileDelimiterId')} ? 'form-group has-error' : 'form-group'">
                                                         <label>File Delimiter:</label>
                                                         <label class="radio-inline" th:each="opt : ${fileDelimiterTypes}">

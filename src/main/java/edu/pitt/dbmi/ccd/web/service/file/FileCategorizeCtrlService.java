@@ -89,6 +89,7 @@ public class FileCategorizeCtrlService {
     }
 
     private TetradDataFile createTetradDataFile(FileCategorizeForm fileCategorizeForm, File file, UserAccount userAccount) {
+        boolean hasHeader = fileCategorizeForm.isHasHeader();
         Long fileDelimTypeId = fileCategorizeForm.getFileDelimiterId();
         Long fileVarTypeId = fileCategorizeForm.getVariableTypeId();
         Character quoteChar = fileCategorizeForm.getQuoteChar();
@@ -98,7 +99,7 @@ public class FileCategorizeCtrlService {
         FileDelimiterType delimiter = fileDelimiterTypeService.getRepository().findOne(fileDelimTypeId);
         FileVariableType variable = fileVariableTypeService.getRepository().findOne(fileVarTypeId);
 
-        TetradDataFile dataFile = new TetradDataFile(file, delimiter, variable);
+        TetradDataFile dataFile = new TetradDataFile(file, delimiter, variable, hasHeader);
         dataFile.setCommentMarker(cmntMark);
         dataFile.setMissingValueMarker(missValMark);
         dataFile.setQuoteChar(quoteChar);
@@ -117,7 +118,7 @@ public class FileCategorizeCtrlService {
         return dataFile;
     }
 
-    private TetradVariableFile createTetradVariableFile(FileCategorizeForm fileCategorizeForm, File file, UserAccount userAccount) {
+    private TetradVariableFile createTetradVariableFile(File file, UserAccount userAccount) {
         TetradVariableFile variableFile = new TetradVariableFile(file);
         Path localVarFile = fileManagementService.getPhysicalFile(file, userAccount);
         Delimiter fileDelimiter = fileManagementService.getReaderFileDelimiter(null);
@@ -141,7 +142,7 @@ public class FileCategorizeCtrlService {
 
                 return dataFile.getFile();
             case FileFormatService.TETRAD_VARIABLE_NAME:
-                TetradVariableFile variableFile = createTetradVariableFile(fileCategorizeForm, file, userAccount);
+                TetradVariableFile variableFile = createTetradVariableFile(file, userAccount);
                 variableFile = tetradVariableFileService.save(variableFile);
 
                 return variableFile.getFile();
@@ -184,6 +185,7 @@ public class FileCategorizeCtrlService {
             if (FileFormatService.TETRAD_TABULAR_NAME.equals(fileFormat.getName())) {
                 TetradDataFile dataFile = tetradDataFileService.getRepository().findByFile(file);
                 if (dataFile != null) {
+                    form.setHasHeader(dataFile.isHasHeader());
                     form.setFileDelimiterId(dataFile.getFileDelimiterType().getId());
                     form.setVariableTypeId(dataFile.getFileVariableType().getId());
                     form.setQuoteChar(dataFile.getQuoteChar());
@@ -197,7 +199,7 @@ public class FileCategorizeCtrlService {
     }
 
     public FileCategorizeForm getdefaultForm() {
-        FileCategorizeForm form = new FileCategorizeForm();
+        FileCategorizeForm form = new FileCategorizeForm(true);
 
         List<FileFormat> fileFormats = fileFormatService.findAll();
         if (!fileFormats.isEmpty()) {

@@ -100,3 +100,7 @@ a:link {
     color: #333;
     font-size: 15px;
 }
+.title-header {
+    padding-bottom: 9px;
+    border-bottom: 1px solid #eee;
+}

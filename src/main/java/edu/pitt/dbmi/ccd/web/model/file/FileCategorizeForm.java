@@ -37,11 +37,16 @@ public class FileCategorizeForm {
     @NotNull(message = "Variable type is required.")
     private Long variableTypeId;
 
+    private boolean hasHeader;
     private Character quoteChar;
     private String missingValueMarker;
     private String commentMarker;
 
     public FileCategorizeForm() {
+    }
+
+    public FileCategorizeForm(boolean hasHeader) {
+        this.hasHeader = hasHeader;
     }
 
     public Long getFileFormatId() {
@@ -66,6 +71,14 @@ public class FileCategorizeForm {
 
     public void setVariableTypeId(Long variableTypeId) {
         this.variableTypeId = variableTypeId;
+    }
+
+    public boolean isHasHeader() {
+        return hasHeader;
+    }
+
+    public void setHasHeader(boolean hasHeader) {
+        this.hasHeader = hasHeader;
     }
 
     public Character getQuoteChar() {
