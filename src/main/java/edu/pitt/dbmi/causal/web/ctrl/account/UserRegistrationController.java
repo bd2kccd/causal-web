@@ -19,7 +19,6 @@
 package edu.pitt.dbmi.causal.web.ctrl.account;
 
 import edu.pitt.dbmi.causal.web.ctrl.ViewPath;
-import static edu.pitt.dbmi.causal.web.ctrl.ViewPath.REDIRECT_HOME;
 import edu.pitt.dbmi.causal.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.causal.web.model.account.UserRegistrationForm;
 import edu.pitt.dbmi.causal.web.model.template.Message;

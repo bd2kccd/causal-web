@@ -170,9 +170,7 @@ public class PasswordResetController implements ViewPath {
     @RequestMapping(value = "request", method = RequestMethod.GET)
     public String showPasswordResetRequest(final Model model) {
         if (!model.containsAttribute("passwordResetRequestForm")) {
-            PasswordResetRequestForm form = new PasswordResetRequestForm();
-            form.setEmail("kvb2@pitt.edu");
-            model.addAttribute("passwordResetRequestForm", form);
+            model.addAttribute("passwordResetRequestForm", new PasswordResetRequestForm());
         }
 
         return PASSWORD_RESET_REQUEST_VIEW;
