@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <title>Causal Web</title>
+        <meta name="description" content="causal" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="apple-touch-icon" href="../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
+        <link rel="icon" href="../static/favicon.ico" th:href="@{/favicon.ico}" />
+        <link rel="stylesheet" href="../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css}" />
+        <link rel="stylesheet" href="../static/vendors/bootstrap/css/bootstrap-theme.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css}" />
+        <link rel="stylesheet" href="../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css}"/>
+        <link rel="stylesheet" href="../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
+        <link rel="stylesheet" href="../static/css/login.min.css" th:href="@{/css/login.min.css}" />
+        <style>
+            .auth0 {
+                display: block;
+                margin-top: 20px;
+                margin-bottom: 15px;
+                text-align: center;
+            }
+        </style>
+        <script src="../static/vendors/jquery/jquery.min.js" th:src="@{https://code.jquery.com/jquery-2.2.4.min.js}"></script>
+        <script src="../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 col-md-offset-4">
+                    <div class="panel panel-default-pitt login-panel">
+                        <div class="panel-heading">
+                            <h3 class="panel-title" th:text="${@environment.getProperty('ccd.app.title')}">Causal Web</h3>
+                        </div>
+                        <div class="panel-body">
+                            <img class="profile-img" src="../static/img/ccd_logo.png" th:src="@{/img/ccd_logo.png}" alt="profile picture" />
+                            <div class="alert alert-success text-center" role="alert" th:if="${successMsg}">
+                                <p th:each="msg : ${successMsg}" th:text="${msg}"></p>
+                            </div>
+                            <div class="alert alert-danger text-center" role="alert" th:if="${errorMsg}">
+                                <p th:each="msg : ${errorMsg}" th:text="${msg}"></p>
+                            </div>
+                            <form role="form" id="login" method="POST" accept-charset="UTF-8" action="" th:action="@{/login}" th:object="${loginForm}">
+                                <fieldset>
+                                    <div class="form-group" th:class="${#fields.hasErrors('email')} ? 'form-group has-error' : 'form-group'">
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
+                                            <input class="form-control" placeholder="E-mail" name="email" type="email" required="required" autofocus="autofocus" th:field="*{email}" />
+                                        </div>
+                                        <span class="help-block" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Please enter a valid e-mail.</span>
+                                    </div>
+                                    <div class="form-group" th:class="${#fields.hasErrors('password')} ? 'form-group has-error' : 'form-group'">
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><i class="fa fa-lock"></i></span>
+                                            <input type="password" class="form-control" placeholder="Password" name="password" value="" required="required" th:field="*{password}" />
+                                        </div>
+                                        <span class="help-block" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Please enter your password.</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="checkbox">
+                                            <label for="rememberMe">
+                                                <input type="checkbox" id="rememberMe" name="rememberMe" value="true" checked="checked" th:field="*{rememberMe}" /> Remember Me
+                                            </label>
+                                            <span class="pull-right"><a href="#" th:href="@{/user/account/password/reset/request}">Forgot Password?</a></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="submit" class="btn btn-block btn-lg btn-default btn-default-pitt" value="Sign In" />
+                                    </div>
+                                </fieldset>
+                            </form>
+                            <hr />
+                            <div class="auth0">
+                                Don't have an account yet?<br/>
+                                <a href="#" th:href="@{/user/account/registration}">Create an account</a>
+                            </div>
+                            <div class="registration">
+                                <p>or you can sign in/up via your university account</p>
+                                <button class="btn btn-info" onclick="signIn();"><i class="fa fa-university"></i> University</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.16.0/jquery.validate.min.js}"></script>
+        <script src="../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
+        <script src="../static/js/login-valid.min.js" th:src="@{/js/login-valid.min.js}"></script>
+        <script src="https://cdn.auth0.com/js/lock/10.18.0/lock.min.js"></script>
+        <script type="text/javascript" th:inline="javascript">
+            var auth0ClientId = /*[[${@environment.getProperty('auth0.clientId')}]]*/ '';
+            var auth0Domain = /*[[${@environment.getProperty('auth0.domain')}]]*/ '';
+            var state = /*[[${state}]]*/ '';
+            var loginCallback = /*[[${#strings.replace(#httpServletRequest.getRequestURL(), #httpServletRequest.getRequestURI(), #httpServletRequest.getContextPath())} + ${@environment.getProperty('auth0.loginCallback')}]]*/ '';
+            var iconUrl = /*[[@{/img/ccd_logo.png}]]*/ '';
+            var lock = new Auth0Lock(auth0ClientId, auth0Domain, {
+                rememberLastLogin: false,
+                auth: {
+                    redirectUrl: loginCallback,
+                    responseType: 'code',
+                    params: {
+                        state: state,
+                        scope: 'openid user_id name nickname email picture'
+                    }
+                },
+                theme: {
+                    logo: iconUrl
+                },
+                languageDictionary: {
+                    title: 'Causal Web',
+                    emailInputPlaceholder: 'Pitt or Harvard email.'
+                }
+            });
+            function signIn() {
+                lock.show();
+            }
+        </script>
+    </body>
+</html>

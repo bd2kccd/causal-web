@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <title>Causal Web: File Categorize</title>
+        <meta name="description" content="causal" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="apple-touch-icon" href="../../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
+        <link rel="icon" href="../../static/favicon.ico" th:href="@{/favicon.ico}" />
+        <link rel="stylesheet" href="../../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/bootstrap/css/bootstrap-theme.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css}"/>
+        <link rel="stylesheet" href="../../static/vendors/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.min.css}" />
+        <link rel="stylesheet" href="../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
+        <link rel="stylesheet" href="../../static/vendors/x-editable/css/bootstrap-editable.min.css" th:href="@{/vendors/x-editable/css/bootstrap-editable.min.css}" />
+        <link rel="stylesheet" href="../../static/css/collapse-panel.min.css" th:href="@{/css/collapse-panel.min.css}" />
+        <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{https://code.jquery.com/jquery-2.2.4.min.js}"></script>
+        <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
+        <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
+        <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
+        <script src="../../static/vendors/x-editable/js/bootstrap-editable.min.js" th:src="@{/vendors/x-editable/js/bootstrap-editable.min.js}"></script>
+        <script th:inline="javascript">
+            var dataGroupId = /*[[${tetradTabFileFormatId}]]*/ '';
+        </script>
+    </head>
+    <body>
+        <div id="wrapper">
+            <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0" th:replace="fragments/navigation :: nav"></nav>
+            <div id="page-wrapper">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h3 id="page_title" class="page-header" th:text="${file.title}">File</h3>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <ul class="breadcrumb">
+                            <li><a href="#" th:href="@{/secured/home}">Home</a></li>
+                            <li><a href="#" th:href="@{/secured/file}">Files</a></li>
+                            <li><a href="#"
+                                   th:href="${file.fileFormat == null} ? @{/secured/file/format/uncategorized} : @{'/secured/file/format/' + ${file.fileFormat.name}}"
+                                   th:text="${file.fileFormat == null} ? 'Uncategorized File' : ${file.fileFormat.displayName}">File Format</a></li>
+                            <li class="active" th:text="${file.title}">Current Page</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div id="view_file_info" class="panel panel-default" style="display: block;">
+                            <div class="panel-heading">
+                                <h4 class="panel-title"><i class="fa fa-file fa-fw"></i> File Information</h4>
+                            </div>
+                            <div class="panel-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover table-responsive table-condensed">
+                                        <tbody>
+                                            <tr>
+                                                <td><b>Name:</b></td>
+                                                <td th:text="${file.name}"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><b>Title:</b></td>
+                                                <td><a href="#" class="editable editable-click" id="title" data-type="text" data-title="Enter file title." th:attr="data-pk=${file.id},data-url=@{/secured/file/title}" th:text="${file.title}"></a></td>
+                                            </tr>
+                                            <tr>
+                                                <td><b>Created:</b></td>
+                                                <td th:text="${#dates.format(file.creationTime,'MMM dd, yyyy hh:mm:ss aaa')}"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><b>Size:</b></td>
+                                                <td th:text="${@fileUtils.byteToSize(file.fileSize)}"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><b>MD5 Checksum:</b></td>
+                                                <td th:text="${file.md5CheckSum}"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" th:if="${not #lists.isEmpty(additionalInfo)}">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Additional Information</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-condensed">
+                                        <tbody>
+                                            <tr th:each="info : ${additionalInfo}">
+                                                <td><b th:text="${info.attribute} + ':'"></b></td>
+                                                <td th:text="${info.value}"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-primary">
+                            <a id="categorize_file" class="panel-primary collapsed" th:class="${file.fileFormat == null} ? 'panel-primary' : 'panel-primary collapsed'" data-toggle="collapse" data-parent="#categorize" href="#collapseCategory">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title chevon">Categorize File</h3>
+                                </div>
+                            </a>
+                            <div id="collapseCategory" class="panel-collapse collapse" th:class="${file.fileFormat == null} ? 'panel-collapse collapse in' : 'panel-collapse collapse'">
+                                <div class="panel-body">
+                                    <form id="categorizeFile" method="post" action="" th:action="@{'/secured/file/' + ${file.id}}" role="form" th:object="${fileCategorizeForm}">
+                                        <fieldset>
+                                            <div class="panel panel-default">
+                                                <div class="panel-body">
+                                                    <h4 class="title-header">File Format</h4>
+                                                    <div class="form-group" th:class="${#fields.hasErrors('fileFormatId')} ? 'form-group has-error' : 'form-group'">
+                                                        <div class="col-sm-4" th:each="element : ${fileFormatGroupOpts}">
+                                                            <label th:text="${element.key}">Data</label>
+                                                            <div class="radio" th:each="opt : ${element.value}">
+                                                                <label>
+                                                                    <input type="radio" th:field="*{fileFormatId}" th:value="${opt.id}" /> <span th:text="${opt.displayName}">tetrad tabular</span>
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <span class="help-block" th:if="${#fields.hasErrors('fileFormatId')}" th:errors="*{fileFormatId}">File format is required.</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default" id="tetrad_tab_data">
+                                                <div class="panel-body">
+                                                    <h4 class="title-header">Tetrad Data File</h4>
+                                                    <div class="form-group">
+                                                        <div class="checkbox">
+                                                            <label for="hasHeader">
+                                                                <input type="checkbox" id="hasHeader" name="hasHeader" value="true" checked="checked" th:field="*{hasHeader}" /> Header on First Row
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group" th:class="${#fields.hasErrors('fileDelimiterId')} ? 'form-group has-error' : 'form-group'">
+                                                        <label>File Delimiter:</label>
+                                                        <label class="radio-inline" th:each="opt : ${fileDelimiterTypes}">
+                                                            <input type="radio" th:field="*{fileDelimiterId}" th:value="${opt.id}" /> <span th:text="${opt.displayName}">tab</span>
+                                                        </label>
+                                                        <span class="help-block" th:if="${#fields.hasErrors('fileDelimiterId')}" th:errors="*{fileDelimiterId}">File delimiter is required.</span>
+                                                    </div>
+                                                    <div class="form-group" th:class="${#fields.hasErrors('variableTypeId')} ? 'form-group has-error' : 'form-group'">
+                                                        <label>Variable Type:</label>
+                                                        <label class="radio-inline" th:each="opt : ${fileVariableTypes}">
+                                                            <input type="radio" th:field="*{variableTypeId}" th:value="${opt.id}" /> <span th:text="${opt.displayName}">tetrad variable</span>
+                                                        </label>
+                                                        <span class="help-block" th:if="${#fields.hasErrors('variableTypeId')}" th:errors="*{variableTypeId}">Variable type is required.</span>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="control-label" for="quote_char">Quote Char:</label>
+                                                        <input type="text" id="quote_char" class="form-control" maxlength="1" th:field="*{quoteChar}" />
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="control-label" for="miss_val_mrk">Missing Value Marker:</label>
+                                                        <input type="text" id="miss_val_mrk" class="form-control" maxlength="10" th:field="*{missingValueMarker}" />
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="control-label" for="cmnt_mrk">Comment Marker:</label>
+                                                        <input type="text" id="cmnt_mrk" class="form-control" maxlength="10" th:field="*{commentMarker}" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <input type="submit" class="btn btn-lg btn-block btn-success" value="Save" />
+                                            </div>
+                                        </fieldset>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <footer th:replace="fragments/footer :: footer">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="page-header"></div>
+                            <p class="text-muted">Copyright &copy; 1900 University of Pittsburgh Department of Biomedical Informatics</p>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <script src="../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.16.0/jquery.validate.min.js}"></script>
+        <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
+        <script src="../../static/js/file/file-info-valid.min.js" th:src="@{/js/file/file-info-valid.min.js}"></script>
+        <script src="../../static/js/file/file-info.min.js" th:src="@{/js/file/file-info.min.js}"></script>
+    </body>
+</html>

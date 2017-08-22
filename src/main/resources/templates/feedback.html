@@ -38,7 +38,7 @@
                                 <div th:if="${errorMsg}">
                                     <div class="alert alert-danger text-center" role="alert" th:text="${errorMsg}"></div>
                                 </div>
-                                <form role="form" action="" method="post" th:object="${feedbackForm}" >
+                                <form id="feedback_form" role="form" action="" method="post" th:object="${feedbackForm}" >
                                     <div class="form-group">
                                         <label for="email">Email:</label>
                                         <input class="form-control" id="email" name="email" type="email" placeholder="Optional" th:field="*{email}" th:disabled="${successMsg}" />
@@ -65,6 +65,9 @@
                 </footer>
             </div>
         </div>
+        <script src="../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.16.0/jquery.validate.min.js}"></script>
+        <script src="../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
+        <script src="../static/js/feedback-valid.min.js" th:src="@{/js/feedback-valid.min.js}"></script>
         <script src="../static/js/feedback.min.js" th:src="@{/js/feedback.min.js}"></script>
     </body>
 </html>
