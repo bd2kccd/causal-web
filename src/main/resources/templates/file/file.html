@@ -30,7 +30,7 @@
                 </div>
                 <div class="row" th:each="group : ${fileFormatGroups}">
                     <div class="col-md-3 div_square_item" th:each="groupItem : ${group}">
-                        <a href="#" th:href="@{${groupItem.fileFormat == null} ? '/secured/file/format/uncategorized' : '/secured/file/format/' + ${groupItem.fileFormat.name}}">
+                        <a href="#" th:href="@{${groupItem.fileFormat == null} ? '/secured/file/uncategorized' : '/secured/file/format/' + ${groupItem.fileFormat.name}}">
                             <div class="div_square">
                                 <div class="row">
                                     <div class="col-xs-3">

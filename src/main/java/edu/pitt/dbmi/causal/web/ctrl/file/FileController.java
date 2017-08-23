@@ -67,8 +67,6 @@ public class FileController implements ViewPath {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileController.class);
 
-    private static final String UNCATEGORIZED_FILE_FORMAT_NAME = "uncategorized";
-
     private final FileService fileService;
     private final FileTypeService fileTypeService;
     private final FileDelimiterTypeService fileDelimiterTypeService;
@@ -181,37 +179,40 @@ public class FileController implements ViewPath {
     }
 
     @ResponseBody
-    @RequestMapping(value = "format/list/{fileFormatName}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "format/{fileFormatName}/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> listCategorizedFiles(final @PathVariable("fileFormatName") String fileFormatName, final AppUser appUser) {
-        if (UNCATEGORIZED_FILE_FORMAT_NAME.equals(fileFormatName)) {
-            UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-
-            return ResponseEntity.ok(fileCtrlService.listUncategorizedFiles(userAccount));
-        } else {
-            FileFormat fileFormat = fileCtrlService.findSupportedFormat(fileFormatName);
-            if (fileFormat == null) {
-                return ResponseEntity.notFound().build();
-            }
-
-            UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-
-            return ResponseEntity.ok(fileCtrlService.listCategorizedFiles(fileFormat, userAccount));
+        FileFormat fileFormat = fileCtrlService.findSupportedFormat(fileFormatName);
+        if (fileFormat == null) {
+            return ResponseEntity.notFound().build();
         }
+
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+
+        return ResponseEntity.ok(fileCtrlService.listCategorizedFiles(fileFormat, userAccount));
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "uncategorized/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> listUncategorizedFiles(final AppUser appUser) {
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+
+        return ResponseEntity.ok(fileCtrlService.listUncategorizedFiles(userAccount));
     }
 
     @RequestMapping(value = "format/{fileFormatName}", method = RequestMethod.GET)
     public String showCategorizedFiles(@PathVariable("fileFormatName") String fileFormatName, final Model model) {
-        if (UNCATEGORIZED_FILE_FORMAT_NAME.equals(fileFormatName)) {
-            model.addAttribute("fileFormat", null);
-        } else {
-            FileFormat fileFormat = fileCtrlService.findSupportedFormat(fileFormatName);
-            if (fileFormat == null) {
-                throw new ResourceNotFoundException();
-            }
-
-            model.addAttribute("fileFormat", fileFormat);
+        FileFormat fileFormat = fileCtrlService.findSupportedFormat(fileFormatName);
+        if (fileFormat == null) {
+            throw new ResourceNotFoundException();
         }
 
+        model.addAttribute("fileFormat", fileFormat);
+
+        return FILE_LIST_VIEW;
+    }
+
+    @RequestMapping(value = "uncategorized", method = RequestMethod.GET)
+    public String showUncategorizedFiles() {
         return FILE_LIST_VIEW;
     }
 
