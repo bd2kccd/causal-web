@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -61,6 +62,7 @@ public class ShiroLoginController implements ViewPath {
         return LOGIN_VIEW;
     }
 
+    @CacheEvict(cacheNames = {"appUserServiceUserAccount"}, key = "#appUser.username")
     @RequestMapping(value = LOGOUT, method = RequestMethod.GET)
     public String logOut(
             @ModelAttribute("appUser") final AppUser appUser,

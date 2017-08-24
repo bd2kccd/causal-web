@@ -51,7 +51,7 @@ public class AppUserService {
         this.userAccountService = userAccountService;
     }
 
-    @Cacheable("appUserServiceUserAccount")
+    @Cacheable(cacheNames = {"appUserServiceUserAccount"}, key = "#appUser.username")
     public UserAccount retrieveUserAccount(AppUser appUser) {
         try {
             return userAccountService.getRepository().findByUsername(appUser.getUsername());
@@ -61,14 +61,9 @@ public class AppUserService {
         }
     }
 
-    @CachePut(cacheNames = {"appUserServiceUserAccount"})
+    @CachePut(cacheNames = {"appUserServiceUserAccount"}, key = "#userAccount.username")
     public UserAccount updateCache(UserAccount userAccount) {
-        try {
-            return userAccountService.getRepository().findOne(userAccount.getId());
-        } catch (Exception exception) {
-            LOGGER.error("Unable to retrieve user account.", exception);
-            throw new InternalErrorException();
-        }
+        return userAccount;
     }
 
     public AppUser create(UserAccount userAccount, boolean federatedUser) {
