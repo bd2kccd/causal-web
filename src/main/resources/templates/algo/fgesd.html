@@ -120,7 +120,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <button type="button" class="btn btn-primary btn-lg btn-block nextBtn">Next</button>
+                                        <button type="button" class="btn btn-primary btn-lg btn-block nextBtn" th:disabled="${#lists.isEmpty(datasetOpts)}">Next</button>
                                     </div>
                                 </div>
                             </div>
