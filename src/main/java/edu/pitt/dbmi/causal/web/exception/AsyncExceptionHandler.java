@@ -16,28 +16,27 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.causal.web;
+package edu.pitt.dbmi.causal.web.exception;
 
-import edu.pitt.dbmi.ccd.db.CcdDbApplication;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Import;
+import java.lang.reflect.Method;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 
 /**
  *
- * Apr 2, 2017 11:19:17 AM
+ * Aug 24, 2017 12:30:35 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-@SpringBootApplication
-@Import({CcdDbApplication.class})
-public class CausalWebApplication {
+public class AsyncExceptionHandler implements AsyncUncaughtExceptionHandler {
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        SpringApplication.run(CausalWebApplication.class, args);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AsyncExceptionHandler.class);
+
+    @Override
+    public void handleUncaughtException(Throwable thrwbl, Method method, Object... os) {
+        String errMsg = String.format("Method: %s", method.getName());
+        LOGGER.error(errMsg, thrwbl);
     }
 
 }
