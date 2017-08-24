@@ -231,6 +231,7 @@ public class FileCtrlService {
                     attrValues.add(new AttrValue("Number of Rows", String.valueOf(dataFile.getNumOfRows())));
                     attrValues.add(new AttrValue("Delimiter", dataFile.getFileDelimiterType().getDisplayName()));
                     attrValues.add(new AttrValue("Variable Type", dataFile.getFileVariableType().getDisplayName()));
+                    attrValues.add(new AttrValue("First Row Is Header", dataFile.isHasHeader() ? "Yes" : "No"));
                     attrValues.add(new AttrValue("Quote Character", String.valueOf(dataFile.getQuoteChar())));
                     attrValues.add(new AttrValue("Missing Value Marker", dataFile.getMissingValueMarker()));
                     attrValues.add(new AttrValue("Comment Marker", dataFile.getCommentMarker()));
