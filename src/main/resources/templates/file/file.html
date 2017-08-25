@@ -28,19 +28,21 @@
                         <h3 class="page-header">Files</h3>
                     </div>
                 </div>
-                <div class="row" th:each="group : ${fileFormatGroups}">
-                    <div class="col-md-3 div_square_item" th:each="groupItem : ${group}">
+                <div class="row" th:each="group : ${fileGroupings}">
+                    <div class="col-md-3" th:each="groupItem : ${group}">
                         <a href="#" th:href="@{${groupItem.fileFormat == null} ? '/secured/file/uncategorized' : '/secured/file/format/' + ${groupItem.fileFormat.name}}">
-                            <div class="div_square">
-                                <div class="row">
-                                    <div class="col-xs-3">
-                                        <i class="fa fa-file-o fa-5x"></i>
+                            <div class="panel panel-green" th:class="${groupItem.fileFormat == null} ? 'panel panel-yellow' : 'panel panel-green'">
+                                <div class="panel-heading">
+                                    <div class="row">
+                                        <div class="col-xs-3">
+                                            <i class="fa fa-file-o fa-5x" th:class="${groupItem.fileFormat == null} ? 'fa fa-file-o fa-5x white' : 'fa fa-file fa-5x white'"></i>
+                                        </div>
+                                        <div class="col-xs-9 text-right">
+                                            <div class="huge" th:text="${groupItem.numOfFiles}"></div>
+                                        </div>
                                     </div>
-                                    <div class="col-xs-9 text-right">
-                                        <div class="huge" th:text="${groupItem.numOfFiles}"></div>
-                                    </div>
+                                    <h4 th:text="${groupItem.fileFormat == null} ? 'Uncategorized' : ${groupItem.fileFormat.displayName}">Uncategorized</h4>
                                 </div>
-                                <h4 th:text="${groupItem.fileFormat == null} ? 'Uncategorized' : ${groupItem.fileFormat.displayName}">Uncategorized</h4>
                             </div>
                         </a>
                     </div>

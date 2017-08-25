@@ -222,7 +222,7 @@ public class FileController implements ViewPath {
 
         fileManagementService.syncFilesWithDatabase(userAccount);
 
-        model.addAttribute("fileFormatGroups", fileCtrlService.getFileGroupInfos(userAccount));
+        model.addAttribute("fileGroupings", fileCtrlService.getFileGroupings(userAccount));
 
         return FILE_VIEW;
     }

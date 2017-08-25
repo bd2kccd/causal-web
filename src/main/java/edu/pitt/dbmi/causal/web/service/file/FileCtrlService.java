@@ -20,7 +20,7 @@ package edu.pitt.dbmi.causal.web.service.file;
 
 import edu.pitt.dbmi.causal.web.model.AttrValue;
 import edu.pitt.dbmi.causal.web.model.file.FileCategorizeForm;
-import edu.pitt.dbmi.causal.web.model.file.FileFormatGroup;
+import edu.pitt.dbmi.causal.web.model.file.FileGrouping;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileDelimiterType;
 import edu.pitt.dbmi.ccd.db.entity.FileFormat;
@@ -260,10 +260,10 @@ public class FileCtrlService {
         return fileFormatService.findByNameAndFileTypeNot(fileFormatName, fileType);
     }
 
-    public List<List<FileFormatGroup>> getFileGroupInfos(UserAccount userAccount) {
-        List<FileFormatGroup> uncategorized = new LinkedList<>();
-        List<FileFormatGroup> tetrad = new LinkedList<>();
-        List<FileFormatGroup> tdi = new LinkedList<>();
+    public List<List<FileGrouping>> getFileGroupings(UserAccount userAccount) {
+        List<FileGrouping> uncategorized = new LinkedList<>();
+        List<FileGrouping> tetrad = new LinkedList<>();
+        List<FileGrouping> tdi = new LinkedList<>();
 
         FileType fileType = fileTypeService.findByName(FileTypeService.RESULT_NAME);
         List<FileFormat> fileFormats = fileFormatService.findByFileTypeNot(fileType);
@@ -271,15 +271,15 @@ public class FileCtrlService {
             Long numOfFiles = fileService.getRepository().countByFileFormatAndUserAccount(fileFormat, userAccount);
             switch (fileFormat.getName()) {
                 case FileFormatService.TDI_TABULAR_NAME:
-                    tdi.add(new FileFormatGroup(fileFormat, numOfFiles));
+                    tdi.add(new FileGrouping(fileFormat, numOfFiles));
                     break;
                 default:
-                    tetrad.add(new FileFormatGroup(fileFormat, numOfFiles));
+                    tetrad.add(new FileGrouping(fileFormat, numOfFiles));
             }
         });
 
         Long numOfFiles = fileService.getRepository().countByUserAccountAndFileFormatIsNull(userAccount);
-        uncategorized.add(new FileFormatGroup(null, numOfFiles));
+        uncategorized.add(new FileGrouping(null, numOfFiles));
 
         return Arrays.asList(uncategorized, tetrad, tdi);
     }

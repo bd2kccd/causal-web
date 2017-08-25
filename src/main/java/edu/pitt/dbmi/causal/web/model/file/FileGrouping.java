@@ -26,16 +26,16 @@ import edu.pitt.dbmi.ccd.db.entity.FileFormat;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class FileFormatGroup {
+public class FileGrouping {
 
     private FileFormat fileFormat;
-    
+
     private Long numOfFiles;
 
-    public FileFormatGroup() {
+    public FileGrouping() {
     }
 
-    public FileFormatGroup(FileFormat fileFormat, Long numOfFiles) {
+    public FileGrouping(FileFormat fileFormat, Long numOfFiles) {
         this.fileFormat = fileFormat;
         this.numOfFiles = numOfFiles;
     }
