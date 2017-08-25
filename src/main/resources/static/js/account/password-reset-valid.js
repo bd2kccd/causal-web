@@ -3,7 +3,6 @@ $(document).ready(function () {
         rules: {
             password: {
                 minlength: 4,
-                maxlength: 10,
                 nowhitespace: true,
                 required: true
             },
@@ -13,10 +12,9 @@ $(document).ready(function () {
         },
         messages: {
             password: {
-                required: "Please enter a new password.",
-                nowhitespace: "Space is not allowed.",
                 minlength: "Requires minimum 4 chars.",
-                maxlength: "Number of chars exceed."
+                nowhitespace: "Space is not allowed.",
+                required: "Please enter your password."
             },
             confirmPassword: "Please re-enter the new password."
         },

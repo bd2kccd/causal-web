@@ -35,7 +35,7 @@ public class LoginForm {
     private String email;
 
     @NotBlank(message = "Password is required.")
-    @Length(min = 4, max = 10, message = "Please enter a password (4-10 chars).")
+    @Length(min = 4, message = "Please enter a password.")
     private String password;
 
     private boolean rememberMe;

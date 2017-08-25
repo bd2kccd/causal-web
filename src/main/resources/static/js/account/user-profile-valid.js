@@ -2,13 +2,11 @@ $('#passwordChange').validate({
     rules: {
         currentPassword: {
             minlength: 4,
-            maxlength: 10,
             nowhitespace: true,
             required: true
         },
         newPassword: {
             minlength: 4,
-            maxlength: 10,
             nowhitespace: true,
             required: true
         },
@@ -18,16 +16,14 @@ $('#passwordChange').validate({
     },
     messages: {
         currentPassword: {
-            required: "Please enter the current password.",
-            nowhitespace: "Space is not allowed.",
             minlength: "Requires minimum 4 chars.",
-            maxlength: "Number of chars exceed."
+            nowhitespace: "Space is not allowed.",
+            required: "Please enter your password."
         },
         newPassword: {
-            required: "Please enter a new password.",
-            nowhitespace: "Space is not allowed.",
             minlength: "Requires minimum 4 chars.",
-            maxlength: "Number of chars exceed."
+            nowhitespace: "Space is not allowed.",
+            required: "Please enter your password."
         },
         newConfirmPassword: "Password does not match."
     },

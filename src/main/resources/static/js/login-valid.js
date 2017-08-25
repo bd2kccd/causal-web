@@ -7,7 +7,6 @@ $(document).ready(function () {
             },
             password: {
                 minlength: 4,
-                maxlength: 10,
                 nowhitespace: true,
                 required: true
             }
@@ -18,10 +17,9 @@ $(document).ready(function () {
                 required: "E-mail is required."
             },
             password: {
-                required: "Please enter your password.",
-                nowhitespace: "Space is not allowed.",
                 minlength: "Requires minimum 4 chars.",
-                maxlength: "Number of chars exceed."
+                nowhitespace: "Space is not allowed.",
+                required: "Please enter your password."
             }
         },
         highlight: function (element) {

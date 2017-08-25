@@ -28,10 +28,10 @@ import org.hibernate.validator.constraints.Length;
  */
 public class PasswordResetForm {
 
-    @Length(min = 4, max = 10, message = "Please enter a new password (4-10 chars).")
+    @Length(min = 4, message = "Please enter a new password.")
     private String password;
 
-    @Length(min = 4, max = 10, message = "Please re-enter the new password.")
+    @Length(min = 4, message = "Please re-enter the new password.")
     private String confirmPassword;
 
     public PasswordResetForm() {

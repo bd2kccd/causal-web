@@ -36,11 +36,6 @@ public class PasswordResetRequestForm {
     public PasswordResetRequestForm() {
     }
 
-    @Override
-    public String toString() {
-        return "PasswordResetForm{" + "email=" + email + '}';
-    }
-
     public String getEmail() {
         return email;
     }

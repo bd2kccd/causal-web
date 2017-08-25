@@ -41,10 +41,10 @@ public class UserRegistrationForm {
     @Email(message = "Please enter your email.")
     private String email;
 
-    @Length(min = 4, max = 10, message = "Please enter a password (4-10 chars).")
+    @Length(min = 4, message = "Please enter a password.")
     private String password;
 
-    @Length(min = 4, max = 10, message = "Please re-enter the password.")
+    @Length(min = 4, message = "Please re-enter the password.")
     private String confirmPassword;
 
     @AssertTrue(message = "You must agree to the terms and conditions.")
