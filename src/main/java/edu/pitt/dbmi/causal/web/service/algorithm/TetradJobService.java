@@ -64,6 +64,17 @@ public class TetradJobService {
         return tetradProperties.getAlgoTitles().get(algorithm);
     }
 
+    public List<File> getVariableOpts(UserAccount userAccount) {
+        List<File> files = new LinkedList<>();
+        files.add(EMPTY_FILE);
+
+        FileFormat variableFileFormat = fileFormatService.findByName(FileFormatService.TETRAD_VARIABLE_NAME);
+        List<File> variableFiles = fileService.getRepository().findByUserAccountAndFileFormat(userAccount, variableFileFormat);
+        files.addAll(variableFiles);
+
+        return files;
+    }
+
     public List<File> getKnowledgeOpts(UserAccount userAccount) {
         List<File> files = new LinkedList<>();
         files.add(EMPTY_FILE);

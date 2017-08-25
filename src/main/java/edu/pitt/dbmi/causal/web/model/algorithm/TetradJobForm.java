@@ -31,15 +31,17 @@ import org.hibernate.validator.constraints.NotBlank;
 public abstract class TetradJobForm {
 
     @NotBlank
-    protected String dataset;
+    private String dataset;
 
-    protected String knowledge;
+    private String knowledge;
 
-    protected boolean verbose = false;
+    private String excludeVariable;
+
+    private boolean verbose = false;
 
     @Min(value = 0, message = "Value must be at least 0.")
     @Max(value = 128, message = "Value must be at most 128.")
-    protected int jvmMaxMem = 0;
+    private int jvmMaxMem = 0;
 
     public TetradJobForm() {
     }
@@ -58,6 +60,14 @@ public abstract class TetradJobForm {
 
     public void setKnowledge(String knowledge) {
         this.knowledge = knowledge;
+    }
+
+    public String getExcludeVariable() {
+        return excludeVariable;
+    }
+
+    public void setExcludeVariable(String excludeVariable) {
+        this.excludeVariable = excludeVariable;
     }
 
     public boolean isVerbose() {

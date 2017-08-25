@@ -48,6 +48,7 @@ public abstract class AbstractTetradController {
 
         List<File> datasetOpts = tetradJobService.getDatasetOpts(fileVariableTypeName, userAccount);
         List<File> knowledgeOpts = tetradJobService.getKnowledgeOpts(userAccount);
+        List<File> excludeVariableOpts = tetradJobService.getVariableOpts(userAccount);
 
         if (!model.containsAttribute("tetradJobForm")) {
             if (!datasetOpts.isEmpty()) {
@@ -56,6 +57,9 @@ public abstract class AbstractTetradController {
             if (!knowledgeOpts.isEmpty()) {
                 tetradJobForm.setKnowledge(knowledgeOpts.get(0).getTitle());
             }
+            if (!excludeVariableOpts.isEmpty()) {
+                tetradJobForm.setExcludeVariable(excludeVariableOpts.get(0).getTitle());
+            }
 
             model.addAttribute("tetradJobForm", tetradJobForm);
         }
@@ -63,6 +67,7 @@ public abstract class AbstractTetradController {
         model.addAttribute("title", tetradJobService.getAlgorithmTitle(algorithm));
         model.addAttribute("datasetOpts", datasetOpts);
         model.addAttribute("knowledgeOpts", knowledgeOpts);
+        model.addAttribute("excludeVariableOpts", excludeVariableOpts);
     }
 
 }

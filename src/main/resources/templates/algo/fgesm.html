@@ -104,6 +104,24 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="panel panel-primary">
+                                            <div class="panel-heading">
+                                                <h3 class="panel-title">Excluded Variables</h3>
+                                            </div>
+                                            <div class="panel-body">
+                                                <div class="form-group">
+                                                    <label for="excludeVariable">Variable File:</label>
+                                                    <select id="excludeVariable" name="excludeVariable" class="form-control" data-ng-model="excludeVariable"
+                                                            th:field="*{excludeVariable}"
+                                                            th:attr="data-ng-init='excludeVariable = \'' + *{excludeVariable} + '\''">
+                                                        <option value=""
+                                                                th:each="opt : ${excludeVariableOpts}"
+                                                                th:value="${opt.title}"
+                                                                th:text="${opt.title}">exclude_vars.txt</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <button type="button" class="btn btn-primary btn-lg btn-block nextBtn" th:disabled="${#lists.isEmpty(datasetOpts)}">Next</button>
                                     </div>
                                 </div>
@@ -216,6 +234,10 @@
                                                             <tr>
                                                                 <td>Knowledge:</td>
                                                                 <td data-ng-bind="(knowledge == null) ? 'none' : knowledge"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Exclude Variables:</td>
+                                                                <td data-ng-bind="(excludeVariable == null) ? 'none' : excludeVariable"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td>Penalty Discount:</td>

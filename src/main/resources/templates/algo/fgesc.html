@@ -78,9 +78,9 @@
                                                             th:attr="data-ng-init='dataset = \'' + *{dataset} + '\''"
                                                             th:disabled="${#lists.isEmpty(datasetOpts)}">
                                                         <option value=""
-                                                                th:each="datasetOpt : ${datasetOpts}"
-                                                                th:value="${datasetOpt.title}"
-                                                                th:text="${datasetOpt.title}"
+                                                                th:each="opt : ${datasetOpts}"
+                                                                th:value="${opt.title}"
+                                                                th:text="${opt.title}"
                                                                 th:disabled="${#lists.isEmpty(datasetOpts)}">sim_data_100vars_100_cases.txt (75.48 kB)</option>
                                                     </select>
                                                 </div>
@@ -113,9 +113,27 @@
                                                             th:field="*{knowledge}"
                                                             th:attr="data-ng-init='knowledge = \'' + *{knowledge} + '\''">
                                                         <option value=""
-                                                                th:each="knowledgeOpt : ${knowledgeOpts}"
-                                                                th:value="${knowledgeOpt.title}"
-                                                                th:text="${knowledgeOpt.title}">sim_data_100vars_100_cases.prior (75.48 kB)</option>
+                                                                th:each="opt : ${knowledgeOpts}"
+                                                                th:value="${opt.title}"
+                                                                th:text="${opt.title}">sim_data_100vars_100_cases.prior (75.48 kB)</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="panel panel-primary">
+                                            <div class="panel-heading">
+                                                <h3 class="panel-title">Excluded Variables</h3>
+                                            </div>
+                                            <div class="panel-body">
+                                                <div class="form-group">
+                                                    <label for="excludeVariable">Variable File:</label>
+                                                    <select id="excludeVariable" name="excludeVariable" class="form-control" data-ng-model="excludeVariable"
+                                                            th:field="*{excludeVariable}"
+                                                            th:attr="data-ng-init='excludeVariable = \'' + *{excludeVariable} + '\''">
+                                                        <option value=""
+                                                                th:each="opt : ${excludeVariableOpts}"
+                                                                th:value="${opt.title}"
+                                                                th:text="${opt.title}">exclude_vars.txt</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -217,6 +235,10 @@
                                                             <tr>
                                                                 <td>Knowledge:</td>
                                                                 <td data-ng-bind="(knowledge == null) ? 'none' : knowledge"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Exclude Variables:</td>
+                                                                <td data-ng-bind="(excludeVariable == null) ? 'none' : excludeVariable"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td>Penalty Discount:</td>
