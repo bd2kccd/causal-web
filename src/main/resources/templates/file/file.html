@@ -13,7 +13,11 @@
         <link rel="stylesheet" href="../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css}"/>
         <link rel="stylesheet" href="../../static/vendors/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.min.css}" />
         <link rel="stylesheet" href="../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
-        <link rel="stylesheet" href="../../static/css/div-square.min.css" th:href="@{/css/div-square.min.css}" />
+        <style>
+            .file_item .fa {
+                color: #808080;
+            }
+        </style>
         <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{https://code.jquery.com/jquery-2.2.4.min.js}"></script>
         <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
@@ -29,13 +33,13 @@
                     </div>
                 </div>
                 <div class="row" th:each="group : ${fileGroupings}">
-                    <div class="col-md-3" th:each="groupItem : ${group}">
+                    <div class="col-md-3 file_item" th:each="groupItem : ${group}">
                         <a href="#" th:href="@{${groupItem.fileFormat == null} ? '/secured/file/uncategorized' : '/secured/file/format/' + ${groupItem.fileFormat.name}}">
-                            <div class="panel panel-green" th:class="${groupItem.fileFormat == null} ? 'panel panel-yellow' : 'panel panel-green'">
-                                <div class="panel-heading">
+                            <div class="panel panel-default">
+                                <div class="panel-body">
                                     <div class="row">
                                         <div class="col-xs-3">
-                                            <i class="fa fa-file-o fa-5x" th:class="${groupItem.fileFormat == null} ? 'fa fa-file-o fa-5x white' : 'fa fa-file fa-5x white'"></i>
+                                            <i class="fa fa-file-o fa-5x" th:class="${groupItem.fileFormat == null} ? 'fa fa-file-o fa-5x' : 'fa fa-file fa-5x'"></i>
                                         </div>
                                         <div class="col-xs-9 text-right">
                                             <div class="huge" th:text="${groupItem.numOfFiles}"></div>
