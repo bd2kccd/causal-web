@@ -77,7 +77,7 @@ public class GFCIController extends AbstractTetradAlgoController implements View
             @ModelAttribute("algoOpt") final GFCImCGAlgoOpt algoOpt,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("GFCIm-CG", ccdProperties.getAlgoJar(), ccdProperties.getAlgoGfcimCGS());
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("GFCIm-CG", ccdProperties.getAlgoJar(), ccdProperties.getAlgoGfci());
         jobRequest.setDataset(getDataset(algoOpt));
         jobRequest.setPriorKnowledge(getPriorKnowledge(algoOpt));
         jobRequest.setJvmOptions(getJvmOptions(algoOpt));
@@ -116,7 +116,7 @@ public class GFCIController extends AbstractTetradAlgoController implements View
             @ModelAttribute("algoOpt") final GFCIdAlgoOpt algoOpt,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("GFCId", ccdProperties.getAlgoJar(), ccdProperties.getAlgoGfciDisc());
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("GFCId", ccdProperties.getAlgoJar(), ccdProperties.getAlgoGfci());
         jobRequest.setDataset(getDataset(algoOpt));
         jobRequest.setPriorKnowledge(getPriorKnowledge(algoOpt));
         jobRequest.setJvmOptions(getJvmOptions(algoOpt));
@@ -155,7 +155,7 @@ public class GFCIController extends AbstractTetradAlgoController implements View
             @ModelAttribute("algoOpt") final GFCIcAlgoOpt algoOpt,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("GFCIc", ccdProperties.getAlgoJar(), ccdProperties.getAlgoGfciCont());
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("GFCIc", ccdProperties.getAlgoJar(), ccdProperties.getAlgoGfci());
         jobRequest.setDataset(getDataset(algoOpt));
         jobRequest.setPriorKnowledge(getPriorKnowledge(algoOpt));
         jobRequest.setJvmOptions(getJvmOptions(algoOpt));
@@ -211,14 +211,6 @@ public class GFCIController extends AbstractTetradAlgoController implements View
         if (algoOpt.isVerbose()) {
             parameters.add(VERBOSE);
         }
-        if (algoOpt.isSkipNonZeroVariance()) {
-            parameters.add(SKIP_NONZERO_VARIANCE);
-        }
-        if (algoOpt.isSkipUniqueVarName()) {
-            parameters.add(SKIP_UNIQUE_VAR_NAME);
-        }
-
-        parameters.add(TETRAD_GRAPH_JSON);
 
         return parameters;
     }
@@ -255,8 +247,6 @@ public class GFCIController extends AbstractTetradAlgoController implements View
             parameters.add(VERBOSE);
         }
 
-        parameters.add(TETRAD_GRAPH_JSON);
-
         return parameters;
     }
 
@@ -284,14 +274,6 @@ public class GFCIController extends AbstractTetradAlgoController implements View
         if (algoOpt.isVerbose()) {
             parameters.add(VERBOSE);
         }
-        if (algoOpt.isSkipCategoryLimit()) {
-            parameters.add(SKIP_CATEGORY_LIMIT);
-        }
-        if (algoOpt.isSkipUniqueVarName()) {
-            parameters.add(SKIP_UNIQUE_VAR_NAME);
-        }
-
-        parameters.add(TETRAD_GRAPH_JSON);
 
         return parameters;
     }

@@ -29,8 +29,7 @@ public class FGEScAlgoOpt extends CommonFGESAlgoOpt {
     protected double penaltyDiscount = 2.0;
     protected double structurePrior = 1.0;
 
-    protected boolean skipUniqueVarName = false;
-    protected boolean skipNonZeroVariance = false;
+    protected boolean skipValidation = false;
 
     public FGEScAlgoOpt() {
     }
@@ -51,20 +50,12 @@ public class FGEScAlgoOpt extends CommonFGESAlgoOpt {
         this.structurePrior = structurePrior;
     }
 
-    public boolean isSkipUniqueVarName() {
-        return skipUniqueVarName;
+    public boolean isSkipValidation() {
+        return skipValidation;
     }
 
-    public void setSkipUniqueVarName(boolean skipUniqueVarName) {
-        this.skipUniqueVarName = skipUniqueVarName;
-    }
-
-    public boolean isSkipNonZeroVariance() {
-        return skipNonZeroVariance;
-    }
-
-    public void setSkipNonZeroVariance(boolean skipNonZeroVariance) {
-        this.skipNonZeroVariance = skipNonZeroVariance;
+    public void setSkipValidation(boolean skipValidation) {
+        this.skipValidation = skipValidation;
     }
 
 }

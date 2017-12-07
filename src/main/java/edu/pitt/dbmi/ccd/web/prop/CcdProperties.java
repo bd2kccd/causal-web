@@ -35,23 +35,29 @@ public class CcdProperties {
     @Value("${ccd.jar.algorithm}")
     private String algoJar;
 
-    @Value("${ccd.algorithm.fges.cont}")
-    private String algoFgesCont;
+    @Value("${ccd.algorithm.fges}")
+    private String algoFges;
 
-    @Value("${ccd.algorithm.fges.disc}")
-    private String algoFgesDisc;
+    @Value("${ccd.algorithm.gfci}")
+    private String algoGfci;
 
-    @Value("${ccd.algorithm.fges.mix.cg}")
-    private String algoFgesmCG;
+    @Value("${ccd.test.continuous}")
+    private String testContinuous;
 
-    @Value("${ccd.algorithm.gfci.cont}")
-    private String algoGfciCont;
+    @Value("${ccd.test.discrete}")
+    private String testDiscrete;
 
-    @Value("${ccd.algorithm.gfci.disc}")
-    private String algoGfciDisc;
+    @Value("${ccd.test.mixed}")
+    private String testMixed;
 
-    @Value("${ccd.algorithm.gfci.mix.cg}")
-    private String algoGfcimCGS;
+    @Value("${ccd.score.continuous}")
+    private String scoreContinuous;
+
+    @Value("${ccd.score.discrete}")
+    private String scoreDiscrete;
+
+    @Value("${ccd.score.mixed}")
+    private String scoreMixed;
 
     @Value("${ccd.queue.size:5}")
     private String jobQueueSize;
@@ -100,52 +106,68 @@ public class CcdProperties {
         this.algoJar = algoJar;
     }
 
-    public String getAlgoFgesCont() {
-        return algoFgesCont;
+    public String getAlgoFges() {
+        return algoFges;
     }
 
-    public void setAlgoFgesCont(String algoFgesCont) {
-        this.algoFgesCont = algoFgesCont;
+    public void setAlgoFges(String algoFges) {
+        this.algoFges = algoFges;
     }
 
-    public String getAlgoFgesDisc() {
-        return algoFgesDisc;
+    public String getAlgoGfci() {
+        return algoGfci;
     }
 
-    public void setAlgoFgesDisc(String algoFgesDisc) {
-        this.algoFgesDisc = algoFgesDisc;
+    public void setAlgoGfci(String algoGfci) {
+        this.algoGfci = algoGfci;
     }
 
-    public String getAlgoFgesmCG() {
-        return algoFgesmCG;
+    public String getTestContinuous() {
+        return testContinuous;
     }
 
-    public void setAlgoFgesmCG(String algoFgesmCG) {
-        this.algoFgesmCG = algoFgesmCG;
+    public void setTestContinuous(String testContinuous) {
+        this.testContinuous = testContinuous;
     }
 
-    public String getAlgoGfciCont() {
-        return algoGfciCont;
+    public String getTestDiscrete() {
+        return testDiscrete;
     }
 
-    public void setAlgoGfciCont(String algoGfciCont) {
-        this.algoGfciCont = algoGfciCont;
+    public void setTestDiscrete(String testDiscrete) {
+        this.testDiscrete = testDiscrete;
     }
 
-    public String getAlgoGfciDisc() {
-        return algoGfciDisc;
+    public String getTestMixed() {
+        return testMixed;
     }
 
-    public void setAlgoGfciDisc(String algoGfciDisc) {
-        this.algoGfciDisc = algoGfciDisc;
+    public void setTestMixed(String testMixed) {
+        this.testMixed = testMixed;
     }
 
-    public String getAlgoGfcimCGS() {
-        return algoGfcimCGS;
+    public String getScoreContinuous() {
+        return scoreContinuous;
     }
 
-    public void setAlgoGfcimCGS(String algoGfcimCGS) {
-        this.algoGfcimCGS = algoGfcimCGS;
+    public void setScoreContinuous(String scoreContinuous) {
+        this.scoreContinuous = scoreContinuous;
+    }
+
+    public String getScoreDiscrete() {
+        return scoreDiscrete;
+    }
+
+    public void setScoreDiscrete(String scoreDiscrete) {
+        this.scoreDiscrete = scoreDiscrete;
+    }
+
+    public String getScoreMixed() {
+        return scoreMixed;
+    }
+
+    public void setScoreMixed(String scoreMixed) {
+        this.scoreMixed = scoreMixed;
     }
 
     public String getJobQueueSize() {

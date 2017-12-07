@@ -27,29 +27,12 @@ package edu.pitt.dbmi.ccd.web.model.algo;
  */
 public class FGESmCGAlgoOpt extends CommonFGESAlgoOpt {
 
-    protected double penaltyDiscount = 2.0;
-    protected double structurePrior = 1.0;
     protected int numCategoriesToDiscretize = 3;
     protected int numberOfDiscreteCategories = 4;
+    protected double structurePrior = 1.0;
     protected boolean discretize = true;
 
     public FGESmCGAlgoOpt() {
-    }
-
-    public double getPenaltyDiscount() {
-        return penaltyDiscount;
-    }
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
-    }
-
-    public double getStructurePrior() {
-        return structurePrior;
-    }
-
-    public void setStructurePrior(double structurePrior) {
-        this.structurePrior = structurePrior;
     }
 
     public int getNumCategoriesToDiscretize() {
@@ -66,6 +49,14 @@ public class FGESmCGAlgoOpt extends CommonFGESAlgoOpt {
 
     public void setNumberOfDiscreteCategories(int numberOfDiscreteCategories) {
         this.numberOfDiscreteCategories = numberOfDiscreteCategories;
+    }
+
+    public double getStructurePrior() {
+        return structurePrior;
+    }
+
+    public void setStructurePrior(double structurePrior) {
+        this.structurePrior = structurePrior;
     }
 
     public boolean isDiscretize() {

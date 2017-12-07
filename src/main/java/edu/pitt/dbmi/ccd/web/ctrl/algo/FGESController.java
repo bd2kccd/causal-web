@@ -75,7 +75,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
             @ModelAttribute("algoOpt") final FGESmCGAlgoOpt algoOpt,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("FGESm-CG", ccdProperties.getAlgoJar(), ccdProperties.getAlgoFgesmCG());
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("FGESm-CG", ccdProperties.getAlgoJar(), ccdProperties.getAlgoFges());
         jobRequest.setDataset(getDataset(algoOpt));
         jobRequest.setPriorKnowledge(getPriorKnowledge(algoOpt));
         jobRequest.setJvmOptions(getJvmOptions(algoOpt));
@@ -114,7 +114,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
             @ModelAttribute("algoOpt") final FGESdAlgoOpt algoOpt,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("FGESd", ccdProperties.getAlgoJar(), ccdProperties.getAlgoFgesDisc());
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("FGESd", ccdProperties.getAlgoJar(), ccdProperties.getAlgoFges());
         jobRequest.setDataset(getDataset(algoOpt));
         jobRequest.setPriorKnowledge(getPriorKnowledge(algoOpt));
         jobRequest.setJvmOptions(getJvmOptions(algoOpt));
@@ -153,7 +153,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
             @ModelAttribute("algoOpt") final FGEScAlgoOpt algoOpt,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("FGESc", ccdProperties.getAlgoJar(), ccdProperties.getAlgoFgesCont());
+        AlgorithmJobRequest jobRequest = new AlgorithmJobRequest("FGESc", ccdProperties.getAlgoJar(), ccdProperties.getAlgoFges());
         jobRequest.setDataset(getDataset(algoOpt));
         jobRequest.setPriorKnowledge(getPriorKnowledge(algoOpt));
         jobRequest.setJvmOptions(getJvmOptions(algoOpt));
@@ -187,110 +187,12 @@ public class FGESController extends AbstractTetradAlgoController implements View
         return FGES_CONT_VIEW;
     }
 
-    private List<String> getParametersForMixedCG(FGESmCGAlgoOpt algoOpt, String username) {
-        List<String> parameters = new LinkedList<>();
-        String delimiter = algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username);
-        parameters.add(DELIMITER);
-        parameters.add(delimiter);
-        parameters.add(PENALTY_DISCOUNT);
-        parameters.add(Double.toString(algoOpt.getPenaltyDiscount()));
-        parameters.add(STRUCTURE_PRIOR);
-        parameters.add(Double.toString(algoOpt.getStructurePrior()));
-        parameters.add(NUM_CATEGORIES_TO_DISCRETIZE);
-        parameters.add(Integer.toString(algoOpt.getNumCategoriesToDiscretize()));
-        parameters.add(NUM_DISCRETE_CATEGORIES);
-        parameters.add(Integer.toString(algoOpt.getNumberOfDiscreteCategories()));
-        parameters.add(MAX_DEGREE);
-        parameters.add(Integer.toString(algoOpt.getMaxDegree()));
-        if (algoOpt.isDiscretize()) {
-            parameters.add(DISCRETIZE);
-        }
-        if (algoOpt.isFaithfulnessAssumed()) {
-            parameters.add(FAITHFULNESS_ASSUMED);
-        }
-        if (algoOpt.isSymmetricFirstStep()) {
-            parameters.add(SYMMETRIC_FIRST_STEP);
-        }
-        if (algoOpt.isVerbose()) {
-            parameters.add(VERBOSE);
-        }
-
-        parameters.add(TETRAD_GRAPH_JSON);
-
-        return parameters;
-    }
-
-    private List<String> getParametersForDiscrete(FGESdAlgoOpt algoOpt, String username) {
-        List<String> parameters = new LinkedList<>();
-        String delimiter = algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username);
-        parameters.add(DELIMITER);
-        parameters.add(delimiter);
-        parameters.add(STRUCTURE_PRIOR);
-        parameters.add(Double.toString(algoOpt.getStructurePrior()));
-        parameters.add(SAMPLE_PRIOR);
-        parameters.add(Double.toString(algoOpt.getSamplePrior()));
-        parameters.add(MAX_DEGREE);
-        parameters.add(Integer.toString(algoOpt.getMaxDegree()));
-        if (algoOpt.isFaithfulnessAssumed()) {
-            parameters.add(FAITHFULNESS_ASSUMED);
-        }
-        if (algoOpt.isSymmetricFirstStep()) {
-            parameters.add(SYMMETRIC_FIRST_STEP);
-        }
-        if (algoOpt.isVerbose()) {
-            parameters.add(VERBOSE);
-        }
-        if (algoOpt.isSkipCategoryLimit()) {
-            parameters.add(SKIP_CATEGORY_LIMIT);
-        }
-        if (algoOpt.isSkipUniqueVarName()) {
-            parameters.add(SKIP_UNIQUE_VAR_NAME);
-        }
-
-        parameters.add(TETRAD_GRAPH_JSON);
-
-        return parameters;
-    }
-
-    private List<String> getParametersForContinuous(FGEScAlgoOpt algoOpt, String username) {
-        List<String> parameters = new LinkedList<>();
-        String delimiter = algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username);
-        parameters.add(DELIMITER);
-        parameters.add(delimiter);
-        parameters.add(PENALTY_DISCOUNT);
-        parameters.add(Double.toString(algoOpt.getPenaltyDiscount()));
-        parameters.add(STRUCTURE_PRIOR);
-        parameters.add(Double.toString(algoOpt.getStructurePrior()));
-        parameters.add(MAX_DEGREE);
-        parameters.add(Integer.toString(algoOpt.getMaxDegree()));
-        if (algoOpt.isFaithfulnessAssumed()) {
-            parameters.add(FAITHFULNESS_ASSUMED);
-        }
-        if (algoOpt.isSymmetricFirstStep()) {
-            parameters.add(SYMMETRIC_FIRST_STEP);
-        }
-        if (algoOpt.isVerbose()) {
-            parameters.add(VERBOSE);
-        }
-        if (algoOpt.isSkipNonZeroVariance()) {
-            parameters.add(SKIP_NONZERO_VARIANCE);
-        }
-        if (algoOpt.isSkipUniqueVarName()) {
-            parameters.add(SKIP_UNIQUE_VAR_NAME);
-        }
-
-        parameters.add(TETRAD_GRAPH_JSON);
-
-        return parameters;
-    }
-
     private Map<String, String> getFGESmCGParams(FGESmCGAlgoOpt algoOpt) {
         Map<String, String> params = new HashMap<>();
-        params.put(PENALTY_DISCOUNT.replaceAll("--", ""), Double.toString(algoOpt.getPenaltyDiscount()));
         params.put(STRUCTURE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getStructurePrior()));
         params.put(NUM_CATEGORIES_TO_DISCRETIZE.replaceAll("--", ""), Integer.toString(algoOpt.getNumCategoriesToDiscretize()));
-        params.put(NUM_DISCRETE_CATEGORIES.replaceAll("--", ""), Integer.toString(algoOpt.getNumberOfDiscreteCategories()));
         params.put(DISCRETIZE.replaceAll("--", ""), algoOpt.isDiscretize() ? "true" : "false");
+        params.put(NUM_DISCRETE_CATEGORIES.replaceAll("--", ""), Integer.toString(algoOpt.getNumberOfDiscreteCategories()));
 
         getCommonFGESParams(params, algoOpt);
 
@@ -310,7 +212,6 @@ public class FGESController extends AbstractTetradAlgoController implements View
     private Map<String, String> getFGEScParams(FGEScAlgoOpt algoOpt) {
         Map<String, String> params = new HashMap<>();
         params.put(PENALTY_DISCOUNT.replaceAll("--", ""), Double.toString(algoOpt.getPenaltyDiscount()));
-        params.put(STRUCTURE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getStructurePrior()));
 
         getCommonFGESParams(params, algoOpt);
 
@@ -321,6 +222,117 @@ public class FGESController extends AbstractTetradAlgoController implements View
         params.put(MAX_DEGREE.replaceAll("--", ""), Integer.toString(algoOpt.getMaxDegree()));
         params.put(FAITHFULNESS_ASSUMED.replaceAll("--", ""), algoOpt.isFaithfulnessAssumed() ? "true" : "false");
         params.put(SYMMETRIC_FIRST_STEP.replaceAll("--", ""), algoOpt.isSymmetricFirstStep() ? "true" : "false");
+    }
+
+    private List<String> getParametersForMixedCG(FGESmCGAlgoOpt algoOpt, String username) {
+        List<String> parameters = new LinkedList<>();
+        String delimiter = algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username);
+
+        // required options
+        parameters.add(DELIMITER);
+        parameters.add(delimiter);
+        parameters.add(DATATYPE);
+        parameters.add("mixed");
+        parameters.add(SCORE);
+        parameters.add(ccdProperties.getScoreMixed());
+        parameters.add(NUM_CATEGORIES_TO_DISCRETIZE);
+        parameters.add(Integer.toString(algoOpt.getNumCategoriesToDiscretize()));
+        parameters.add(NUM_DISCRETE_CATEGORIES);
+        parameters.add(Integer.toString(algoOpt.getNumberOfDiscreteCategories()));
+
+        // optional options
+        parameters.add(STRUCTURE_PRIOR);
+        parameters.add(Double.toString(algoOpt.getStructurePrior()));
+        if (algoOpt.isDiscretize()) {
+            parameters.add(DISCRETIZE);
+        }
+        if (algoOpt.isFaithfulnessAssumed()) {
+            parameters.add(FAITHFULNESS_ASSUMED);
+        }
+        if (algoOpt.isSymmetricFirstStep()) {
+            parameters.add(SYMMETRIC_FIRST_STEP);
+        }
+        parameters.add(MAX_DEGREE);
+        parameters.add(Integer.toString(algoOpt.getMaxDegree()));
+        if (algoOpt.isVerbose()) {
+            parameters.add(VERBOSE);
+        }
+
+        return parameters;
+    }
+
+    private List<String> getParametersForDiscrete(FGESdAlgoOpt algoOpt, String username) {
+        List<String> parameters = new LinkedList<>();
+        String delimiter = algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username);
+
+        // required options
+        parameters.add(DELIMITER);
+        parameters.add(delimiter);
+        parameters.add(DATATYPE);
+        parameters.add("discrete");
+        parameters.add(SCORE);
+        parameters.add(ccdProperties.getScoreDiscrete());
+
+        // optional options
+        parameters.add(STRUCTURE_PRIOR);
+        parameters.add(Double.toString(algoOpt.getStructurePrior()));
+        parameters.add(SAMPLE_PRIOR);
+        parameters.add(Double.toString(algoOpt.getSamplePrior()));
+        if (algoOpt.isFaithfulnessAssumed()) {
+            parameters.add(FAITHFULNESS_ASSUMED);
+        }
+        if (algoOpt.isSymmetricFirstStep()) {
+            parameters.add(SYMMETRIC_FIRST_STEP);
+        }
+        parameters.add(MAX_DEGREE);
+        parameters.add(Integer.toString(algoOpt.getMaxDegree()));
+        if (algoOpt.isVerbose()) {
+            parameters.add(VERBOSE);
+        }
+
+        // server options
+        if (algoOpt.isSkipValidation()) {
+            parameters.add(SKIP_VALIDATION);
+        }
+        parameters.add(SKIP_LATEST);
+
+        return parameters;
+    }
+
+    private List<String> getParametersForContinuous(FGEScAlgoOpt algoOpt, String username) {
+        List<String> parameters = new LinkedList<>();
+        String delimiter = algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username);
+
+        // required options
+        parameters.add(DELIMITER);
+        parameters.add(delimiter);
+        parameters.add(DATATYPE);
+        parameters.add("continuous");
+        parameters.add(SCORE);
+        parameters.add(ccdProperties.getScoreContinuous());
+
+        // optional options
+        parameters.add(PENALTY_DISCOUNT);
+        parameters.add(Double.toString(algoOpt.getPenaltyDiscount()));
+        if (algoOpt.isFaithfulnessAssumed()) {
+            parameters.add(FAITHFULNESS_ASSUMED);
+        }
+        if (algoOpt.isSymmetricFirstStep()) {
+            parameters.add(SYMMETRIC_FIRST_STEP);
+        }
+        parameters.add(MAX_DEGREE);
+        parameters.add(Integer.toString(algoOpt.getMaxDegree()));
+        if (algoOpt.isVerbose()) {
+            parameters.add(VERBOSE);
+        }
+
+        // server options
+        if (algoOpt.isSkipValidation()) {
+            parameters.add(SKIP_VALIDATION);
+        }
+        parameters.add(SKIP_LATEST);
+
+        return parameters;
     }
 
 }

@@ -114,10 +114,6 @@
                                             </div>
                                             <div class="panel-body">
                                                 <div class="form-group">
-                                                    <label for="penaltyDiscount" class="control-label">Penalty Discount - multiplier on the penalty term of the BIC score for continuous data. We suggest 2 for &lt;50 variables and 4 for &gt;50 variables.</label>
-                                                    <input type="number" id="penaltyDiscount" name="penaltyDiscount" min="0" class="form-control" data-ng-model="penaltyDiscount" th:attr="data-ng-init='penaltyDiscount=' + *{penaltyDiscount}" th:field="*{penaltyDiscount}" required="required" />
-                                                </div>
-                                                <div class="form-group">
                                                     <label for="structurePrior" class="control-label">Structure Prior</label>
                                                     <input type="number" id="structurePrior" name="structurePrior" min="1" class="form-control" data-ng-model="structurePrior" th:attr="data-ng-init='structurePrior=' + *{structurePrior}" th:field="*{structurePrior}" required="required" />
                                                 </div>
@@ -216,10 +212,6 @@
                                                     <table class="table table-striped">
                                                         <caption>Parameters</caption>
                                                         <tbody>
-                                                            <tr>
-                                                                <td class="col-md-3">Penalty Discount:</td>
-                                                                <td data-ng-bind="penaltyDiscount"></td>
-                                                            </tr>
                                                             <tr>
                                                                 <td class="col-md-3">Structure Prior:</td>
                                                                 <td data-ng-bind="structurePrior"></td>

@@ -27,6 +27,7 @@ import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import edu.pitt.dbmi.ccd.web.model.algo.AlgorithmJobRequest;
 import edu.pitt.dbmi.ccd.web.service.DataService;
+import edu.pitt.dbmi.ccd.web.util.TetradCmdOptions;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -174,7 +175,7 @@ public abstract class AbstractAlgorithmRunService {
             datasetPath.add(dataPath.toAbsolutePath().toString());
         });
         String datasetList = listToSeperatedValues(datasetPath, ",");
-        commands.add("--data");
+        commands.add(TetradCmdOptions.DATASET);
         commands.add(datasetList);
 
         //add prior
@@ -188,21 +189,18 @@ public abstract class AbstractAlgorithmRunService {
                 priorKnowledgePath.add(priorKnowledgeFilePath.toAbsolutePath().toString());
             });
             String knowledgeList = listToSeperatedValues(priorKnowledgePath, ",");
-            commands.add("--knowledge");
+            commands.add(TetradCmdOptions.KNOWLEDGE);
             commands.add(knowledgeList);
         }
 
         // add parameters
         commands.addAll(parameters);
 
-        // don't create any validation files
-        commands.add("--no-validation-output");
-
         long currentTime = System.currentTimeMillis();
         String fileName = (dataset.size() > 1)
                 ? String.format("%s_%s_%d", algorithmName, "multi-dataset", currentTime)
                 : String.format("%s_%s_%d", algorithmName, listToSeperatedValues(dataset, ","), currentTime);
-        commands.add("--output-prefix");
+        commands.add(TetradCmdOptions.OUTPUT_PREFIX);
         commands.add(fileName);
 
         String cmd = listToSeperatedValues(commands, ";");
