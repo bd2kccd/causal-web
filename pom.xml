@@ -97,7 +97,7 @@
         <dependency>
             <groupId>edu.pitt.dbmi</groupId>
             <artifactId>ccd-job-queue</artifactId>
-            <version>0.1.8</version>
+            <version>0.1.9-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>edu.pitt.dbmi</groupId>
