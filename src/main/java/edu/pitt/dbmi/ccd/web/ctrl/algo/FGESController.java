@@ -242,7 +242,11 @@ public class FGESController extends AbstractTetradAlgoController implements View
         }
 
         // get common parameters
-        getTetradAlgoOpt(algoOpt, parameters);
+        getCommonFGESAlgoOpt(algoOpt, parameters);
+
+        if (algoOpt.isVerbose()) {
+            parameters.add(VERBOSE);
+        }
 
         return parameters;
     }
@@ -263,8 +267,11 @@ public class FGESController extends AbstractTetradAlgoController implements View
         parameters.add(Double.toString(algoOpt.getSamplePrior()));
 
         // get common parameters
-        getTetradAlgoOpt(algoOpt, parameters);
+        getCommonFGESAlgoOpt(algoOpt, parameters);
 
+        if (algoOpt.isVerbose()) {
+            parameters.add(VERBOSE);
+        }
         if (algoOpt.isSkipValidation()) {
             parameters.add(SKIP_VALIDATION);
         }
@@ -286,8 +293,11 @@ public class FGESController extends AbstractTetradAlgoController implements View
         parameters.add(Double.toString(algoOpt.getPenaltyDiscount()));
 
         // get common parameters
-        getTetradAlgoOpt(algoOpt, parameters);
+        getCommonFGESAlgoOpt(algoOpt, parameters);
 
+        if (algoOpt.isVerbose()) {
+            parameters.add(VERBOSE);
+        }
         if (algoOpt.isSkipValidation()) {
             parameters.add(SKIP_VALIDATION);
         }
@@ -295,7 +305,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
         return parameters;
     }
 
-    private void getTetradAlgoOpt(CommonFGESAlgoOpt commonFGESAlgoOpt, List<String> parameters) {
+    private void getCommonFGESAlgoOpt(CommonFGESAlgoOpt commonFGESAlgoOpt, List<String> parameters) {
         // common tetrad parameters
         parameters.add(MAX_DEGREE);
         parameters.add(Integer.toString(commonFGESAlgoOpt.getMaxDegree()));
