@@ -25,30 +25,22 @@ package edu.pitt.dbmi.ccd.web.model.algo;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class FGESmCGAlgoOpt extends CommonFGESAlgoOpt {
+public class FGESmAlgoOpt extends CommonFGESAlgoOpt {
 
-    protected int numCategoriesToDiscretize = 3;
-    protected int numberOfDiscreteCategories = 4;
-    protected double structurePrior = 1.0;
     protected boolean discretize = true;
+    protected double structurePrior = 1.0;
 
-    public FGESmCGAlgoOpt() {
+    protected int numCategories = 4;
+
+    public FGESmAlgoOpt() {
     }
 
-    public int getNumCategoriesToDiscretize() {
-        return numCategoriesToDiscretize;
+    public boolean isDiscretize() {
+        return discretize;
     }
 
-    public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
-        this.numCategoriesToDiscretize = numCategoriesToDiscretize;
-    }
-
-    public int getNumberOfDiscreteCategories() {
-        return numberOfDiscreteCategories;
-    }
-
-    public void setNumberOfDiscreteCategories(int numberOfDiscreteCategories) {
-        this.numberOfDiscreteCategories = numberOfDiscreteCategories;
+    public void setDiscretize(boolean discretize) {
+        this.discretize = discretize;
     }
 
     public double getStructurePrior() {
@@ -59,12 +51,12 @@ public class FGESmCGAlgoOpt extends CommonFGESAlgoOpt {
         this.structurePrior = structurePrior;
     }
 
-    public boolean isDiscretize() {
-        return discretize;
+    public int getNumCategories() {
+        return numCategories;
     }
 
-    public void setDiscretize(boolean discretize) {
-        this.discretize = discretize;
+    public void setNumCategories(int numCategories) {
+        this.numCategories = numCategories;
     }
 
 }

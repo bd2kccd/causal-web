@@ -34,7 +34,6 @@ public interface TetradCmdOptions {
     public static final String KNOWLEDGE = "--knowledge";
     public static final String EXCLUDE_VARS = "--exclude-var";
     public static final String DELIMITER = "--delimiter";
-    public static final String NUM_DISCRETE_CATEGORIES = "--num-discrete-categories";
     public static final String VERBOSE = "--verbose";
     public static final String THREAD = "--thread";
     public static final String JSON = "--json";
@@ -52,7 +51,7 @@ public interface TetradCmdOptions {
     public static final String SAMPLE_PRIOR = "--samplePrior";
     public static final String COMPLETE_RULE_SET_USED = "--completeRuleSetUsed";
 
-    public static final String NUM_CATEGORIES_TO_DISCRETIZE = "--numCategories";
+    public static final String NUM_CATEGORIES = "--numCategories";
 
     public static final String DISCRETIZE = "--discretize";
 

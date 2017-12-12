@@ -77,8 +77,8 @@
                                                     </select>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="numberOfDiscreteCategories" class="control-label">Number of Discrete Categories.</label>
-                                                    <input type="number" id="numberOfDiscreteCategories" name="numberOfDiscreteCategories" min="1" class="form-control" data-ng-model="numberOfDiscreteCategories" th:attr="data-ng-init='numberOfDiscreteCategories=' + *{numberOfDiscreteCategories}" th:field="*{numberOfDiscreteCategories}" required="required" />
+                                                    <label for="numCategories" class="control-label">Number of Discrete Categories.</label>
+                                                    <input type="number" id="numCategories" name="numCategories" min="1" class="form-control" data-ng-model="numCategories" th:attr="data-ng-init='numCategories=' + *{numCategories}" th:field="*{numCategories}" required="required" />
                                                 </div>
                                             </div>
                                         </div>
@@ -123,10 +123,6 @@
                                                             <input type="checkbox" id="discretize" name="discretize" data-ng-model="discretize" th:attr="data-ng-init='discretize=' + *{discretize}" th:field="*{discretize}" /> Discretize - Yes if continuous variables should be discretized when child is discrete.
                                                         </label>
                                                     </div>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="numCategoriesToDiscretize" class="control-label">Number of Categories to Discretize - The number of categories used to discretize continuous variables, if necessary.</label>
-                                                    <input type="number" id="numCategoriesToDiscretize" name="numCategoriesToDiscretize" min="2" class="form-control" data-ng-model="numCategoriesToDiscretize" th:attr="data-ng-init='numCategoriesToDiscretize=' + *{numCategoriesToDiscretize}" th:field="*{numCategoriesToDiscretize}" required="required" />
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="maxDegree" class="control-label">Maximum Degree - The maximum degree of the graph.</label>
@@ -196,7 +192,7 @@
                                                             </tr>
                                                             <tr>
                                                                 <td class="col-md-3">Number of Discrete Categories:</td>
-                                                                <td data-ng-bind="numberOfDiscreteCategories"></td>
+                                                                <td data-ng-bind="numCategories"></td>
                                                             </tr>
                                                         </tbody>
                                                     </table>
@@ -219,10 +215,6 @@
                                                             <tr>
                                                                 <td class="col-md-3">Discretize:</td>
                                                                 <td data-ng-bind="discretize"></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td class="col-md-3">Number of Categories to Discretize:</td>
-                                                                <td data-ng-bind="numCategoriesToDiscretize"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td class="col-md-3">Max Degree:</td>

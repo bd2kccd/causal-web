@@ -27,7 +27,6 @@ package edu.pitt.dbmi.ccd.web.model.algo;
 public class FGEScAlgoOpt extends CommonFGESAlgoOpt {
 
     protected double penaltyDiscount = 2.0;
-    protected double structurePrior = 1.0;
 
     protected boolean skipValidation = false;
 
@@ -40,14 +39,6 @@ public class FGEScAlgoOpt extends CommonFGESAlgoOpt {
 
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
-    }
-
-    public double getStructurePrior() {
-        return structurePrior;
-    }
-
-    public void setStructurePrior(double structurePrior) {
-        this.structurePrior = structurePrior;
     }
 
     public boolean isSkipValidation() {
