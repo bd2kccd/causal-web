@@ -103,15 +103,8 @@
                                             <div class="panel-body">
                                                 <div class="form-group">
                                                     <div class="checkbox">
-                                                        <label for="skipCategoryLimit" class="control-label">
-                                                            <input type="checkbox" id="skipCategoryLimit" name="skipCategoryLimit" data-ng-model="skipCategoryLimit" th:attr="data-ng-init='skipCategoryLimit=' + *{skipCategoryLimit}" th:field="*{skipCategoryLimit}" /> Skip validation that ensures the number of categories do not exceed 10.
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group">
-                                                    <div class="checkbox">
-                                                        <label for="skipUniqueVarName" class="control-label">
-                                                            <input type="checkbox" id="skipUniqueVarName" name="skipUniqueVarName" data-ng-model="skipUniqueVarName" th:attr="data-ng-init='skipUniqueVarName=' + *{skipUniqueVarName}" th:field="*{skipUniqueVarName}" /> Skip validation that ensures unique variable name.
+                                                        <label for="skipValidation" class="control-label">
+                                                            <input type="checkbox" id="skipValidation" name="skipValidation" data-ng-model="skipValidation" th:attr="data-ng-init='skipValidation=' + *{skipValidation}" th:field="*{skipValidation}" /> Skip data validation.
                                                         </label>
                                                     </div>
                                                 </div>
@@ -268,12 +261,8 @@
                                                         <caption>Data Validations</caption>
                                                         <tbody>
                                                             <tr>
-                                                                <td class="col-md-3">Ensure Categories is Limited to 10:</td>
-                                                                <td data-ng-bind="!skipCategoryLimit"></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td class="col-md-3">Ensure Unique Variable Name:</td>
-                                                                <td data-ng-bind="!skipUniqueVarName"></td>
+                                                                <td class="col-md-3">Skip Data Validation:</td>
+                                                                <td data-ng-bind="skipValidation"></td>
                                                             </tr>
                                                         </tbody>
                                                     </table>

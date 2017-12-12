@@ -31,8 +31,9 @@ import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmRunService;
 import edu.pitt.dbmi.ccd.web.util.TetradCmdOptions;
-import static edu.pitt.dbmi.ccd.web.util.TetradCmdOptions.PENALTY_DISCOUNT;
-import static edu.pitt.dbmi.ccd.web.util.TetradCmdOptions.STRUCTURE_PRIOR;
+import static edu.pitt.dbmi.ccd.web.util.TetradCmdOptions.FAITHFULNESS_ASSUMED;
+import static edu.pitt.dbmi.ccd.web.util.TetradCmdOptions.MAX_DEGREE;
+import static edu.pitt.dbmi.ccd.web.util.TetradCmdOptions.SKIP_LATEST;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,7 +59,7 @@ public class GFCIController extends AbstractTetradAlgoController implements View
 
     private final String GFCIC_ALGO_NAME = "gfcic";
     private final String GFCID_ALGO_NAME = "gfcid";
-    private final String GFCIM_CG_ALGO_NAME = "gfcim-cg";
+    private final String GFCIM_ALGO_NAME = "gfcim";
 
     private final AlgorithmRunLogService algorithmRunLogService;
     private final AlgorithmRunService algorithmRunService;
@@ -72,7 +73,7 @@ public class GFCIController extends AbstractTetradAlgoController implements View
         this.ccdProperties = ccdProperties;
     }
 
-    @RequestMapping(value = "gfcim_cg", method = RequestMethod.POST)
+    @RequestMapping(value = "gfcim", method = RequestMethod.POST)
     public String runGFCImCG(
             @ModelAttribute("algoOpt") final GFCImCGAlgoOpt algoOpt,
             @ModelAttribute("appUser") final AppUser appUser,
@@ -81,15 +82,15 @@ public class GFCIController extends AbstractTetradAlgoController implements View
         jobRequest.setDataset(getDataset(algoOpt));
         jobRequest.setPriorKnowledge(getPriorKnowledge(algoOpt));
         jobRequest.setJvmOptions(getJvmOptions(algoOpt));
-        jobRequest.setParameters(getParametersForMixedCG(algoOpt, appUser.getUsername()));
+        jobRequest.setParameters(getParametersForMixed(algoOpt, appUser.getUsername()));
 
         algorithmRunService.addToQueue(jobRequest, appUser.getUsername());
-        algorithmRunLogService.logAlgorithmRun(getGFCImCGParams(algoOpt), getFileSummary(algoOpt, appUser), GFCIM_CG_ALGO_NAME, appUser.getUsername());
+        algorithmRunLogService.logAlgorithmRun(getGFCImParams(algoOpt), getFileSummary(algoOpt, appUser), GFCIM_ALGO_NAME, appUser.getUsername());
 
         return REDIRECT_JOB_QUEUE;
     }
 
-    @RequestMapping(value = "gfcim_cg", method = RequestMethod.GET)
+    @RequestMapping(value = "gfcim", method = RequestMethod.GET)
     public String showGFCImCGView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         Map<String, String> dataset = algorithmRunService.getUserMixedDataset(appUser.getUsername());
         Map<String, String> prior = algorithmRunService.getUserPriorKnowledgeFiles(appUser.getUsername());
@@ -108,7 +109,7 @@ public class GFCIController extends AbstractTetradAlgoController implements View
         model.addAttribute("priorList", prior);
         model.addAttribute("algoOpt", algoOpt);
 
-        return GFCI_MIXED_CG_VIEW;
+        return GFCI_MIXED_VIEW;
     }
 
     @RequestMapping(value = "gfcid", method = RequestMethod.POST)
@@ -189,102 +190,12 @@ public class GFCIController extends AbstractTetradAlgoController implements View
         return GFCI_CONT_VIEW;
     }
 
-    private List<String> getParametersForContinuous(GFCIcAlgoOpt algoOpt, String username) {
-        List<String> parameters = new LinkedList<>();
-        String delimiter = algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username);
-        parameters.add(DELIMITER);
-        parameters.add(delimiter);
-        parameters.add(ALPHA);
-        parameters.add(Double.toString(algoOpt.getAlpha()));
-        parameters.add(PENALTY_DISCOUNT);
-        parameters.add(Double.toString(algoOpt.getPenaltyDiscount()));
-        parameters.add(MAX_DEGREE);
-        parameters.add(Integer.toString(algoOpt.getMaxDegree()));
-        parameters.add(MAX_PATH_LENGTH);
-        parameters.add(Integer.toString(algoOpt.getMaxPathLength()));
-        if (algoOpt.isFaithfulnessAssumed()) {
-            parameters.add(FAITHFULNESS_ASSUMED);
-        }
-        if (algoOpt.isCompleteRuleSetUsed()) {
-            parameters.add(COMPLETE_RULE_SET_USED);
-        }
-        if (algoOpt.isVerbose()) {
-            parameters.add(VERBOSE);
-        }
-
-        return parameters;
-    }
-
-    private List<String> getParametersForMixedCG(GFCImCGAlgoOpt algoOpt, String username) {
-        List<String> parameters = new LinkedList<>();
-        String delimiter = algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username);
-        parameters.add(DELIMITER);
-        parameters.add(delimiter);
-        parameters.add(ALPHA);
-        parameters.add(Double.toString(algoOpt.getAlpha()));
-        parameters.add(PENALTY_DISCOUNT);
-        parameters.add(Double.toString(algoOpt.getPenaltyDiscount()));
-        parameters.add(STRUCTURE_PRIOR);
-        parameters.add(Double.toString(algoOpt.getStructurePrior()));
-        parameters.add(NUM_CATEGORIES_TO_DISCRETIZE);
-        parameters.add(Integer.toString(algoOpt.getNumCategoriesToDiscretize()));
-        parameters.add(NUM_DISCRETE_CATEGORIES);
-        parameters.add(Integer.toString(algoOpt.getNumberOfDiscreteCategories()));
-        if (algoOpt.isDiscretize()) {
-            parameters.add(DISCRETIZE);
-        }
-        parameters.add(MAX_DEGREE);
-        parameters.add(Integer.toString(algoOpt.getMaxDegree()));
-        parameters.add(MAX_PATH_LENGTH);
-        parameters.add(Integer.toString(algoOpt.getMaxPathLength()));
-        if (algoOpt.isFaithfulnessAssumed()) {
-            parameters.add(FAITHFULNESS_ASSUMED);
-        }
-        if (algoOpt.isCompleteRuleSetUsed()) {
-            parameters.add(COMPLETE_RULE_SET_USED);
-        }
-        if (algoOpt.isVerbose()) {
-            parameters.add(VERBOSE);
-        }
-
-        return parameters;
-    }
-
-    private List<String> getParametersForDiscrete(GFCIdAlgoOpt algoOpt, String username) {
-        List<String> parameters = new LinkedList<>();
-        String delimiter = algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username);
-        parameters.add(DELIMITER);
-        parameters.add(delimiter);
-        parameters.add(ALPHA);
-        parameters.add(Double.toString(algoOpt.getAlpha()));
-        parameters.add(STRUCTURE_PRIOR);
-        parameters.add(Double.toString(algoOpt.getStructurePrior()));
-        parameters.add(SAMPLE_PRIOR);
-        parameters.add(Double.toString(algoOpt.getSamplePrior()));
-        parameters.add(MAX_DEGREE);
-        parameters.add(Integer.toString(algoOpt.getMaxDegree()));
-        parameters.add(MAX_PATH_LENGTH);
-        parameters.add(Integer.toString(algoOpt.getMaxPathLength()));
-        if (algoOpt.isFaithfulnessAssumed()) {
-            parameters.add(FAITHFULNESS_ASSUMED);
-        }
-        if (algoOpt.isCompleteRuleSetUsed()) {
-            parameters.add(COMPLETE_RULE_SET_USED);
-        }
-        if (algoOpt.isVerbose()) {
-            parameters.add(VERBOSE);
-        }
-
-        return parameters;
-    }
-
-    private Map<String, String> getGFCImCGParams(GFCImCGAlgoOpt algoOpt) {
+    private Map<String, String> getGFCImParams(GFCImCGAlgoOpt algoOpt) {
         Map<String, String> params = new HashMap<>();
         params.put(ALPHA.replaceAll("--", ""), Double.toString(algoOpt.getAlpha()));
         params.put(STRUCTURE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getStructurePrior()));
-        params.put(NUM_CATEGORIES_TO_DISCRETIZE.replaceAll("--", ""), Integer.toString(algoOpt.getNumCategoriesToDiscretize()));
-        params.put(NUM_DISCRETE_CATEGORIES.replaceAll("--", ""), Integer.toString(algoOpt.getNumberOfDiscreteCategories()));
         params.put(DISCRETIZE.replaceAll("--", ""), algoOpt.isDiscretize() ? "true" : "false");
+        params.put(NUM_CATEGORIES.replaceAll("--", ""), Integer.toString(algoOpt.getNumCategories()));
 
         getCommonGFCIParams(params, algoOpt);
 
@@ -317,6 +228,117 @@ public class GFCIController extends AbstractTetradAlgoController implements View
         params.put(MAX_PATH_LENGTH.replaceAll("--", ""), Integer.toString(algoOpt.getMaxPathLength()));
         params.put(FAITHFULNESS_ASSUMED.replaceAll("--", ""), algoOpt.isFaithfulnessAssumed() ? "true" : "false");
         params.put(COMPLETE_RULE_SET_USED.replaceAll("--", ""), algoOpt.isCompleteRuleSetUsed() ? "true" : "false");
+    }
+
+    private List<String> getParametersForMixed(GFCImCGAlgoOpt algoOpt, String username) {
+        List<String> parameters = new LinkedList<>();
+        parameters.add(DELIMITER);
+        parameters.add(algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username));
+        parameters.add(DATATYPE);
+        parameters.add("mixed");
+        parameters.add(INDEPENDENCE_TEST);
+        parameters.add(ccdProperties.getTestMixed());
+        parameters.add(SCORE);
+        parameters.add(ccdProperties.getScoreMixed());
+        parameters.add(NUM_CATEGORIES);
+        parameters.add(Integer.toString(algoOpt.getNumCategories()));
+
+        // tetrad parameters
+        parameters.add(ALPHA);
+        parameters.add(Double.toString(algoOpt.getAlpha()));
+        parameters.add(STRUCTURE_PRIOR);
+        parameters.add(Double.toString(algoOpt.getStructurePrior()));
+        if (algoOpt.isDiscretize()) {
+            parameters.add(DISCRETIZE);
+        }
+
+        // get common parameters
+        getCommonGFCIAlgoOpt(algoOpt, parameters);
+
+        if (algoOpt.isVerbose()) {
+            parameters.add(VERBOSE);
+        }
+
+        return parameters;
+    }
+
+    private List<String> getParametersForDiscrete(GFCIdAlgoOpt algoOpt, String username) {
+        List<String> parameters = new LinkedList<>();
+        parameters.add(DELIMITER);
+        parameters.add(algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username));
+        parameters.add(DATATYPE);
+        parameters.add("discrete");
+        parameters.add(INDEPENDENCE_TEST);
+        parameters.add(ccdProperties.getTestDiscrete());
+        parameters.add(SCORE);
+        parameters.add(ccdProperties.getScoreDiscrete());
+
+        // tetrad parameters
+        parameters.add(ALPHA);
+        parameters.add(Double.toString(algoOpt.getAlpha()));
+        parameters.add(STRUCTURE_PRIOR);
+        parameters.add(Double.toString(algoOpt.getStructurePrior()));
+        parameters.add(SAMPLE_PRIOR);
+        parameters.add(Double.toString(algoOpt.getSamplePrior()));
+
+        // get common parameters
+        getCommonGFCIAlgoOpt(algoOpt, parameters);
+
+        if (algoOpt.isVerbose()) {
+            parameters.add(VERBOSE);
+        }
+        if (algoOpt.isSkipValidation()) {
+            parameters.add(SKIP_VALIDATION);
+        }
+
+        return parameters;
+    }
+
+    private List<String> getParametersForContinuous(GFCIcAlgoOpt algoOpt, String username) {
+        List<String> parameters = new LinkedList<>();
+        parameters.add(DELIMITER);
+        parameters.add(algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username));
+        parameters.add(DATATYPE);
+        parameters.add("continuous");
+        parameters.add(INDEPENDENCE_TEST);
+        parameters.add(ccdProperties.getTestContinuous());
+        parameters.add(SCORE);
+        parameters.add(ccdProperties.getScoreContinuous());
+
+        // tetrad parameters
+        parameters.add(ALPHA);
+        parameters.add(Double.toString(algoOpt.getAlpha()));
+        parameters.add(PENALTY_DISCOUNT);
+        parameters.add(Double.toString(algoOpt.getPenaltyDiscount()));
+
+        // get common parameters
+        getCommonGFCIAlgoOpt(algoOpt, parameters);
+
+        if (algoOpt.isVerbose()) {
+            parameters.add(VERBOSE);
+        }
+        if (algoOpt.isSkipValidation()) {
+            parameters.add(SKIP_VALIDATION);
+        }
+
+        return parameters;
+    }
+
+    private void getCommonGFCIAlgoOpt(CommonGFCIAlgoOpt commonGFCIAlgoOpt, List<String> parameters) {
+        // common tetrad parameters
+        parameters.add(MAX_DEGREE);
+        parameters.add(Integer.toString(commonGFCIAlgoOpt.getMaxDegree()));
+        parameters.add(MAX_PATH_LENGTH);
+        parameters.add(Integer.toString(commonGFCIAlgoOpt.getMaxPathLength()));
+        if (commonGFCIAlgoOpt.isCompleteRuleSetUsed()) {
+            parameters.add(COMPLETE_RULE_SET_USED);
+        }
+        if (commonGFCIAlgoOpt.isFaithfulnessAssumed()) {
+            parameters.add(FAITHFULNESS_ASSUMED);
+        }
+
+        // server options
+        parameters.add(SKIP_LATEST);
     }
 
 }

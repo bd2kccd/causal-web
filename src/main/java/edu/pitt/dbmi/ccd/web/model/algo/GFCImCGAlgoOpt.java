@@ -27,11 +27,10 @@ package edu.pitt.dbmi.ccd.web.model.algo;
 public class GFCImCGAlgoOpt extends CommonGFCIAlgoOpt {
 
     protected double alpha = 0.01;
-    protected double penaltyDiscount = 2.0;
-    protected double structurePrior = 1.0;
-    protected int numCategoriesToDiscretize = 3;
-    protected int numberOfDiscreteCategories = 4;
     protected boolean discretize = true;
+    protected double structurePrior = 1.0;
+
+    protected int numCategories = 4;
 
     public GFCImCGAlgoOpt() {
     }
@@ -44,12 +43,12 @@ public class GFCImCGAlgoOpt extends CommonGFCIAlgoOpt {
         this.alpha = alpha;
     }
 
-    public double getPenaltyDiscount() {
-        return penaltyDiscount;
+    public boolean isDiscretize() {
+        return discretize;
     }
 
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
+    public void setDiscretize(boolean discretize) {
+        this.discretize = discretize;
     }
 
     public double getStructurePrior() {
@@ -60,28 +59,12 @@ public class GFCImCGAlgoOpt extends CommonGFCIAlgoOpt {
         this.structurePrior = structurePrior;
     }
 
-    public int getNumCategoriesToDiscretize() {
-        return numCategoriesToDiscretize;
+    public int getNumCategories() {
+        return numCategories;
     }
 
-    public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
-        this.numCategoriesToDiscretize = numCategoriesToDiscretize;
-    }
-
-    public int getNumberOfDiscreteCategories() {
-        return numberOfDiscreteCategories;
-    }
-
-    public void setNumberOfDiscreteCategories(int numberOfDiscreteCategories) {
-        this.numberOfDiscreteCategories = numberOfDiscreteCategories;
-    }
-
-    public boolean isDiscretize() {
-        return discretize;
-    }
-
-    public void setDiscretize(boolean discretize) {
-        this.discretize = discretize;
+    public void setNumCategories(int numCategories) {
+        this.numCategories = numCategories;
     }
 
 }

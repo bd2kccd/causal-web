@@ -79,10 +79,10 @@ public class FGESController extends AbstractTetradAlgoController implements View
         jobRequest.setDataset(getDataset(algoOpt));
         jobRequest.setPriorKnowledge(getPriorKnowledge(algoOpt));
         jobRequest.setJvmOptions(getJvmOptions(algoOpt));
-        jobRequest.setParameters(getParametersForMixedCG(algoOpt, appUser.getUsername()));
+        jobRequest.setParameters(getParametersForMixed(algoOpt, appUser.getUsername()));
 
         algorithmRunService.addToQueue(jobRequest, appUser.getUsername());
-        algorithmRunLogService.logAlgorithmRun(getFGESmCGParams(algoOpt), getFileSummary(algoOpt, appUser), FGESM_ALGO_NAME, appUser.getUsername());
+        algorithmRunLogService.logAlgorithmRun(getFGESmParams(algoOpt), getFileSummary(algoOpt, appUser), FGESM_ALGO_NAME, appUser.getUsername());
 
         return REDIRECT_JOB_QUEUE;
     }
@@ -187,7 +187,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
         return FGES_CONT_VIEW;
     }
 
-    private Map<String, String> getFGESmCGParams(FGESmAlgoOpt algoOpt) {
+    private Map<String, String> getFGESmParams(FGESmAlgoOpt algoOpt) {
         Map<String, String> params = new HashMap<>();
         params.put(STRUCTURE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getStructurePrior()));
         params.put(DISCRETIZE.replaceAll("--", ""), algoOpt.isDiscretize() ? "true" : "false");
@@ -223,7 +223,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
         params.put(SYMMETRIC_FIRST_STEP.replaceAll("--", ""), algoOpt.isSymmetricFirstStep() ? "true" : "false");
     }
 
-    private List<String> getParametersForMixedCG(FGESmAlgoOpt algoOpt, String username) {
+    private List<String> getParametersForMixed(FGESmAlgoOpt algoOpt, String username) {
         List<String> parameters = new LinkedList<>();
         parameters.add(DELIMITER);
         parameters.add(algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username));
