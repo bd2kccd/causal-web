@@ -46,6 +46,17 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @RequestMapping(value = "algorithm/results")
 public class AlgorithmResultController implements ViewPath {
 
+    private final List<String> categoryNames = Arrays.asList(
+            "Runtime Parameters",
+            "Dataset",
+            "Filters",
+            "FGS Parameters",
+            "Run Options",
+            "Algorithm Run",
+            "Algorithm Parameters",
+            "Data Validations"
+    );
+
     private final AlgorithmResultService algorithmResultService;
 
     @Autowired
@@ -99,7 +110,6 @@ public class AlgorithmResultController implements ViewPath {
         model.addAttribute("fileName", fileName);
 
         String username = appUser.getUsername();
-        List<String> categoryNames = Arrays.asList("Runtime Parameters", "Dataset", "Filters", "FGS Parameters", "Run Options", "Algorithm Parameters", "Data Validations");
         model.addAttribute("categories", algorithmResultService.extractDataCategories(fileName, username, categoryNames));
         model.addAttribute("isPag", algorithmResultService.isPagResult(fileName, username));
 
