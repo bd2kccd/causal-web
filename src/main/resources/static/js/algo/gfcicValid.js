@@ -30,6 +30,17 @@ $(document).ready(function () {
                 required: true,
                 number: true,
                 min: -1
+            },
+            bootstrapSampleSize: {
+                required: true,
+                number: true,
+                min: 0
+            },
+            bootstrapEnsemble: {
+                required: true,
+                number: true,
+                min: 0,
+                max: 2
             }
         }, messages: {
             dataset: {
@@ -55,6 +66,15 @@ $(document).ready(function () {
             maxPathLength: {
                 required: "Max path length is required.",
                 min: "Must be at least -1."
+            },
+            bootstrapSampleSize: {
+                required: "Sample size is required.",
+                min: "Must be at least 0."
+            },
+            bootstrapEnsemble: {
+                required: "Ensemble is required.",
+                min: "Must be at least 0.",
+                max: "Must be at most 2"
             }
         },
         highlight: function (element) {

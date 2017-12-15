@@ -31,6 +31,9 @@ public abstract class TetradAlgoOpt {
     protected boolean verbose = true;
     protected int jvmMaxMem = 1;
 
+    protected int bootstrapEnsemble = 1;
+    protected int bootstrapSampleSize = 0;
+
     public TetradAlgoOpt() {
     }
 
@@ -64,6 +67,22 @@ public abstract class TetradAlgoOpt {
 
     public void setJvmMaxMem(int jvmMaxMem) {
         this.jvmMaxMem = jvmMaxMem;
+    }
+
+    public int getBootstrapEnsemble() {
+        return bootstrapEnsemble;
+    }
+
+    public void setBootstrapEnsemble(int bootstrapEnsemble) {
+        this.bootstrapEnsemble = bootstrapEnsemble;
+    }
+
+    public int getBootstrapSampleSize() {
+        return bootstrapSampleSize;
+    }
+
+    public void setBootstrapSampleSize(int bootstrapSampleSize) {
+        this.bootstrapSampleSize = bootstrapSampleSize;
     }
 
 }

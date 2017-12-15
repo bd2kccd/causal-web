@@ -10,11 +10,6 @@ $(document).ready(function () {
                 min: 0,
                 max: 128
             },
-            penaltyDiscount: {
-                required: true,
-                number: true,
-                min: 0
-            },
             structurePrior: {
                 required: true,
                 number: true,
@@ -24,6 +19,17 @@ $(document).ready(function () {
                 required: true,
                 number: true,
                 min: -1
+            },
+            bootstrapSampleSize: {
+                required: true,
+                number: true,
+                min: 0
+            },
+            bootstrapEnsemble: {
+                required: true,
+                number: true,
+                min: 0,
+                max: 2
             }
         }, messages: {
             dataset: {
@@ -33,10 +39,6 @@ $(document).ready(function () {
                 min: "Must be at least 0.",
                 max: "Must be at most 128."
             },
-            penaltyDiscount: {
-                required: "Penalty discount is required.",
-                min: "Must be at least 0."
-            },
             structurePrior: {
                 required: "Structure prior is required.",
                 min: "Must be at least 1."
@@ -44,6 +46,15 @@ $(document).ready(function () {
             maxDegree: {
                 required: "Max degree is required.",
                 min: "Must be at least -1."
+            },
+            bootstrapSampleSize: {
+                required: "Sample size is required.",
+                min: "Must be at least 0."
+            },
+            bootstrapEnsemble: {
+                required: "Ensemble is required.",
+                min: "Must be at least 0.",
+                max: "Must be at most 2"
             }
         },
         highlight: function (element) {

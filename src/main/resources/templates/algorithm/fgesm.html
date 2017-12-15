@@ -152,6 +152,21 @@
                                             </div>
                                         </div>
                                         <div class="panel panel-primary">
+                                            <div class="panel-heading">
+                                                <h3 class="panel-title">Bootstrap Parameters</h3>
+                                            </div>
+                                            <div class="panel-body">
+                                                <div class="form-group">
+                                                    <label for="bootstrapSampleSize" class="control-label">Sample Size: the number of bootstraps (min = 0).</label>
+                                                    <input type="number" id="bootstrapSampleSize" name="bootstrapSampleSize" min="0" class="form-control" data-ng-model="bootstrapSampleSize" th:attr="data-ng-init='bootstrapSampleSize=' + *{bootstrapSampleSize}" th:field="*{bootstrapSampleSize}" required="required" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="bootstrapEnsemble" class="control-label">Ensemble method: Preserved (0), Highest (1), Majority (2).</label>
+                                                    <input type="number" id="bootstrapEnsemble" name="bootstrapEnsemble" min="0" max="2" class="form-control" data-ng-model="bootstrapEnsemble" th:attr="data-ng-init='bootstrapEnsemble=' + *{bootstrapEnsemble}" th:field="*{bootstrapEnsemble}" required="required" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="panel panel-primary">
                                             <a id="optJvm" class="panel-primary" data-toggle="collapse" href="#collapseOptJvm">
                                                 <div class="panel-heading">
                                                     <h3 class="panel-title">Advanced Options For Java Virtual Machine (JVM)<span class="pull-right"><i class="glyphicon glyphicon-chevron-down"></i></span></h3>
@@ -238,6 +253,19 @@
                                                             </tr>
                                                         </tbody>
                                                     </table>
+                                                    <table class="table table-striped">
+                                                        <caption>Bootstrap Parameters</caption>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td class="col-md-3">Sample Size:</td>
+                                                                <td data-ng-bind="bootstrapSampleSize"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="col-md-3">Ensemble:</td>
+                                                                <td data-ng-bind="bootstrapEnsemble"></td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                             </div>
                                         </div>
@@ -261,7 +289,7 @@
         <script src="../../static/vendors/angularjs/angular.min.js" th:src="@{https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js}"></script>
         <script src="../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.16.0/jquery.validate.min.js}"></script>
         <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
-        <script src="../../static/js/algo/fgesmCGValid.min.js" th:src="@{/js/algo/fgesmCGValid.min.js}"></script>
+        <script src="../../static/js/algo/fgesmValid.min.js" th:src="@{/js/algo/fgesmValid.min.js}"></script>
         <script src="../../static/js/collapse_panel.min.js" th:src="@{/js/collapse_panel.min.js}"></script>
         <script src="../../static/js/algo/algorithm.min.js" th:src="@{/js/algo/algorithm.min.js}"></script>
     </body>

@@ -221,6 +221,8 @@ public class FGESController extends AbstractTetradAlgoController implements View
         params.put(MAX_DEGREE.replaceAll("--", ""), Integer.toString(algoOpt.getMaxDegree()));
         params.put(FAITHFULNESS_ASSUMED.replaceAll("--", ""), algoOpt.isFaithfulnessAssumed() ? "true" : "false");
         params.put(SYMMETRIC_FIRST_STEP.replaceAll("--", ""), algoOpt.isSymmetricFirstStep() ? "true" : "false");
+        params.put(BOOTSTRAP_ENSEMBLE.replaceAll("--", ""), Integer.toString(algoOpt.getBootstrapEnsemble()));
+        params.put(BOOTSTRAP_SAMPLE_SIZE.replaceAll("--", ""), Integer.toString(algoOpt.getBootstrapSampleSize()));
     }
 
     private List<String> getParametersForMixed(FGESmAlgoOpt algoOpt, String username) {
@@ -243,6 +245,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
 
         // get common parameters
         getCommonFGESAlgoOpt(algoOpt, parameters);
+        getBootstrapParameters(algoOpt, parameters);
 
         if (algoOpt.isVerbose()) {
             parameters.add(VERBOSE);
@@ -268,6 +271,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
 
         // get common parameters
         getCommonFGESAlgoOpt(algoOpt, parameters);
+        getBootstrapParameters(algoOpt, parameters);
 
         if (algoOpt.isVerbose()) {
             parameters.add(VERBOSE);
@@ -294,6 +298,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
 
         // get common parameters
         getCommonFGESAlgoOpt(algoOpt, parameters);
+        getBootstrapParameters(algoOpt, parameters);
 
         if (algoOpt.isVerbose()) {
             parameters.add(VERBOSE);

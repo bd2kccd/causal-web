@@ -228,6 +228,8 @@ public class GFCIController extends AbstractTetradAlgoController implements View
         params.put(MAX_PATH_LENGTH.replaceAll("--", ""), Integer.toString(algoOpt.getMaxPathLength()));
         params.put(FAITHFULNESS_ASSUMED.replaceAll("--", ""), algoOpt.isFaithfulnessAssumed() ? "true" : "false");
         params.put(COMPLETE_RULE_SET_USED.replaceAll("--", ""), algoOpt.isCompleteRuleSetUsed() ? "true" : "false");
+        params.put(BOOTSTRAP_ENSEMBLE.replaceAll("--", ""), Integer.toString(algoOpt.getBootstrapEnsemble()));
+        params.put(BOOTSTRAP_SAMPLE_SIZE.replaceAll("--", ""), Integer.toString(algoOpt.getBootstrapSampleSize()));
     }
 
     private List<String> getParametersForMixed(GFCImCGAlgoOpt algoOpt, String username) {
@@ -254,6 +256,7 @@ public class GFCIController extends AbstractTetradAlgoController implements View
 
         // get common parameters
         getCommonGFCIAlgoOpt(algoOpt, parameters);
+        getBootstrapParameters(algoOpt, parameters);
 
         if (algoOpt.isVerbose()) {
             parameters.add(VERBOSE);
@@ -283,6 +286,7 @@ public class GFCIController extends AbstractTetradAlgoController implements View
 
         // get common parameters
         getCommonGFCIAlgoOpt(algoOpt, parameters);
+        getBootstrapParameters(algoOpt, parameters);
 
         if (algoOpt.isVerbose()) {
             parameters.add(VERBOSE);
@@ -313,6 +317,7 @@ public class GFCIController extends AbstractTetradAlgoController implements View
 
         // get common parameters
         getCommonGFCIAlgoOpt(algoOpt, parameters);
+        getBootstrapParameters(algoOpt, parameters);
 
         if (algoOpt.isVerbose()) {
             parameters.add(VERBOSE);

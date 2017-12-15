@@ -50,6 +50,8 @@ public interface TetradCmdOptions {
     public static final String STRUCTURE_PRIOR = "--structurePrior";
     public static final String SAMPLE_PRIOR = "--samplePrior";
     public static final String COMPLETE_RULE_SET_USED = "--completeRuleSetUsed";
+    public static final String BOOTSTRAP_ENSEMBLE = "--bootstrapEnsemble";
+    public static final String BOOTSTRAP_SAMPLE_SIZE = "--bootstrapSampleSize";
 
     public static final String NUM_CATEGORIES = "--numCategories";
 
