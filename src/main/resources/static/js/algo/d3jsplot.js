@@ -22,6 +22,11 @@ function plotGraph(links) {
     // Reduce the opacity of all other nodes, links, and text except the current highlighted node
     var reducedOpacity = 0.1;
 
+    // Define the div for the tooltip
+    var div = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
     // Compute the distinct nodes from the links.
     links.forEach(function (link) {
         link.source = nodes[link.source] || (nodes[link.source] = {name: link.source});
@@ -140,7 +145,6 @@ function plotGraph(links) {
             .attr("r", 4)
             .attr("class", "marker-end-circle");
 
-
     // Add the edge based on type: link line and the arrow/circle
     var link = graphGroup.append("g").selectAll(".link")
             .data(links)
@@ -172,6 +176,23 @@ function plotGraph(links) {
             .style("stroke-dasharray", function (d) {
                 if (d.edgeProps !== null && d.edgeProps.indexOf('nl') >= 0) {
                     return (6, 3);
+                }
+            })
+            .on("mouseover", function (d) {
+                if (d.bootstrap !== null) {
+                    div.transition()
+                            .duration(200)
+                            .style("opacity", .9);
+                    div.html(d.bootstrap)
+                            .style("left", (d3.event.pageX) + "px")
+                            .style("top", (d3.event.pageY - 28) + "px");
+                }
+            })
+            .on("mouseout", function (d) {
+                if (d.bootstrap !== null) {
+                    div.transition()
+                            .duration(500)
+                            .style("opacity", 0);
                 }
             });
 
@@ -207,25 +228,25 @@ function plotGraph(links) {
     function ticked() {
         // Position nodes
         node.attr("cx", function (d) {
-                return d.x;
-            })
-            .attr("cy", function (d) {
-                return d.y;
-            });
+            return d.x;
+        })
+                .attr("cy", function (d) {
+                    return d.y;
+                });
 
         // Position links
         // Use path instead of line since IE 10 doesn't render the links correctly
         link.attr("d", positionLink).each(function () {
-                this.parentNode.insertBefore(this, this);
-            });
+            this.parentNode.insertBefore(this, this);
+        });
 
         // Position node text
         text.attr("x", function (d) {
-                return d.x - (nodeRadius / 2);
-            })
-            .attr("y", function (d) {
-                return d.y - (1.5 * nodeRadius);
-            });
+            return d.x - (nodeRadius / 2);
+        })
+                .attr("y", function (d) {
+                    return d.y - (1.5 * nodeRadius);
+                });
     }
 
     // Position the edge link
@@ -315,5 +336,3 @@ function plotGraph(links) {
     });
 
 }
-
-

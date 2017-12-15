@@ -34,6 +34,8 @@ public class Node {
 
     private String type;
 
+    private String bootstrap;
+
     private List<String> edgeProps;
 
     public Node() {
@@ -74,6 +76,14 @@ public class Node {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getBootstrap() {
+        return bootstrap;
+    }
+
+    public void setBootstrap(String bootstrap) {
+        this.bootstrap = bootstrap;
     }
 
     public List<String> getEdgeProps() {

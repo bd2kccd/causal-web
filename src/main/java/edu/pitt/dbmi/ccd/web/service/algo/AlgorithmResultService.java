@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
@@ -259,6 +260,8 @@ public class AlgorithmResultService {
                             String target = data[3].trim();
                             String edge = data[2].trim();
 
+                            Node node = new Node(source, target, edge);
+
                             // get edge properties
                             List<String> edgeProps = new LinkedList<>();
                             for (int i = 4; i < data.length; i++) {
@@ -267,12 +270,14 @@ public class AlgorithmResultService {
                                     edgeProps.add(e);
                                 }
                             }
-
-                            if (edgeProps.isEmpty()) {
-                                nodes.add(new Node(source, target, edge));
-                            } else {
-                                nodes.add(new Node(source, target, edge, edgeProps));
+                            if (!edgeProps.isEmpty()) {
+                                node.setEdgeProps(edgeProps);
                             }
+
+                            // get bootstrap edge probabilities
+                            node.setBootstrap(getBootstrapData(line));
+
+                            nodes.add(node);
                         }
                     }
                 } else if ("Graph Edges:".equals(line)) {
@@ -285,6 +290,44 @@ public class AlgorithmResultService {
         }
 
         return nodes;
+    }
+
+    private String getBootstrapData(String line) {
+        List<String> edges = new LinkedList<>();
+        List<String> probs = new LinkedList<>();
+
+        // get edge types
+        Pattern bracket = Pattern.compile("\\[(.*?)\\]");
+        Matcher matcher = bracket.matcher(line);
+        while (matcher.find()) {
+            edges.add(matcher.group());
+        }
+
+        int size = edges.size();
+        if (size > 0) {
+            // get edge probabilities
+            Pattern digits = Pattern.compile("(\\d.\\d+)");
+            matcher = digits.matcher(line);
+            while (matcher.find()) {
+                probs.add(matcher.group());
+            }
+
+            if (probs.size() == size) {
+                String[] edgeArray = edges.toArray(new String[edges.size()]);
+                String[] probArray = probs.toArray(new String[probs.size()]);
+
+                List<String> results = new LinkedList<>();
+                for (int i = 0; i < edgeArray.length; i++) {
+                    results.add(String.format("%s %s", edgeArray[i], probArray[i]));
+                }
+
+                return results.stream().collect(Collectors.joining("<br />"));
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 
 }

@@ -13,36 +13,45 @@
                 stroke: #666;
                 stroke-opacity: .6;
             }
-
             .node {
                 fill: #9467bd;
             }
-
             .node-name {
                 fill:#222;
                 font: 10px helvetica;
             }
-
             .marker-start-arrow,
             .marker-start-circle,
             .marker-end-arrow,
             .marker-end-circle{
                 fill: #666;
-	    }
-            
+            }
             #search{
                 padding:2px 5px;
+            }
+            div.tooltip {
+                color: #ffffff;
+                position: absolute;
+                text-align: right;
+                width: 110px;
+                height: 115px;
+                padding: 4px;
+                font: 12px sans-serif;
+                background: #000000;
+                border: 1px;
+                border-radius: 8px;
+                pointer-events: none;
             }
         </style>
     </head>
     <body>
 
         <div id="search-box">
-        <input id="search" placeholder="Node name"></input> <button id="searchBtn" type="button">Search and show me the node</button>
+            <input id="search" placeholder="Node name"></input> <button id="searchBtn" type="button">Search and show me the node</button>
         </div>
 
         <div id="causal-graph"></div>
-        
+
         <script src="../../static/vendors/d3js/d3.min.js" th:src="@{https://d3js.org/d3.v4.min.js}"></script>
         <script src="../../static/js/algo/d3jsplot.min.js" th:src="@{/js/algo/d3jsplot.min.js}"></script>
         <script type="text/javascript" th:inline="javascript">
