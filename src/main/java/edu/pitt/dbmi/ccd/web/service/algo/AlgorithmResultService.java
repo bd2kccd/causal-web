@@ -59,11 +59,13 @@ public class AlgorithmResultService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmResultService.class);
 
-    final String workspace;
+    private final Set<String> edgeProperties = Arrays.stream(new String[]{
+        "nl", "pl", "dd", "pd"
+    }).collect(Collectors.toSet());
 
-    final String resultFolder;
-
-    final String algorithmResultFolder;
+    private final String workspace;
+    private final String resultFolder;
+    private final String algorithmResultFolder;
 
     @Autowired
     public AlgorithmResultService(
@@ -241,10 +243,6 @@ public class AlgorithmResultService {
     public List<Node> extractGraphNodes(final String fileName, final String username) {
         List<Node> nodes = new LinkedList<>();
 
-        String[] edgeTypes = {
-            "---", "-->", "<--", "<->", "o->", "<-o", "o-o"
-        };
-
         Path file = Paths.get(workspace, username, resultFolder, algorithmResultFolder, fileName);
         try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
             Pattern space = Pattern.compile("\\s+");
@@ -252,41 +250,34 @@ public class AlgorithmResultService {
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 line = line.trim();
                 if (isData) {
-                    String[] data = space.split(line, 2);
-                    if (data.length == 2) {
-                        String value = data[1].trim();
+                    if (line.isEmpty()) {
+                        isData = false;
+                    } else {
+                        String[] data = space.split(line);
+                        if (data.length >= 4) {
+                            String source = data[1].trim();
+                            String target = data[3].trim();
+                            String edge = data[2].trim();
 
-                        String edge = "";
-                        for (String edgeType : edgeTypes) {
-                            if (value.contains(edgeType)) {
-                                edge = edgeType;
-                                break;
-                            }
-                        }
-                        String[] values = value.split(edge);
-                        if (values.length == 2) {
-                            String source = values[0].trim();
-                            String target = values[1].trim();
-
-                            // check for edge properties
-                            values = space.split(target);
-                            if (values.length > 1) {
-                                target = values[0];
-
-                                // get edge properties
-                                List<String> edgeProps = new LinkedList<>();
-                                for (int i = 1; i < values.length; i++) {
-                                    edgeProps.add(values[i].trim());
+                            // get edge properties
+                            List<String> edgeProps = new LinkedList<>();
+                            for (int i = 4; i < data.length; i++) {
+                                String e = data[i].trim();
+                                if (edgeProperties.contains(e)) {
+                                    edgeProps.add(e);
                                 }
+                            }
 
-                                nodes.add(new Node(source, target, edge, edgeProps));
-                            } else {
+                            if (edgeProps.isEmpty()) {
                                 nodes.add(new Node(source, target, edge));
+                            } else {
+                                nodes.add(new Node(source, target, edge, edgeProps));
                             }
                         }
                     }
                 } else if ("Graph Edges:".equals(line)) {
                     isData = true;
+                    nodes.clear();
                 }
             }
         } catch (IOException exception) {
