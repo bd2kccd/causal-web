@@ -251,6 +251,9 @@ public class FGESController extends AbstractTetradAlgoController implements View
             parameters.add(TetradCmdOptions.VERBOSE);
         }
 
+        // set common parameters for all algorithms
+        setCommonParameters(parameters);
+
         return parameters;
     }
 
@@ -280,6 +283,9 @@ public class FGESController extends AbstractTetradAlgoController implements View
             parameters.add(TetradCmdOptions.SKIP_VALIDATION);
         }
 
+        // set common parameters for all algorithms
+        setCommonParameters(parameters);
+
         return parameters;
     }
 
@@ -306,6 +312,9 @@ public class FGESController extends AbstractTetradAlgoController implements View
         if (algoOpt.isSkipValidation()) {
             parameters.add(TetradCmdOptions.SKIP_VALIDATION);
         }
+
+        // set common parameters for all algorithms
+        setCommonParameters(parameters);
 
         return parameters;
     }

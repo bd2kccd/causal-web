@@ -36,7 +36,7 @@ public class TetradCmdOptions {
     public static final String DELIMITER = "--delimiter";
     public static final String VERBOSE = "--verbose";
     public static final String THREAD = "--thread";
-    public static final String JSON = "--json";
+    public static final String JSON_GRAPH = "--json-graph";
     public static final String OUT = "--out";
     public static final String OUTPUT_PREFIX = "--prefix";
     public static final String SKIP_LATEST = "--skip-latest";

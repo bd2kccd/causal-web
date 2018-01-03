@@ -97,4 +97,8 @@ public abstract class AbstractTetradAlgoController {
         parameters.add(Integer.toString(tetradAlgoOpt.getBootstrapSampleSize()));
     }
 
+    protected void setCommonParameters(List<String> parameters) {
+        parameters.add(TetradCmdOptions.JSON_GRAPH);
+    }
+
 }
