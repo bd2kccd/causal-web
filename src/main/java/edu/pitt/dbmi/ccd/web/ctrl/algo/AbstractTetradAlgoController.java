@@ -25,8 +25,7 @@ import edu.pitt.dbmi.ccd.db.service.DataFileService;
 import edu.pitt.dbmi.ccd.web.model.AppUser;
 import edu.pitt.dbmi.ccd.web.model.algo.TetradAlgoOpt;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
-import static edu.pitt.dbmi.ccd.web.util.TetradCmdOptions.BOOTSTRAP_ENSEMBLE;
-import static edu.pitt.dbmi.ccd.web.util.TetradCmdOptions.BOOTSTRAP_SAMPLE_SIZE;
+import edu.pitt.dbmi.ccd.web.util.TetradCmdOptions;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -92,9 +91,9 @@ public abstract class AbstractTetradAlgoController {
     }
 
     protected void getBootstrapParameters(TetradAlgoOpt tetradAlgoOpt, List<String> parameters) {
-        parameters.add(BOOTSTRAP_ENSEMBLE);
+        parameters.add(TetradCmdOptions.BOOTSTRAP_ENSEMBLE);
         parameters.add(Integer.toString(tetradAlgoOpt.getBootstrapEnsemble()));
-        parameters.add(BOOTSTRAP_SAMPLE_SIZE);
+        parameters.add(TetradCmdOptions.BOOTSTRAP_SAMPLE_SIZE);
         parameters.add(Integer.toString(tetradAlgoOpt.getBootstrapSampleSize()));
     }
 

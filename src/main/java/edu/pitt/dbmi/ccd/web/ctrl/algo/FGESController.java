@@ -52,7 +52,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @Controller
 @SessionAttributes("appUser")
 @RequestMapping(value = "algorithm/fges")
-public class FGESController extends AbstractTetradAlgoController implements ViewPath, TetradCmdOptions {
+public class FGESController extends AbstractTetradAlgoController implements ViewPath {
 
     private final String FGESC_ALGO_NAME = "fgesc";
     private final String FGESD_ALGO_NAME = "fgesd";
@@ -189,9 +189,9 @@ public class FGESController extends AbstractTetradAlgoController implements View
 
     private Map<String, String> getFGESmParams(FGESmAlgoOpt algoOpt) {
         Map<String, String> params = new HashMap<>();
-        params.put(STRUCTURE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getStructurePrior()));
-        params.put(DISCRETIZE.replaceAll("--", ""), algoOpt.isDiscretize() ? "true" : "false");
-        params.put(NUM_CATEGORIES.replaceAll("--", ""), Integer.toString(algoOpt.getNumCategories()));
+        params.put(TetradCmdOptions.STRUCTURE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getStructurePrior()));
+        params.put(TetradCmdOptions.DISCRETIZE.replaceAll("--", ""), algoOpt.isDiscretize() ? "true" : "false");
+        params.put(TetradCmdOptions.NUM_CATEGORIES.replaceAll("--", ""), Integer.toString(algoOpt.getNumCategories()));
 
         getCommonFGESParams(params, algoOpt);
 
@@ -200,8 +200,8 @@ public class FGESController extends AbstractTetradAlgoController implements View
 
     private Map<String, String> getFGESdParams(FGESdAlgoOpt algoOpt) {
         Map<String, String> params = new HashMap<>();
-        params.put(SAMPLE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getSamplePrior()));
-        params.put(STRUCTURE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getStructurePrior()));
+        params.put(TetradCmdOptions.SAMPLE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getSamplePrior()));
+        params.put(TetradCmdOptions.STRUCTURE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getStructurePrior()));
 
         getCommonFGESParams(params, algoOpt);
 
@@ -210,7 +210,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
 
     private Map<String, String> getFGEScParams(FGEScAlgoOpt algoOpt) {
         Map<String, String> params = new HashMap<>();
-        params.put(PENALTY_DISCOUNT.replaceAll("--", ""), Double.toString(algoOpt.getPenaltyDiscount()));
+        params.put(TetradCmdOptions.PENALTY_DISCOUNT.replaceAll("--", ""), Double.toString(algoOpt.getPenaltyDiscount()));
 
         getCommonFGESParams(params, algoOpt);
 
@@ -218,29 +218,29 @@ public class FGESController extends AbstractTetradAlgoController implements View
     }
 
     private void getCommonFGESParams(Map<String, String> params, CommonFGESAlgoOpt algoOpt) {
-        params.put(MAX_DEGREE.replaceAll("--", ""), Integer.toString(algoOpt.getMaxDegree()));
-        params.put(FAITHFULNESS_ASSUMED.replaceAll("--", ""), algoOpt.isFaithfulnessAssumed() ? "true" : "false");
-        params.put(SYMMETRIC_FIRST_STEP.replaceAll("--", ""), algoOpt.isSymmetricFirstStep() ? "true" : "false");
-        params.put(BOOTSTRAP_ENSEMBLE.replaceAll("--", ""), Integer.toString(algoOpt.getBootstrapEnsemble()));
-        params.put(BOOTSTRAP_SAMPLE_SIZE.replaceAll("--", ""), Integer.toString(algoOpt.getBootstrapSampleSize()));
+        params.put(TetradCmdOptions.MAX_DEGREE.replaceAll("--", ""), Integer.toString(algoOpt.getMaxDegree()));
+        params.put(TetradCmdOptions.FAITHFULNESS_ASSUMED.replaceAll("--", ""), algoOpt.isFaithfulnessAssumed() ? "true" : "false");
+        params.put(TetradCmdOptions.SYMMETRIC_FIRST_STEP.replaceAll("--", ""), algoOpt.isSymmetricFirstStep() ? "true" : "false");
+        params.put(TetradCmdOptions.BOOTSTRAP_ENSEMBLE.replaceAll("--", ""), Integer.toString(algoOpt.getBootstrapEnsemble()));
+        params.put(TetradCmdOptions.BOOTSTRAP_SAMPLE_SIZE.replaceAll("--", ""), Integer.toString(algoOpt.getBootstrapSampleSize()));
     }
 
     private List<String> getParametersForMixed(FGESmAlgoOpt algoOpt, String username) {
         List<String> parameters = new LinkedList<>();
-        parameters.add(DELIMITER);
+        parameters.add(TetradCmdOptions.DELIMITER);
         parameters.add(algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username));
-        parameters.add(DATATYPE);
+        parameters.add(TetradCmdOptions.DATATYPE);
         parameters.add("mixed");
-        parameters.add(SCORE);
+        parameters.add(TetradCmdOptions.SCORE);
         parameters.add(ccdProperties.getScoreMixed());
-        parameters.add(NUM_CATEGORIES);
+        parameters.add(TetradCmdOptions.NUM_CATEGORIES);
         parameters.add(Integer.toString(algoOpt.getNumCategories()));
 
         // tetrad parameters
-        parameters.add(STRUCTURE_PRIOR);
+        parameters.add(TetradCmdOptions.STRUCTURE_PRIOR);
         parameters.add(Double.toString(algoOpt.getStructurePrior()));
         if (algoOpt.isDiscretize()) {
-            parameters.add(DISCRETIZE);
+            parameters.add(TetradCmdOptions.DISCRETIZE);
         }
 
         // get common parameters
@@ -248,7 +248,7 @@ public class FGESController extends AbstractTetradAlgoController implements View
         getBootstrapParameters(algoOpt, parameters);
 
         if (algoOpt.isVerbose()) {
-            parameters.add(VERBOSE);
+            parameters.add(TetradCmdOptions.VERBOSE);
         }
 
         return parameters;
@@ -256,17 +256,17 @@ public class FGESController extends AbstractTetradAlgoController implements View
 
     private List<String> getParametersForDiscrete(FGESdAlgoOpt algoOpt, String username) {
         List<String> parameters = new LinkedList<>();
-        parameters.add(DELIMITER);
+        parameters.add(TetradCmdOptions.DELIMITER);
         parameters.add(algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username));
-        parameters.add(DATATYPE);
+        parameters.add(TetradCmdOptions.DATATYPE);
         parameters.add("discrete");
-        parameters.add(SCORE);
+        parameters.add(TetradCmdOptions.SCORE);
         parameters.add(ccdProperties.getScoreDiscrete());
 
         // tetrad parameters
-        parameters.add(STRUCTURE_PRIOR);
+        parameters.add(TetradCmdOptions.STRUCTURE_PRIOR);
         parameters.add(Double.toString(algoOpt.getStructurePrior()));
-        parameters.add(SAMPLE_PRIOR);
+        parameters.add(TetradCmdOptions.SAMPLE_PRIOR);
         parameters.add(Double.toString(algoOpt.getSamplePrior()));
 
         // get common parameters
@@ -274,10 +274,10 @@ public class FGESController extends AbstractTetradAlgoController implements View
         getBootstrapParameters(algoOpt, parameters);
 
         if (algoOpt.isVerbose()) {
-            parameters.add(VERBOSE);
+            parameters.add(TetradCmdOptions.VERBOSE);
         }
         if (algoOpt.isSkipValidation()) {
-            parameters.add(SKIP_VALIDATION);
+            parameters.add(TetradCmdOptions.SKIP_VALIDATION);
         }
 
         return parameters;
@@ -285,15 +285,15 @@ public class FGESController extends AbstractTetradAlgoController implements View
 
     private List<String> getParametersForContinuous(FGEScAlgoOpt algoOpt, String username) {
         List<String> parameters = new LinkedList<>();
-        parameters.add(DELIMITER);
+        parameters.add(TetradCmdOptions.DELIMITER);
         parameters.add(algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username));
-        parameters.add(DATATYPE);
+        parameters.add(TetradCmdOptions.DATATYPE);
         parameters.add("continuous");
-        parameters.add(SCORE);
+        parameters.add(TetradCmdOptions.SCORE);
         parameters.add(ccdProperties.getScoreContinuous());
 
         // tetrad parameters
-        parameters.add(PENALTY_DISCOUNT);
+        parameters.add(TetradCmdOptions.PENALTY_DISCOUNT);
         parameters.add(Double.toString(algoOpt.getPenaltyDiscount()));
 
         // get common parameters
@@ -301,10 +301,10 @@ public class FGESController extends AbstractTetradAlgoController implements View
         getBootstrapParameters(algoOpt, parameters);
 
         if (algoOpt.isVerbose()) {
-            parameters.add(VERBOSE);
+            parameters.add(TetradCmdOptions.VERBOSE);
         }
         if (algoOpt.isSkipValidation()) {
-            parameters.add(SKIP_VALIDATION);
+            parameters.add(TetradCmdOptions.SKIP_VALIDATION);
         }
 
         return parameters;
@@ -312,17 +312,17 @@ public class FGESController extends AbstractTetradAlgoController implements View
 
     private void getCommonFGESAlgoOpt(CommonFGESAlgoOpt commonFGESAlgoOpt, List<String> parameters) {
         // common tetrad parameters
-        parameters.add(MAX_DEGREE);
+        parameters.add(TetradCmdOptions.MAX_DEGREE);
         parameters.add(Integer.toString(commonFGESAlgoOpt.getMaxDegree()));
         if (commonFGESAlgoOpt.isSymmetricFirstStep()) {
-            parameters.add(SYMMETRIC_FIRST_STEP);
+            parameters.add(TetradCmdOptions.SYMMETRIC_FIRST_STEP);
         }
         if (commonFGESAlgoOpt.isFaithfulnessAssumed()) {
-            parameters.add(FAITHFULNESS_ASSUMED);
+            parameters.add(TetradCmdOptions.FAITHFULNESS_ASSUMED);
         }
 
         // server options
-        parameters.add(SKIP_LATEST);
+        parameters.add(TetradCmdOptions.SKIP_LATEST);
     }
 
 }

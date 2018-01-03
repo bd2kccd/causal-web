@@ -31,9 +31,6 @@ import edu.pitt.dbmi.ccd.web.prop.CcdProperties;
 import edu.pitt.dbmi.ccd.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.web.service.algo.AlgorithmRunService;
 import edu.pitt.dbmi.ccd.web.util.TetradCmdOptions;
-import static edu.pitt.dbmi.ccd.web.util.TetradCmdOptions.FAITHFULNESS_ASSUMED;
-import static edu.pitt.dbmi.ccd.web.util.TetradCmdOptions.MAX_DEGREE;
-import static edu.pitt.dbmi.ccd.web.util.TetradCmdOptions.SKIP_LATEST;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,7 +52,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @Controller
 @SessionAttributes("appUser")
 @RequestMapping(value = "algorithm/gfci")
-public class GFCIController extends AbstractTetradAlgoController implements ViewPath, TetradCmdOptions {
+public class GFCIController extends AbstractTetradAlgoController implements ViewPath {
 
     private final String GFCIC_ALGO_NAME = "gfcic";
     private final String GFCID_ALGO_NAME = "gfcid";
@@ -192,10 +189,10 @@ public class GFCIController extends AbstractTetradAlgoController implements View
 
     private Map<String, String> getGFCImParams(GFCImCGAlgoOpt algoOpt) {
         Map<String, String> params = new HashMap<>();
-        params.put(ALPHA.replaceAll("--", ""), Double.toString(algoOpt.getAlpha()));
-        params.put(STRUCTURE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getStructurePrior()));
-        params.put(DISCRETIZE.replaceAll("--", ""), algoOpt.isDiscretize() ? "true" : "false");
-        params.put(NUM_CATEGORIES.replaceAll("--", ""), Integer.toString(algoOpt.getNumCategories()));
+        params.put(TetradCmdOptions.ALPHA.replaceAll("--", ""), Double.toString(algoOpt.getAlpha()));
+        params.put(TetradCmdOptions.STRUCTURE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getStructurePrior()));
+        params.put(TetradCmdOptions.DISCRETIZE.replaceAll("--", ""), algoOpt.isDiscretize() ? "true" : "false");
+        params.put(TetradCmdOptions.NUM_CATEGORIES.replaceAll("--", ""), Integer.toString(algoOpt.getNumCategories()));
 
         getCommonGFCIParams(params, algoOpt);
 
@@ -204,9 +201,9 @@ public class GFCIController extends AbstractTetradAlgoController implements View
 
     private Map<String, String> getGFCIdParams(GFCIdAlgoOpt algoOpt) {
         Map<String, String> params = new HashMap<>();
-        params.put(ALPHA.replaceAll("--", ""), Double.toString(algoOpt.getAlpha()));
-        params.put(SAMPLE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getSamplePrior()));
-        params.put(STRUCTURE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getStructurePrior()));
+        params.put(TetradCmdOptions.ALPHA.replaceAll("--", ""), Double.toString(algoOpt.getAlpha()));
+        params.put(TetradCmdOptions.SAMPLE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getSamplePrior()));
+        params.put(TetradCmdOptions.STRUCTURE_PRIOR.replaceAll("--", ""), Double.toString(algoOpt.getStructurePrior()));
 
         getCommonGFCIParams(params, algoOpt);
 
@@ -215,8 +212,8 @@ public class GFCIController extends AbstractTetradAlgoController implements View
 
     private Map<String, String> getGFCIcParams(GFCIcAlgoOpt algoOpt) {
         Map<String, String> params = new HashMap<>();
-        params.put(ALPHA.replaceAll("--", ""), Double.toString(algoOpt.getAlpha()));
-        params.put(PENALTY_DISCOUNT.replaceAll("--", ""), Double.toString(algoOpt.getPenaltyDiscount()));
+        params.put(TetradCmdOptions.ALPHA.replaceAll("--", ""), Double.toString(algoOpt.getAlpha()));
+        params.put(TetradCmdOptions.PENALTY_DISCOUNT.replaceAll("--", ""), Double.toString(algoOpt.getPenaltyDiscount()));
 
         getCommonGFCIParams(params, algoOpt);
 
@@ -224,34 +221,34 @@ public class GFCIController extends AbstractTetradAlgoController implements View
     }
 
     private void getCommonGFCIParams(Map<String, String> params, CommonGFCIAlgoOpt algoOpt) {
-        params.put(MAX_DEGREE.replaceAll("--", ""), Integer.toString(algoOpt.getMaxDegree()));
-        params.put(MAX_PATH_LENGTH.replaceAll("--", ""), Integer.toString(algoOpt.getMaxPathLength()));
-        params.put(FAITHFULNESS_ASSUMED.replaceAll("--", ""), algoOpt.isFaithfulnessAssumed() ? "true" : "false");
-        params.put(COMPLETE_RULE_SET_USED.replaceAll("--", ""), algoOpt.isCompleteRuleSetUsed() ? "true" : "false");
-        params.put(BOOTSTRAP_ENSEMBLE.replaceAll("--", ""), Integer.toString(algoOpt.getBootstrapEnsemble()));
-        params.put(BOOTSTRAP_SAMPLE_SIZE.replaceAll("--", ""), Integer.toString(algoOpt.getBootstrapSampleSize()));
+        params.put(TetradCmdOptions.MAX_DEGREE.replaceAll("--", ""), Integer.toString(algoOpt.getMaxDegree()));
+        params.put(TetradCmdOptions.MAX_PATH_LENGTH.replaceAll("--", ""), Integer.toString(algoOpt.getMaxPathLength()));
+        params.put(TetradCmdOptions.FAITHFULNESS_ASSUMED.replaceAll("--", ""), algoOpt.isFaithfulnessAssumed() ? "true" : "false");
+        params.put(TetradCmdOptions.COMPLETE_RULE_SET_USED.replaceAll("--", ""), algoOpt.isCompleteRuleSetUsed() ? "true" : "false");
+        params.put(TetradCmdOptions.BOOTSTRAP_ENSEMBLE.replaceAll("--", ""), Integer.toString(algoOpt.getBootstrapEnsemble()));
+        params.put(TetradCmdOptions.BOOTSTRAP_SAMPLE_SIZE.replaceAll("--", ""), Integer.toString(algoOpt.getBootstrapSampleSize()));
     }
 
     private List<String> getParametersForMixed(GFCImCGAlgoOpt algoOpt, String username) {
         List<String> parameters = new LinkedList<>();
-        parameters.add(DELIMITER);
+        parameters.add(TetradCmdOptions.DELIMITER);
         parameters.add(algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username));
-        parameters.add(DATATYPE);
+        parameters.add(TetradCmdOptions.DATATYPE);
         parameters.add("mixed");
-        parameters.add(INDEPENDENCE_TEST);
+        parameters.add(TetradCmdOptions.INDEPENDENCE_TEST);
         parameters.add(ccdProperties.getTestMixed());
-        parameters.add(SCORE);
+        parameters.add(TetradCmdOptions.SCORE);
         parameters.add(ccdProperties.getScoreMixed());
-        parameters.add(NUM_CATEGORIES);
+        parameters.add(TetradCmdOptions.NUM_CATEGORIES);
         parameters.add(Integer.toString(algoOpt.getNumCategories()));
 
         // tetrad parameters
-        parameters.add(ALPHA);
+        parameters.add(TetradCmdOptions.ALPHA);
         parameters.add(Double.toString(algoOpt.getAlpha()));
-        parameters.add(STRUCTURE_PRIOR);
+        parameters.add(TetradCmdOptions.STRUCTURE_PRIOR);
         parameters.add(Double.toString(algoOpt.getStructurePrior()));
         if (algoOpt.isDiscretize()) {
-            parameters.add(DISCRETIZE);
+            parameters.add(TetradCmdOptions.DISCRETIZE);
         }
 
         // get common parameters
@@ -259,7 +256,7 @@ public class GFCIController extends AbstractTetradAlgoController implements View
         getBootstrapParameters(algoOpt, parameters);
 
         if (algoOpt.isVerbose()) {
-            parameters.add(VERBOSE);
+            parameters.add(TetradCmdOptions.VERBOSE);
         }
 
         return parameters;
@@ -267,21 +264,21 @@ public class GFCIController extends AbstractTetradAlgoController implements View
 
     private List<String> getParametersForDiscrete(GFCIdAlgoOpt algoOpt, String username) {
         List<String> parameters = new LinkedList<>();
-        parameters.add(DELIMITER);
+        parameters.add(TetradCmdOptions.DELIMITER);
         parameters.add(algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username));
-        parameters.add(DATATYPE);
+        parameters.add(TetradCmdOptions.DATATYPE);
         parameters.add("discrete");
-        parameters.add(INDEPENDENCE_TEST);
+        parameters.add(TetradCmdOptions.INDEPENDENCE_TEST);
         parameters.add(ccdProperties.getTestDiscrete());
-        parameters.add(SCORE);
+        parameters.add(TetradCmdOptions.SCORE);
         parameters.add(ccdProperties.getScoreDiscrete());
 
         // tetrad parameters
-        parameters.add(ALPHA);
+        parameters.add(TetradCmdOptions.ALPHA);
         parameters.add(Double.toString(algoOpt.getAlpha()));
-        parameters.add(STRUCTURE_PRIOR);
+        parameters.add(TetradCmdOptions.STRUCTURE_PRIOR);
         parameters.add(Double.toString(algoOpt.getStructurePrior()));
-        parameters.add(SAMPLE_PRIOR);
+        parameters.add(TetradCmdOptions.SAMPLE_PRIOR);
         parameters.add(Double.toString(algoOpt.getSamplePrior()));
 
         // get common parameters
@@ -289,10 +286,10 @@ public class GFCIController extends AbstractTetradAlgoController implements View
         getBootstrapParameters(algoOpt, parameters);
 
         if (algoOpt.isVerbose()) {
-            parameters.add(VERBOSE);
+            parameters.add(TetradCmdOptions.VERBOSE);
         }
         if (algoOpt.isSkipValidation()) {
-            parameters.add(SKIP_VALIDATION);
+            parameters.add(TetradCmdOptions.SKIP_VALIDATION);
         }
 
         return parameters;
@@ -300,19 +297,19 @@ public class GFCIController extends AbstractTetradAlgoController implements View
 
     private List<String> getParametersForContinuous(GFCIcAlgoOpt algoOpt, String username) {
         List<String> parameters = new LinkedList<>();
-        parameters.add(DELIMITER);
+        parameters.add(TetradCmdOptions.DELIMITER);
         parameters.add(algorithmRunService.getFileDelimiter(algoOpt.getDataset(), username));
-        parameters.add(DATATYPE);
+        parameters.add(TetradCmdOptions.DATATYPE);
         parameters.add("continuous");
-        parameters.add(INDEPENDENCE_TEST);
+        parameters.add(TetradCmdOptions.INDEPENDENCE_TEST);
         parameters.add(ccdProperties.getTestContinuous());
-        parameters.add(SCORE);
+        parameters.add(TetradCmdOptions.SCORE);
         parameters.add(ccdProperties.getScoreContinuous());
 
         // tetrad parameters
-        parameters.add(ALPHA);
+        parameters.add(TetradCmdOptions.ALPHA);
         parameters.add(Double.toString(algoOpt.getAlpha()));
-        parameters.add(PENALTY_DISCOUNT);
+        parameters.add(TetradCmdOptions.PENALTY_DISCOUNT);
         parameters.add(Double.toString(algoOpt.getPenaltyDiscount()));
 
         // get common parameters
@@ -320,10 +317,10 @@ public class GFCIController extends AbstractTetradAlgoController implements View
         getBootstrapParameters(algoOpt, parameters);
 
         if (algoOpt.isVerbose()) {
-            parameters.add(VERBOSE);
+            parameters.add(TetradCmdOptions.VERBOSE);
         }
         if (algoOpt.isSkipValidation()) {
-            parameters.add(SKIP_VALIDATION);
+            parameters.add(TetradCmdOptions.SKIP_VALIDATION);
         }
 
         return parameters;
@@ -331,19 +328,19 @@ public class GFCIController extends AbstractTetradAlgoController implements View
 
     private void getCommonGFCIAlgoOpt(CommonGFCIAlgoOpt commonGFCIAlgoOpt, List<String> parameters) {
         // common tetrad parameters
-        parameters.add(MAX_DEGREE);
+        parameters.add(TetradCmdOptions.MAX_DEGREE);
         parameters.add(Integer.toString(commonGFCIAlgoOpt.getMaxDegree()));
-        parameters.add(MAX_PATH_LENGTH);
+        parameters.add(TetradCmdOptions.MAX_PATH_LENGTH);
         parameters.add(Integer.toString(commonGFCIAlgoOpt.getMaxPathLength()));
         if (commonGFCIAlgoOpt.isCompleteRuleSetUsed()) {
-            parameters.add(COMPLETE_RULE_SET_USED);
+            parameters.add(TetradCmdOptions.COMPLETE_RULE_SET_USED);
         }
         if (commonGFCIAlgoOpt.isFaithfulnessAssumed()) {
-            parameters.add(FAITHFULNESS_ASSUMED);
+            parameters.add(TetradCmdOptions.FAITHFULNESS_ASSUMED);
         }
 
         // server options
-        parameters.add(SKIP_LATEST);
+        parameters.add(TetradCmdOptions.SKIP_LATEST);
     }
 
 }

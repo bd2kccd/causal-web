@@ -24,7 +24,7 @@ package edu.pitt.dbmi.ccd.web.util;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public interface TetradCmdOptions {
+public class TetradCmdOptions {
 
     public static final String DATASET = "--dataset";
     public static final String DATATYPE = "--data-type";
@@ -58,5 +58,8 @@ public interface TetradCmdOptions {
     public static final String DISCRETIZE = "--discretize";
 
     public static final String SKIP_VALIDATION = "--skip-validation";
+
+    private TetradCmdOptions() {
+    }
 
 }
