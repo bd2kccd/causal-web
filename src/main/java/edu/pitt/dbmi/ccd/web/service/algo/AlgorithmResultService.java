@@ -113,7 +113,7 @@ public class AlgorithmResultService {
         List<Path> filesToDelete = new LinkedList<>();
         fileNames.forEach(fileName -> {
             filesToDelete.add(Paths.get(workspace, username, resultFolder, algorithmResultFolder, fileName));
-            filesToDelete.add(Paths.get(workspace, username, resultFolder, algorithmResultFolder, fileName.replaceAll(".txt$", ".json")));
+            filesToDelete.add(Paths.get(workspace, username, resultFolder, algorithmResultFolder, fileName.replaceAll(".txt$", "_graph.json")));
         });
 
         filesToDelete.forEach(file -> {
