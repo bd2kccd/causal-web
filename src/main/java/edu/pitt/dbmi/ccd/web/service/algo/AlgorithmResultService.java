@@ -26,7 +26,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -110,19 +109,21 @@ public class AlgorithmResultService {
     }
 
     public void deleteResultFiles(List<String> fileNames, String username) {
-        List<Path> filesToDelete = new LinkedList<>();
-        fileNames.forEach(fileName -> {
-            filesToDelete.add(Paths.get(workspace, username, resultFolder, algorithmResultFolder, fileName));
-            filesToDelete.add(Paths.get(workspace, username, resultFolder, algorithmResultFolder, fileName.replaceAll(".txt$", "_graph.json")));
-        });
-
-        filesToDelete.forEach(file -> {
-            if (Files.exists(file, LinkOption.NOFOLLOW_LINKS)) {
-                try {
-                    Files.delete(file);
-                } catch (IOException exception) {
-                    LOGGER.error(exception.getMessage());
-                }
+        Path dir = Paths.get(workspace, username, resultFolder, algorithmResultFolder);
+        fileNames.forEach(e -> {
+            try {
+                Files.list(dir)
+                        .filter(f -> f.getFileName().toString().startsWith(e.replaceAll(".txt$", "")))
+                        .forEach(f -> {
+                            try {
+                                Files.deleteIfExists(f);
+                            } catch (IOException exception) {
+                                String errMsg = String.format("Unable to delete result file %s.", e);
+                                LOGGER.error(errMsg, exception);
+                            }
+                        });
+            } catch (IOException exception) {
+                LOGGER.error("Unable to delete result files.", exception);
             }
         });
     }
