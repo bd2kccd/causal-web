@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 University of Pittsburgh.
+ * Copyright (C) 2018 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,7 +32,7 @@ public class FileCategorizeForm {
     private Long fileFormatId;
 
     @NotNull(message = "File delimiter is required.")
-    private Long fileDelimiterId;
+    private Long dataDelimiterId;
 
     @NotNull(message = "Variable type is required.")
     private Long variableTypeId;
@@ -49,6 +49,11 @@ public class FileCategorizeForm {
         this.hasHeader = hasHeader;
     }
 
+    @Override
+    public String toString() {
+        return "FileCategorizeForm{" + "fileFormatId=" + fileFormatId + ", dataDelimiterId=" + dataDelimiterId + ", variableTypeId=" + variableTypeId + ", hasHeader=" + hasHeader + ", quoteChar=" + quoteChar + ", missingValueMarker=" + missingValueMarker + ", commentMarker=" + commentMarker + '}';
+    }
+
     public Long getFileFormatId() {
         return fileFormatId;
     }
@@ -57,12 +62,12 @@ public class FileCategorizeForm {
         this.fileFormatId = fileFormatId;
     }
 
-    public Long getFileDelimiterId() {
-        return fileDelimiterId;
+    public Long getDataDelimiterId() {
+        return dataDelimiterId;
     }
 
-    public void setFileDelimiterId(Long fileDelimiterId) {
-        this.fileDelimiterId = fileDelimiterId;
+    public void setDataDelimiterId(Long dataDelimiterId) {
+        this.dataDelimiterId = dataDelimiterId;
     }
 
     public Long getVariableTypeId() {

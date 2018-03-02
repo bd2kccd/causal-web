@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 University of Pittsburgh.
+ * Copyright (C) 2018 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,12 +20,9 @@ package edu.pitt.dbmi.causal.web.ctrl.account;
 
 import edu.pitt.dbmi.causal.web.ctrl.ViewPath;
 import edu.pitt.dbmi.causal.web.model.AppUser;
-import edu.pitt.dbmi.causal.web.model.account.PasswordChangeForm;
+import edu.pitt.dbmi.causal.web.model.account.ChangePasswordForm;
 import edu.pitt.dbmi.causal.web.model.account.UserInfoForm;
-import edu.pitt.dbmi.causal.web.service.AppUserService;
 import edu.pitt.dbmi.causal.web.service.account.UserProfileService;
-import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -44,44 +41,39 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @SessionAttributes("appUser")
 @RequestMapping(value = "secured/account/profile")
-public class UserProfileController implements ViewPath {
+public class UserProfileController {
 
     private static final String PASSWORD_MATCH_FAILED = "Password Update Failed!";
+    private static final String[] USER_PROFILE_UPDATE_SUCCESS = {"User information has been updated successfully."};
     private static final String[] USER_PROFILE_UPDATE_FAILED = {"User Profile Update Failed!", "Unable to update user information."};
+    private static final String[] PASSWORD_UPDATE_SUCCESS = {"Password has been changed successfully."};
     private static final String[] PASSWORD_UPDATE_FAILED = {"Password Update Failed!", "Unable to change password."};
 
-    private final UserAccountService userAccountService;
     private final UserProfileService userProfileService;
-    private final AppUserService appUserService;
 
     @Autowired
-    public UserProfileController(UserAccountService userAccountService, UserProfileService userProfileService, AppUserService appUserService) {
-        this.userAccountService = userAccountService;
+    public UserProfileController(UserProfileService userProfileService) {
         this.userProfileService = userProfileService;
-        this.appUserService = appUserService;
     }
 
     @RequestMapping(value = "password/change", method = RequestMethod.POST)
     public String processPasswordChange(
-            @ModelAttribute("passwordChangeForm") final PasswordChangeForm passwordChangeForm,
+            @ModelAttribute("changePasswordForm") final ChangePasswordForm changePasswordForm,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model,
             final RedirectAttributes redirAttrs) {
-        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        if (userAccount == null) {
-            redirAttrs.addFlashAttribute("errorMsgPassword", PASSWORD_UPDATE_FAILED);
-        } else {
-            if (userProfileService.passwordMatch(passwordChangeForm, userAccount)) {
-                if (!userProfileService.updateUserAccountPassword(passwordChangeForm, userAccount)) {
-                    redirAttrs.addFlashAttribute("errorMsgPassword", PASSWORD_UPDATE_FAILED);
-                }
+        if (userProfileService.passwordMatch(changePasswordForm, appUser)) {
+            if (userProfileService.updateUserPassword(changePasswordForm, appUser)) {
+                redirAttrs.addFlashAttribute("successMsg", PASSWORD_UPDATE_SUCCESS);
             } else {
-                redirAttrs.addFlashAttribute("errorMsgPassword", PASSWORD_MATCH_FAILED);
-                redirAttrs.addFlashAttribute("errInvalidPwd", true);
+                redirAttrs.addFlashAttribute("errorMsg", PASSWORD_UPDATE_FAILED);
             }
+        } else {
+            redirAttrs.addFlashAttribute("errorMsg", PASSWORD_MATCH_FAILED);
+            redirAttrs.addFlashAttribute("errInvalidPwd", true);
         }
 
-        return REDIRECT_USER_PROFILE;
+        return ViewPath.REDIRECT_USER_PROFILE;
     }
 
     @RequestMapping(value = "info/change", method = RequestMethod.POST)
@@ -90,27 +82,27 @@ public class UserProfileController implements ViewPath {
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model,
             final RedirectAttributes redirAttrs) {
-        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        if (userProfileService.updateUserInfo(userInfoForm, userAccount)) {
-            userAccount = userAccountService.getRepository().findOne(userAccount.getId());
-            model.addAttribute("appUser", appUserService.create(userAccount, appUser.isFederatedUser()));
+        AppUser updatedAppUser = userProfileService.updateUserInformation(userInfoForm, appUser);
+        if (updatedAppUser == null) {
+            redirAttrs.addFlashAttribute("errorMsg", USER_PROFILE_UPDATE_FAILED);
         } else {
-            redirAttrs.addFlashAttribute("errorMsgUserInfo", USER_PROFILE_UPDATE_FAILED);
+            model.addAttribute("appUser", appUser);
+            redirAttrs.addFlashAttribute("successMsg", USER_PROFILE_UPDATE_SUCCESS);
         }
 
-        return REDIRECT_USER_PROFILE;
+        return ViewPath.REDIRECT_USER_PROFILE;
     }
 
     @RequestMapping(method = RequestMethod.GET)
     public String showUserProfilePage(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         if (!model.containsAttribute("userInfoForm")) {
-            model.addAttribute("userInfoForm", userProfileService.populateUserInfoForm(appUser));
+            model.addAttribute("userInfoForm", userProfileService.createUserInfoForm(appUser));
         }
-        if (!model.containsAttribute("passwordChangeForm")) {
-            model.addAttribute("passwordChangeForm", new PasswordChangeForm());
+        if (!model.containsAttribute("changePasswordForm")) {
+            model.addAttribute("changePasswordForm", new ChangePasswordForm());
         }
 
-        return USER_PROFILE_VIEW;
+        return ViewPath.USER_PROFILE_VIEW;
     }
 
 }

@@ -43,9 +43,8 @@ $(document).ready(function () {
         var rowData = row.data();
 
         $.ajax({
-            url: deleteUrl,
-            data: {"id": rowData['id']},
-            type: 'POST',
+            url: deleteUrl + rowData['id'],
+            type: 'DELETE',
             success: function () {
                 row.remove().draw();
             }

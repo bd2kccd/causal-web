@@ -96,6 +96,10 @@ a:link {
     font-size: 0.8em;
     line-height: 1em;
 }
+.navbar_pitt {
+    background-color: #111150;
+    border-color: #111150;
+}
 .nav > li > a {
     color: #333;
     font-size: 15px;
@@ -103,4 +107,7 @@ a:link {
 .title-header {
     padding-bottom: 9px;
     border-bottom: 1px solid #eee;
+}
+.medium {
+  font-size: 25px;
 }

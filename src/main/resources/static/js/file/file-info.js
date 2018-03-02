@@ -21,7 +21,7 @@ $(document).ready(function () {
             if (response.status === 'error') {
                 return response.msg;
             } else {
-                $('#page_title').text(newValue);
+                $('.file_title').text(newValue);
             }
         }
     });

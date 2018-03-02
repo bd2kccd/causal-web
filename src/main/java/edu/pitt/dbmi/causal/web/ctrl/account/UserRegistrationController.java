@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 University of Pittsburgh.
+ * Copyright (C) 2018 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,16 +20,16 @@ package edu.pitt.dbmi.causal.web.ctrl.account;
 
 import edu.pitt.dbmi.causal.web.ctrl.ViewPath;
 import edu.pitt.dbmi.causal.web.exception.ResourceNotFoundException;
+import edu.pitt.dbmi.causal.web.model.AppUser;
+import edu.pitt.dbmi.causal.web.model.Message;
 import edu.pitt.dbmi.causal.web.model.account.UserRegistrationForm;
-import edu.pitt.dbmi.causal.web.model.template.Message;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
-import edu.pitt.dbmi.causal.web.service.AuthenticationService;
-import edu.pitt.dbmi.causal.web.service.account.UserRegistrationService;
-import edu.pitt.dbmi.causal.web.service.file.FileManagementService;
+import edu.pitt.dbmi.causal.web.service.AuthService;
+import edu.pitt.dbmi.causal.web.service.account.AccountRegistrationService;
+import edu.pitt.dbmi.causal.web.service.filesys.FileManagementService;
 import edu.pitt.dbmi.causal.web.service.mail.UserRegistrationMailService;
 import edu.pitt.dbmi.causal.web.util.UriTool;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.service.UserEventLogService;
 import java.net.URI;
 import java.util.Base64;
 import java.util.Collections;
@@ -60,35 +60,32 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  */
 @Controller
 @RequestMapping(value = "user/account/registration")
-public class UserRegistrationController implements ViewPath {
+public class UserRegistrationController {
 
-    private static final String[] LOGIN_FAILED = {"Login Failed!", "Unable to log in during registration."};
-    private static final String[] REGISTRATION_SUCCESS = {"Registration Success!", "Check your email to activate your account."};
-    private static final String[] REGISTRATION_FAILED = {"Registration Failed!", "Unable to create new user at this time."};
     private static final String REGISTRATION_ERROR = "Registration Error!";
-    private static final String USERNAME_EXISTED = "Email already existed.";
+    private static final String[] REGISTRATION_SUCCESS = {"Registration Success!", "Check your email to activate your account."};
+    private static final String[] REGISTRATION_FAILED = {"Registration Failed!", "Unable to register new user at this time."};
+    private static final String ACCOUNT_EXISTED = "Account already existed.";
+    private static final String[] LOGIN_FAILED = {"Login Failed!", "Unable to log in during registration."};
 
-    private final UserRegistrationService userRegistrationService;
-    private final UserRegistrationMailService userRegistrationMailService;
-    private final AuthenticationService authenticationService;
+    private final AccountRegistrationService accountRegistrationService;
+    private final AuthService authService;
     private final AppUserService appUserService;
     private final FileManagementService fileManagementService;
-    private final UserEventLogService userEventLogService;
+    private final UserRegistrationMailService userRegistrationMailService;
 
     @Autowired
     public UserRegistrationController(
-            UserRegistrationService userRegistrationService,
-            UserRegistrationMailService userRegistrationMailService,
-            AuthenticationService authenticationService,
+            AccountRegistrationService accountRegistrationService,
+            AuthService authService,
             AppUserService appUserService,
             FileManagementService fileManagementService,
-            UserEventLogService userEventLogService) {
-        this.userRegistrationService = userRegistrationService;
-        this.userRegistrationMailService = userRegistrationMailService;
-        this.authenticationService = authenticationService;
+            UserRegistrationMailService userRegistrationMailService) {
+        this.accountRegistrationService = accountRegistrationService;
+        this.authService = authService;
         this.appUserService = appUserService;
         this.fileManagementService = fileManagementService;
-        this.userEventLogService = userEventLogService;
+        this.userRegistrationMailService = userRegistrationMailService;
     }
 
     @InitBinder
@@ -100,41 +97,27 @@ public class UserRegistrationController implements ViewPath {
     public String activateNewUser(
             @RequestParam(value = "activation", required = true) final String activation,
             final RedirectAttributes redirAttrs) {
-        UserAccount userAccount = userRegistrationService.findUserAccount(activation);
+        UserAccount userAccount = accountRegistrationService.findUserAccount(activation);
         if (userAccount == null || userAccount.isActivated()) {
             throw new ResourceNotFoundException();
         } else {
             Message message = new Message("Causal Web: User Activation");
-            if (userRegistrationService.activateUserAccount(userAccount)) {
+            if (accountRegistrationService.activateUserAccount(userAccount)) {
                 message.setSuccess(true);
                 message.setMessageTitle("User Activation Success!");
-                message.setMessages(Collections.singletonList(String.format("You have successfully activated user '%s'.", userAccount.getUsername())));
+                message.setMessages(
+                        Collections.singletonList(
+                                String.format("You have successfully activated user '%s'.", userAccount.getUsername())));
             } else {
                 message.setMessageTitle("User Activation Failed!");
-                message.setMessages(Collections.singletonList(String.format("Unable to activate user '%s'.", userAccount.getUsername())));
+                message.setMessages(
+                        Collections.singletonList(
+                                String.format("Unable to activate user '%s'.", userAccount.getUsername())));
             }
             redirAttrs.addFlashAttribute("message", message);
         }
 
-        return REDIRECT_MESSAGE;
-    }
-
-    @RequestMapping(method = RequestMethod.GET)
-    public String showUserRegistration(final SessionStatus sessionStatus, final Model model) {
-        Subject currentUser = SecurityUtils.getSubject();
-        if (sessionStatus.isComplete()) {
-            currentUser.logout();
-        } else if (currentUser.isAuthenticated()) {
-            return REDIRECT_HOME;
-        } else {
-            sessionStatus.setComplete();
-        }
-
-        if (!model.containsAttribute("userRegistrationForm")) {
-            model.addAttribute("userRegistrationForm", new UserRegistrationForm(false));
-        }
-
-        return USER_REGISTRATION_VIEW;
+        return ViewPath.REDIRECT_MESSAGE;
     }
 
     @RequestMapping(method = RequestMethod.POST)
@@ -151,45 +134,68 @@ public class UserRegistrationController implements ViewPath {
             redirAttrs.addFlashAttribute("userRegistrationForm", userRegistrationForm);
             redirAttrs.addFlashAttribute("errorMsg", REGISTRATION_ERROR);
 
-            return REDIRECT_USER_REGISTRATION;
+            return ViewPath.REDIRECT_USER_REGISTRATION;
         }
 
-        // ensure unique account
-        if (userRegistrationService.accountExists(userRegistrationForm)) {
-            bindingResult.rejectValue("email", "userRegistrationForm.email", USERNAME_EXISTED);
+        // ensure account does not exist
+        if (accountRegistrationService.accountExists(userRegistrationForm)) {
+            bindingResult.rejectValue("email", "userRegistrationForm.email", ACCOUNT_EXISTED);
             redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.userRegistrationForm", bindingResult);
             redirAttrs.addFlashAttribute("userRegistrationForm", userRegistrationForm);
             redirAttrs.addFlashAttribute("errorMsg", REGISTRATION_ERROR);
 
-            return REDIRECT_USER_REGISTRATION;
+            return ViewPath.REDIRECT_USER_REGISTRATION;
         }
 
-        // ensure account is created
-        UserAccount userAccount = userRegistrationService.registerRegularAccount(userRegistrationForm, req.getRemoteAddr(), false);
+        UserAccount userAccount = accountRegistrationService
+                .registerRegularAccount(userRegistrationForm, req.getRemoteAddr(), false);
         if (userAccount == null) {
             redirAttrs.addFlashAttribute("errorMsg", REGISTRATION_FAILED);
 
-            return REDIRECT_USER_REGISTRATION;
+            return ViewPath.REDIRECT_USER_REGISTRATION;
         }
 
-        userEventLogService.logUserRegistration(userAccount);
         userRegistrationMailService.sendUserRegistrationAlertToAdmin(userAccount);
         if (userAccount.isActivated()) {
-            Subject subject = authenticationService.loginManually(userAccount, req, res);
+            Subject subject = authService.login(userAccount, req, res);
             if (subject.isAuthenticated()) {
                 fileManagementService.setupUserHomeDirectory(userAccount);
-                redirAttrs.addFlashAttribute("appUser", appUserService.create(userAccount, false));
-                authenticationService.setLoginInfo(userAccount, req.getRemoteAddr());
+
+                AppUser appUser = appUserService
+                        .create(userAccount, false, req.getRemoteAddr());
+                redirAttrs.addFlashAttribute("appUser", appUser);
+
+                return ViewPath.REDIRECT_HOME;
             } else {
                 redirAttrs.addFlashAttribute("errorMsg", LOGIN_FAILED);
+
+                return ViewPath.REDIRECT_LOGIN;
             }
         } else {
             // send e-mail notification to user
-            userRegistrationMailService.sendAccountActivationLinkToUser(userAccount, createActivationLink(userAccount, req));
+            userRegistrationMailService.sendAccountActivationToUser(userAccount, createActivationLink(userAccount, req));
             redirAttrs.addFlashAttribute("successMsg", REGISTRATION_SUCCESS);
+
+            return ViewPath.REDIRECT_LOGIN;
+        }
+    }
+
+    @RequestMapping(method = RequestMethod.GET)
+    public String showUserRegistration(final SessionStatus sessionStatus, final Model model) {
+        Subject currentUser = SecurityUtils.getSubject();
+        if (sessionStatus.isComplete()) {
+            currentUser.logout();
+        } else if (currentUser.isAuthenticated()) {
+            return ViewPath.REDIRECT_HOME;
+        } else {
+            sessionStatus.setComplete();
         }
 
-        return REDIRECT_LOGIN;
+        if (!model.containsAttribute("userRegistrationForm")) {
+            model.addAttribute("userRegistrationForm", new UserRegistrationForm(false));
+        }
+
+        return ViewPath.USER_REGISTRATION_VIEW;
     }
 
     protected URI createActivationLink(UserAccount userAccount, HttpServletRequest req) {

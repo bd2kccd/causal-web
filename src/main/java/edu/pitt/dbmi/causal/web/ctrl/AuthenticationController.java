@@ -18,12 +18,12 @@
  */
 package edu.pitt.dbmi.causal.web.ctrl;
 
+import edu.pitt.dbmi.causal.web.model.AppUser;
 import edu.pitt.dbmi.causal.web.model.LoginForm;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
-import edu.pitt.dbmi.causal.web.service.AuthenticationService;
-import edu.pitt.dbmi.causal.web.service.file.FileManagementService;
+import edu.pitt.dbmi.causal.web.service.AuthService;
+import edu.pitt.dbmi.causal.web.service.filesys.FileManagementService;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.service.UserEventLogService;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.apache.shiro.subject.Subject;
@@ -45,29 +45,26 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  */
 @Controller
 @SessionAttributes("appUser")
-public class AuthenticationController implements ViewPath {
+public class AuthenticationController {
 
     private static final String[] INVALID_CREDENTIALS = {"Login Failed!", "Invalid username and/or password."};
     private static final String[] UNACTIVATED_ACCOUNT = {"Login Failed!", "Your account has not been activated."};
 
-    private final AuthenticationService authenticationService;
+    private final AuthService authService;
     private final AppUserService appUserService;
     private final FileManagementService fileManagementService;
-    private final UserEventLogService userEventLogService;
 
     @Autowired
     public AuthenticationController(
-            AuthenticationService authenticationService,
+            AuthService authService,
             AppUserService appUserService,
-            FileManagementService fileManagementService,
-            UserEventLogService userEventLogService) {
-        this.authenticationService = authenticationService;
+            FileManagementService fileManagementService) {
+        this.authService = authService;
         this.appUserService = appUserService;
         this.fileManagementService = fileManagementService;
-        this.userEventLogService = userEventLogService;
     }
 
-    @RequestMapping(value = LOGIN, method = RequestMethod.POST)
+    @RequestMapping(value = ViewPath.LOGIN, method = RequestMethod.POST)
     public String logIn(
             @Valid @ModelAttribute("loginForm") final LoginForm loginForm,
             final BindingResult bindingResult,
@@ -78,31 +75,31 @@ public class AuthenticationController implements ViewPath {
             redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.loginForm", bindingResult);
             redirAttrs.addFlashAttribute("loginForm", loginForm);
 
-            return REDIRECT_LOGIN;
+            return ViewPath.REDIRECT_LOGIN;
         }
 
-        Subject currentUser = authenticationService.loginWithUsernamePassword(loginForm);
+        Subject currentUser = authService.login(loginForm);
         if (currentUser.isAuthenticated()) {
-            UserAccount userAccount = authenticationService.retrieveUserAccount(currentUser);
+            UserAccount userAccount = authService.retrieveAccount(currentUser);
             if (userAccount != null && userAccount.isActivated()) {
-                userEventLogService.logUserLogin(userAccount);
                 fileManagementService.setupUserHomeDirectory(userAccount);
-                model.addAttribute("appUser", appUserService.create(userAccount, false));
-                authenticationService.setLoginInfo(userAccount, req.getRemoteAddr());
-                authenticationService.clearActionKey(userAccount);
 
-                return REDIRECT_HOME;
+                AppUser appUser = appUserService
+                        .create(userAccount, false, req.getRemoteAddr());
+                redirAttrs.addFlashAttribute("appUser", appUser);
+
+                return ViewPath.REDIRECT_HOME;
             } else {
                 currentUser.logout();
                 redirAttrs.addFlashAttribute("errorMsg", UNACTIVATED_ACCOUNT);
 
-                return REDIRECT_LOGIN;
+                return ViewPath.REDIRECT_LOGIN;
             }
         } else {
             redirAttrs.addFlashAttribute("errorMsg", INVALID_CREDENTIALS);
             redirAttrs.addFlashAttribute("loginForm", loginForm);
 
-            return REDIRECT_LOGIN;
+            return ViewPath.REDIRECT_LOGIN;
         }
     }
 

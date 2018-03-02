@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 University of Pittsburgh.
+ * Copyright (C) 2018 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,12 +18,16 @@
  */
 package edu.pitt.dbmi.causal.web.service.mail;
 
-import edu.pitt.dbmi.causal.web.model.template.account.UserActivationTemplateData;
-import edu.pitt.dbmi.causal.web.model.template.account.UserRegistrationAlertTemplateData;
+import edu.pitt.dbmi.causal.web.model.mail.UserActivationMail;
+import edu.pitt.dbmi.causal.web.model.mail.UserRegistrationAlertMail;
 import edu.pitt.dbmi.causal.web.prop.CcdEmailProperties;
-import edu.pitt.dbmi.causal.web.util.UriTool;
-import edu.pitt.dbmi.ccd.commons.uri.InetUtils;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.entity.UserInformation;
+import edu.pitt.dbmi.ccd.db.entity.UserRegistration;
+import edu.pitt.dbmi.ccd.db.service.UserInformationService;
+import edu.pitt.dbmi.ccd.db.service.UserRegistrationService;
+import edu.pitt.dbmi.ccd.db.util.InetUtils;
+import edu.pitt.dbmi.ccd.mail.AbstractMailService;
 import java.net.URI;
 import java.util.Date;
 import javax.mail.MessagingException;
@@ -37,7 +41,7 @@ import org.thymeleaf.spring4.SpringTemplateEngine;
 
 /**
  *
- * Oct 4, 2016 4:04:08 PM
+ * Feb 5, 2018 9:42:21 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
@@ -46,49 +50,77 @@ public class UserRegistrationMailService extends AbstractMailService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserRegistrationMailService.class);
 
+    private final CcdEmailProperties ccdEmailProperties;
+    private final UserInformationService userInformationService;
+    private final UserRegistrationService userRegistrationService;
+
     @Autowired
-    public UserRegistrationMailService(CcdEmailProperties ccdEmailProperties, SpringTemplateEngine templateEngine, JavaMailSender javaMailSender) {
-        super(ccdEmailProperties, templateEngine, javaMailSender);
+    public UserRegistrationMailService(CcdEmailProperties ccdEmailProperties, UserInformationService userInformationService, UserRegistrationService userRegistrationService, SpringTemplateEngine templateEngine, JavaMailSender javaMailSender) {
+        super(templateEngine, javaMailSender);
+        this.ccdEmailProperties = ccdEmailProperties;
+        this.userInformationService = userInformationService;
+        this.userRegistrationService = userRegistrationService;
     }
 
+    /**
+     * Send new user registration alert to administrators.
+     *
+     * @param userAccount
+     */
     @Async
-    public void sendUserRegistrationAlertToAdmin(final UserAccount userAccount) {
+    public void sendUserRegistrationAlertToAdmin(UserAccount userAccount) {
         String[] sendTo = ccdEmailProperties.getAdminSendTo();
         if (sendTo.length > 0) {
-            String email = userAccount.getUserInfo().getEmail();
-            Date registrationDate = userAccount.getRegistrationDate();
-            Long location = userAccount.getRegistrationLocation();
+            UserInformation userInfo = userInformationService.getRepository()
+                    .findByUserAccount(userAccount);
+            UserRegistration userRegistration = userRegistrationService.getRepository()
+                    .findByUserAccount(userAccount);
 
-            UserRegistrationAlertTemplateData templateData = new UserRegistrationAlertTemplateData();
-            templateData.setEmail(email);
-            templateData.setRegistrationDate(registrationDate);
-            templateData.setRegistrationLocation(UriTool.ipAddressToHostName(InetUtils.getInetATON(location)));
+            String email = userInfo.getEmail();
+            Date registrationDate = userRegistration.getRegistrationDate();
+            Long location = userRegistration.getRegistrationLocation();
+
+            UserRegistrationAlertMail userRegAlert = new UserRegistrationAlertMail();
+            userRegAlert.setEmail(email);
+            userRegAlert.setRegistrationDate(registrationDate);
+            userRegAlert.setRegistrationLocation(InetUtils.getInetATON(location));
 
             String subject = "Causal Web: New User Registration";
-            String template = "mail/account/user-registration-alert";
+            String template = "mail/account/user_registration_alert";
             try {
-                sendMail(templateData, template, subject, sendTo);
+                sendMail(userRegAlert, template, subject, sendTo);
             } catch (MessagingException exception) {
                 LOGGER.error("Fail to send new user registration to administrator.", exception);
             }
         }
     }
 
+    /**
+     * Email account activation link to user.
+     *
+     * @param userAccount
+     * @param activationLink
+     */
     @Async
-    public void sendAccountActivationLinkToUser(final UserAccount userAccount, final URI activationLink) {
-        String email = userAccount.getUserInfo().getEmail();
-        Date registrationDate = userAccount.getRegistrationDate();
+    public void sendAccountActivationToUser(final UserAccount userAccount, final URI activationLink) {
+        UserInformation userInfo = userInformationService.getRepository()
+                .findByUserAccount(userAccount);
+        UserRegistration userRegistration = userRegistrationService.getRepository()
+                .findByUserAccount(userAccount);
 
-        UserActivationTemplateData templateData = new UserActivationTemplateData();
-        templateData.setActivationLink(activationLink);
-        templateData.setEmail(email);
-        templateData.setRegistrationDate(registrationDate);
+        String email = userInfo.getEmail();
+        Date registrationDate = userRegistration.getRegistrationDate();
+
+        UserActivationMail userActivation = new UserActivationMail();
+        userActivation.setActivationLink(activationLink);
+        userActivation.setEmail(email);
+        userActivation.setRegistrationDate(registrationDate);
 
         String sendTo = email;
         String subject = "Causal Web: User Activation";
-        String template = "mail/account/user-activation";
+        String template = "mail/account/user_activation";
         try {
-            sendMail(templateData, template, subject, sendTo);
+            sendMail(userActivation, template, subject, sendTo);
         } catch (MessagingException exception) {
             LOGGER.error("Fail to send account activation link to user.", exception);
         }

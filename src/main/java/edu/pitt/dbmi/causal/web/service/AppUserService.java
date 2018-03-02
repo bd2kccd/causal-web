@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 University of Pittsburgh.
+ * Copyright (C) 2018 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,14 +18,14 @@
  */
 package edu.pitt.dbmi.causal.web.service;
 
-import edu.pitt.dbmi.causal.web.exception.InternalErrorException;
+import edu.pitt.dbmi.causal.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.causal.web.model.AppUser;
-import edu.pitt.dbmi.causal.web.model.account.UserInfoForm;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.entity.UserInfo;
+import edu.pitt.dbmi.ccd.db.entity.UserInformation;
 import edu.pitt.dbmi.ccd.db.entity.UserLogin;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
-import java.util.Date;
+import edu.pitt.dbmi.ccd.db.service.UserInformationService;
+import edu.pitt.dbmi.ccd.db.service.UserLoginService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,69 +45,85 @@ public class AppUserService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AppUserService.class);
 
     private final UserAccountService userAccountService;
+    private final UserInformationService userInformationService;
+    private final UserLoginService userLoginService;
 
     @Autowired
-    public AppUserService(UserAccountService userAccountService) {
+    public AppUserService(UserAccountService userAccountService, UserInformationService userInformationService, UserLoginService userLoginService) {
         this.userAccountService = userAccountService;
+        this.userInformationService = userInformationService;
+        this.userLoginService = userLoginService;
     }
 
-    @Cacheable(cacheNames = {"appUserServiceUserAccount"}, key = "#appUser.username")
-    public UserAccount retrieveUserAccount(AppUser appUser) {
-        try {
-            return userAccountService.getRepository().findByUsername(appUser.getUsername());
-        } catch (Exception exception) {
-            LOGGER.error("Unable to retrieve user account.", exception);
-            throw new InternalErrorException();
-        }
-    }
+    public AppUser create(UserAccount userAccount, boolean federatedUser, String ipAddress) {
 
-    @CachePut(cacheNames = {"appUserServiceUserAccount"}, key = "#userAccount.username")
-    public UserAccount updateCache(UserAccount userAccount) {
-        return userAccount;
-    }
+        // clear any account related request if user successfully signed
+        userAccountService.clearActionKey(userAccount);
 
-    public AppUser create(UserAccount userAccount, boolean federatedUser) {
         userAccount = updateCache(userAccount);
 
-        UserInfo userInfo = userAccount.getUserInfo();
-        UserLogin userLogin = userAccount.getUserLogin();
+        UserLogin userLogin = userLoginService
+                .logUserLogin(userAccount, ipAddress);
+        UserInformation userInfo = userInformationService.getRepository()
+                .findByUserAccount(userAccount);
 
-        String firstName = userInfo.getFirstName();
-        String middleName = userInfo.getMiddleName();
-        String lastName = userInfo.getLastName();
-        String username = userAccount.getUsername();
-        Date lastLogin = userLogin.getLoginDate();
-
-        AppUser appUser = update(firstName, middleName, lastName, new AppUser());
-        appUser.setUsername(username);
-        appUser.setLastLogin((lastLogin == null) ? new Date(System.currentTimeMillis()) : lastLogin);
+        AppUser appUser = new AppUser();
+        appUser.setFirstName(userInfo.getFirstName());
+        appUser.setMiddleName(userInfo.getMiddleName());
+        appUser.setLastName(userInfo.getLastName());
+        appUser.setUsername(userAccount.getUsername());
+        appUser.setLastLogin(userLogin.getLoginDate());
         appUser.setFederatedUser(federatedUser);
 
         return appUser;
     }
 
-    public AppUser update(UserInfoForm userInfoForm, AppUser appUser) {
-        String firstName = userInfoForm.getFirstName();
-        String middleName = userInfoForm.getMiddleName();
-        String lastName = userInfoForm.getLastName();
+    public AppUser updateUserInformation(UserInformation userInfo, AppUser appUser) {
+        try {
+            userInformationService.getRepository().save(userInfo);
+        } catch (Exception exception) {
+            LOGGER.error("Unable to update user information.", exception);
 
-        return update(firstName, middleName, lastName, appUser);
-    }
+            return null;
+        }
 
-    public AppUser update(UserInfo userInfo, AppUser appUser) {
-        String firstName = userInfo.getFirstName();
-        String middleName = userInfo.getMiddleName();
-        String lastName = userInfo.getLastName();
+        appUser.setFirstName(userInfo.getFirstName());
+        appUser.setMiddleName(userInfo.getMiddleName());
+        appUser.setLastName(userInfo.getLastName());
 
-        return update(firstName, middleName, lastName, appUser);
-    }
-
-    public AppUser update(String firstName, String middleName, String lastName, AppUser appUser) {
-        appUser.setFirstName(firstName == null ? "" : firstName);
-        appUser.setMiddleName(middleName == null ? "" : middleName);
-        appUser.setLastName(lastName == null ? "" : lastName);
+        appUser.updateFullName();
 
         return appUser;
+    }
+
+    public UserInformation retrieveUserInformation(AppUser appUser) {
+        UserAccount userAccount = retrieveUserAccount(appUser);
+
+        return userInformationService.getRepository()
+                .findByUserAccount(userAccount);
+    }
+
+    @Cacheable(cacheNames = {"appUserServiceUserAccount"}, key = "#appUser.username")
+    public UserAccount retrieveUserAccount(AppUser appUser) {
+        UserAccount userAccount;
+        try {
+            userAccount = userAccountService.getRepository()
+                    .findByUsername(appUser.getUsername());
+        } catch (Exception exception) {
+            LOGGER.error("Unable to retrieve user account.", exception);
+            userAccount = null;
+        }
+
+        if (userAccount == null) {
+            throw new ResourceNotFoundException();
+        }
+
+        return userAccount;
+    }
+
+    @CachePut(cacheNames = {"appUserServiceUserAccount"}, key = "#userAccount.username")
+    public UserAccount updateCache(UserAccount userAccount) {
+        return userAccount;
     }
 
 }

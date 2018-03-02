@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 University of Pittsburgh.
+ * Copyright (C) 2018 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,6 +25,7 @@ import edu.pitt.dbmi.causal.web.service.AppUserService;
 import edu.pitt.dbmi.causal.web.service.file.FileUploadService;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.FileService;
 import java.io.IOException;
 import java.nio.file.Path;
 import javax.servlet.http.HttpServletResponse;
@@ -44,7 +45,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @Controller
 @SessionAttributes("appUser")
 @RequestMapping(value = "secured/file/upload")
-public class FileUploadController implements ViewPath {
+public class FileUploadController {
 
     private static final int CHUNK_EXIST_STATUS = 200;
     private static final int CHUNK_NOT_EXIST_STATUS = 404;
@@ -52,30 +53,32 @@ public class FileUploadController implements ViewPath {
 
     private final AppUserService appUserService;
     private final FileUploadService fileUploadService;
+    private final FileService fileService;
 
     @Autowired
-    public FileUploadController(AppUserService appUserService, FileUploadService fileUploadService) {
+    public FileUploadController(AppUserService appUserService, FileUploadService fileUploadService, FileService fileService) {
         this.appUserService = appUserService;
         this.fileUploadService = fileUploadService;
+        this.fileService = fileService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
     public String showDataUploadView() {
-        return FILE_UPLOAD_VIEW;
+        return ViewPath.FILE_UPLOAD_VIEW;
     }
 
     @RequestMapping(value = "chunk", method = RequestMethod.POST)
     public void processChunkUpload(ResumableChunk chunk, AppUser appUser, HttpServletResponse res) throws IOException {
         if (fileUploadService.isSupported(chunk)) {
             UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-            if (userAccount != null && fileUploadService.saveChunk(chunk, userAccount)) {
+            if (fileUploadService.saveChunk(chunk, userAccount)) {
                 if (fileUploadService.allChunksUploaded(chunk, userAccount)) {
                     Path uploadedFile = fileUploadService.combineAllChunks(chunk, userAccount);
                     if (uploadedFile == null) {
                         res.getWriter().println("Upload failed.");
                         res.setStatus(FAIL_STATUS);
                     } else {
-                        File fileEntity = fileUploadService.saveFileToDatabase(uploadedFile, userAccount);
+                        File fileEntity = fileService.persistLocalFile(uploadedFile, userAccount);
                         res.getWriter().println(fileEntity.getMd5CheckSum());
                     }
                 }

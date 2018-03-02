@@ -26,16 +26,23 @@
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h3 id="page_title" class="page-header" th:text="${pageTitle}">Group File</h3>
+                        <h3 id="page_title" class="page-header" th:text="${fileGroupForm.groupName == null} ? 'New File Group' : 'File Group: ' + ${fileGroupForm.groupName}">Group File</h3>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
                         <ul class="breadcrumb">
                             <li><a href="#" th:href="@{/secured/home}">Home</a></li>
-                            <li><a href="#" th:href="@{/secured/file/group}">File Groups</a></li>
-                            <li class="active" th:text="${pageTitle}">Group File</li>
+                            <li><a href="#" th:href="@{/secured/file/group}">File Group</a></li>
+                            <li class="active" th:text="${fileGroupForm.groupName == null} ? 'New File Group' : ${fileGroupForm.groupName}">Group File</li>
                         </ul>
+                    </div>
+                </div>
+                <div class="row" th:if="${errorMsg}">
+                    <div class="col-lg-12">
+                        <div class="alert alert-danger text-center" role="alert">
+                            <p th:each="msg : ${errorMsg}" th:text="${msg}"></p>
+                        </div>
                     </div>
                 </div>
                 <div class="row">
@@ -52,7 +59,7 @@
                                         <div class="form-group" th:class="${#fields.hasErrors('varTypeId')} ? 'form-group has-error' : 'form-group'">
                                             <label>Variable Type:</label>
                                             <label class="radio-inline" th:each="opt : ${varTypes}">
-                                                <input type="radio" th:field="*{varTypeId}" th:value="${opt.id}" /> <span th:text="${opt.displayName}">tetrad variable</span>
+                                                <input type="radio" th:field="*{varTypeId}" th:value="${opt.id}" /> <span th:text="${opt.name}">tetrad variable</span>
                                             </label>
                                             <span class="help-block" th:if="${#fields.hasErrors('varTypeId')}" th:errors="*{varTypeId}">Variable type is required.</span>
                                         </div>

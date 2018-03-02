@@ -36,7 +36,7 @@ public class HttpStatusController {
 
     private static final String STATUS_TITLE = "Oh, snap!";
     private static final String HTTP_STATUS_MODEL = "httpStatus";
-    private static final String HTTP_STATUS_VIEW = "http-status";
+    private static final String HTTP_STATUS_VIEW = "http_status";
 
     private static final HttpStatus BAD_REQ = new HttpStatus("Bad Request", STATUS_TITLE, "Sorry, bad request.");
     private static final HttpStatus UNAUTH_ACCESS = new HttpStatus("Unauthorized Access", STATUS_TITLE, "Sorry, you need to sign in to view this page.");

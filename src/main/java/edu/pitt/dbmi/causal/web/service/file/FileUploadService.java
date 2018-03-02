@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 University of Pittsburgh.
+ * Copyright (C) 2018 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,10 +19,9 @@
 package edu.pitt.dbmi.causal.web.service.file;
 
 import edu.pitt.dbmi.causal.web.model.file.ResumableChunk;
-import edu.pitt.dbmi.ccd.commons.file.FileSys;
-import edu.pitt.dbmi.ccd.db.entity.File;
+import edu.pitt.dbmi.causal.web.service.filesys.FileManagementService;
+import edu.pitt.dbmi.causal.web.util.FileSys;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.service.FileService;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -47,16 +46,30 @@ public class FileUploadService {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileUploadService.class);
 
     private final FileManagementService fileManagementService;
-    private final FileService fileService;
 
     @Autowired
-    public FileUploadService(FileManagementService fileManagementService, FileService fileService) {
+    public FileUploadService(FileManagementService fileManagementService) {
         this.fileManagementService = fileManagementService;
-        this.fileService = fileService;
     }
 
-    public File saveFileToDatabase(Path file, UserAccount userAccount) {
-        return fileService.persistLocalFile(file, userAccount);
+    public boolean isSupported(ResumableChunk chunk) {
+        return true;
+    }
+
+    public boolean chunkExists(ResumableChunk chunk, UserAccount userAccount) {
+        boolean fileExist = false;
+
+        Path chunkFile = createPathToChunkFile(chunk, userAccount);
+        if (Files.exists(chunkFile)) {
+            try {
+                long chunkSize = (Long) Files.getAttribute(chunkFile, "basic:size");
+                fileExist = (chunkSize == chunk.getResumableChunkSize());
+            } catch (IOException exception) {
+                LOGGER.error(exception.getMessage());
+            }
+        }
+
+        return fileExist;
     }
 
     public Path combineAllChunks(ResumableChunk chunk, UserAccount userAccount) {
@@ -122,26 +135,6 @@ public class FileUploadService {
         }
 
         return true;
-    }
-
-    public boolean isSupported(ResumableChunk chunk) {
-        return true;
-    }
-
-    public boolean chunkExists(ResumableChunk chunk, UserAccount userAccount) {
-        boolean fileExist = false;
-
-        Path chunkFile = createPathToChunkFile(chunk, userAccount);
-        if (Files.exists(chunkFile)) {
-            try {
-                long chunkSize = (Long) Files.getAttribute(chunkFile, "basic:size");
-                fileExist = (chunkSize == chunk.getResumableChunkSize());
-            } catch (IOException exception) {
-                LOGGER.error(exception.getMessage());
-            }
-        }
-
-        return fileExist;
     }
 
     private Path createPathToChunkFile(ResumableChunk chunk, UserAccount userAccount) {

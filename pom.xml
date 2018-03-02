@@ -5,7 +5,7 @@
 
     <groupId>edu.pitt.dbmi</groupId>
     <artifactId>causal-web</artifactId>
-    <version>2.0.1</version>
+    <version>2.0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>causal-web</name>
@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.5.6.RELEASE</version>
+        <version>1.5.10.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -26,6 +26,17 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>ccd-releases</id>
+            <url>https://cloud.ccd.pitt.edu/nexus/content/repositories/releases/</url>
+        </repository>
+        <repository>
+            <id>ccd-snapshots</id>
+            <url>https://cloud.ccd.pitt.edu/nexus/content/repositories/snapshots/</url>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>
@@ -39,16 +50,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-tomcat</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-jetty</artifactId>
         </dependency>
 
         <!-- Shiro -->
@@ -76,23 +77,29 @@
 
         <dependency>
             <groupId>edu.pitt.dbmi</groupId>
-            <artifactId>ccd-commons</artifactId>
-            <version>0.4.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.pitt.dbmi</groupId>
-            <artifactId>data-reader</artifactId>
-            <version>0.2.2</version>
+            <artifactId>ccd-db</artifactId>
+            <version>1.0.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>edu.pitt.dbmi</groupId>
             <artifactId>ccd-mail</artifactId>
-            <version>0.2.5-SNAPSHOT</version>
+            <version>0.2.6-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-thymeleaf</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>edu.pitt.dbmi</groupId>
-            <artifactId>ccd-db</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <artifactId>data-reader</artifactId>
+            <version>0.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.cmu</groupId>
+            <artifactId>tetrad-lib</artifactId>
+            <version>6.4.0</version>
         </dependency>
 
         <dependency>

@@ -18,13 +18,6 @@
  */
 package edu.pitt.dbmi.causal.web.conf;
 
-import edu.pitt.dbmi.causal.web.model.algorithm.AlgorithmItem;
-import edu.pitt.dbmi.causal.web.prop.TetradProperties;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import org.springframework.boot.web.servlet.ErrorPage;
 import org.springframework.boot.web.servlet.ErrorPageRegistrar;
 import org.springframework.context.annotation.Bean;
@@ -53,47 +46,6 @@ public class ApplicationConfigurer extends WebMvcConfigurerAdapter {
                     new ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/500")
             );
         };
-    }
-
-    @Bean
-    public Map<String, String> params(final TetradProperties tetradProperties) {
-        return tetradProperties.getAlgoParamLabels();
-    }
-
-    @Bean
-    public Map<String, AlgorithmItem> alorithmItems(final TetradProperties tetradProperties) {
-        Map<String, AlgorithmItem> map = new HashMap<>();
-
-        Map<String, String> titles = tetradProperties.getAlgoTitles();
-        Map<String, String> descriptions = tetradProperties.getAlgoDescriptions();
-        titles.forEach((k, v) -> {
-            map.put(k, new AlgorithmItem(k, v, descriptions.get(k)));
-        });
-
-        return map;
-    }
-
-    @Bean
-    public Map<String, List<AlgorithmItem>> algorithms(final TetradProperties tetradProperties) {
-        Map<String, List<AlgorithmItem>> map = new LinkedHashMap<>();
-
-        Map<String, AlgorithmItem> alorithmItems = alorithmItems(tetradProperties);
-
-        List<AlgorithmItem> fgesAlgoItems = new LinkedList<>();
-        String[] fgesAlgorithms = tetradProperties.getFgesAlgos();
-        for (String name : fgesAlgorithms) {
-            fgesAlgoItems.add(alorithmItems.get(name));
-        }
-        map.put("fges", fgesAlgoItems);
-
-        List<AlgorithmItem> gfciAlgoItems = new LinkedList<>();
-        String[] gfciAlgorithms = tetradProperties.getGfciAlgos();
-        for (String name : gfciAlgorithms) {
-            gfciAlgoItems.add(alorithmItems.get(name));
-        }
-        map.put("gfci", gfciAlgoItems);
-
-        return map;
     }
 
     @Override

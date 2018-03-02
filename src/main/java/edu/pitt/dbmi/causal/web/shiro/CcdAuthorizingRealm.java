@@ -52,7 +52,7 @@ public class CcdAuthorizingRealm extends AuthorizingRealm {
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
         final String username = (String) principalCollection.getPrimaryPrincipal();
-        final UserAccount userAccount = userAccountService.findByEmail(username);
+        final UserAccount userAccount = userAccountService.getRepository().findByUsername(username);
         if (userAccount == null) {
             throw new UnknownAccountException("Account does not exist");
         }
@@ -78,7 +78,7 @@ public class CcdAuthorizingRealm extends AuthorizingRealm {
         if (username == null) {
             throw new UnknownAccountException("Username not provided");
         }
-        final UserAccount userAccount = userAccountService.findByEmail(username);
+        final UserAccount userAccount = userAccountService.getRepository().findByUsername(username);
         if (userAccount == null) {
             throw new UnknownAccountException("Account does not exist");
         }

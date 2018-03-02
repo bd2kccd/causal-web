@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 University of Pittsburgh.
+ * Copyright (C) 2018 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,10 +19,17 @@
 package edu.pitt.dbmi.causal.web;
 
 import edu.pitt.dbmi.ccd.db.CcdDbApplication;
+import edu.pitt.dbmi.ccd.mail.CcdMailApplication;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Import;
 
+/**
+ *
+ * Jan 15, 2018 5:41:30 PM
+ *
+ * @author Kevin V. Bui (kvb2@pitt.edu)
+ */
 /**
  *
  * Apr 2, 2017 11:19:17 AM
@@ -30,7 +37,10 @@ import org.springframework.context.annotation.Import;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @SpringBootApplication
-@Import({CcdDbApplication.class})
+@Import({
+    CcdDbApplication.class,
+    CcdMailApplication.class
+})
 public class CausalWebApplication {
 
     /**

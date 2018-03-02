@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 University of Pittsburgh.
+ * Copyright (C) 2018 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,12 +19,12 @@
 package edu.pitt.dbmi.causal.web.service.account;
 
 import edu.pitt.dbmi.causal.web.model.AppUser;
-import edu.pitt.dbmi.causal.web.model.account.PasswordChangeForm;
+import edu.pitt.dbmi.causal.web.model.account.ChangePasswordForm;
 import edu.pitt.dbmi.causal.web.model.account.UserInfoForm;
+import edu.pitt.dbmi.causal.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.entity.UserInfo;
+import edu.pitt.dbmi.ccd.db.entity.UserInformation;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
-import edu.pitt.dbmi.ccd.db.service.UserInfoService;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,69 +42,58 @@ public class UserProfileService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserProfileService.class);
 
-    private final UserAccountService userAccountService;
-    private final UserInfoService userInfoService;
-
+    private final AppUserService appUserService;
     private final DefaultPasswordService passwordService;
+    private final UserAccountService userAccountService;
 
     @Autowired
-    public UserProfileService(UserAccountService userAccountService, UserInfoService userInfoService, DefaultPasswordService passwordService) {
-        this.userAccountService = userAccountService;
-        this.userInfoService = userInfoService;
+    public UserProfileService(AppUserService appUserService, DefaultPasswordService passwordService, UserAccountService userAccountService) {
+        this.appUserService = appUserService;
         this.passwordService = passwordService;
+        this.userAccountService = userAccountService;
     }
 
-    public boolean passwordMatch(PasswordChangeForm passwordChangeForm, UserAccount userAccount) {
-        String currPwd = passwordChangeForm.getCurrentPassword();
-        String encryptCurrPwd = userAccount.getPassword();
-
-        return passwordService.passwordsMatch(currPwd, encryptCurrPwd);
-    }
-
-    public boolean updateUserAccountPassword(PasswordChangeForm passwordChangeForm, UserAccount userAccount) {
-        String newPwd = passwordChangeForm.getNewPassword();
-        userAccount.setPassword(passwordService.encryptPassword(newPwd));
+    public boolean updateUserPassword(ChangePasswordForm changePasswordForm, AppUser appUser) {
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        userAccount.setPassword(passwordService.encryptPassword(changePasswordForm.getNewPassword()));
         try {
-            userAccountService.getRepository().save(userAccount);
+            userAccount = userAccountService.getRepository().save(userAccount);
         } catch (Exception exception) {
             LOGGER.error("Unable to update user's password.", exception);
             return false;
         }
 
-        return true;
-    }
-
-    public boolean updateUserInfo(UserInfoForm userInfoForm, UserAccount userAccount) {
-        String firstName = userInfoForm.getFirstName();
-        String middleName = userInfoForm.getMiddleName();
-        String lastName = userInfoForm.getLastName();
-
-        UserInfo userInfo = userAccount.getUserInfo();
-        userInfo.setFirstName(firstName);
-        userInfo.setMiddleName(middleName);
-        userInfo.setLastName(lastName);
-
-        try {
-            userInfoService.getRepository().save(userInfo);
-        } catch (Exception exception) {
-            LOGGER.error("Unable to update user information.", exception);
-            return false;
-        }
+        appUserService.updateCache(userAccount);
 
         return true;
     }
 
-    public UserInfoForm populateUserInfoForm(AppUser appUser) {
+    public boolean passwordMatch(ChangePasswordForm changePasswordForm, AppUser appUser) {
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+
+        String currPwd = changePasswordForm.getCurrentPassword();
+        String encryptCurrPwd = userAccount.getPassword();
+
+        return passwordService.passwordsMatch(currPwd, encryptCurrPwd);
+    }
+
+    public AppUser updateUserInformation(UserInfoForm userInfoForm, AppUser appUser) {
+        UserInformation userInfo = appUserService.retrieveUserInformation(appUser);
+        userInfo.setFirstName(userInfoForm.getFirstName());
+        userInfo.setMiddleName(userInfoForm.getMiddleName());
+        userInfo.setLastName(userInfoForm.getLastName());
+
+        return appUserService.updateUserInformation(userInfo, appUser);
+    }
+
+    public UserInfoForm createUserInfoForm(AppUser appUser) {
+        UserInformation userInfo = appUserService.retrieveUserInformation(appUser);
+
         UserInfoForm userInfoForm = new UserInfoForm();
-
-        UserAccount userAccount = userAccountService.getRepository().findByUsername(appUser.getUsername());
-        if (userAccount != null) {
-            UserInfo userInfo = userAccount.getUserInfo();
-            userInfoForm.setEmail(userInfo.getEmail());
-            userInfoForm.setFirstName(userInfo.getFirstName());
-            userInfoForm.setMiddleName(userInfo.getMiddleName());
-            userInfoForm.setLastName(userInfo.getLastName());
-        }
+        userInfoForm.setEmail(userInfo.getEmail());
+        userInfoForm.setFirstName(userInfo.getFirstName());
+        userInfoForm.setMiddleName(userInfo.getMiddleName());
+        userInfoForm.setLastName(userInfo.getLastName());
 
         return userInfoForm;
     }

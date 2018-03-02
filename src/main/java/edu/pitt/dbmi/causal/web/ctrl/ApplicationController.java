@@ -35,26 +35,26 @@ import org.springframework.web.bind.annotation.SessionAttributes;
  */
 @Controller
 @SessionAttributes("appUser")
-public class ApplicationController implements ViewPath {
+public class ApplicationController {
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String showIndexPage() {
-        return REDIRECT_LOGIN;
+        return ViewPath.REDIRECT_LOGIN;
     }
 
-    @RequestMapping(value = HOME, method = RequestMethod.GET)
+    @RequestMapping(value = ViewPath.HOME, method = RequestMethod.GET)
     public String showHomePage(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
 
-        return HOME_VIEW;
+        return ViewPath.HOME_VIEW;
     }
 
-    @RequestMapping(value = MESSAGE, method = RequestMethod.GET)
+    @RequestMapping(value = ViewPath.MESSAGE, method = RequestMethod.GET)
     public String showMessage(final Model model) {
         if (!model.containsAttribute("message")) {
             throw new ResourceNotFoundException();
         }
 
-        return MESSAGE_VIEW;
+        return ViewPath.MESSAGE_VIEW;
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 University of Pittsburgh.
+ * Copyright (C) 2018 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,23 +23,19 @@ import edu.pitt.dbmi.causal.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.causal.web.model.AppUser;
 import edu.pitt.dbmi.causal.web.model.file.FileCategorizeForm;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
-import edu.pitt.dbmi.causal.web.service.file.FileCtrlService;
-import edu.pitt.dbmi.causal.web.service.file.FileManagementService;
+import edu.pitt.dbmi.causal.web.service.file.FileCategorizeService;
+import edu.pitt.dbmi.causal.web.service.filesys.FileManagementService;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileFormat;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.service.FileDelimiterTypeService;
+import edu.pitt.dbmi.ccd.db.service.AlgorithmTypeService;
+import edu.pitt.dbmi.ccd.db.service.DataDelimiterService;
+import edu.pitt.dbmi.ccd.db.service.FileFormatService;
 import edu.pitt.dbmi.ccd.db.service.FileService;
-import edu.pitt.dbmi.ccd.db.service.FileTypeService;
-import edu.pitt.dbmi.ccd.db.service.FileVariableTypeService;
+import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import javax.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -49,8 +45,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -63,27 +57,33 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @SessionAttributes("appUser")
 @RequestMapping(value = "secured/file")
-public class FileController implements ViewPath {
+public class FileController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileController.class);
-
-    private final FileService fileService;
-    private final FileTypeService fileTypeService;
-    private final FileDelimiterTypeService fileDelimiterTypeService;
-    private final FileVariableTypeService fileVariableTypeService;
-    private final FileManagementService fileManagementService;
-    private final FileCtrlService fileCtrlService;
     private final AppUserService appUserService;
+    private final FileManagementService fileManagementService;
+    private final FileService fileService;
+    private final FileFormatService fileFormatService;
+    private final FileCategorizeService fileCategorizeService;
+    private final DataDelimiterService dataDelimiterService;
+    private final VariableTypeService variableTypeService;
 
     @Autowired
-    public FileController(FileService fileService, FileTypeService fileTypeService, FileDelimiterTypeService fileDelimiterTypeService, FileVariableTypeService fileVariableTypeService, FileManagementService fileManagementService, FileCtrlService fileCtrlService, AppUserService appUserService) {
-        this.fileService = fileService;
-        this.fileTypeService = fileTypeService;
-        this.fileDelimiterTypeService = fileDelimiterTypeService;
-        this.fileVariableTypeService = fileVariableTypeService;
-        this.fileManagementService = fileManagementService;
-        this.fileCtrlService = fileCtrlService;
+    public FileController(
+            AppUserService appUserService,
+            FileManagementService fileManagementService,
+            FileService fileService,
+            AlgorithmTypeService algorithmTypeService,
+            FileFormatService fileFormatService,
+            FileCategorizeService fileCategorizeService,
+            DataDelimiterService dataDelimiterService,
+            VariableTypeService variableTypeService) {
         this.appUserService = appUserService;
+        this.fileManagementService = fileManagementService;
+        this.fileService = fileService;
+        this.fileFormatService = fileFormatService;
+        this.fileCategorizeService = fileCategorizeService;
+        this.dataDelimiterService = dataDelimiterService;
+        this.variableTypeService = variableTypeService;
     }
 
     @InitBinder
@@ -91,140 +91,79 @@ public class FileController implements ViewPath {
         binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
     }
 
-    @RequestMapping(value = "{id}", method = RequestMethod.POST)
+    @RequestMapping(value = "{fileId}", method = RequestMethod.POST)
     public String categorizeFile(
             @Valid @ModelAttribute("fileCategorizeForm") final FileCategorizeForm fileCategorizeForm,
             final BindingResult bindingResult,
-            @PathVariable final Long id,
-            @ModelAttribute("appUser") final AppUser appUser,
+            @PathVariable final Long fileId,
             final Model model,
+            final AppUser appUser,
             final RedirectAttributes redirAttrs) {
         if (bindingResult.hasErrors()) {
             redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.fileCategorizeForm", bindingResult);
             redirAttrs.addFlashAttribute("fileCategorizeForm", fileCategorizeForm);
 
-            return REDIRECT_FILE_INFO + id;
+            return ViewPath.REDIRECT_FILE_INFO + fileId;
         }
+
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        File file = fileService.getRepository().findByIdAndUserAccount(id, userAccount);
+        File file = fileService.getRepository().findByIdAndUserAccount(fileId, userAccount);
         if (file == null) {
             throw new ResourceNotFoundException();
         }
 
-        fileCtrlService.categorizeFile(fileCategorizeForm, file, userAccount);
+        FileFormat fileFmt = fileCategorizeService.categorizeFile(fileCategorizeForm, file, userAccount);
 
-        FileFormat fileFmt = file.getFileFormat();
-        String fileFmtName = (fileFmt == null) ? "uncategorized" : fileFmt.getName();
-
-        return "redirect:/secured/file/format/" + fileFmtName;
+        return (fileFmt == null)
+                ? ViewPath.REDIRECT_FILE_LIST + 0
+                : ViewPath.REDIRECT_FILE_LIST + fileFmt.getId();
     }
 
-    @RequestMapping(value = "{id}", method = RequestMethod.GET)
-    public String showFileInfoAndCategory(@PathVariable final Long id, final AppUser appUser, final Model model) {
+    @RequestMapping(value = "{fileId}", method = RequestMethod.GET)
+    public String showFileInfoAndCategory(@PathVariable final Long fileId, final Model model, final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        File file = fileService.getRepository().findByIdAndUserAccount(id, userAccount);
+        File file = fileService.getRepository().findByIdAndUserAccount(fileId, userAccount);
         if (file == null) {
             throw new ResourceNotFoundException();
         }
 
         model.addAttribute("file", file);
-        model.addAttribute("additionalInfo", fileCtrlService.getAdditionalInfo(file));
-        model.addAttribute("fileFormatGroupOpts", fileCtrlService.getFileFormatGroupOpts());
-        model.addAttribute("tetradTabFileFormatId", fileCtrlService.getTetradTabFileFormatId());
-        model.addAttribute("fileTypes", fileTypeService.findAll());
-        model.addAttribute("fileDelimiterTypes", fileDelimiterTypeService.findAll());
-        model.addAttribute("fileVariableTypes", fileVariableTypeService.findAll());
+        model.addAttribute("moreInfo", fileService.getAdditionalInfo(file));
+        model.addAttribute("fileCategorizeForm", fileCategorizeService.createForm(file));
+        model.addAttribute("formatOpts", fileFormatService.getFileFormatOptions());
+        model.addAttribute("delimOpts", dataDelimiterService.findAll());
+        model.addAttribute("varOpts", variableTypeService.findAll());
+        model.addAttribute("tetradTabFileFormatId", fileFormatService.findByShortName(FileFormatService.TETRAD_TAB_SHORT_NAME).getId());
 
-        if (!model.containsAttribute("fileCategorizeForm")) {
-            model.addAttribute("fileCategorizeForm", fileCtrlService.toFileCategorizeForm(file));
-        }
-
-        return FILE_INFO_VIEW;
+        return ViewPath.FILE_INFO_VIEW;
     }
 
-    @ResponseBody
-    @RequestMapping(value = "title", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> updateFileTitle(
-            @RequestParam(value = "pk", required = true) final Long id,
-            @RequestParam(value = "value", required = true) final String title,
-            final AppUser appUser) {
-        if (id == null) {
-            return ResponseEntity.badRequest().body("File ID is required.");
-        }
-        if (title == null || title.isEmpty()) {
-            return ResponseEntity.badRequest().body("Title is required.");
-        }
-
-        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        File file = fileService.getRepository().findByIdAndUserAccount(id, userAccount);
-        if (file == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        if (!title.equals(file.getTitle())) {
-            if (fileService.getRepository().existsByTitleAndUserAccount(title, userAccount)) {
-                return ResponseEntity.badRequest().body("Title already in used. Plese enter a different title.");
-            } else {
-                file.setTitle(title);
-                try {
-                    fileService.getRepository().save(file);
-                } catch (Exception exception) {
-                    LOGGER.error(exception.getMessage());
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to update file title.");
-                }
-            }
-        }
-
-        return ResponseEntity.ok().build();
-    }
-
-    @ResponseBody
-    @RequestMapping(value = "format/{fileFormatName}/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> listCategorizedFiles(final @PathVariable("fileFormatName") String fileFormatName, final AppUser appUser) {
-        FileFormat fileFormat = fileCtrlService.findSupportedFormat(fileFormatName);
-        if (fileFormat == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-
-        return ResponseEntity.ok(fileCtrlService.listCategorizedFiles(fileFormat, userAccount));
-    }
-
-    @ResponseBody
-    @RequestMapping(value = "uncategorized/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> listUncategorizedFiles(final AppUser appUser) {
-        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-
-        return ResponseEntity.ok(fileCtrlService.listUncategorizedFiles(userAccount));
-    }
-
-    @RequestMapping(value = "format/{fileFormatName}", method = RequestMethod.GET)
-    public String showCategorizedFiles(@PathVariable("fileFormatName") String fileFormatName, final Model model) {
-        FileFormat fileFormat = fileCtrlService.findSupportedFormat(fileFormatName);
+    @RequestMapping(value = "format/{id}", method = RequestMethod.GET)
+    public String showFileList(@PathVariable final Long id, final Model model, final AppUser appUser) {
+        FileFormat fileFormat = fileFormatService.findById(id);
         if (fileFormat == null) {
             throw new ResourceNotFoundException();
         }
 
         model.addAttribute("fileFormat", fileFormat);
 
-        return FILE_LIST_VIEW;
+        return ViewPath.FILE_LIST_VIEW;
     }
 
-    @RequestMapping(value = "uncategorized", method = RequestMethod.GET)
-    public String showUncategorizedFiles() {
-        return FILE_LIST_VIEW;
+    @RequestMapping(value = "format/uncategorized", method = RequestMethod.GET)
+    public String showUncategorizedFileList(final Model model, final AppUser appUser) {
+        return ViewPath.FILE_LIST_VIEW;
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public String showFilesGroupByFileFormat(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+    public String showFilesGroupedByCategory(final Model model, final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
 
         fileManagementService.syncFilesWithDatabase(userAccount);
 
-        model.addAttribute("fileGroupings", fileCtrlService.getFileGroupings(userAccount));
+        model.addAttribute("items", fileService.countGroupByFileFormat(userAccount));
 
-        return FILE_VIEW;
+        return ViewPath.FILE_VIEW;
     }
 
 }

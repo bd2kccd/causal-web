@@ -44,9 +44,12 @@ public class AppUser {
     public AppUser() {
     }
 
-    @Override
-    public String toString() {
-        return "AppUser{" + "firstName=" + firstName + ", middleName=" + middleName + ", lastName=" + lastName + ", username=" + username + ", lastLogin=" + lastLogin + ", federatedUser=" + federatedUser + '}';
+    public void updateFullName() {
+        fullName = String.format("%s %s %s",
+                (firstName == null) ? "" : firstName,
+                (middleName == null) ? "" : middleName,
+                (lastName == null) ? "" : lastName);
+        fullName = fullName.replaceAll("\\s+", " ").trim();
     }
 
     public String getFirstName() {
@@ -75,11 +78,7 @@ public class AppUser {
 
     public String getFullName() {
         if (fullName == null) {
-            fullName = String.format("%s %s %s",
-                    (firstName == null) ? "" : firstName,
-                    (middleName == null) ? "" : middleName,
-                    (lastName == null) ? "" : lastName);
-            fullName = fullName.replaceAll("\\s+", " ").trim();
+            updateFullName();
         }
 
         return fullName;

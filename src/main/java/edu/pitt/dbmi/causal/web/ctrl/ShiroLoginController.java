@@ -38,32 +38,34 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Profile("shiro")
 @Controller
 @SessionAttributes("appUser")
-public class ShiroLoginController implements ViewPath {
+public class ShiroLoginController {
 
-    private static final String LOGIN_VIEW = "shiro-login";
+    private static final String LOGIN_VIEW = "shiro_login";
 
     private static final String LOGOUT_SUCCESS = "You Have Successfully Logged Out.";
 
-    @RequestMapping(value = LOGIN, method = RequestMethod.GET)
+    @RequestMapping(value = ViewPath.LOGIN, method = RequestMethod.GET)
     public String showLoginPage(final SessionStatus sessionStatus, final Model model, HttpServletRequest req) {
         Subject currentUser = SecurityUtils.getSubject();
         if (sessionStatus.isComplete()) {
             currentUser.logout();
         } else if (currentUser.isAuthenticated()) {
-            return REDIRECT_HOME;
+            return ViewPath.REDIRECT_HOME;
         } else {
             sessionStatus.setComplete();
         }
 
         if (!model.containsAttribute("loginForm")) {
-            model.addAttribute("loginForm", new LoginForm(true));
+            LoginForm login = new LoginForm(true);
+            login.setEmail("kvb2@pitt.edu");
+            model.addAttribute("loginForm", login);
         }
 
         return LOGIN_VIEW;
     }
 
     @CacheEvict(cacheNames = {"appUserServiceUserAccount"}, key = "#appUser.username")
-    @RequestMapping(value = LOGOUT, method = RequestMethod.GET)
+    @RequestMapping(value = ViewPath.LOGOUT, method = RequestMethod.GET)
     public String logOut(
             @ModelAttribute("appUser") final AppUser appUser,
             final SessionStatus sessionStatus,
@@ -82,7 +84,7 @@ public class ShiroLoginController implements ViewPath {
             httpSession.invalidate();
         }
 
-        return REDIRECT_LOGIN;
+        return ViewPath.REDIRECT_LOGIN;
     }
 
 }
