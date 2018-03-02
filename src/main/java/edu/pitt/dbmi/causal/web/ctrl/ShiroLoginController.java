@@ -56,9 +56,7 @@ public class ShiroLoginController {
         }
 
         if (!model.containsAttribute("loginForm")) {
-            LoginForm login = new LoginForm(true);
-            login.setEmail("kvb2@pitt.edu");
-            model.addAttribute("loginForm", login);
+            model.addAttribute("loginForm", new LoginForm(true));
         }
 
         return LOGIN_VIEW;
