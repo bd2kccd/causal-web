@@ -19,6 +19,7 @@
 package edu.pitt.dbmi.causal.web.prop;
 
 import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
@@ -47,6 +48,9 @@ public class CcdProperties {
 
     @Value("${ccd.app.agreement}")
     private String agreement;
+
+    @Value("#{${ccd.app.welcome}}")
+    private List<String> welcome;
 
     public CcdProperties() {
     }
@@ -89,6 +93,14 @@ public class CcdProperties {
 
     public void setAgreement(String agreement) {
         this.agreement = agreement;
+    }
+
+    public List<String> getWelcome() {
+        return welcome;
+    }
+
+    public void setWelcome(List<String> welcome) {
+        this.welcome = welcome;
     }
 
 }

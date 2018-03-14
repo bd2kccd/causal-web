@@ -21,8 +21,6 @@ package edu.pitt.dbmi.causal.web.service.file;
 import edu.pitt.dbmi.causal.web.model.file.FileGroupForm;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileGroup;
-import edu.pitt.dbmi.ccd.db.entity.FileType;
-import edu.pitt.dbmi.ccd.db.entity.TetradDataFile;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.entity.VariableType;
 import edu.pitt.dbmi.ccd.db.service.FileGroupService;
@@ -64,12 +62,9 @@ public class GroupFileService {
         return fileGroupService.getRepository().save(fileGroup);
     }
 
-    public FileGroup saveFileGroup(String name, List<File> files, UserAccount userAccount) {
-        FileType fileType = fileTypeService
-                .findByShortName(FileTypeService.DATA_SHORT_NAME);
-
+    public FileGroup saveFileGroup(String name, VariableType varType, UserAccount userAccount, List<File> files) {
         return fileGroupService.getRepository()
-                .save(new FileGroup(name, new Date(), fileType, userAccount, files));
+                .save(new FileGroup(name, new Date(), varType, userAccount, files));
     }
 
     public FileGroupForm createFileGroupForm() {
@@ -85,10 +80,7 @@ public class GroupFileService {
 
     public FileGroupForm createFileGroupForm(FileGroup fileGroup) {
         String groupName = fileGroup.getName();
-
-        TetradDataFile dataFile = tetradDataFileService.getRepository()
-                .findByFile(fileGroup.getFiles().get(0));
-        Long varTypeId = dataFile.getVariableType().getId();
+        Long varTypeId = fileGroup.getVariableType().getId();
 
         List<Long> fileIds = fileGroup.getFiles().stream()
                 .map(e -> e.getId())

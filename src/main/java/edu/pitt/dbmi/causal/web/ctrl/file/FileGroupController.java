@@ -116,7 +116,7 @@ public class FileGroupController {
         }
 
         List<File> files = tetradDataFileService.getRepository()
-                .findByVariableTypeAndAndFileIdsAndUserAccount(varType, fileGroupForm.getFileIds(), userAccount).stream()
+                .find(userAccount, varType, fileGroupForm.getFileIds()).stream()
                 .map(TetradDataFile::getFile)
                 .collect(Collectors.toList());
         if (files.isEmpty()) {
@@ -193,7 +193,7 @@ public class FileGroupController {
         }
 
         List<File> files = tetradDataFileService.getRepository()
-                .findByVariableTypeAndAndFileIdsAndUserAccount(varType, fileGroupForm.getFileIds(), userAccount).stream()
+                .find(userAccount, varType, fileGroupForm.getFileIds()).stream()
                 .map(TetradDataFile::getFile)
                 .collect(Collectors.toList());
         if (files.isEmpty()) {
@@ -206,7 +206,7 @@ public class FileGroupController {
         }
 
         try {
-            groupFileService.saveFileGroup(fileGroupForm.getGroupName(), files, userAccount);
+            groupFileService.saveFileGroup(fileGroupForm.getGroupName(), varType, userAccount, files);
         } catch (Exception exception) {
             LOGGER.error("Unable to create new file group.", exception);
 
@@ -229,7 +229,7 @@ public class FileGroupController {
         }
 
         model.addAttribute("varTypes", variableTypeService.findAll());
-        model.addAttribute("dataGroups", tetradDataFileService.getFileGroupedByVariableTypeId(userAccount));
+//        model.addAttribute("dataGroups", tetradDataFileService.getFileGroupedByVariableTypeId(userAccount));
 
         return ViewPath.FILEGROUP_VIEW;
     }

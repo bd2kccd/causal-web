@@ -20,7 +20,7 @@ package edu.pitt.dbmi.causal.web.service.account;
 
 import edu.pitt.dbmi.causal.web.model.account.UserRegistrationForm;
 import edu.pitt.dbmi.causal.web.prop.CcdProperties;
-import edu.pitt.dbmi.ccd.db.domain.UserAccountRegistration;
+import edu.pitt.dbmi.ccd.db.domain.account.UserAccountRegistration;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import java.util.Base64;

@@ -140,12 +140,13 @@ public class FileCategorizeService {
     private TetradVariableFile createTetradVariableFile(File file, UserAccount userAccount) {
         TetradVariableFile variableFile = new TetradVariableFile();
         variableFile.setFile(file);
+        variableFile.setUserAccount(userAccount);
 
         Path localVarFile = fileManagementService.getLocalFile(file, userAccount);
         Delimiter fileDelimiter = Delimiter.TAB;
         try {
             BasicDataFileReader fileReader = new BasicDataFileReader(localVarFile.toFile(), fileDelimiter);
-            variableFile.setNumOfVariables(fileReader.getNumberOfLines());
+            variableFile.setNumOfVars(fileReader.getNumberOfLines());
         } catch (IOException exception) {
             String errMsg = String.format("Unable get counts for number of variables for file '%s'.", localVarFile.toString());
             LOGGER.error(errMsg, exception);
@@ -173,12 +174,13 @@ public class FileCategorizeService {
         dataFile.setMissingMarker(missValMark);
         dataFile.setQuoteChar(quoteChar);
         dataFile.setVariableType(varType);
+        dataFile.setUserAccount(userAccount);
 
         Path localDataFile = fileManagementService.getLocalFile(file, userAccount);
         try {
             BasicDataFileReader fileReader = new BasicDataFileReader(localDataFile.toFile(), getDelimiter(dataDelim));
-            dataFile.setNumOfCols(fileReader.getNumberOfColumns());
-            dataFile.setNumOfLines(fileReader.getNumberOfLines());
+            dataFile.setNumOfVars(fileReader.getNumberOfColumns());
+            dataFile.setNumOfCases(hasHeader ? fileReader.getNumberOfLines() - 1 : fileReader.getNumberOfLines());
         } catch (IOException exception) {
             String errMsg = String.format("Unable to get row and column counts from file %s.", localDataFile.toString());
             LOGGER.error(errMsg, exception);

@@ -47,6 +47,9 @@ public final class ViewPath {
     public static final String USER_PROFILE_VIEW = "account/user_profile";
     public static final String REDIRECT_USER_PROFILE = "redirect:/secured/account/profile";
 
+    public static final String FEEDBACK_VIEW = "feedback";
+    public static final String REDIRECT_FEEDBACK_VIEW = "redirect:/secured/feedback";
+
     public static final String FILE_VIEW = "file/file";
     public static final String FILE_UPLOAD_VIEW = "file/file_upload";
     public static final String FILE_LIST_VIEW = "file/file_list";
@@ -59,6 +62,8 @@ public final class ViewPath {
     public static final String REDIRECT_FILEGROUP_NEW = "redirect:/secured/file/group/new";
     public static final String REDIRECT_FILEGROUP = "redirect:/secured/file/group/";
     public static final String REDIRECT_FILEGROUP_LIST = "redirect:/secured/file/group";
+
+    public static final String TETRAD_VIEW = "algo/tetrad";
 
     private ViewPath() {
     }

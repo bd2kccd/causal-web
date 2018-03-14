@@ -35,7 +35,7 @@ $(document).ready(function () {
             }
         }
 
-        var validator = $("#agorithmJobForm").validate();
+        var validator = $("#tetradForm").validate();
         isValid = validator.form();
 
         if (isValid) {

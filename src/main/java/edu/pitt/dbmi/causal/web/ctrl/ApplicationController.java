@@ -20,6 +20,11 @@ package edu.pitt.dbmi.causal.web.ctrl;
 
 import edu.pitt.dbmi.causal.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.causal.web.model.AppUser;
+import edu.pitt.dbmi.causal.web.service.AppUserService;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.FileGroupService;
+import edu.pitt.dbmi.ccd.db.service.FileService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -37,6 +42,17 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @SessionAttributes("appUser")
 public class ApplicationController {
 
+    private final AppUserService appUserService;
+    private final FileService fileService;
+    private final FileGroupService fileGroupService;
+
+    @Autowired
+    public ApplicationController(AppUserService appUserService, FileService fileService, FileGroupService fileGroupService) {
+        this.appUserService = appUserService;
+        this.fileService = fileService;
+        this.fileGroupService = fileGroupService;
+    }
+
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String showIndexPage() {
         return ViewPath.REDIRECT_LOGIN;
@@ -44,6 +60,10 @@ public class ApplicationController {
 
     @RequestMapping(value = ViewPath.HOME, method = RequestMethod.GET)
     public String showHomePage(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+
+        model.addAttribute("numOfFiles", fileService.getRepository().countByUserAccount(userAccount));
+        model.addAttribute("numOfFileGroups", fileGroupService.getRepository().countByUserAccount(userAccount));
 
         return ViewPath.HOME_VIEW;
     }
