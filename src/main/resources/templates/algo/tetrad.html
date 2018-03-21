@@ -16,6 +16,11 @@
         <link rel="stylesheet" href="../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
         <link rel="stylesheet" href="../../static/css/algo/stepwizard.min.css" th:href="@{/css/algo/stepwizard.min.css}" />
         <link rel="stylesheet" href="../../static/css/collapse-panel.min.css" th:href="@{/css/collapse-panel.min.css}" />
+        <style>
+            #varType {
+                margin-top: 20px;
+            }
+        </style>
         <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{https://code.jquery.com/jquery-2.2.4.min.js}"></script>
         <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
@@ -23,10 +28,10 @@
         <script src="../../static/vendors/datatables/datatables.min.js" th:src="@{https://cdn.datatables.net/v/bs/dt-1.10.16/r-2.2.1/sl-1.2.5/datatables.min.js}"></script>
         <script src="../../static/js/algo/stepwizard.min.js" th:src="@{/js/algo/stepwizard.min.js}"></script>
         <script th:inline="javascript">
-            var urlPath = /*[[@{'/secured/algorithm/tetrad/'}]]*/ '';
+            var url_path = /*[[@{'/secured/algorithm/tetrad/'}]]*/ '';
         </script>
     </head>
-    <body data-ng-app="">
+    <body>
         <div id="wrapper">
             <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0" th:replace="fragments/navigation :: nav"></nav>
             <div id="page-wrapper">
@@ -49,6 +54,10 @@
                                 </div>
                                 <div class="stepwizard-step">
                                     <button id="step3btn" class="btn btn-default btn-circle" onclick="window.location.href = '#step3'" disabled="disabled">3</button>
+                                    <p>Set Parameters</p>
+                                </div>
+                                <div class="stepwizard-step">
+                                    <button id="step4btn" class="btn btn-default btn-circle" onclick="window.location.href = '#step4'" disabled="disabled">4</button>
                                     <p>Run Algorithm</p>
                                 </div>
                             </div>
@@ -66,29 +75,29 @@
                                         <div class="col-md-12">
                                             <h3>Step 1: Select Dataset</h3>
                                             <div class="panel panel-primary">
+                                                <div class="panel-heading">Choose Dataset</div>
                                                 <div class="panel-body">
                                                     <ul id="dataset_tab" class="nav nav-tabs">
                                                         <li class="active">
-                                                            <a id="single" href="#single_dataset" data-toggle="tab">Single Dataset</a>
+                                                            <a id="single" href="#single_data_tab" data-toggle="tab">Single Dataset</a>
                                                         </li>
                                                         <li>
-                                                            <a id="multiple" href="#multiple_dataset" data-toggle="tab">Multiple Dataset</a>
+                                                            <a id="multiple" href="#multi_data_tab" data-toggle="tab">Multiple Dataset</a>
                                                         </li>
                                                     </ul>
                                                     <div class="tab-content">
-                                                        <p>&nbsp;</p>
-                                                        <div class="form-group" th:class="${#fields.hasErrors('varTypeId')} ? 'form-group has-error' : 'form-group'">
+                                                        <div id="varType" class="form-group" th:class="${#fields.hasErrors('varTypeId')} ? 'form-group has-error' : 'form-group'">
                                                             <label>Variable Type:</label>
                                                             <label class="radio-inline" th:each="opt : ${varTypes}">
                                                                 <input type="radio" th:field="*{varTypeId}" th:value="${opt.id}" /> <span th:text="${opt.name}">tetrad variable</span>
                                                             </label>
                                                             <span class="help-block" th:if="${#fields.hasErrors('varTypeId')}" th:errors="*{varTypeId}">Variable type is required.</span>
                                                         </div>
-                                                        <div class="tab-pane fade in active" id="single_dataset">
+                                                        <div class="tab-pane fade in active" id="single_data_tab">
                                                             <div class="panel panel-default">
                                                                 <div class="panel-body">
                                                                     <div class="table-responsive">
-                                                                        <table id="single_file_table" class="table table-striped table-hover table-condensed" cellspacing="0" width="100%">
+                                                                        <table id="single_data_tbl" class="table table-striped table-hover table-condensed" cellspacing="0" width="100%">
                                                                             <thead>
                                                                                 <tr>
                                                                                     <th>ID</th>
@@ -105,11 +114,11 @@
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div class="tab-pane fade" id="multiple_dataset">
+                                                        <div class="tab-pane fade" id="multi_data_tab">
                                                             <div class="panel panel-default">
                                                                 <div class="panel-body">
                                                                     <div class="table-responsive">
-                                                                        <table id="multiple_file_table" class="table table-striped table-hover table-condensed" cellspacing="0" width="100%">
+                                                                        <table id="multi_data_tbl" class="table table-striped table-hover table-condensed" cellspacing="0" width="100%">
                                                                             <thead>
                                                                                 <tr>
                                                                                     <th>ID</th>
@@ -127,7 +136,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <button id="set_param_btn" type="button" class="btn btn-primary btn-lg btn-block nextBtn">Next</button>
+                                            <button id="step1NextBtn" type="button" class="btn btn-primary btn-lg btn-block nextBtn">Next</button>
                                         </div>
                                     </div>
                                 </div>
@@ -136,38 +145,73 @@
                                         <div class="col-md-12">
                                             <h3>Step 2: Select Algorithm</h3>
                                             <div class="panel panel-primary">
+                                                <div class="panel-heading">Algorithm Filters</div>
                                                 <div class="panel-body">
-                                                    <div class="form-group">
-                                                        <label for="algorithm">Algorithm</label>
-                                                        <select id="algorithm" name="algorithm" class="form-control" required="required"
-                                                                th:field="*{algorithm}"
-                                                                th:disabled="${#lists.isEmpty(algoOpts)}">
-                                                            <option value=""
-                                                                    th:each="opt : ${algoOpts}"
-                                                                    th:value="${opt.value}"
-                                                                    th:text="${opt.text}"
-                                                                    th:disabled="${#lists.isEmpty(algoOpts)}">FGES</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label for="score">Score</label>
-                                                        <select id="score" name="score" class="form-control" th:field="*{score}"></select>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label for="test">Test of Independence</label>
-                                                        <select id="test" name="test" class="form-control" th:field="*{test}"></select>
+                                                    <div class="row">
+                                                        <div class="col-lg-6">
+                                                            <div id="algoType" class="form-group" th:class="${#fields.hasErrors('algoType')} ? 'form-group has-error' : 'form-group'">
+                                                                <label>Show algorithms that:</label>
+                                                                <div class="radio" th:each="opt : ${algoTypes}">
+                                                                    <label>
+                                                                        <input type="radio" th:field="*{algoType}" th:value="${opt.value}" /> <span th:text="${opt.text}">Algorithm Type</span>
+                                                                    </label>
+                                                                </div>
+                                                                <span class="help-block" th:if="${#fields.hasErrors('algoType')}" th:errors="*{algoType}">Algorithm type is required.</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-6">
+                                                            <div class="form-group">
+                                                                <label for="algorithm"> Choose algorithm:</label>
+                                                                <select id="algorithm" name="algorithm" class="form-control" size="10" th:field="*{algorithm}"></select>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <button type="button" class="btn btn-primary btn-lg btn-block nextBtn">Next</button>
+                                            <div class="panel panel-primary">
+                                                <div class="panel-heading">Choose Independence Test and Score</div>
+                                                <div class="panel-body">
+                                                    <div class="row">
+                                                        <div class="col-lg-6">
+                                                            <div class="form-group">
+                                                                <label for="score">Score</label>
+                                                                <select id="score" name="score" class="form-control" size="5" th:field="*{score}"></select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-6">
+                                                            <div class="form-group">
+                                                                <label for="test">Test of Independence</label>
+                                                                <select id="test" name="test" class="form-control" size="5" th:field="*{test}"></select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button id="step2NextBtn" type="button" class="btn btn-primary btn-lg btn-block nextBtn">Next</button>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="row setup-content" id="step3">
                                     <div class="col-xs-12">
                                         <div class="col-md-12">
-                                            <h3>Step 3: Summary</h3>
-                                            <button type="submit" class="btn btn-success btn-lg btn-block nextBtn">Run Algorithm!</button>
+                                            <h3>Step 3: Set Parameters</h3>
+                                            <div class="panel panel-primary">
+                                                <div class="panel-body">
+                                                </div>
+                                            </div>
+                                            <button id="step3NextBtn" type="button" class="btn btn-primary btn-lg btn-block nextBtn">Next</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row setup-content" id="step4">
+                                    <div class="col-xs-12">
+                                        <div class="col-md-12">
+                                            <h3>Step 4: Run Algorithm</h3>
+                                            <div class="panel panel-primary">
+                                                <div class="panel-body">
+                                                </div>
+                                            </div>
+                                            <button type="submit" class="btn btn-success btn-lg btn-block nextBtn">Run Algorithm!</button>   
                                         </div>
                                     </div>
                                 </div>
@@ -189,6 +233,7 @@
         <script src="../../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
         <script src="../../static/vendors/momentjs/moment.min.js" th:src="@{/vendors/momentjs/moment.min.js}"></script>
         <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
+        <!--<script src="../../static/js/algo/tetrad_step1.min.js" th:src="@{/js/algo/tetrad_step1.min.js}"></script>-->
         <script src="../../static/js/algo/tetrad.js" th:src="@{/js/algo/tetrad.js}"></script>
     </body>
 </html>

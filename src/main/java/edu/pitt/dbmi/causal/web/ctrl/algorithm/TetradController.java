@@ -22,7 +22,7 @@ import edu.pitt.dbmi.causal.web.ctrl.ViewPath;
 import edu.pitt.dbmi.causal.web.model.AppUser;
 import edu.pitt.dbmi.causal.web.model.algorithm.TetradForm;
 import edu.pitt.dbmi.causal.web.service.algorithm.TetradService;
-import edu.pitt.dbmi.causal.web.tetrad.AlgorithmOpts;
+import edu.pitt.dbmi.causal.web.tetrad.AlgoTypes;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +74,6 @@ public class TetradController {
             model.addAttribute("tetradForm", tetradForm);
         }
         model.addAttribute("varTypes", variableTypeService.findAll());
-        model.addAttribute("algoOpts", AlgorithmOpts.getInstance().getOptions());
 
         return ViewPath.TETRAD_VIEW;
     }
@@ -88,7 +87,7 @@ public class TetradController {
         }
 
         model.addAttribute("varTypes", variableTypeService.findAll());
-        model.addAttribute("algoOpts", AlgorithmOpts.getInstance().getOptions());
+        model.addAttribute("algoTypes", AlgoTypes.getInstance().getOptions());
 
         return ViewPath.TETRAD_VIEW;
     }

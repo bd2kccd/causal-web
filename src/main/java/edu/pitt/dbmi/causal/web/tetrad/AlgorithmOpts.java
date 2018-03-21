@@ -18,11 +18,13 @@
  */
 package edu.pitt.dbmi.causal.web.tetrad;
 
+import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.Nonexecutable;
 import edu.pitt.dbmi.causal.web.model.Option;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,6 +42,7 @@ public class AlgorithmOpts {
     private static final AlgorithmOpts INSTANCE = new AlgorithmOpts();
 
     private final Map<String, AlgorithmOpt> algorithMap;
+    private final Map<AlgType, List<Option>> optionMap;
     private final List<Option> options;
 
     private AlgorithmOpts() {
@@ -51,15 +54,28 @@ public class AlgorithmOpts {
                 .sorted()
                 .collect(Collectors.toList());
 
+        Map<AlgType, List<Option>> optMap = new EnumMap<>(AlgType.class);
+        List<AlgType> algTypes = AlgoTypes.getInstance().getAlgTypes();
+        algTypes.forEach(e -> optMap.put(e, new LinkedList<>()));
+
         Map<String, AlgorithmOpt> map = new HashMap<>();
         List<Option> opts = new LinkedList<>();
         list.forEach(e -> {
-            String key = e.getAlgorithm().getAnnotation().command();
-            map.put(key, e);
-            opts.add(new Option(key, e.getAlgorithm().getAnnotation().name()));
+            AlgType algType = e.getAlgorithm().getAnnotation().algoType();
+            if (optMap.containsKey(algType)) {
+                String value = e.getAlgorithm().getAnnotation().command();
+                String text = e.getAlgorithm().getAnnotation().name();
+
+                Option opt = new Option(value, text);
+
+                map.put(value, e);
+                optMap.get(algType).add(opt);
+                opts.add(opt);
+            }
         });
 
         this.algorithMap = Collections.unmodifiableMap(map);
+        this.optionMap = Collections.unmodifiableMap(optMap);
         this.options = Collections.unmodifiableList(opts);
     }
 
@@ -67,11 +83,15 @@ public class AlgorithmOpts {
         return INSTANCE;
     }
 
-    public Map<String, AlgorithmOpt> getAlgorithMap() {
-        return algorithMap;
+    public AlgorithmOpt getAlgorithmOpt(String name) {
+        return (name == null) ? null : algorithMap.get(name);
     }
 
-    public List<Option> getOptions() {
+    public List<Option> getOptions(AlgType algType) {
+        return (algType == null) ? Collections.EMPTY_LIST : optionMap.get(algType);
+    }
+
+    public List<Option> getAllOptions() {
         return options;
     }
 

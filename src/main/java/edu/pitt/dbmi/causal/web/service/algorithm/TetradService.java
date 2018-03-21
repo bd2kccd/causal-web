@@ -19,7 +19,7 @@
 package edu.pitt.dbmi.causal.web.service.algorithm;
 
 import edu.pitt.dbmi.causal.web.model.algorithm.TetradForm;
-import edu.pitt.dbmi.causal.web.tetrad.AlgorithmOpts;
+import edu.pitt.dbmi.causal.web.tetrad.AlgoTypes;
 import edu.pitt.dbmi.ccd.db.entity.VariableType;
 import edu.pitt.dbmi.ccd.db.service.FileGroupService;
 import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
@@ -56,9 +56,13 @@ public class TetradService {
             tetradForm.setVarTypeId(varTypes.get(0).getId());
         }
 
-        String algorithm = AlgorithmOpts.getInstance()
-                .getAlgorithMap().keySet().stream().findFirst().get();
-        tetradForm.setAlgorithm(algorithm);
+//        // set default algorithm
+//        AlgType defaultAlgType = AlgoTypes.getInstance().getAlgType(AlgoTypes.DEFAULT_VALUE);
+//        List<Option> opts = AlgorithmOpts.getInstance().getOptions(defaultAlgType);
+//        if (!opts.isEmpty()) {
+//            tetradForm.setAlgorithm(opts.stream().findFirst().get().getValue());
+//        }
+        tetradForm.setAlgoType(AlgoTypes.DEFAULT_VALUE);
 
         return tetradForm;
     }

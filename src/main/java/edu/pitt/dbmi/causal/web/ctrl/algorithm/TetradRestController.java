@@ -18,10 +18,11 @@
  */
 package edu.pitt.dbmi.causal.web.ctrl.algorithm;
 
+import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.DataType;
-import edu.pitt.dbmi.causal.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.causal.web.model.AppUser;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
+import edu.pitt.dbmi.causal.web.tetrad.AlgoTypes;
 import edu.pitt.dbmi.causal.web.tetrad.AlgorithmOpt;
 import edu.pitt.dbmi.causal.web.tetrad.AlgorithmOpts;
 import edu.pitt.dbmi.causal.web.tetrad.ScoreOpts;
@@ -77,7 +78,7 @@ public class TetradRestController {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
         VariableType varType = variableTypeService.findById(varTypeId);
         if (varType == null) {
-            throw new ResourceNotFoundException();
+            return ResponseEntity.notFound().build();
         }
         List<FileGroupListItem> listFiles = fileGroupService.getRepository()
                 .getFileGroupListItems(userAccount, varType);
@@ -90,7 +91,7 @@ public class TetradRestController {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
         VariableType varType = variableTypeService.findById(varTypeId);
         if (varType == null) {
-            throw new ResourceNotFoundException();
+            return ResponseEntity.notFound().build();
         }
 
         List<TetradDataListItem> listFiles = tetradDataFileService.getRepository()
@@ -99,18 +100,32 @@ public class TetradRestController {
         return ResponseEntity.ok(listFiles);
     }
 
-    @RequestMapping(value = "test/algo/{algo}/varType/{varTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "algo/{algoTypeName}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> listAlgorithms(@PathVariable final String algoTypeName) {
+        if ("all".equals(algoTypeName)) {
+            return ResponseEntity.ok(AlgorithmOpts.getInstance().getAllOptions());
+        } else {
+            AlgType algType = AlgoTypes.getInstance().getAlgType(algoTypeName);
+            if (algType == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok(AlgorithmOpts.getInstance().getOptions(algType));
+        }
+    }
+
+    @RequestMapping(value = "test/algo/{algoName}/varType/{varTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> listTests(
-            @PathVariable final String algo,
+            @PathVariable final String algoName,
             @PathVariable final Long varTypeId) {
-        AlgorithmOpt algoOpt = AlgorithmOpts.getInstance().getAlgorithMap().get(algo);
+        AlgorithmOpt algoOpt = AlgorithmOpts.getInstance().getAlgorithmOpt(algoName);
         if (algoOpt == null) {
-            throw new ResourceNotFoundException();
+            return ResponseEntity.notFound().build();
         }
 
         VariableType varType = variableTypeService.findById(varTypeId);
         if (varType == null) {
-            throw new ResourceNotFoundException();
+            return ResponseEntity.notFound().build();
         }
 
         if (algoOpt.isRequiredTest()) {
@@ -129,18 +144,18 @@ public class TetradRestController {
         }
     }
 
-    @RequestMapping(value = "score/algo/{algo}/varType/{varTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "score/algo/{algoName}/varType/{varTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> listScores(
-            @PathVariable final String algo,
+            @PathVariable final String algoName,
             @PathVariable final Long varTypeId) {
-        AlgorithmOpt algoOpt = AlgorithmOpts.getInstance().getAlgorithMap().get(algo);
+        AlgorithmOpt algoOpt = AlgorithmOpts.getInstance().getAlgorithmOpt(algoName);
         if (algoOpt == null) {
-            throw new ResourceNotFoundException();
+            return ResponseEntity.notFound().build();
         }
 
         VariableType varType = variableTypeService.findById(varTypeId);
         if (varType == null) {
-            throw new ResourceNotFoundException();
+            return ResponseEntity.notFound().build();
         }
 
         if (algoOpt.isRequiredScore()) {

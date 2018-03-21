@@ -79,59 +79,6 @@ function disableButtonsAtStep1() {
     $('#step4btn').prop("disabled", true);
 }
 
-function fetchScores(algoName, varTypeId) {
-    var list = $('select[id="score"]');
-    $.ajax({
-        url: url_path + 'score/algo/' + algoName + '/varType/' + varTypeId,
-        dataType: 'json',
-        type: 'GET',
-        success: function (data) {
-            list.empty();
-            $.each(data, function (index, value) {
-                var html = "<option value='" + value['value'] + "'>" + value['text'] + "</option>";
-                list.append(html);
-            });
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            alert('Unable to retrieve data list.');
-        },
-        complete: function () {
-            if (list.is(':empty')) {
-                list.prop("disabled", true);
-            } else {
-                list.prop("disabled", false);
-                $('#score option:first').attr('selected', 'selected');
-            }
-        }
-    });
-}
-function fetchTests(algoName, varTypeId) {
-    var list = $('select[id="test"]');
-    $.ajax({
-        url: url_path + 'test/algo/' + algoName + '/varType/' + varTypeId,
-        dataType: 'json',
-        type: 'GET',
-        success: function (data) {
-            list.empty();
-            $.each(data, function (index, value) {
-                var html = "<option value='" + value['value'] + "'>" + value['text'] + "</option>";
-                list.append(html);
-            });
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            alert('Unable to retrieve data list.');
-        },
-        complete: function () {
-            if (list.is(':empty')) {
-                list.prop("disabled", true);
-            } else {
-                list.prop("disabled", false);
-                $('#test option:first').attr('selected', 'selected');
-            }
-        }
-    });
-}
-
 $(document).ready(function () {
     single_data_tbl.on('select', function (e, dt, type, indexes) {
         listSelectAction(dt, indexes);
@@ -161,43 +108,8 @@ $(document).ready(function () {
         }
         disableButtonsAtStep1();
     });
-    $('input:radio[name="algoType"]').click(function () {
-        var list = $('#algorithm');
-        $.ajax({
-            url: url_path + 'algo/' + $(this).val(),
-            dataType: 'json',
-            type: 'GET',
-            success: function (data) {
-                list.empty();
-                $.each(data, function (index, value) {
-                    var html = "<option value='" + value['value'] + "'>" + value['text'] + "</option>";
-                    list.append(html);
-                });
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                alert('Unable to retrieve data list.');
-            },
-            complete: function () {
-                if (list.is(':empty')) {
-                    list.prop("disabled", true);
-                } else {
-                    list.prop("disabled", false);
-                    $('#algorithm option:first').attr('selected', 'selected');
-                    list.trigger('change');
-                }
-            }
-        });
-    });
-
-    $("#algorithm").change(function () {
-        var algoName = $("#algorithm :selected").val();
-        var varTypeId = $('input[name=varTypeId]:checked').val();
-        fetchScores(algoName, varTypeId);
-        fetchTests(algoName, varTypeId);
-    });
 
     // init
     setSelectedDataType($('#dataset_tab li.active a').attr('id'));
     $('input:radio[name="varTypeId"]:checked').click();
-    $('input:radio[name="algoType"]:checked').click();
 });

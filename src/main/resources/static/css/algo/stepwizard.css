@@ -5,7 +5,8 @@
     display: table-row;
 }
 .stepwizard {
-    margin-top: 60px;
+    margin-top: 20px;
+    margin-bottom: 30px;
     display: table;
     width: 100%;
     position: relative;
@@ -39,6 +40,8 @@
     line-height: 1.428571429;
     border-radius: 15px;
 }
-#step2 step3 {
+#step2,
+#step3,
+#step4 {
     display: none;
 }

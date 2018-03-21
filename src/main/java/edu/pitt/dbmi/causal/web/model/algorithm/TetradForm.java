@@ -44,12 +44,14 @@ public class TetradForm {
 
     private String test;
 
+    private String algoType;
+
     public TetradForm() {
     }
 
     @Override
     public String toString() {
-        return "TetradForm{" + "varTypeId=" + varTypeId + ", datasetId=" + datasetId + ", multiData=" + multiData + ", algorithm=" + algorithm + ", score=" + score + ", test=" + test + '}';
+        return "TetradForm{" + "varTypeId=" + varTypeId + ", datasetId=" + datasetId + ", multiData=" + multiData + ", algorithm=" + algorithm + ", score=" + score + ", test=" + test + ", algoType=" + algoType + '}';
     }
 
     public Long getVarTypeId() {
@@ -98,6 +100,14 @@ public class TetradForm {
 
     public void setTest(String test) {
         this.test = test;
+    }
+
+    public String getAlgoType() {
+        return algoType;
+    }
+
+    public void setAlgoType(String algoType) {
+        this.algoType = algoType;
     }
 
 }
