@@ -22,6 +22,7 @@ import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.Score;
 import edu.cmu.tetrad.annotation.ScoreAnnotations;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.util.TetradProperties;
 import edu.pitt.dbmi.causal.web.model.Option;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -29,6 +30,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -42,6 +44,7 @@ public class ScoreOpts {
     private static final ScoreOpts INSTANCE = new ScoreOpts();
 
     private final Map<DataType, List<Option>> options;
+    private final Map<DataType, Option> defaultOptions;
     private final Map<String, ScoreOpt> scoreMap;
 
     private ScoreOpts() {
@@ -74,7 +77,43 @@ public class ScoreOpts {
             scores.put(anno.command(), e);
         });
 
+        Map<DataType, Option> defaultOpts = new EnumMap<>(DataType.class);
+        for (DataType dataType : dataTypes) {
+            List<Option> optList = opts.get(dataType);
+            if (!optList.isEmpty()) {
+                String property = getProperty(dataType);
+                if (property == null) {
+                    defaultOpts.put(dataType, optList.get(0));
+                } else {
+                    String value = TetradProperties.getInstance().getValue(property);
+                    if (value == null) {
+                        defaultOpts.put(dataType, optList.get(0));
+                    } else {
+                        Optional<Map.Entry<String, ScoreOpt>> result = scores.entrySet().stream()
+                                .filter(e -> e.getValue().getScore().getClazz().getName().equals(value))
+                                .findFirst();
+                        String name = result.isPresent()
+                                ? result.get().getValue().getScore().getAnnotation().command()
+                                : null;
+                        if (name == null) {
+                            defaultOpts.put(dataType, optList.get(0));
+                        } else {
+                            Optional<Option> resultOpt = optList.stream()
+                                    .filter(e -> e.getValue().equals(name))
+                                    .findFirst();
+                            if (resultOpt.isPresent()) {
+                                defaultOpts.put(dataType, resultOpt.get());
+                            } else {
+                                defaultOpts.put(dataType, optList.get(0));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         this.options = Collections.unmodifiableMap(opts);
+        this.defaultOptions = Collections.unmodifiableMap(defaultOpts);
         this.scoreMap = Collections.unmodifiableMap(scores);
     }
 
@@ -82,12 +121,29 @@ public class ScoreOpts {
         return INSTANCE;
     }
 
-    public Map<DataType, List<Option>> getOptions() {
-        return options;
+    public List<Option> getOptions(DataType dataType) {
+        return options.get(dataType);
     }
 
-    public Map<String, ScoreOpt> getScoreMap() {
-        return scoreMap;
+    public ScoreOpt getScoreOpt(String name) {
+        return scoreMap.get(name);
+    }
+
+    public Option getDefaultOption(DataType dataType) {
+        return defaultOptions.get(dataType);
+    }
+
+    private String getProperty(DataType dataType) {
+        switch (dataType) {
+            case Continuous:
+                return "datatype.continuous.score.default";
+            case Discrete:
+                return "datatype.discrete.score.default";
+            case Mixed:
+                return "datatype.mixed.score.default";
+            default:
+                return null;
+        }
     }
 
 }

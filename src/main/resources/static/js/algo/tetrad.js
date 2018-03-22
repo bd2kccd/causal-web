@@ -100,7 +100,17 @@ function fetchScores(algoName, varTypeId) {
                 list.prop("disabled", true);
             } else {
                 list.prop("disabled", false);
-                $('#score option:first').attr('selected', 'selected');
+                $.ajax({
+                    url: url_path + 'score/default/varType/' + varTypeId,
+                    dataType: 'json',
+                    type: 'GET',
+                    success: function (data) {
+                        list.val(data['value']).change();
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        $('#score option:first').attr('selected', 'selected');
+                    }
+                });
             }
         }
     });
@@ -126,7 +136,17 @@ function fetchTests(algoName, varTypeId) {
                 list.prop("disabled", true);
             } else {
                 list.prop("disabled", false);
-                $('#test option:first').attr('selected', 'selected');
+                $.ajax({
+                    url: url_path + 'test/default/varType/' + varTypeId,
+                    dataType: 'json',
+                    type: 'GET',
+                    success: function (data) {
+                        list.val(data['value']).change();
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        $('#test option:first').attr('selected', 'selected');
+                    }
+                });
             }
         }
     });

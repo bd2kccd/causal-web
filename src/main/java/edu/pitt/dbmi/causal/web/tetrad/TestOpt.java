@@ -20,6 +20,7 @@ package edu.pitt.dbmi.causal.web.tetrad;
 
 import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
+import edu.cmu.tetrad.data.DataType;
 import java.io.Serializable;
 
 /**
@@ -50,6 +51,19 @@ public class TestOpt implements Serializable, Comparable<TestOpt> {
 
     public AnnotatedClass<TestOfIndependence> getTest() {
         return test;
+    }
+
+    private String getProperty(DataType dataType) {
+        switch (dataType) {
+            case Continuous:
+                return "datatype.continuous.test.default";
+            case Discrete:
+                return "datatype.discrete.test.default";
+            case Mixed:
+                return "datatype.mixed.test.default";
+            default:
+                return null;
+        }
     }
 
 }

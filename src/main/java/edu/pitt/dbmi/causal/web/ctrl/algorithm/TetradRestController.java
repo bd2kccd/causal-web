@@ -131,11 +131,11 @@ public class TetradRestController {
         if (algoOpt.isRequiredTest()) {
             switch (varType.getShortName()) {
                 case VariableTypeService.CONTINUOUS_SHORT_NAME:
-                    return ResponseEntity.ok(TestOpts.getInstance().getOptions().get(DataType.Continuous));
+                    return ResponseEntity.ok(TestOpts.getInstance().getOptions(DataType.Continuous));
                 case VariableTypeService.DISCRETE_SHORT_NAME:
-                    return ResponseEntity.ok(TestOpts.getInstance().getOptions().get(DataType.Discrete));
+                    return ResponseEntity.ok(TestOpts.getInstance().getOptions(DataType.Discrete));
                 case VariableTypeService.MIXED_SHORT_NAME:
-                    return ResponseEntity.ok(TestOpts.getInstance().getOptions().get(DataType.Mixed));
+                    return ResponseEntity.ok(TestOpts.getInstance().getOptions(DataType.Mixed));
                 default:
                     return ResponseEntity.ok(Collections.EMPTY_LIST);
             }
@@ -161,16 +161,54 @@ public class TetradRestController {
         if (algoOpt.isRequiredScore()) {
             switch (varType.getShortName()) {
                 case VariableTypeService.CONTINUOUS_SHORT_NAME:
-                    return ResponseEntity.ok(ScoreOpts.getInstance().getOptions().get(DataType.Continuous));
+                    return ResponseEntity.ok(ScoreOpts.getInstance().getOptions(DataType.Continuous));
                 case VariableTypeService.DISCRETE_SHORT_NAME:
-                    return ResponseEntity.ok(ScoreOpts.getInstance().getOptions().get(DataType.Discrete));
+                    return ResponseEntity.ok(ScoreOpts.getInstance().getOptions(DataType.Discrete));
                 case VariableTypeService.MIXED_SHORT_NAME:
-                    return ResponseEntity.ok(ScoreOpts.getInstance().getOptions().get(DataType.Mixed));
+                    return ResponseEntity.ok(ScoreOpts.getInstance().getOptions(DataType.Mixed));
                 default:
                     return ResponseEntity.ok(Collections.EMPTY_LIST);
             }
         } else {
             return ResponseEntity.ok(Collections.EMPTY_LIST);
+        }
+    }
+
+    @RequestMapping(value = "score/default/varType/{varTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getDefaultScore(@PathVariable final Long varTypeId) {
+        VariableType varType = variableTypeService.findById(varTypeId);
+        if (varType == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        switch (varType.getShortName()) {
+            case VariableTypeService.CONTINUOUS_SHORT_NAME:
+                return ResponseEntity.ok(ScoreOpts.getInstance().getDefaultOption(DataType.Continuous));
+            case VariableTypeService.DISCRETE_SHORT_NAME:
+                return ResponseEntity.ok(ScoreOpts.getInstance().getDefaultOption(DataType.Discrete));
+            case VariableTypeService.MIXED_SHORT_NAME:
+                return ResponseEntity.ok(ScoreOpts.getInstance().getDefaultOption(DataType.Mixed));
+            default:
+                return ResponseEntity.notFound().build();
+        }
+    }
+
+    @RequestMapping(value = "test/default/varType/{varTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getDefaultTest(@PathVariable final Long varTypeId) {
+        VariableType varType = variableTypeService.findById(varTypeId);
+        if (varType == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        switch (varType.getShortName()) {
+            case VariableTypeService.CONTINUOUS_SHORT_NAME:
+                return ResponseEntity.ok(TestOpts.getInstance().getDefaultOption(DataType.Continuous));
+            case VariableTypeService.DISCRETE_SHORT_NAME:
+                return ResponseEntity.ok(TestOpts.getInstance().getDefaultOption(DataType.Discrete));
+            case VariableTypeService.MIXED_SHORT_NAME:
+                return ResponseEntity.ok(TestOpts.getInstance().getDefaultOption(DataType.Mixed));
+            default:
+                return ResponseEntity.notFound().build();
         }
     }
 

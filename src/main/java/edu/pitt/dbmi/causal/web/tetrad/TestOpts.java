@@ -22,6 +22,7 @@ import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.annotation.TestOfIndependenceAnnotations;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.util.TetradProperties;
 import edu.pitt.dbmi.causal.web.model.Option;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -29,6 +30,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -42,6 +44,7 @@ public class TestOpts {
     private static final TestOpts INSTANCE = new TestOpts();
 
     private final Map<DataType, List<Option>> options;
+    private final Map<DataType, Option> defaultOptions;
     private final Map<String, TestOpt> testMap;
 
     private TestOpts() {
@@ -54,7 +57,7 @@ public class TestOpts {
                 .collect(Collectors.toList());
 
         Map<DataType, List<Option>> opts = new EnumMap<>(DataType.class);
-        Map<String, TestOpt> Tests = new HashMap<>();
+        Map<String, TestOpt> tests = new HashMap<>();
 
         // initialize enum map
         DataType[] dataTypes = DataType.values();
@@ -71,23 +74,76 @@ public class TestOpts {
                 opts.get(dataType).add(new Option(anno.command(), anno.name()));
             }
 
-            Tests.put(anno.command(), e);
+            tests.put(anno.command(), e);
         });
 
+        Map<DataType, Option> defaultOpts = new EnumMap<>(DataType.class);
+        for (DataType dataType : dataTypes) {
+            List<Option> optList = opts.get(dataType);
+            if (!optList.isEmpty()) {
+                String property = getProperty(dataType);
+                if (property == null) {
+                    defaultOpts.put(dataType, optList.get(0));
+                } else {
+                    String value = TetradProperties.getInstance().getValue(property);
+                    if (value == null) {
+                        defaultOpts.put(dataType, optList.get(0));
+                    } else {
+                        Optional<Map.Entry<String, TestOpt>> result = tests.entrySet().stream()
+                                .filter(e -> e.getValue().getTest().getClazz().getName().equals(value))
+                                .findFirst();
+                        String name = result.isPresent()
+                                ? result.get().getValue().getTest().getAnnotation().command()
+                                : null;
+                        if (name == null) {
+                            defaultOpts.put(dataType, optList.get(0));
+                        } else {
+                            Optional<Option> resultOpt = optList.stream()
+                                    .filter(e -> e.getValue().equals(name))
+                                    .findFirst();
+                            if (resultOpt.isPresent()) {
+                                defaultOpts.put(dataType, resultOpt.get());
+                            } else {
+                                defaultOpts.put(dataType, optList.get(0));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         this.options = Collections.unmodifiableMap(opts);
-        this.testMap = Collections.unmodifiableMap(Tests);
+        this.defaultOptions = Collections.unmodifiableMap(defaultOpts);
+        this.testMap = Collections.unmodifiableMap(tests);
     }
 
     public static TestOpts getInstance() {
         return INSTANCE;
     }
 
-    public Map<DataType, List<Option>> getOptions() {
-        return options;
+    public List<Option> getOptions(DataType dataType) {
+        return options.get(dataType);
     }
 
-    public Map<String, TestOpt> getTestMap() {
-        return testMap;
+    public TestOpt getTestOpt(String name) {
+        return testMap.get(name);
+    }
+
+    public Option getDefaultOption(DataType dataType) {
+        return defaultOptions.get(dataType);
+    }
+
+    private String getProperty(DataType dataType) {
+        switch (dataType) {
+            case Continuous:
+                return "datatype.continuous.test.default";
+            case Discrete:
+                return "datatype.discrete.test.default";
+            case Mixed:
+                return "datatype.mixed.test.default";
+            default:
+                return null;
+        }
     }
 
 }
