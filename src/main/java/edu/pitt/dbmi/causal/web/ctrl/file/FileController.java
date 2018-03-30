@@ -115,7 +115,7 @@ public class FileController {
         FileFormat fileFmt = fileCategorizeService.categorizeFile(fileCategorizeForm, file, userAccount);
 
         return (fileFmt == null)
-                ? ViewPath.REDIRECT_FILE_LIST + 0
+                ? ViewPath.REDIRECT_UNCATEGORIZED_FILE_VIEW
                 : ViewPath.REDIRECT_FILE_LIST + fileFmt.getId();
     }
 

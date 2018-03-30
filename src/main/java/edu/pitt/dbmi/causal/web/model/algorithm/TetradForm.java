@@ -19,7 +19,6 @@
 package edu.pitt.dbmi.causal.web.model.algorithm;
 
 import javax.validation.constraints.NotNull;
-import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  *
@@ -35,23 +34,22 @@ public class TetradForm {
     @NotNull
     private Long datasetId;
 
-    private boolean multiData;
+    private boolean singleFile;
 
-    @NotEmpty
+    private String algoType;
+
     private String algorithm;
 
     private String score;
 
     private String test;
 
-    private String algoType;
-
     public TetradForm() {
     }
 
     @Override
     public String toString() {
-        return "TetradForm{" + "varTypeId=" + varTypeId + ", datasetId=" + datasetId + ", multiData=" + multiData + ", algorithm=" + algorithm + ", score=" + score + ", test=" + test + ", algoType=" + algoType + '}';
+        return "TetradForm{" + "varTypeId=" + varTypeId + ", datasetId=" + datasetId + ", singleFile=" + singleFile + ", algoType=" + algoType + ", algorithm=" + algorithm + ", score=" + score + ", test=" + test + '}';
     }
 
     public Long getVarTypeId() {
@@ -70,12 +68,20 @@ public class TetradForm {
         this.datasetId = datasetId;
     }
 
-    public boolean isMultiData() {
-        return multiData;
+    public boolean isSingleFile() {
+        return singleFile;
     }
 
-    public void setMultiData(boolean multiData) {
-        this.multiData = multiData;
+    public void setSingleFile(boolean singleFile) {
+        this.singleFile = singleFile;
+    }
+
+    public String getAlgoType() {
+        return algoType;
+    }
+
+    public void setAlgoType(String algoType) {
+        this.algoType = algoType;
     }
 
     public String getAlgorithm() {
@@ -100,14 +106,6 @@ public class TetradForm {
 
     public void setTest(String test) {
         this.test = test;
-    }
-
-    public String getAlgoType() {
-        return algoType;
-    }
-
-    public void setAlgoType(String algoType) {
-        this.algoType = algoType;
     }
 
 }

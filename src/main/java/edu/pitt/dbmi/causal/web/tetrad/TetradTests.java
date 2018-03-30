@@ -24,13 +24,14 @@ import edu.cmu.tetrad.annotation.TestOfIndependenceAnnotations;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.util.TetradProperties;
 import edu.pitt.dbmi.causal.web.model.Option;
-import java.util.Collections;
+import edu.pitt.dbmi.causal.web.model.OptionModel;
+import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -39,98 +40,81 @@ import java.util.stream.Collectors;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class TestOpts {
+public class TetradTests {
 
-    private static final TestOpts INSTANCE = new TestOpts();
+    private static final TetradTests INSTANCE = new TetradTests();
 
-    private final Map<DataType, List<Option>> options;
-    private final Map<DataType, Option> defaultOptions;
-    private final Map<String, TestOpt> testMap;
+    private final Map<String, TetradTest> testByShortName;
+    private final Map<DataType, List<Option>> optsByDataType;
+    private final Map<DataType, Option> defaultOpts;
+    private final Map<DataType, OptionModel> optModels;
 
-    private TestOpts() {
-        // get annotations
+    private TetradTests() {
         TestOfIndependenceAnnotations TestAnno = TestOfIndependenceAnnotations.getInstance();
-        List<TestOpt> list = TestAnno.getAnnotatedClasses().stream()
+        List<TetradTest> list = TestAnno.getAnnotatedClasses().stream()
                 .filter(e -> !e.getClazz().isAnnotationPresent(Experimental.class))
-                .map(e -> new TestOpt(e))
+                .map(e -> new TetradTest(e))
                 .sorted()
                 .collect(Collectors.toList());
 
-        Map<DataType, List<Option>> opts = new EnumMap<>(DataType.class);
-        Map<String, TestOpt> tests = new HashMap<>();
+        this.testByShortName = list.stream()
+                .collect(Collectors.toMap(e -> e.getTest().getAnnotation().command(), Function.identity()));
 
-        // initialize enum map
-        DataType[] dataTypes = DataType.values();
-        for (DataType dataType : dataTypes) {
-            opts.put(dataType, new LinkedList<>());
-        }
-
+        this.optsByDataType = new EnumMap<>(DataType.class);
+        Arrays.stream(DataType.values())
+                .forEach(dataType -> optsByDataType.put(dataType, new LinkedList<>()));
         list.forEach(e -> {
             TestOfIndependence anno = e.getTest().getAnnotation();
 
             // group by datatype
-            DataType[] types = anno.dataType();
-            for (DataType dataType : types) {
-                opts.get(dataType).add(new Option(anno.command(), anno.name()));
-            }
-
-            tests.put(anno.command(), e);
+            Arrays.stream(anno.dataType())
+                    .forEach(dataType -> optsByDataType
+                    .get(dataType)
+                    .add(new Option(anno.command(), anno.name())));
         });
 
-        Map<DataType, Option> defaultOpts = new EnumMap<>(DataType.class);
-        for (DataType dataType : dataTypes) {
-            List<Option> optList = opts.get(dataType);
+        defaultOpts = new EnumMap<>(DataType.class);
+        Arrays.stream(DataType.values()).forEach(dataType -> {
+            List<Option> optList = optsByDataType.get(dataType);
             if (!optList.isEmpty()) {
-                String property = getProperty(dataType);
-                if (property == null) {
+                String prop = getProperty(dataType);
+                if (prop == null) {
                     defaultOpts.put(dataType, optList.get(0));
                 } else {
-                    String value = TetradProperties.getInstance().getValue(property);
+                    String value = TetradProperties.getInstance().getValue(prop);
                     if (value == null) {
                         defaultOpts.put(dataType, optList.get(0));
                     } else {
-                        Optional<Map.Entry<String, TestOpt>> result = tests.entrySet().stream()
+                        Optional<Map.Entry<String, TetradTest>> test = testByShortName.entrySet().stream()
                                 .filter(e -> e.getValue().getTest().getClazz().getName().equals(value))
                                 .findFirst();
-                        String name = result.isPresent()
-                                ? result.get().getValue().getTest().getAnnotation().command()
-                                : null;
-                        if (name == null) {
-                            defaultOpts.put(dataType, optList.get(0));
-                        } else {
-                            Optional<Option> resultOpt = optList.stream()
-                                    .filter(e -> e.getValue().equals(name))
+                        if (test.isPresent()) {
+                            String shortName = test.get().getValue().getTest().getAnnotation().command();
+                            Optional<Option> opt = optList.stream()
+                                    .filter(e -> e.getValue().equals(shortName))
                                     .findFirst();
-                            if (resultOpt.isPresent()) {
-                                defaultOpts.put(dataType, resultOpt.get());
+                            if (opt.isPresent()) {
+                                defaultOpts.put(dataType, opt.get());
                             } else {
                                 defaultOpts.put(dataType, optList.get(0));
                             }
+                        } else {
+                            defaultOpts.put(dataType, optList.get(0));
                         }
                     }
                 }
             }
-        }
+        });
 
-        this.options = Collections.unmodifiableMap(opts);
-        this.defaultOptions = Collections.unmodifiableMap(defaultOpts);
-        this.testMap = Collections.unmodifiableMap(tests);
+        this.optModels = Arrays.stream(DataType.values())
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        e -> new OptionModel(optsByDataType.get(e), defaultOpts.get(e).getValue())
+                ));
     }
 
-    public static TestOpts getInstance() {
+    public static TetradTests getInstance() {
         return INSTANCE;
-    }
-
-    public List<Option> getOptions(DataType dataType) {
-        return options.get(dataType);
-    }
-
-    public TestOpt getTestOpt(String name) {
-        return testMap.get(name);
-    }
-
-    public Option getDefaultOption(DataType dataType) {
-        return defaultOptions.get(dataType);
     }
 
     private String getProperty(DataType dataType) {
@@ -144,6 +128,22 @@ public class TestOpts {
             default:
                 return null;
         }
+    }
+
+    public TetradTest getTetradTest(String shortName) {
+        return testByShortName.get(shortName);
+    }
+
+    public List<Option> getOptions(DataType dataType) {
+        return optsByDataType.get(dataType);
+    }
+
+    public Option getDefaultOption(DataType dataType) {
+        return defaultOpts.get(dataType);
+    }
+
+    public OptionModel getOptionModel(DataType dataType) {
+        return optModels.get(dataType);
     }
 
 }

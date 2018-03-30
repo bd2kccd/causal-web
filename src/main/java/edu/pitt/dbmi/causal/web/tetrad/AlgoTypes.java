@@ -20,11 +20,13 @@ package edu.pitt.dbmi.causal.web.tetrad;
 
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.pitt.dbmi.causal.web.model.Option;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -36,50 +38,46 @@ public class AlgoTypes {
 
     private static final AlgoTypes INSTANCE = new AlgoTypes();
 
-    private final Map<String, AlgType> algoTypeMap;
-    private final List<AlgType> algTypes;
-    private final List<Option> options;
     public static final String DEFAULT_VALUE = "forbid_latent_common_causes";
 
-    private AlgoTypes() {
-        List<AlgType> algoTypes = new LinkedList<>();
-        for (AlgType item : AlgType.values()) {
-            if (item == AlgType.orient_pairwise) {
-                continue;
-            }
-            algoTypes.add(item);
-        }
+    private final List<AlgType> algTypes;
+    private final Map<String, AlgType> algoTypeByName;
+    private final List<Option> options;
 
-        Map<String, AlgType> map = new HashMap<>();
+    private AlgoTypes() {
+        List<AlgType> list = Arrays.stream(AlgType.values())
+                .filter(e -> e != AlgType.orient_pairwise)
+                .collect(Collectors.toList());
+
+        this.algTypes = Collections.unmodifiableList(list);
+
+        this.algoTypeByName = list.stream()
+                .collect(Collectors.toMap(e -> e.name(), Function.identity()));
+
         List<Option> opts = new LinkedList<>();
         opts.add(new Option("all", "all"));
-        algoTypes.forEach(e -> {
-            String value = e.name();
-            String text = e.name().replace("_", " ");
-
-            map.put(value, e);
-            opts.add(new Option(value, text));
-        });
-
-        this.algTypes = Collections.unmodifiableList(algoTypes);
-        this.algoTypeMap = Collections.unmodifiableMap(map);
+        list.stream()
+                .map(e -> new Option(e.name(), e.name().replace("_", " ")))
+                .collect(Collectors.toCollection(() -> opts));
         this.options = Collections.unmodifiableList(opts);
     }
 
-    public static AlgoTypes getInstance() {
-        return INSTANCE;
+    public AlgType getAlgType(String name) {
+        return (name == null)
+                ? null
+                : algoTypeByName.get(name);
     }
 
-    public AlgType getAlgType(String name) {
-        return (name == null) ? null : algoTypeMap.get(name);
+    public List<AlgType> getAlgTypes() {
+        return algTypes;
     }
 
     public List<Option> getOptions() {
         return options;
     }
 
-    public List<AlgType> getAlgTypes() {
-        return algTypes;
+    public static AlgoTypes getInstance() {
+        return INSTANCE;
     }
 
 }

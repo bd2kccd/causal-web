@@ -25,10 +25,10 @@ import edu.cmu.tetrad.annotation.Nonexecutable;
 import edu.pitt.dbmi.causal.web.model.Option;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -37,62 +37,67 @@ import java.util.stream.Collectors;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class AlgorithmOpts {
+public class TetradAlgorithms {
 
-    private static final AlgorithmOpts INSTANCE = new AlgorithmOpts();
+    private static final TetradAlgorithms INSTANCE = new TetradAlgorithms();
 
-    private final Map<String, AlgorithmOpt> algorithMap;
-    private final Map<AlgType, List<Option>> optionMap;
+    private final Map<String, TetradAlgorithm> algoByShortName;
+    private final Map<AlgType, List<Option>> optionsByAlgType;
     private final List<Option> options;
 
-    private AlgorithmOpts() {
+    private TetradAlgorithms() {
         AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
-        List<AlgorithmOpt> list = algoAnno.getAnnotatedClasses().stream()
+        List<TetradAlgorithm> list = algoAnno.getAnnotatedClasses().stream()
+                .filter(e -> e.getAnnotation().algoType() != AlgType.orient_pairwise)
                 .filter(e -> !e.getClazz().isAnnotationPresent(Nonexecutable.class))
                 .filter(e -> !e.getClazz().isAnnotationPresent(Experimental.class))
-                .map(e -> new AlgorithmOpt(e))
+                .map(e -> new TetradAlgorithm(e))
                 .sorted()
                 .collect(Collectors.toList());
 
-        Map<AlgType, List<Option>> optMap = new EnumMap<>(AlgType.class);
-        List<AlgType> algTypes = AlgoTypes.getInstance().getAlgTypes();
-        algTypes.forEach(e -> optMap.put(e, new LinkedList<>()));
+        this.algoByShortName = list.stream()
+                .collect(Collectors.toMap(e -> e.getAlgorithm().getAnnotation().command(), Function.identity()));
 
-        Map<String, AlgorithmOpt> map = new HashMap<>();
+        this.optionsByAlgType = new EnumMap<>(AlgType.class);
         List<Option> opts = new LinkedList<>();
         list.forEach(e -> {
             AlgType algType = e.getAlgorithm().getAnnotation().algoType();
-            if (optMap.containsKey(algType)) {
-                String value = e.getAlgorithm().getAnnotation().command();
-                String text = e.getAlgorithm().getAnnotation().name();
+            String value = e.getAlgorithm().getAnnotation().command();
+            String text = e.getAlgorithm().getAnnotation().name();
 
-                Option opt = new Option(value, text);
+            Option opt = new Option(value, text);
 
-                map.put(value, e);
-                optMap.get(algType).add(opt);
-                opts.add(opt);
+            List<Option> listOpt = optionsByAlgType.get(algType);
+            if (listOpt == null) {
+                listOpt = new LinkedList<>();
+                optionsByAlgType.put(algType, listOpt);
             }
+
+            listOpt.add(opt);
+            opts.add(opt);
         });
 
-        this.algorithMap = Collections.unmodifiableMap(map);
-        this.optionMap = Collections.unmodifiableMap(optMap);
         this.options = Collections.unmodifiableList(opts);
     }
 
-    public static AlgorithmOpts getInstance() {
-        return INSTANCE;
+    public TetradAlgorithm getTetradAlgorithm(String shortName) {
+        return (shortName == null)
+                ? null
+                : algoByShortName.get(shortName);
     }
 
-    public AlgorithmOpt getAlgorithmOpt(String name) {
-        return (name == null) ? null : algorithMap.get(name);
+    public List<Option> getOptions() {
+        return options;
     }
 
     public List<Option> getOptions(AlgType algType) {
-        return (algType == null) ? Collections.EMPTY_LIST : optionMap.get(algType);
+        return (algType == null)
+                ? null
+                : optionsByAlgType.get(algType);
     }
 
-    public List<Option> getAllOptions() {
-        return options;
+    public static TetradAlgorithms getInstance() {
+        return INSTANCE;
     }
 
 }

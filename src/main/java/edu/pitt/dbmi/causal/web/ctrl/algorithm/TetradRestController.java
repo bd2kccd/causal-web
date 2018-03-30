@@ -21,12 +21,17 @@ package edu.pitt.dbmi.causal.web.ctrl.algorithm;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.DataType;
 import edu.pitt.dbmi.causal.web.model.AppUser;
+import edu.pitt.dbmi.causal.web.model.OptionModel;
+import edu.pitt.dbmi.causal.web.model.ParamOption;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
+import edu.pitt.dbmi.causal.web.service.algorithm.TetradService;
 import edu.pitt.dbmi.causal.web.tetrad.AlgoTypes;
-import edu.pitt.dbmi.causal.web.tetrad.AlgorithmOpt;
-import edu.pitt.dbmi.causal.web.tetrad.AlgorithmOpts;
-import edu.pitt.dbmi.causal.web.tetrad.ScoreOpts;
-import edu.pitt.dbmi.causal.web.tetrad.TestOpts;
+import edu.pitt.dbmi.causal.web.tetrad.TetradAlgorithm;
+import edu.pitt.dbmi.causal.web.tetrad.TetradAlgorithms;
+import edu.pitt.dbmi.causal.web.tetrad.TetradScore;
+import edu.pitt.dbmi.causal.web.tetrad.TetradScores;
+import edu.pitt.dbmi.causal.web.tetrad.TetradTest;
+import edu.pitt.dbmi.causal.web.tetrad.TetradTests;
 import edu.pitt.dbmi.ccd.db.domain.file.FileGroupListItem;
 import edu.pitt.dbmi.ccd.db.domain.file.TetradDataListItem;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
@@ -39,11 +44,16 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
@@ -60,17 +70,26 @@ public class TetradRestController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TetradRestController.class);
 
+    private static final OptionModel EMPTY_OPTION_MODEL = new OptionModel(Collections.EMPTY_LIST, "");
+
     private final AppUserService appUserService;
+    private final TetradService tetradService;
     private final TetradDataFileService tetradDataFileService;
     private final FileGroupService fileGroupService;
     private final VariableTypeService variableTypeService;
 
     @Autowired
-    public TetradRestController(AppUserService appUserService, TetradDataFileService tetradDataFileService, FileGroupService fileGroupService, VariableTypeService variableTypeService) {
+    public TetradRestController(AppUserService appUserService, TetradService tetradService, TetradDataFileService tetradDataFileService, FileGroupService fileGroupService, VariableTypeService variableTypeService) {
         this.appUserService = appUserService;
+        this.tetradService = tetradService;
         this.tetradDataFileService = tetradDataFileService;
         this.fileGroupService = fileGroupService;
         this.variableTypeService = variableTypeService;
+    }
+
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
     }
 
     @RequestMapping(value = "data/multiple/{varTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -103,14 +122,48 @@ public class TetradRestController {
     @RequestMapping(value = "algo/{algoTypeName}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> listAlgorithms(@PathVariable final String algoTypeName) {
         if ("all".equals(algoTypeName)) {
-            return ResponseEntity.ok(AlgorithmOpts.getInstance().getAllOptions());
+            return ResponseEntity.ok(TetradAlgorithms.getInstance().getOptions());
         } else {
             AlgType algType = AlgoTypes.getInstance().getAlgType(algoTypeName);
             if (algType == null) {
                 return ResponseEntity.notFound().build();
             }
 
-            return ResponseEntity.ok(AlgorithmOpts.getInstance().getOptions(algType));
+            return ResponseEntity.ok(TetradAlgorithms.getInstance().getOptions(algType));
+        }
+    }
+
+    @RequestMapping(value = "score/algo/{algoName}/varType/{varTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> listScores(
+            @PathVariable final String algoName,
+            @PathVariable final Long varTypeId) {
+        TetradAlgorithm algoOpt = TetradAlgorithms.getInstance().getTetradAlgorithm(algoName);
+        if (algoOpt == null) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(String.format("No such algorithm %s.", algoName));
+        }
+
+        VariableType varType = variableTypeService.findById(varTypeId);
+        if (varType == null) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("No such variable type.");
+        }
+
+        if (algoOpt.isRequiredScore()) {
+            switch (varType.getShortName()) {
+                case VariableTypeService.CONTINUOUS_SHORT_NAME:
+                    return ResponseEntity.ok(TetradScores.getInstance().getOptionModel(DataType.Continuous));
+                case VariableTypeService.DISCRETE_SHORT_NAME:
+                    return ResponseEntity.ok(TetradScores.getInstance().getOptionModel(DataType.Discrete));
+                case VariableTypeService.MIXED_SHORT_NAME:
+                    return ResponseEntity.ok(TetradScores.getInstance().getOptionModel(DataType.Mixed));
+                default:
+                    return ResponseEntity.ok(EMPTY_OPTION_MODEL);
+            }
+        } else {
+            return ResponseEntity.ok(EMPTY_OPTION_MODEL);
         }
     }
 
@@ -118,7 +171,7 @@ public class TetradRestController {
     public ResponseEntity<?> listTests(
             @PathVariable final String algoName,
             @PathVariable final Long varTypeId) {
-        AlgorithmOpt algoOpt = AlgorithmOpts.getInstance().getAlgorithmOpt(algoName);
+        TetradAlgorithm algoOpt = TetradAlgorithms.getInstance().getTetradAlgorithm(algoName);
         if (algoOpt == null) {
             return ResponseEntity.notFound().build();
         }
@@ -131,84 +184,59 @@ public class TetradRestController {
         if (algoOpt.isRequiredTest()) {
             switch (varType.getShortName()) {
                 case VariableTypeService.CONTINUOUS_SHORT_NAME:
-                    return ResponseEntity.ok(TestOpts.getInstance().getOptions(DataType.Continuous));
+                    return ResponseEntity.ok(TetradTests.getInstance().getOptionModel(DataType.Continuous));
                 case VariableTypeService.DISCRETE_SHORT_NAME:
-                    return ResponseEntity.ok(TestOpts.getInstance().getOptions(DataType.Discrete));
+                    return ResponseEntity.ok(TetradTests.getInstance().getOptionModel(DataType.Discrete));
                 case VariableTypeService.MIXED_SHORT_NAME:
-                    return ResponseEntity.ok(TestOpts.getInstance().getOptions(DataType.Mixed));
+                    return ResponseEntity.ok(TetradTests.getInstance().getOptionModel(DataType.Mixed));
                 default:
-                    return ResponseEntity.ok(Collections.EMPTY_LIST);
+                    return ResponseEntity.ok(EMPTY_OPTION_MODEL);
             }
         } else {
-            return ResponseEntity.ok(Collections.EMPTY_LIST);
+            return ResponseEntity.ok(EMPTY_OPTION_MODEL);
         }
     }
 
-    @RequestMapping(value = "score/algo/{algoName}/varType/{varTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> listScores(
+    @RequestMapping(value = "param/algo/{algoName}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> listParameters(
             @PathVariable final String algoName,
-            @PathVariable final Long varTypeId) {
-        AlgorithmOpt algoOpt = AlgorithmOpts.getInstance().getAlgorithmOpt(algoName);
-        if (algoOpt == null) {
-            return ResponseEntity.notFound().build();
+            @RequestParam("score") String scoreShortName,
+            @RequestParam("test") String testShortName) {
+        TetradAlgorithm tetradAlgo = TetradAlgorithms.getInstance().getTetradAlgorithm(algoName);
+        if (tetradAlgo == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No such algorithm.");
         }
 
-        VariableType varType = variableTypeService.findById(varTypeId);
-        if (varType == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        if (algoOpt.isRequiredScore()) {
-            switch (varType.getShortName()) {
-                case VariableTypeService.CONTINUOUS_SHORT_NAME:
-                    return ResponseEntity.ok(ScoreOpts.getInstance().getOptions(DataType.Continuous));
-                case VariableTypeService.DISCRETE_SHORT_NAME:
-                    return ResponseEntity.ok(ScoreOpts.getInstance().getOptions(DataType.Discrete));
-                case VariableTypeService.MIXED_SHORT_NAME:
-                    return ResponseEntity.ok(ScoreOpts.getInstance().getOptions(DataType.Mixed));
-                default:
-                    return ResponseEntity.ok(Collections.EMPTY_LIST);
-            }
+        Class score;
+        if (scoreShortName == null) {
+            score = null;
         } else {
-            return ResponseEntity.ok(Collections.EMPTY_LIST);
-        }
-    }
-
-    @RequestMapping(value = "score/default/varType/{varTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getDefaultScore(@PathVariable final Long varTypeId) {
-        VariableType varType = variableTypeService.findById(varTypeId);
-        if (varType == null) {
-            return ResponseEntity.notFound().build();
+            TetradScore tetradScore = TetradScores.getInstance().getTetradScore(scoreShortName);
+            if (tetradScore == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No such independence test.");
+            }
+            score = tetradScore.getScore().getClazz();
         }
 
-        switch (varType.getShortName()) {
-            case VariableTypeService.CONTINUOUS_SHORT_NAME:
-                return ResponseEntity.ok(ScoreOpts.getInstance().getDefaultOption(DataType.Continuous));
-            case VariableTypeService.DISCRETE_SHORT_NAME:
-                return ResponseEntity.ok(ScoreOpts.getInstance().getDefaultOption(DataType.Discrete));
-            case VariableTypeService.MIXED_SHORT_NAME:
-                return ResponseEntity.ok(ScoreOpts.getInstance().getDefaultOption(DataType.Mixed));
-            default:
-                return ResponseEntity.notFound().build();
-        }
-    }
-
-    @RequestMapping(value = "test/default/varType/{varTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getDefaultTest(@PathVariable final Long varTypeId) {
-        VariableType varType = variableTypeService.findById(varTypeId);
-        if (varType == null) {
-            return ResponseEntity.notFound().build();
+        Class test;
+        if (testShortName == null) {
+            test = null;
+        } else {
+            TetradTest tetradTest = TetradTests.getInstance().getTetradTest(testShortName);
+            if (tetradTest == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No such score.");
+            }
+            test = tetradTest.getTest().getClazz();
         }
 
-        switch (varType.getShortName()) {
-            case VariableTypeService.CONTINUOUS_SHORT_NAME:
-                return ResponseEntity.ok(TestOpts.getInstance().getDefaultOption(DataType.Continuous));
-            case VariableTypeService.DISCRETE_SHORT_NAME:
-                return ResponseEntity.ok(TestOpts.getInstance().getDefaultOption(DataType.Discrete));
-            case VariableTypeService.MIXED_SHORT_NAME:
-                return ResponseEntity.ok(TestOpts.getInstance().getDefaultOption(DataType.Mixed));
-            default:
-                return ResponseEntity.notFound().build();
+        StringBuilder errMsg = new StringBuilder();
+        if (tetradService.validate(tetradAlgo, score, test, errMsg)) {
+            List<ParamOption> params = tetradService
+                    .getAlgorithmParameters(tetradAlgo.getAlgorithm().getClazz(), score, test);
+
+            return ResponseEntity.ok(params);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errMsg.toString());
         }
     }
 

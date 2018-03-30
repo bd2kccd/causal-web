@@ -29,10 +29,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
@@ -67,13 +69,27 @@ public class TetradController {
     public String runTetrad(
             @Valid @ModelAttribute("tetradForm") final TetradForm tetradForm,
             final BindingResult bindingResult,
+            @RequestBody MultiValueMap<String, String> formData,
             final Model model,
             final AppUser appUser,
             final RedirectAttributes redirAttrs) {
+        if (bindingResult.hasErrors()) {
+            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.tetradForm", bindingResult);
+            redirAttrs.addFlashAttribute("tetradForm", tetradForm);
+
+            return ViewPath.REDIRECT_TETRAD_VIEW;
+        }
+
+        System.out.println("================================================================================");
+        System.out.println(tetradForm);
+        System.out.println("================================================================================");
+
         if (!model.containsAttribute("tetradForm")) {
             model.addAttribute("tetradForm", tetradForm);
         }
+
         model.addAttribute("varTypes", variableTypeService.findAll());
+        model.addAttribute("algoTypes", AlgoTypes.getInstance().getOptions());
 
         return ViewPath.TETRAD_VIEW;
     }

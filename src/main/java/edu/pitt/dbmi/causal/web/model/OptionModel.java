@@ -16,40 +16,33 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.causal.web.tetrad;
+package edu.pitt.dbmi.causal.web.model;
 
-import edu.cmu.tetrad.annotation.AnnotatedClass;
-import edu.cmu.tetrad.annotation.Score;
-import java.io.Serializable;
+import java.util.List;
 
 /**
  *
- * Mar 14, 2018 3:25:16 PM
+ * Mar 28, 2018 3:49:55 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class ScoreOpt implements Serializable, Comparable<ScoreOpt> {
+public class OptionModel {
 
-    private static final long serialVersionUID = -2576362951135490305L;
+    private final List<Option> options;
 
-    private final AnnotatedClass<Score> score;
+    private final String defaultValue;
 
-    public ScoreOpt(AnnotatedClass<Score> score) {
-        this.score = score;
+    public OptionModel(List<Option> options, String defaultValue) {
+        this.options = options;
+        this.defaultValue = defaultValue;
     }
 
-    @Override
-    public int compareTo(ScoreOpt other) {
-        return score.getAnnotation().name().compareTo(other.score.getAnnotation().name());
+    public List<Option> getOptions() {
+        return options;
     }
 
-    @Override
-    public String toString() {
-        return score.getAnnotation().name();
-    }
-
-    public AnnotatedClass<Score> getScore() {
-        return score;
+    public String getDefaultValue() {
+        return defaultValue;
     }
 
 }

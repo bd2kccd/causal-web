@@ -29,18 +29,18 @@ import java.io.Serializable;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class TestOpt implements Serializable, Comparable<TestOpt> {
+public class TetradTest implements Serializable, Comparable<TetradTest> {
 
     private static final long serialVersionUID = 4835759464841756862L;
 
     private final AnnotatedClass<TestOfIndependence> test;
 
-    public TestOpt(AnnotatedClass<TestOfIndependence> test) {
+    public TetradTest(AnnotatedClass<TestOfIndependence> test) {
         this.test = test;
     }
 
     @Override
-    public int compareTo(TestOpt other) {
+    public int compareTo(TetradTest other) {
         return test.getAnnotation().name().compareTo(other.test.getAnnotation().name());
     }
 

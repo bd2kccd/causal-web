@@ -30,7 +30,7 @@ import java.io.Serializable;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class AlgorithmOpt implements Serializable, Comparable<AlgorithmOpt> {
+public class TetradAlgorithm implements Serializable, Comparable<TetradAlgorithm> {
 
     private static final long serialVersionUID = -5344339492029900326L;
 
@@ -38,7 +38,7 @@ public class AlgorithmOpt implements Serializable, Comparable<AlgorithmOpt> {
     private final boolean requiredScore;
     private final boolean requiredTest;
 
-    public AlgorithmOpt(AnnotatedClass<Algorithm> algorithm) {
+    public TetradAlgorithm(AnnotatedClass<Algorithm> algorithm) {
         if (algorithm == null) {
             throw new IllegalArgumentException("Algorithm annotation cannot be null.");
         }
@@ -49,7 +49,7 @@ public class AlgorithmOpt implements Serializable, Comparable<AlgorithmOpt> {
     }
 
     @Override
-    public int compareTo(AlgorithmOpt other) {
+    public int compareTo(TetradAlgorithm other) {
         return algorithm.getAnnotation().name().compareTo(other.algorithm.getAnnotation().name());
     }
 

@@ -56,6 +56,7 @@ public final class ViewPath {
     public static final String FILE_INFO_VIEW = "file/file_info";
     public static final String REDIRECT_FILE_LIST = "redirect:/secured/file/format/";
     public static final String REDIRECT_FILE_INFO = "redirect:/secured/file/";
+    public static final String REDIRECT_UNCATEGORIZED_FILE_VIEW = "redirect:/secured/file/format/uncategorized";
 
     public static final String FILEGROUP_LIST_VIEW = "file/filegroup_list";
     public static final String FILEGROUP_VIEW = "file/filegroup";
@@ -64,6 +65,7 @@ public final class ViewPath {
     public static final String REDIRECT_FILEGROUP_LIST = "redirect:/secured/file/group";
 
     public static final String TETRAD_VIEW = "algo/tetrad";
+    public static final String REDIRECT_TETRAD_VIEW = "redirect:/secured/algorithm/tetrad";
 
     private ViewPath() {
     }

@@ -18,13 +18,24 @@
  */
 package edu.pitt.dbmi.causal.web.service.algorithm;
 
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
+import edu.pitt.dbmi.causal.web.model.ParamOption;
 import edu.pitt.dbmi.causal.web.model.algorithm.TetradForm;
 import edu.pitt.dbmi.causal.web.tetrad.AlgoTypes;
+import edu.pitt.dbmi.causal.web.tetrad.TetradAlgorithm;
+import edu.pitt.dbmi.causal.web.tetrad.TetradParams;
 import edu.pitt.dbmi.ccd.db.entity.VariableType;
 import edu.pitt.dbmi.ccd.db.service.FileGroupService;
 import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +47,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class TetradService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TetradService.class);
 
     private final TetradDataFileService tetradDataFileService;
     private final FileGroupService fileGroupService;
@@ -51,20 +64,67 @@ public class TetradService {
     public TetradForm createTetradForm() {
         TetradForm tetradForm = new TetradForm();
 
-        List<VariableType> varTypes = variableTypeService.findAll();
-        if (!varTypes.isEmpty()) {
-            tetradForm.setVarTypeId(varTypes.get(0).getId());
+        Optional<VariableType> varType = variableTypeService.findAll().stream()
+                .findFirst();
+        if (varType.isPresent()) {
+            tetradForm.setVarTypeId(varType.get().getId());
         }
 
-//        // set default algorithm
-//        AlgType defaultAlgType = AlgoTypes.getInstance().getAlgType(AlgoTypes.DEFAULT_VALUE);
-//        List<Option> opts = AlgorithmOpts.getInstance().getOptions(defaultAlgType);
-//        if (!opts.isEmpty()) {
-//            tetradForm.setAlgorithm(opts.stream().findFirst().get().getValue());
-//        }
         tetradForm.setAlgoType(AlgoTypes.DEFAULT_VALUE);
 
         return tetradForm;
+    }
+
+    public List<ParamOption> getAlgorithmParameters(Class algorithm, Class score, Class test) {
+        List<String> params = new LinkedList<>();
+        try {
+            Algorithm algo = AlgorithmFactory.create(algorithm, test, score);
+            if (algo != null) {
+                params.addAll(algo.getParameters());
+            }
+        } catch (IllegalAccessException | InstantiationException exception) {
+            LOGGER.error("", exception);
+        }
+
+        TetradParams tetradParams = TetradParams.getInstance();
+
+        List<ParamOption> numParams = new LinkedList<>();
+        List<ParamOption> boolParams = new LinkedList<>();
+        params.stream()
+                .map(e -> tetradParams.getParamOption(e))
+                .collect(Collectors.toList())
+                .forEach(opt -> {
+                    if (opt.isNumeric()) {
+                        numParams.add(opt);
+                    } else if (opt.isaBoolean()) {
+                        boolParams.add(opt);
+                    }
+                });
+
+        return Stream.concat(numParams.stream(), boolParams.stream())
+                .collect(Collectors.toList());
+    }
+
+    public boolean validate(TetradAlgorithm tetradAlgorithm, Class score, Class test, StringBuilder errMsg) {
+        boolean missingScore = tetradAlgorithm.isRequiredScore() && (score == null);
+        boolean missingTest = tetradAlgorithm.isRequiredTest() && (test == null);
+        if (missingTest || missingScore) {
+            String algoName = tetradAlgorithm.getAlgorithm().getAnnotation().name();
+
+            String msg;
+            if (missingTest && missingScore) {
+                msg = String.format("%s requires both test and score.", algoName);
+            } else if (missingScore) {
+                msg = String.format("%s requires test.", algoName);
+            } else {
+                msg = String.format("%s requires score.", algoName);
+            }
+            errMsg.append(msg);
+
+            return false;
+        }
+
+        return true;
     }
 
 }
