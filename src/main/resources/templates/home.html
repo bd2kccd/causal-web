@@ -1,115 +1,79 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
     <head>
-        <meta charset="UTF-8" />
-        <meta name="description" content="Center for Causal Discovery" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>CCD: Home</title>
+        <meta charset="utf-8" />
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <title>Causal Web: Home</title>
+        <meta name="description" content="causal" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="apple-touch-icon" href="../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
         <link rel="icon" href="../static/favicon.ico" th:href="@{/favicon.ico}" />
         <link rel="stylesheet" href="../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css}" />
         <link rel="stylesheet" href="../static/vendors/bootstrap/css/bootstrap-theme.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css}" />
-        <link rel="stylesheet" href="../static/vendors/metisMenu/metisMenu.min.css" th:href="@{/vendors/metisMenu/metisMenu.min.css}" />
-        <link rel="stylesheet" href="../static/vendors/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.min.css}" />
         <link rel="stylesheet" href="../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css}"/>
+        <link rel="stylesheet" href="../static/vendors/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.min.css}" />
         <link rel="stylesheet" href="../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
         <script src="../static/vendors/jquery/jquery.min.js" th:src="@{https://code.jquery.com/jquery-2.2.4.min.js}"></script>
         <script src="../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
-        <script src="../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
         <script src="../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
+        <script src="../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
     </head>
     <body>
         <div id="wrapper">
-            <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0" th:replace="fragments/navigator :: nav"></nav>
+            <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0" th:replace="fragments/navigation :: nav"></nav>
             <div id="page-wrapper">
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="page-header">
-                            <span class="h3" th:text="'Welcome ' + ${appUser.firstName} + ' ' + ${appUser.middleName} + ' ' + ${appUser.lastName}">Welcome User</span>
+                            <span class="h3" th:text="'Welcome ' + ${appUser.fullName}">Welcome User</span>
                             <span class="pull-right" th:text="'Last Logon: ' + ${#dates.format(appUser.lastLogin,'EEE, MMM dd, yyyy hh:mm aaa')}">Last Logged In:</span>
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
-                        <p class="text-muted">The Center for Causal Discovery has designed the CCD
-                            Application to facilitate causal modeling and discovery (CMD) on large datasets. To enable this
-                            capability, we have optimized the running time of the CMD algorithms using
-                            parallelization and caching techniques. Within a simple interface, a user can conduct an analysis
-                            locally on their desktop/laptop or choose to run their
-                            analysis remotely on more capable hardware at the Pittsburgh Supercomputing Center.
-                        </p>
-                        <p class="text-muted">
-                            To start using this
-                            application, import and summarize a dataset in Data Management. Then select a CMD algorithm in
-                            Causal Discovery. We currently are making available only the Fast Greedy Search (FGS) algorithm for
-                            continuous data which outputs a whole causal graph from the input data. The application will guide
-                            you through this process of running the algorithm. You can view the status of an analysis in the Job
-                            Queue and view the results in Run Results.
-                        </p>
+                        <p class="text-muted" th:each="msg : ${@ccdProperties.getWelcome()}" th:text="${msg}"></p>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-lg-3 col-md-4">
+                    <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="panel panel-primary">
                             <div class="panel-heading">
                                 <div class="row">
                                     <div class="col-xs-3">
-                                        <i class="fa fa-database fa-5x"></i>
+                                        <i class="fa fa-file fa-5x white"></i>
                                     </div>
                                     <div class="col-xs-9 text-right">
-                                        <div class="huge" th:text="${numOfDataset}">64</div>
-                                        <div>Dataset</div>
+                                        <div class="huge" th:text="${numOfFiles}">64</div>
+                                        <div>File</div>
                                     </div>
                                 </div>
                             </div>
-                            <a href="data/dataset.html" th:href="@{/data}">
+                            <a href="file/file.html" th:href="@{/secured/file}">
                                 <div class="panel-footer">
-                                    <span class="pull-left">View Details</span>
+                                    <span class="pull-left">View Files</span>
                                     <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
                                     <div class="clearfix"></div>
                                 </div>
                             </a>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-md-4">
+                    <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="panel panel-green">
                             <div class="panel-heading">
                                 <div class="row">
                                     <div class="col-xs-3">
-                                        <i class="fa fa-clipboard fa-5x"></i>
+                                        <i class="fa fa-file-o fa-5x white"></i>
                                     </div>
                                     <div class="col-xs-9 text-right">
-                                        <div class="huge" th:text="${numOfAlgorithmResults}">128</div>
-                                        <div>Results</div>
+                                        <div class="huge" th:text="${numOfFileGroups}">128</div>
+                                        <div>File Group</div>
                                     </div>
                                 </div>
                             </div>
-                            <a href="algorithm/algorithmResults.html" th:href="@{/algorithm/results}">
+                            <a href="algorithm/algorithmResults.html" th:href="@{/secured/file/group}">
                                 <div class="panel-footer">
-                                    <span class="pull-left">View Details</span>
-                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-                                    <div class="clearfix"></div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-4">
-                        <div class="panel panel-info">
-                            <div class="panel-heading">
-                                <div class="row">
-                                    <div class="col-xs-3">
-                                        <i class="fa fa-clipboard fa-5x"></i>
-                                    </div>
-                                    <div class="col-xs-9 text-right">
-                                        <div class="huge" th:text="${numOfComparisonResults}">128</div>
-                                        <div>Result Comparisons</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <a href="algorithm/algorithmResults.html" th:href="@{/algorithm/results/comparison}">
-                                <div class="panel-footer">
-                                    <span class="pull-left">View Details</span>
+                                    <span class="pull-left">View File Groups</span>
                                     <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
                                     <div class="clearfix"></div>
                                 </div>
@@ -127,9 +91,5 @@
                 </footer>
             </div>
         </div>
-        <!--<script src="../static/js/annotations.js" th:src="@{/js/annotations.js}"></script>-->
-        <!--<script type="text/javascript">-->
-        <!--requestAnnotationsTokens();-->
-        <!--</script>-->
     </body>
 </html>

@@ -1,0 +1,10 @@
+$(document).ready(function () {
+    $("#edit_info").click(function () {
+        $("#view_info_panel").hide();
+        $("#edit_info_panel").show();
+    });
+    $("#cancel_info").click(function () {
+        $("#view_info_panel").show();
+        $("#edit_info_panel").hide();
+    });
+});
