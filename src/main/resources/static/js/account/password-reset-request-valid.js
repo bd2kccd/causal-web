@@ -8,8 +8,8 @@ $(document).ready(function () {
         },
         messages: {
             email: {
-                email: "Please enter your email.",
-                required: "E-mail is required."
+                email: "Invalid email format.",
+                required: "Please enter your email."
             }
         },
         highlight: function (element) {

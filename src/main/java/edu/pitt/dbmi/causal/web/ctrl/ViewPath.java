@@ -47,6 +47,11 @@ public final class ViewPath {
     public static final String USER_PROFILE_VIEW = "account/user_profile";
     public static final String REDIRECT_USER_PROFILE = "redirect:/secured/account/profile";
 
+    public static final String PASSWORD_RESET_REQUEST_VIEW = "account/password_reset_request";
+    public static final String REDIRECT_PASSWORD_RESET_REQUEST = "redirect:/user/account/password/reset";
+
+    public static final String USER_PASSWORD_RESET_VIEW = "account/password_reset";
+
     public static final String FEEDBACK_VIEW = "feedback";
     public static final String REDIRECT_FEEDBACK_VIEW = "redirect:/secured/feedback";
 

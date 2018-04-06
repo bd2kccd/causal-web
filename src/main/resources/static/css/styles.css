@@ -109,5 +109,8 @@ a:link {
     border-bottom: 1px solid #eee;
 }
 .medium {
-  font-size: 25px;
+    font-size: 25px;
+}
+a.navbar_color {
+    color: #eeeeee;
 }
