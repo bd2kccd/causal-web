@@ -13,6 +13,8 @@
         <link rel="stylesheet" href="../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css}"/>
         <link rel="stylesheet" href="../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
         <link rel="stylesheet" href="../static/css/login.min.css" th:href="@{/css/login.min.css}" />
+        <script src="../static/vendors/jquery/jquery.min.js" th:src="@{https://code.jquery.com/jquery-2.2.4.min.js}"></script>
+        <script src="../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
         <style>
             .auth0 {
                 display: block;
@@ -61,7 +63,7 @@
                                             <label for="rememberMe">
                                                 <input type="checkbox" id="rememberMe" name="rememberMe" value="true" checked="checked" th:field="*{rememberMe}" /> Remember Me
                                             </label>
-                                            <span class="pull-right"><a href="#" th:href="@{/user/account/password/reset/request}">Forgot Password?</a></span>
+                                            <span class="pull-right"><a href="#" th:href="@{/user/account/password/reset}">Forgot Password?</a></span>
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -83,7 +85,7 @@
                 </div>
             </div>
         </div>
-        <script src="../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{/vendors/jquery-validation/jquery.validate.min.js}"></script>
+        <script src="../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.min.js}"></script>
         <script src="../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
         <script src="../static/js/login-valid.min.js" th:src="@{/js/login-valid.min.js}"></script>
         <script src="https://cdn.auth0.com/js/lock/11.2.2/lock.min.js"></script>
