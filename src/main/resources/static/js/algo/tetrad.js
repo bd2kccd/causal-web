@@ -61,6 +61,7 @@ function fetchParameters() {
         success: function (data) {
             var params = $('#params');
             $('#params > .form-group').remove();
+            var htmlParams = '';
             $.each(data, function (index, value) {
                 var txt = value['text'];
                 var id = value['value'];
@@ -98,8 +99,9 @@ function fetchParameters() {
                     var input = '<input class="form-control" ' + input_attr + angularjs_attr + ' value="' + val + '" />';
                     form = '<div class="form-group">' + label + input + '</div>';
                 }
-                $(params).append(form);
+                htmlParams += form;
             });
+            $(params).append(htmlParams);
 
             // update summary table
             var params_tbody = $('#params_tbl > tbody');
@@ -108,7 +110,7 @@ function fetchParameters() {
             $.each(data, function (index, value) {
                 var txt = value['text'];
                 var id = value['value'];
-                param_html += '<tr><td>' + txt + ':</td><td data-ng-bind="' + id + '"></td></tr>';
+                param_html += '<tr><td>' + txt + ':</td><td data-ng-bind="' + id + '" id="param_' + id + '"></td></tr>';
             });
             $(params_tbody).append(param_html);
         },
@@ -197,6 +199,17 @@ function fetchAlgorithms(algoType) {
                 $('#algorithm option:first').attr('selected', 'selected');
                 list.trigger('change');
             }
+        }
+    });
+}
+function updateParamSummary() {
+    $("#params").find("input").each(function () {
+        var id = '#param_' + $(this).attr('data-ng-model');
+        var val = $(this).val();
+        if ($(this).attr('type') === 'checkbox') {
+            $(id).text($(this).prop('checked') ? 'yes' : 'no');
+        } else {
+            $(id).text(val);
         }
     });
 }
@@ -296,6 +309,14 @@ $(document).ready(function () {
         var varTypeId = $('input[name=varTypeId]:checked').val();
         fetchScores(algoName, varTypeId);
         fetchTests(algoName, varTypeId);
+        
+        $('#step4btn').prop("disabled", true);
+    });
+    $("#score").change(function () {
+        $('#step4btn').prop("disabled", true);
+    });
+    $("#test").change(function () {
+        $('#step4btn').prop("disabled", true);
     });
     $('#step1btn').click(function (e) {
         step_btn = $(this).attr('id');
@@ -312,7 +333,12 @@ $(document).ready(function () {
         }
         step_btn = $(this).attr('id');
     });
-    $('form').submit(function () {
+    $('#step4btn').click(function (e) {
+        if (step_btn === 'step4btn') {
+            return;
+        }
+        updateParamSummary();
+        step_btn = $(this).attr('id');
     });
 
     datatable = single_datatable;

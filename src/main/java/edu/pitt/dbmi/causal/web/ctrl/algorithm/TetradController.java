@@ -32,11 +32,12 @@ import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -65,7 +66,7 @@ public class TetradController {
         binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
     }
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public String runTetrad(
             @Valid @ModelAttribute("tetradForm") final TetradForm tetradForm,
             final BindingResult bindingResult,
@@ -80,10 +81,6 @@ public class TetradController {
             return ViewPath.REDIRECT_TETRAD_VIEW;
         }
 
-        System.out.println("================================================================================");
-        System.out.println(tetradForm);
-        System.out.println("================================================================================");
-
         if (!model.containsAttribute("tetradForm")) {
             model.addAttribute("tetradForm", tetradForm);
         }
@@ -94,7 +91,7 @@ public class TetradController {
         return ViewPath.TETRAD_VIEW;
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public String showTetradView(
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
