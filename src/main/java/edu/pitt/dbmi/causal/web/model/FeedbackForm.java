@@ -18,7 +18,7 @@
  */
 package edu.pitt.dbmi.causal.web.model;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 
 /**
  *
