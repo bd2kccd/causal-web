@@ -20,10 +20,18 @@ package edu.pitt.dbmi.causal.web.ctrl.algorithm;
 
 import edu.pitt.dbmi.causal.web.ctrl.ViewPath;
 import edu.pitt.dbmi.causal.web.model.AppUser;
+import edu.pitt.dbmi.causal.web.model.ParamOption;
 import edu.pitt.dbmi.causal.web.model.algorithm.TetradForm;
 import edu.pitt.dbmi.causal.web.service.algorithm.TetradService;
 import edu.pitt.dbmi.causal.web.tetrad.AlgoTypes;
+import edu.pitt.dbmi.causal.web.tetrad.TetradAlgorithm;
+import edu.pitt.dbmi.causal.web.tetrad.TetradAlgorithms;
+import edu.pitt.dbmi.causal.web.tetrad.TetradScore;
+import edu.pitt.dbmi.causal.web.tetrad.TetradScores;
+import edu.pitt.dbmi.causal.web.tetrad.TetradTest;
+import edu.pitt.dbmi.causal.web.tetrad.TetradTests;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
+import java.util.List;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
@@ -80,6 +88,38 @@ public class TetradController {
 
             return ViewPath.REDIRECT_TETRAD_VIEW;
         }
+
+        TetradAlgorithm algo = TetradAlgorithms.getInstance()
+                .getTetradAlgorithm(tetradForm.getAlgorithm());
+        if (algo == null) {
+            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.tetradForm", bindingResult);
+            redirAttrs.addFlashAttribute("tetradForm", tetradForm);
+            redirAttrs.addFlashAttribute("errorMsg", "Algorithm is required.");
+
+            return ViewPath.REDIRECT_TETRAD_VIEW;
+        }
+
+        TetradScore score = TetradScores.getInstance()
+                .getTetradScore(tetradForm.getScore());
+        TetradTest test = TetradTests.getInstance()
+                .getTetradTest(tetradForm.getTest());
+
+        Class scoreClass = (score == null) ? null : score.getScore().getClazz();
+        Class testClass = (test == null) ? null : test.getTest().getClazz();
+
+        StringBuilder errMsg = new StringBuilder();
+        if (!tetradService.validate(algo, scoreClass, testClass, errMsg)) {
+            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.tetradForm", bindingResult);
+            redirAttrs.addFlashAttribute("tetradForm", tetradForm);
+            redirAttrs.addFlashAttribute("errorMsg", errMsg.toString());
+
+            return ViewPath.REDIRECT_TETRAD_VIEW;
+        }
+
+        List<ParamOption> paramOpts = tetradService
+                .getAlgorithmParameters(algo.getAlgorithm().getClazz(), scoreClass, testClass);
+
+        String cmdParams = tetradService.getTetradParameters(formData, paramOpts);
 
         if (!model.containsAttribute("tetradForm")) {
             model.addAttribute("tetradForm", tetradForm);

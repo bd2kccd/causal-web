@@ -131,7 +131,7 @@ public class TetradScores {
     }
 
     public TetradScore getTetradScore(String shortName) {
-        return scoreByShortName.get(shortName);
+        return (shortName == null) ? null : scoreByShortName.get(shortName);
     }
 
     public List<Option> getOptions(DataType dataType) {

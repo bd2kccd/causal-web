@@ -131,7 +131,7 @@ public class TetradTests {
     }
 
     public TetradTest getTetradTest(String shortName) {
-        return testByShortName.get(shortName);
+        return (shortName == null) ? null : testByShortName.get(shortName);
     }
 
     public List<Option> getOptions(DataType dataType) {

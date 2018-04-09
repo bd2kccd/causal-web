@@ -81,9 +81,7 @@ public class TetradAlgorithms {
     }
 
     public TetradAlgorithm getTetradAlgorithm(String shortName) {
-        return (shortName == null)
-                ? null
-                : algoByShortName.get(shortName);
+        return (shortName == null) ? null : algoByShortName.get(shortName);
     }
 
     public List<Option> getOptions() {
@@ -91,9 +89,7 @@ public class TetradAlgorithms {
     }
 
     public List<Option> getOptions(AlgType algType) {
-        return (algType == null)
-                ? null
-                : optionsByAlgType.get(algType);
+        return (algType == null) ? null : optionsByAlgType.get(algType);
     }
 
     public static TetradAlgorithms getInstance() {

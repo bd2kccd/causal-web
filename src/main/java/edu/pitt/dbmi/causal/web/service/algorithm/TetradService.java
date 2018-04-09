@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
 
 /**
  *
@@ -73,6 +74,29 @@ public class TetradService {
         tetradForm.setAlgoType(AlgoTypes.DEFAULT_VALUE);
 
         return tetradForm;
+    }
+
+    public String getTetradParameters(MultiValueMap<String, String> formData, List<ParamOption> paramOpts) {
+        List<String> cmdParams = new LinkedList<>();
+        paramOpts.forEach(e -> {
+            String key = e.getValue();
+            String param = String.format("--%s", key);
+            String val = formData.getFirst(key);
+            if (val != null) {
+                val = val.trim();
+            }
+
+            if (e.isaBoolean()) {
+                if (val != null && (val.equals("on") || val.equals("yes") || val.equals("true"))) {
+                    cmdParams.add(param);
+                }
+            } else {
+                cmdParams.add(param);
+                cmdParams.add((val == null) ? e.getDefaultVal() : val);
+            }
+        });
+
+        return cmdParams.stream().collect(Collectors.joining(" "));
     }
 
     public List<ParamOption> getAlgorithmParameters(Class algorithm, Class score, Class test) {
