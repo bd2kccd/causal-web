@@ -309,7 +309,7 @@ $(document).ready(function () {
         var varTypeId = $('input[name=varTypeId]:checked').val();
         fetchScores(algoName, varTypeId);
         fetchTests(algoName, varTypeId);
-        
+
         $('#step4btn').prop("disabled", true);
     });
     $("#score").change(function () {
@@ -345,6 +345,7 @@ $(document).ready(function () {
     datatype = $(datatype_tab).attr('id');
     vartype = $(vartype_radio).filter(':checked').val();
     $('input:radio[name="algoType"]:checked').click();
+    $('input:hidden[name="singleFile"]').val(true);
 
     updateTable();
     disableButtonsAtStep1();

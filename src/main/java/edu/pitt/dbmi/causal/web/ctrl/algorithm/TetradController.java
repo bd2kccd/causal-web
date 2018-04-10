@@ -19,10 +19,12 @@
 package edu.pitt.dbmi.causal.web.ctrl.algorithm;
 
 import edu.pitt.dbmi.causal.web.ctrl.ViewPath;
+import edu.pitt.dbmi.causal.web.exception.ValidationException;
 import edu.pitt.dbmi.causal.web.model.AppUser;
-import edu.pitt.dbmi.causal.web.model.ParamOption;
 import edu.pitt.dbmi.causal.web.model.algorithm.TetradForm;
+import edu.pitt.dbmi.causal.web.service.AppUserService;
 import edu.pitt.dbmi.causal.web.service.algorithm.TetradService;
+import edu.pitt.dbmi.causal.web.service.algorithm.TetradValidationService;
 import edu.pitt.dbmi.causal.web.tetrad.AlgoTypes;
 import edu.pitt.dbmi.causal.web.tetrad.TetradAlgorithm;
 import edu.pitt.dbmi.causal.web.tetrad.TetradAlgorithms;
@@ -30,8 +32,10 @@ import edu.pitt.dbmi.causal.web.tetrad.TetradScore;
 import edu.pitt.dbmi.causal.web.tetrad.TetradScores;
 import edu.pitt.dbmi.causal.web.tetrad.TetradTest;
 import edu.pitt.dbmi.causal.web.tetrad.TetradTests;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.entity.VariableType;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
-import java.util.List;
+import java.util.Optional;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
@@ -61,12 +65,16 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class TetradController {
 
     private final TetradService tetradService;
+    private final TetradValidationService tetradValidationService;
     private final VariableTypeService variableTypeService;
+    private final AppUserService appUserService;
 
     @Autowired
-    public TetradController(TetradService tetradService, VariableTypeService variableTypeService) {
+    public TetradController(TetradService tetradService, TetradValidationService tetradValidationService, VariableTypeService variableTypeService, AppUserService appUserService) {
         this.tetradService = tetradService;
+        this.tetradValidationService = tetradValidationService;
         this.variableTypeService = variableTypeService;
+        this.appUserService = appUserService;
     }
 
     @InitBinder
@@ -89,37 +97,58 @@ public class TetradController {
             return ViewPath.REDIRECT_TETRAD_VIEW;
         }
 
-        TetradAlgorithm algo = TetradAlgorithms.getInstance()
-                .getTetradAlgorithm(tetradForm.getAlgorithm());
-        if (algo == null) {
+        Optional<VariableType> variableType = variableTypeService.getRepository().findById(tetradForm.getVarTypeId());
+        if (!variableType.isPresent()) {
             redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.tetradForm", bindingResult);
             redirAttrs.addFlashAttribute("tetradForm", tetradForm);
-            redirAttrs.addFlashAttribute("errorMsg", "Algorithm is required.");
+            redirAttrs.addFlashAttribute("errorMsg", "Variable type is requred.");
 
             return ViewPath.REDIRECT_TETRAD_VIEW;
         }
 
-        TetradScore score = TetradScores.getInstance()
-                .getTetradScore(tetradForm.getScore());
-        TetradTest test = TetradTests.getInstance()
-                .getTetradTest(tetradForm.getTest());
-
-        Class scoreClass = (score == null) ? null : score.getScore().getClazz();
-        Class testClass = (test == null) ? null : test.getTest().getClazz();
-
-        StringBuilder errMsg = new StringBuilder();
-        if (!tetradService.validate(algo, scoreClass, testClass, errMsg)) {
+        Long datasetId = tetradForm.getDatasetId();
+        boolean isSingleFile = tetradForm.isSingleFile();
+        try {
+            tetradValidationService.validateDataset(datasetId, isSingleFile);
+        } catch (ValidationException exception) {
             redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.tetradForm", bindingResult);
             redirAttrs.addFlashAttribute("tetradForm", tetradForm);
-            redirAttrs.addFlashAttribute("errorMsg", errMsg.toString());
+            redirAttrs.addFlashAttribute("errorMsg", exception.getErrorMessage());
 
             return ViewPath.REDIRECT_TETRAD_VIEW;
         }
 
-        List<ParamOption> paramOpts = tetradService
-                .getAlgorithmParameters(algo.getAlgorithm().getClazz(), scoreClass, testClass);
+        String algorithmName = tetradForm.getAlgorithm();
+        String testName = tetradForm.getTest();
+        String scoreName = tetradForm.getScore();
+        try {
+            tetradValidationService.validateExistence(algorithmName, testName, scoreName);
+        } catch (ValidationException exception) {
+            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.tetradForm", bindingResult);
+            redirAttrs.addFlashAttribute("tetradForm", tetradForm);
+            redirAttrs.addFlashAttribute("errorMsg", exception.getErrorMessage());
 
-        String cmdParams = tetradService.getTetradParameters(formData, paramOpts);
+            return ViewPath.REDIRECT_TETRAD_VIEW;
+        }
+
+        TetradAlgorithm algorithm = TetradAlgorithms.getInstance().getTetradAlgorithm(algorithmName);
+        TetradScore score = TetradScores.getInstance().getTetradScore(scoreName);
+        TetradTest test = TetradTests.getInstance().getTetradTest(testName);
+        try {
+            tetradValidationService.validateRequirement(algorithm, score, test);
+        } catch (ValidationException exception) {
+            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.tetradForm", bindingResult);
+            redirAttrs.addFlashAttribute("tetradForm", tetradForm);
+            redirAttrs.addFlashAttribute("errorMsg", exception.getErrorMessage());
+
+            return ViewPath.REDIRECT_TETRAD_VIEW;
+        }
+
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        try {
+            tetradService.enqueueJob(tetradForm, formData, userAccount);
+        } catch (Exception exception) {
+        }
 
         if (!model.containsAttribute("tetradForm")) {
             model.addAttribute("tetradForm", tetradForm);

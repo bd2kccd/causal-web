@@ -20,11 +20,12 @@ package edu.pitt.dbmi.causal.web.ctrl.algorithm;
 
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.DataType;
+import edu.pitt.dbmi.causal.web.exception.ValidationException;
 import edu.pitt.dbmi.causal.web.model.AppUser;
 import edu.pitt.dbmi.causal.web.model.OptionModel;
-import edu.pitt.dbmi.causal.web.model.ParamOption;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
 import edu.pitt.dbmi.causal.web.service.algorithm.TetradService;
+import edu.pitt.dbmi.causal.web.service.algorithm.TetradValidationService;
 import edu.pitt.dbmi.causal.web.tetrad.AlgoTypes;
 import edu.pitt.dbmi.causal.web.tetrad.TetradAlgorithm;
 import edu.pitt.dbmi.causal.web.tetrad.TetradAlgorithms;
@@ -50,10 +51,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttributes;
@@ -78,14 +79,16 @@ public class TetradRestController {
     private final TetradDataFileService tetradDataFileService;
     private final FileGroupService fileGroupService;
     private final VariableTypeService variableTypeService;
+    private final TetradValidationService tetradValidationService;
 
     @Autowired
-    public TetradRestController(AppUserService appUserService, TetradService tetradService, TetradDataFileService tetradDataFileService, FileGroupService fileGroupService, VariableTypeService variableTypeService) {
+    public TetradRestController(AppUserService appUserService, TetradService tetradService, TetradDataFileService tetradDataFileService, FileGroupService fileGroupService, VariableTypeService variableTypeService, TetradValidationService tetradValidationService) {
         this.appUserService = appUserService;
         this.tetradService = tetradService;
         this.tetradDataFileService = tetradDataFileService;
         this.fileGroupService = fileGroupService;
         this.variableTypeService = variableTypeService;
+        this.tetradValidationService = tetradValidationService;
     }
 
     @InitBinder
@@ -93,7 +96,7 @@ public class TetradRestController {
         binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
     }
 
-    @RequestMapping(value = "data/multiple/{varTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "data/multiple/{varTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> listMultipleData(@PathVariable final Long varTypeId, final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
         Optional<VariableType> varType = variableTypeService.findById(varTypeId);
@@ -107,7 +110,7 @@ public class TetradRestController {
         return ResponseEntity.ok(listFiles);
     }
 
-    @RequestMapping(value = "data/single/{varTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "data/single/{varTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> listSingleData(@PathVariable final Long varTypeId, final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
         Optional<VariableType> varType = variableTypeService.findById(varTypeId);
@@ -121,7 +124,7 @@ public class TetradRestController {
         return ResponseEntity.ok(listFiles);
     }
 
-    @RequestMapping(value = "algo/{algoTypeName}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "algo/{algoTypeName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> listAlgorithms(@PathVariable final String algoTypeName) {
         if ("all".equals(algoTypeName)) {
             return ResponseEntity.ok(TetradAlgorithms.getInstance().getOptions());
@@ -135,7 +138,7 @@ public class TetradRestController {
         }
     }
 
-    @RequestMapping(value = "score/algo/{algoName}/varType/{varTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "score/algo/{algoName}/varType/{varTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> listScores(
             @PathVariable final String algoName,
             @PathVariable final Long varTypeId) {
@@ -169,7 +172,7 @@ public class TetradRestController {
         }
     }
 
-    @RequestMapping(value = "test/algo/{algoName}/varType/{varTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "test/algo/{algoName}/varType/{varTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> listTests(
             @PathVariable final String algoName,
             @PathVariable final Long varTypeId) {
@@ -199,47 +202,27 @@ public class TetradRestController {
         }
     }
 
-    @RequestMapping(value = "param/algo/{algoName}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "param/algo/{algoName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> listParameters(
-            @PathVariable final String algoName,
-            @RequestParam("score") String scoreShortName,
-            @RequestParam("test") String testShortName) {
-        TetradAlgorithm tetradAlgo = TetradAlgorithms.getInstance().getTetradAlgorithm(algoName);
-        if (tetradAlgo == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No such algorithm.");
+            @PathVariable("algoName") final String algorithmName,
+            @RequestParam("score") String scoreName,
+            @RequestParam("test") String testName) {
+        try {
+            tetradValidationService.validateExistence(algorithmName, testName, scoreName);
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getErrorMessage());
         }
 
-        Class score;
-        if (scoreShortName == null) {
-            score = null;
-        } else {
-            TetradScore tetradScore = TetradScores.getInstance().getTetradScore(scoreShortName);
-            if (tetradScore == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No such independence test.");
-            }
-            score = tetradScore.getScore().getClazz();
+        TetradAlgorithm algorithm = TetradAlgorithms.getInstance().getTetradAlgorithm(algorithmName);
+        TetradScore score = TetradScores.getInstance().getTetradScore(scoreName);
+        TetradTest test = TetradTests.getInstance().getTetradTest(testName);
+        try {
+            tetradValidationService.validateRequirement(algorithm, score, test);
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getErrorMessage());
         }
 
-        Class test;
-        if (testShortName == null) {
-            test = null;
-        } else {
-            TetradTest tetradTest = TetradTests.getInstance().getTetradTest(testShortName);
-            if (tetradTest == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No such score.");
-            }
-            test = tetradTest.getTest().getClazz();
-        }
-
-        StringBuilder errMsg = new StringBuilder();
-        if (tetradService.validate(tetradAlgo, score, test, errMsg)) {
-            List<ParamOption> params = tetradService
-                    .getAlgorithmParameters(tetradAlgo.getAlgorithm().getClazz(), score, test);
-
-            return ResponseEntity.ok(params);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errMsg.toString());
-        }
+        return ResponseEntity.ok(tetradService.getAlgorithmParameters(algorithm, score, test));
     }
 
 }

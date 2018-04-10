@@ -18,19 +18,29 @@
  */
 package edu.pitt.dbmi.causal.web.service.algorithm;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
 import edu.pitt.dbmi.causal.web.model.ParamOption;
 import edu.pitt.dbmi.causal.web.model.algorithm.TetradForm;
 import edu.pitt.dbmi.causal.web.tetrad.AlgoTypes;
 import edu.pitt.dbmi.causal.web.tetrad.TetradAlgorithm;
+import edu.pitt.dbmi.causal.web.tetrad.TetradAlgorithms;
 import edu.pitt.dbmi.causal.web.tetrad.TetradParams;
+import edu.pitt.dbmi.causal.web.tetrad.TetradScore;
+import edu.pitt.dbmi.causal.web.tetrad.TetradScores;
+import edu.pitt.dbmi.causal.web.tetrad.TetradTest;
+import edu.pitt.dbmi.causal.web.tetrad.TetradTests;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.entity.VariableType;
 import edu.pitt.dbmi.ccd.db.service.FileGroupService;
 import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -76,33 +86,56 @@ public class TetradService {
         return tetradForm;
     }
 
-    public String getTetradParameters(MultiValueMap<String, String> formData, List<ParamOption> paramOpts) {
-        List<String> cmdParams = new LinkedList<>();
-        paramOpts.forEach(e -> {
-            String key = e.getValue();
-            String param = String.format("--%s", key);
-            String val = formData.getFirst(key);
-            if (val != null) {
-                val = val.trim();
-            }
+    public void enqueueJob(TetradForm tetradForm, MultiValueMap<String, String> multiValueMap, UserAccount userAccount) throws Exception {
+        Long datasetId = tetradForm.getDatasetId();
+        boolean isSingleFile = tetradForm.isSingleFile();
+        Long varTypeId = tetradForm.getVarTypeId();
+        String algorithmName = tetradForm.getAlgorithm();
+        String testName = tetradForm.getTest();
+        String scoreName = tetradForm.getScore();
 
+        Optional<VariableType> varTypeOpt = variableTypeService.getRepository().findById(varTypeId);
+        VariableType variableType = varTypeOpt.isPresent() ? varTypeOpt.get() : null;
+
+        TetradAlgorithm algorithm = TetradAlgorithms.getInstance().getTetradAlgorithm(algorithmName);
+        TetradScore score = TetradScores.getInstance().getTetradScore(scoreName);
+        TetradTest test = TetradTests.getInstance().getTetradTest(testName);
+
+        List<ParamOption> paramOpts = getAlgorithmParameters(algorithm, score, test);
+        String params = buildCmdParameters(multiValueMap, paramOpts);
+    }
+
+    public String buildCmdParameters(MultiValueMap<String, String> multiValueMap, List<ParamOption> paramOpts) throws JsonProcessingException {
+        Map<String, String> params = new HashMap<>();
+        paramOpts.forEach(e -> {
+            String param = e.getValue();
+            String val = multiValueMap.getFirst(param);
             if (e.isaBoolean()) {
                 if (val != null && (val.equals("on") || val.equals("yes") || val.equals("true"))) {
-                    cmdParams.add(param);
+                    params.put(param, "true");
                 }
             } else {
-                cmdParams.add(param);
-                cmdParams.add((val == null) ? e.getDefaultVal() : val);
+                params.put(param, val);
             }
         });
 
-        return cmdParams.stream().collect(Collectors.joining(" "));
+        try {
+            return new ObjectMapper().writeValueAsString(params);
+        } catch (JsonProcessingException exception) {
+            LOGGER.error("Unable to build parameters as JSON object.", exception);
+
+            throw exception;
+        }
     }
 
-    public List<ParamOption> getAlgorithmParameters(Class algorithm, Class score, Class test) {
+    public List<ParamOption> getAlgorithmParameters(TetradAlgorithm algorithm, TetradScore score, TetradTest test) {
+        Class scoreClass = (score == null) ? null : score.getScore().getClazz();
+        Class testClass = (test == null) ? null : test.getTest().getClazz();
+        Class algoClass = algorithm.getAlgorithm().getClazz();
+
         List<String> params = new LinkedList<>();
         try {
-            Algorithm algo = AlgorithmFactory.create(algorithm, test, score);
+            Algorithm algo = AlgorithmFactory.create(algoClass, testClass, scoreClass);
             if (algo != null) {
                 params.addAll(algo.getParameters());
             }
@@ -127,28 +160,6 @@ public class TetradService {
 
         return Stream.concat(numParams.stream(), boolParams.stream())
                 .collect(Collectors.toList());
-    }
-
-    public boolean validate(TetradAlgorithm tetradAlgorithm, Class score, Class test, StringBuilder errMsg) {
-        boolean missingScore = tetradAlgorithm.isRequiredScore() && (score == null);
-        boolean missingTest = tetradAlgorithm.isRequiredTest() && (test == null);
-        if (missingTest || missingScore) {
-            String algoName = tetradAlgorithm.getAlgorithm().getAnnotation().name();
-
-            String msg;
-            if (missingTest && missingScore) {
-                msg = String.format("%s requires both test and score.", algoName);
-            } else if (missingScore) {
-                msg = String.format("%s requires test.", algoName);
-            } else {
-                msg = String.format("%s requires score.", algoName);
-            }
-            errMsg.append(msg);
-
-            return false;
-        }
-
-        return true;
     }
 
 }
