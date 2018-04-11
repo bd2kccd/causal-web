@@ -33,10 +33,10 @@ import edu.pitt.dbmi.causal.web.tetrad.TetradScores;
 import edu.pitt.dbmi.causal.web.tetrad.TetradTest;
 import edu.pitt.dbmi.causal.web.tetrad.TetradTests;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.entity.VariableType;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
-import java.util.Optional;
 import javax.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
@@ -63,6 +63,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @SessionAttributes("appUser")
 @RequestMapping(value = "secured/algorithm/tetrad")
 public class TetradController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TetradController.class);
 
     private final TetradService tetradService;
     private final TetradValidationService tetradValidationService;
@@ -93,15 +95,6 @@ public class TetradController {
         if (bindingResult.hasErrors()) {
             redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.tetradForm", bindingResult);
             redirAttrs.addFlashAttribute("tetradForm", tetradForm);
-
-            return ViewPath.REDIRECT_TETRAD_VIEW;
-        }
-
-        Optional<VariableType> variableType = variableTypeService.getRepository().findById(tetradForm.getVarTypeId());
-        if (!variableType.isPresent()) {
-            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.tetradForm", bindingResult);
-            redirAttrs.addFlashAttribute("tetradForm", tetradForm);
-            redirAttrs.addFlashAttribute("errorMsg", "Variable type is requred.");
 
             return ViewPath.REDIRECT_TETRAD_VIEW;
         }
@@ -148,6 +141,14 @@ public class TetradController {
         try {
             tetradService.enqueueJob(tetradForm, formData, userAccount);
         } catch (Exception exception) {
+            String errMsg = "Unable to submit job.";
+            LOGGER.error(errMsg, exception);
+
+            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.tetradForm", bindingResult);
+            redirAttrs.addFlashAttribute("tetradForm", tetradForm);
+            redirAttrs.addFlashAttribute("errorMsg", errMsg);
+
+            return ViewPath.REDIRECT_TETRAD_VIEW;
         }
 
         if (!model.containsAttribute("tetradForm")) {

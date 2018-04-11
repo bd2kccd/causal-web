@@ -18,8 +18,6 @@
  */
 package edu.pitt.dbmi.causal.web.service.algorithm;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
 import edu.pitt.dbmi.causal.web.model.ParamOption;
@@ -34,13 +32,10 @@ import edu.pitt.dbmi.causal.web.tetrad.TetradTest;
 import edu.pitt.dbmi.causal.web.tetrad.TetradTests;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.entity.VariableType;
-import edu.pitt.dbmi.ccd.db.service.FileGroupService;
-import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
+import edu.pitt.dbmi.ccd.db.service.JobQueueService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -61,15 +56,13 @@ public class TetradService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TetradService.class);
 
-    private final TetradDataFileService tetradDataFileService;
-    private final FileGroupService fileGroupService;
     private final VariableTypeService variableTypeService;
+    private final JobQueueService jobQueueService;
 
     @Autowired
-    public TetradService(TetradDataFileService tetradDataFileService, FileGroupService fileGroupService, VariableTypeService variableTypeService) {
-        this.tetradDataFileService = tetradDataFileService;
-        this.fileGroupService = fileGroupService;
+    public TetradService(VariableTypeService variableTypeService, JobQueueService jobQueueService) {
         this.variableTypeService = variableTypeService;
+        this.jobQueueService = jobQueueService;
     }
 
     public TetradForm createTetradForm() {
@@ -89,43 +82,68 @@ public class TetradService {
     public void enqueueJob(TetradForm tetradForm, MultiValueMap<String, String> multiValueMap, UserAccount userAccount) throws Exception {
         Long datasetId = tetradForm.getDatasetId();
         boolean isSingleFile = tetradForm.isSingleFile();
-        Long varTypeId = tetradForm.getVarTypeId();
         String algorithmName = tetradForm.getAlgorithm();
         String testName = tetradForm.getTest();
         String scoreName = tetradForm.getScore();
-
-        Optional<VariableType> varTypeOpt = variableTypeService.getRepository().findById(varTypeId);
-        VariableType variableType = varTypeOpt.isPresent() ? varTypeOpt.get() : null;
 
         TetradAlgorithm algorithm = TetradAlgorithms.getInstance().getTetradAlgorithm(algorithmName);
         TetradScore score = TetradScores.getInstance().getTetradScore(scoreName);
         TetradTest test = TetradTests.getInstance().getTetradTest(testName);
 
         List<ParamOption> paramOpts = getAlgorithmParameters(algorithm, score, test);
-        String params = buildCmdParameters(multiValueMap, paramOpts);
+
+        List<String> cmdList = new LinkedList<>();
+        addAlgorithmCmd(cmdList, algorithm, score, test);
+        addParameterCmd(cmdList, multiValueMap, paramOpts);
+        String cmd = cmdList.stream().collect(Collectors.joining("|"));
+
+        String jobQueueName = createJobQueueName(algorithm, score, test);
+
+        jobQueueService.submitLocalTetradJob(jobQueueName, datasetId, isSingleFile, cmd, userAccount);
     }
 
-    public String buildCmdParameters(MultiValueMap<String, String> multiValueMap, List<ParamOption> paramOpts) throws JsonProcessingException {
-        Map<String, String> params = new HashMap<>();
+    public List<String> addParameterCmd(List<String> cmdList, MultiValueMap<String, String> multiValueMap, List<ParamOption> paramOpts) {
+        if (cmdList == null) {
+            cmdList = new LinkedList<>();
+        }
+
+        final List<String> list = cmdList;
         paramOpts.forEach(e -> {
             String param = e.getValue();
             String val = multiValueMap.getFirst(param);
+            if (val == null) {
+                val = e.getDefaultVal();
+            }
             if (e.isaBoolean()) {
-                if (val != null && (val.equals("on") || val.equals("yes") || val.equals("true"))) {
-                    params.put(param, "true");
+                if ((val.equals("on") || val.equals("yes") || val.equals("true"))) {
+                    list.add(String.format("%s:%s", param, "true"));
+                } else {
+                    list.add(String.format("%s:%s", param, "false"));
                 }
             } else {
-                params.put(param, val);
+                list.add(String.format("%s:%s", param, val));
             }
         });
 
-        try {
-            return new ObjectMapper().writeValueAsString(params);
-        } catch (JsonProcessingException exception) {
-            LOGGER.error("Unable to build parameters as JSON object.", exception);
+        return cmdList;
+    }
 
-            throw exception;
+    public List<String> addAlgorithmCmd(List<String> list, TetradAlgorithm algorithm, TetradScore score, TetradTest test) {
+        if (list == null) {
+            list = new LinkedList<>();
         }
+
+        if (algorithm != null) {
+            list.add(String.format("algorithm:%s", algorithm.getAlgorithm().getAnnotation().command()));
+        }
+        if (score != null) {
+            list.add(String.format("score:%s", score.getScore().getAnnotation().command()));
+        }
+        if (test != null) {
+            list.add(String.format("test:%s", test.getTest().getAnnotation().command()));
+        }
+
+        return list;
     }
 
     public List<ParamOption> getAlgorithmParameters(TetradAlgorithm algorithm, TetradScore score, TetradTest test) {
@@ -160,6 +178,25 @@ public class TetradService {
 
         return Stream.concat(numParams.stream(), boolParams.stream())
                 .collect(Collectors.toList());
+    }
+
+    private String createJobQueueName(TetradAlgorithm algorithm, TetradScore score, TetradTest test) {
+        StringBuilder dataBuilder = new StringBuilder();
+        if (algorithm != null) {
+            dataBuilder.append(algorithm.getAlgorithm().getAnnotation().command());
+        }
+        if (score != null) {
+            dataBuilder.append('_');
+            dataBuilder.append(score.getScore().getAnnotation().command());
+        }
+        if (test != null) {
+            dataBuilder.append('_');
+            dataBuilder.append(test.getTest().getAnnotation().command());
+        }
+        dataBuilder.append('_');
+        dataBuilder.append(System.currentTimeMillis());
+
+        return dataBuilder.toString().trim();
     }
 
 }
