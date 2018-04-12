@@ -151,14 +151,7 @@ public class TetradController {
             return ViewPath.REDIRECT_TETRAD_VIEW;
         }
 
-        if (!model.containsAttribute("tetradForm")) {
-            model.addAttribute("tetradForm", tetradForm);
-        }
-
-        model.addAttribute("varTypes", variableTypeService.findAll());
-        model.addAttribute("algoTypes", AlgoTypes.getInstance().getOptions());
-
-        return ViewPath.TETRAD_VIEW;
+        return ViewPath.REDIRECT_JOB_QUEUE;
     }
 
     @GetMapping

@@ -72,6 +72,16 @@ public final class ViewPath {
     public static final String TETRAD_VIEW = "algo/tetrad";
     public static final String REDIRECT_TETRAD_VIEW = "redirect:/secured/algorithm/tetrad";
 
+    public static final String JOB_QUEUE_VIEW = "job/job_queue";
+    public static final String JOB_QUEUE = "/secured/job/queue";
+    public static final String REDIRECT_JOB_QUEUE = "redirect:/secured/job/queue";
+
+    public static final String JOB_INFO_HISTORY_VIEW = "job/job_info_history";
+    public static final String JOB_INFO_HISTORY = "/secured/job/info/history";
+    public static final String REDIRECT_JOB_INFO_HISTORY = "redirect:/secured/job/info/history";
+
+    public static final String JOB_INFO_VIEW = "job/job_info";
+
     private ViewPath() {
     }
 
