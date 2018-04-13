@@ -22,9 +22,12 @@ import edu.pitt.dbmi.causal.web.ctrl.ViewPath;
 import edu.pitt.dbmi.causal.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.causal.web.model.AppUser;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
+import edu.pitt.dbmi.causal.web.service.job.JobInfoCtrlService;
 import edu.pitt.dbmi.ccd.db.entity.JobInfo;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.AlgorithmTypeService;
 import edu.pitt.dbmi.ccd.db.service.JobInfoService;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -46,20 +49,34 @@ public class JobInfoController {
 
     private final AppUserService appUserService;
     private final JobInfoService jobInfoService;
+    private final JobInfoCtrlService jobInfoCtrlService;
 
     @Autowired
-    public JobInfoController(AppUserService appUserService, JobInfoService jobInfoService) {
+    public JobInfoController(AppUserService appUserService, JobInfoService jobInfoService, JobInfoCtrlService jobInfoCtrlService) {
         this.appUserService = appUserService;
         this.jobInfoService = jobInfoService;
+        this.jobInfoCtrlService = jobInfoCtrlService;
     }
 
     @GetMapping("{id}")
     public String showJobInfo(@PathVariable final Long id, final Model model, final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        JobInfo jobInfo = jobInfoService.getRepository()
-                .findByIdAndUserAccount(id, userAccount);
+
+        JobInfo jobInfo = jobInfoService.getRepository().findByIdAndUserAccount(id, userAccount);
         if (jobInfo == null) {
             throw new ResourceNotFoundException();
+        }
+
+        model.addAttribute("title", jobInfo.getName());
+        model.addAttribute("generalInfo", jobInfoCtrlService.getGeneralInfo(jobInfo));
+        model.addAttribute("dataset", jobInfoCtrlService.getFiles(jobInfo.getDatasetId(), jobInfo.isSingleDataset()));
+
+        boolean isTetradJob = AlgorithmTypeService.TETRAD_SHORT_NAME
+                .equals(jobInfo.getAlgorithmType().getShortName());
+        if (isTetradJob) {
+            Map<String, String> params = jobInfoCtrlService.parseParameters(jobInfo.getAlgoParam());
+            model.addAttribute("algoInfo", jobInfoCtrlService.getAlgoInfos(params));
+            model.addAttribute("algoParams", jobInfoCtrlService.getAlgoParameters(params));
         }
 
         return ViewPath.JOB_INFO_VIEW;
