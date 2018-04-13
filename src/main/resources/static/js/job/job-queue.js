@@ -17,12 +17,37 @@ $(document).ready(function () {
                 }, "targets": 1
             },
             {"render": function () {
-                    return '<button class="btn btn-danger btn-xs" data-placement="top" data-toggle="tooltip" title="Cancel Job">'
-                            + '<span class="glyphicon glyphicon-stop"></span>'
+                    return '<button class="btn btn-danger btn-xs cancel" data-placement="top" data-toggle="tooltip" title="Cancel Job">'
+                            + '<span class="glyphicon glyphicon-trash"></span>'
                             + '</button>';
                 }, "orderable": false, "bSearchable": false, "targets": 4
             }
         ],
         "order": [[1, "desc"]]
     });
+    
+    $('#job_queue_tbl tbody').on('click', 'tr td .cancel', function () {
+        var rowNum = $(this).parents('tr')[0];
+        var row = job_queue_tbl.row(rowNum);
+        var rowData = row.data();
+        $('#confirm_cancel').find('.modal-title').text('Job Cancel Request: ' + rowData['name']);
+        $('#cancel_btn').data('id', row.index());
+        $('#confirm_cancel').modal('toggle');
+    });
+    
+    $(document).on('click', '#cancel_btn', function (e) {
+        var rowNum = $('#cancel_btn').data('id');
+        var row = job_queue_tbl.row(rowNum);
+        var rowData = row.data();
+
+        $.ajax({
+            url: ws_path + rowData['id'],
+            type: 'DELETE',
+            success: function () {
+                row.remove().draw();
+            }
+        });
+    });
+
+    $('body').tooltip({selector: '[data-toggle="tooltip"]'});
 });

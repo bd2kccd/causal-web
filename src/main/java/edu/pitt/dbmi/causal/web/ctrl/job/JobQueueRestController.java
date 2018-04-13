@@ -20,13 +20,17 @@ package edu.pitt.dbmi.causal.web.ctrl.job;
 
 import edu.pitt.dbmi.causal.web.model.AppUser;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
+import edu.pitt.dbmi.ccd.db.entity.JobQueue;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.JobQueueService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttributes;
@@ -51,6 +55,21 @@ public class JobQueueRestController {
     public JobQueueRestController(AppUserService appUserService, JobQueueService jobQueueService) {
         this.appUserService = appUserService;
         this.jobQueueService = jobQueueService;
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<?> cancelJob(@PathVariable final Long id, final AppUser appUser) {
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+        JobQueue jobQueue = jobQueueService.getRepository().findByIdAndUserAccount(id, userAccount);
+        if (!jobQueueService.getRepository().existsByIdAndUserAccount(id, userAccount)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (jobQueueService.cancelJob(id, userAccount)) {
+            return ResponseEntity.ok(id);
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to cancel job.");
+        }
     }
 
     @GetMapping
