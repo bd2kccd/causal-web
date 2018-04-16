@@ -43,8 +43,8 @@ $(document).ready(function () {
         $.ajax({
             url: ws_path + rowData['id'],
             type: 'DELETE',
-            success: function () {
-                row.remove().draw();
+            success: function (data) {
+                row.data(data);
             }
         });
     });

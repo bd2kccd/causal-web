@@ -20,9 +20,12 @@ package edu.pitt.dbmi.causal.web.ctrl.job;
 
 import edu.pitt.dbmi.causal.web.model.AppUser;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
+import edu.pitt.dbmi.ccd.db.domain.job.JobQueueListItem;
+import edu.pitt.dbmi.ccd.db.entity.JobInfo;
 import edu.pitt.dbmi.ccd.db.entity.JobQueue;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.JobQueueService;
+import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,12 +64,12 @@ public class JobQueueRestController {
     public ResponseEntity<?> cancelJob(@PathVariable final Long id, final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
         JobQueue jobQueue = jobQueueService.getRepository().findByIdAndUserAccount(id, userAccount);
-        if (!jobQueueService.getRepository().existsByIdAndUserAccount(id, userAccount)) {
+        if (jobQueue == null) {
             return ResponseEntity.notFound().build();
         }
 
-        if (jobQueueService.cancelJob(id, userAccount)) {
-            return ResponseEntity.ok(id);
+        if (jobQueueService.cancelJob(jobQueue)) {
+            return ResponseEntity.ok(toJobQueueListItem(jobQueue));
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to cancel job.");
         }
@@ -78,6 +81,18 @@ public class JobQueueRestController {
 
         return ResponseEntity.ok(jobQueueService.getRepository()
                 .getJobQueueListItems(userAccount));
+    }
+
+    public JobQueueListItem toJobQueueListItem(JobQueue jobQueue) {
+        JobInfo jobInfo = jobQueue.getJobInfo();
+
+        Long id = jobQueue.getId();
+        String name = jobInfo.getName();
+        Date creationTime = jobInfo.getCreationTime();
+        String status = jobInfo.getJobStatus().getName();
+        String location = jobInfo.getJobLocation().getName();
+
+        return new JobQueueListItem(id, name, creationTime, status, location);
     }
 
 }
