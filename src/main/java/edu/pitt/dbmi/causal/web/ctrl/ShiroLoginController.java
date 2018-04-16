@@ -28,9 +28,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -44,7 +43,7 @@ public class ShiroLoginController {
 
     private static final String LOGOUT_SUCCESS = "You Have Successfully Logged Out.";
 
-    @RequestMapping(value = ViewPath.LOGIN, method = RequestMethod.GET)
+    @GetMapping(ViewPath.LOGIN)
     public String showLoginPage(final SessionStatus sessionStatus, final Model model, HttpServletRequest req) {
         Subject currentUser = SecurityUtils.getSubject();
         if (sessionStatus.isComplete()) {
@@ -63,7 +62,7 @@ public class ShiroLoginController {
     }
 
     @CacheEvict(cacheNames = {"appUserServiceUserAccount"}, key = "#appUser.username")
-    @RequestMapping(value = ViewPath.LOGOUT, method = RequestMethod.GET)
+    @GetMapping(ViewPath.LOGOUT)
     public String logOut(
             @ModelAttribute("appUser") final AppUser appUser,
             final SessionStatus sessionStatus,

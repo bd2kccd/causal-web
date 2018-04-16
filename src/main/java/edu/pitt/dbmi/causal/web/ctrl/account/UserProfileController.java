@@ -26,9 +26,10 @@ import edu.pitt.dbmi.causal.web.service.account.UserProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -56,7 +57,7 @@ public class UserProfileController {
         this.userProfileService = userProfileService;
     }
 
-    @RequestMapping(value = "password/change", method = RequestMethod.POST)
+    @PostMapping("password/change")
     public String processPasswordChange(
             @ModelAttribute("changePasswordForm") final ChangePasswordForm changePasswordForm,
             @ModelAttribute("appUser") final AppUser appUser,
@@ -76,7 +77,7 @@ public class UserProfileController {
         return ViewPath.REDIRECT_USER_PROFILE;
     }
 
-    @RequestMapping(value = "info/change", method = RequestMethod.POST)
+    @PostMapping("info/change")
     public String processUserInfoChange(
             @ModelAttribute("userInfoForm") final UserInfoForm userInfoForm,
             @ModelAttribute("appUser") final AppUser appUser,
@@ -93,7 +94,7 @@ public class UserProfileController {
         return ViewPath.REDIRECT_USER_PROFILE;
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public String showUserProfilePage(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         if (!model.containsAttribute("userInfoForm")) {
             model.addAttribute("userInfoForm", userProfileService.createUserInfoForm(appUser));

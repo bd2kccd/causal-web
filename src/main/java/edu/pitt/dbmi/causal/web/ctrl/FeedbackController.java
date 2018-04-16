@@ -28,10 +28,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -58,7 +59,7 @@ public class FeedbackController {
         binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
     }
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public String sendFeedback(
             @Valid @ModelAttribute final FeedbackForm feedbackForm,
             final BindingResult bindingResult,
@@ -76,7 +77,7 @@ public class FeedbackController {
         return REDIRECT_FEEDBACK_VIEW;
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public String showFeedbackForm(Model model) {
         if (!model.containsAttribute("feedbackForm")) {
             model.addAttribute("feedbackForm", new FeedbackForm());

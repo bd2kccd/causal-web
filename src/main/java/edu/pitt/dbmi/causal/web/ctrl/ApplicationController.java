@@ -27,9 +27,8 @@ import edu.pitt.dbmi.ccd.db.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
 /**
@@ -53,12 +52,12 @@ public class ApplicationController {
         this.fileGroupService = fileGroupService;
     }
 
-    @RequestMapping(value = "/", method = RequestMethod.GET)
+    @GetMapping("/")
     public String showIndexPage() {
         return ViewPath.REDIRECT_LOGIN;
     }
 
-    @RequestMapping(value = ViewPath.HOME, method = RequestMethod.GET)
+    @GetMapping(ViewPath.HOME)
     public String showHomePage(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
 
@@ -68,7 +67,7 @@ public class ApplicationController {
         return ViewPath.HOME_VIEW;
     }
 
-    @RequestMapping(value = ViewPath.MESSAGE, method = RequestMethod.GET)
+    @GetMapping(ViewPath.MESSAGE)
     public String showMessage(final Model model) {
         if (!model.containsAttribute("message")) {
             throw new ResourceNotFoundException();
