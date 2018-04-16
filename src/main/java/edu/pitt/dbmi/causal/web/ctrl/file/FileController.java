@@ -41,11 +41,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -92,7 +93,7 @@ public class FileController {
         binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
     }
 
-    @RequestMapping(value = "{fileId}", method = RequestMethod.POST)
+    @PostMapping("{fileId}")
     public String categorizeFile(
             @Valid @ModelAttribute("fileCategorizeForm") final FileCategorizeForm fileCategorizeForm,
             final BindingResult bindingResult,
@@ -120,7 +121,7 @@ public class FileController {
                 : ViewPath.REDIRECT_FILE_LIST + fileFmt.getId();
     }
 
-    @RequestMapping(value = "{fileId}", method = RequestMethod.GET)
+    @GetMapping("{fileId}")
     public String showFileInfoAndCategory(@PathVariable final Long fileId, final Model model, final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
         File file = fileService.getRepository().findByIdAndUserAccount(fileId, userAccount);
@@ -139,7 +140,7 @@ public class FileController {
         return ViewPath.FILE_INFO_VIEW;
     }
 
-    @RequestMapping(value = "format/{id}", method = RequestMethod.GET)
+    @GetMapping("format/{id}")
     public String showFileList(@PathVariable final Long id, final Model model, final AppUser appUser) {
         Optional<FileFormat> fileFormat = fileFormatService.findById(id);
         if (fileFormat.isPresent()) {
@@ -151,12 +152,12 @@ public class FileController {
         return ViewPath.FILE_LIST_VIEW;
     }
 
-    @RequestMapping(value = "format/uncategorized", method = RequestMethod.GET)
+    @GetMapping("format/uncategorized")
     public String showUncategorizedFileList(final Model model, final AppUser appUser) {
         return ViewPath.FILE_LIST_VIEW;
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public String showFilesGroupedByCategory(final Model model, final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
 

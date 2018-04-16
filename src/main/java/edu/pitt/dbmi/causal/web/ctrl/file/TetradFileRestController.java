@@ -31,9 +31,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
@@ -59,7 +59,7 @@ public class TetradFileRestController {
         this.variableTypeService = variableTypeService;
     }
 
-    @RequestMapping(value = "data/{varTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "data/{varTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> listDataFilesByVarId(@PathVariable final Long varTypeId, final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
         Optional<VariableType> varType = variableTypeService.findById(varTypeId);

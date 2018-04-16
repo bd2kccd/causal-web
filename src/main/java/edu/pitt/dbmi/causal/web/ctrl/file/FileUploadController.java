@@ -31,9 +31,10 @@ import java.nio.file.Path;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
 /**
@@ -62,12 +63,12 @@ public class FileUploadController {
         this.fileService = fileService;
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public String showDataUploadView() {
         return ViewPath.FILE_UPLOAD_VIEW;
     }
 
-    @RequestMapping(value = "chunk", method = RequestMethod.POST)
+    @PostMapping("chunk")
     public void processChunkUpload(ResumableChunk chunk, AppUser appUser, HttpServletResponse res) throws IOException {
         if (fileUploadService.isSupported(chunk)) {
             UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
@@ -93,7 +94,7 @@ public class FileUploadController {
 
     }
 
-    @RequestMapping(value = "chunk", method = RequestMethod.GET)
+    @GetMapping("chunk")
     public void checkChunkExistence(ResumableChunk chunk, @ModelAttribute("appUser") AppUser appUser, HttpServletResponse res) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
         if (userAccount != null && fileUploadService.chunkExists(chunk, userAccount)) {

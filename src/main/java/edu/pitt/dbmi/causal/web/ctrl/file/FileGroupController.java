@@ -43,10 +43,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -78,7 +79,7 @@ public class FileGroupController {
         this.groupFileService = groupFileService;
     }
 
-    @RequestMapping(value = "{groupId}", method = RequestMethod.POST)
+    @PostMapping("{groupId}")
     public String updateFileGroup(
             @Valid @ModelAttribute("fileGroupForm") final FileGroupForm fileGroupForm,
             final BindingResult bindingResult,
@@ -143,7 +144,7 @@ public class FileGroupController {
         return ViewPath.REDIRECT_FILEGROUP_LIST;
     }
 
-    @RequestMapping(value = "{groupId}", method = RequestMethod.GET)
+    @GetMapping("{groupId}")
     public String showFileGroup(@PathVariable final Long groupId, final AppUser appUser, final Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
 
@@ -164,7 +165,7 @@ public class FileGroupController {
         return ViewPath.FILEGROUP_VIEW;
     }
 
-    @RequestMapping(value = "new", method = RequestMethod.POST)
+    @PostMapping("new")
     public String addNewFileGroup(
             @Valid @ModelAttribute("fileGroupForm") final FileGroupForm fileGroupForm,
             final BindingResult bindingResult,
@@ -220,7 +221,7 @@ public class FileGroupController {
         return ViewPath.REDIRECT_FILEGROUP_LIST;
     }
 
-    @RequestMapping(value = "new", method = RequestMethod.GET)
+    @GetMapping("new")
     public String showNewFileGroup(final AppUser appUser, final Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
 
@@ -230,12 +231,11 @@ public class FileGroupController {
         }
 
         model.addAttribute("varTypes", variableTypeService.findAll());
-//        model.addAttribute("dataGroups", tetradDataFileService.getFileGroupedByVariableTypeId(userAccount));
 
         return ViewPath.FILEGROUP_VIEW;
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public String showFileGroupList(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         return ViewPath.FILEGROUP_LIST_VIEW;
     }

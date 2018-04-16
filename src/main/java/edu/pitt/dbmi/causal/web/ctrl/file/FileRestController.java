@@ -33,9 +33,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttributes;
@@ -66,7 +68,7 @@ public class FileRestController {
         this.fileFormatService = fileFormatService;
     }
 
-    @RequestMapping(value = "{id}", method = RequestMethod.DELETE)
+    @DeleteMapping("{id}")
     public ResponseEntity<?> deleteFile(@PathVariable final Long id, final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
         File file = fileService.getRepository().findByIdAndUserAccount(id, userAccount);
@@ -81,7 +83,7 @@ public class FileRestController {
         }
     }
 
-    @RequestMapping(value = "title", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "title", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateFileTitle(
             @RequestParam(value = "pk", required = true) final Long id,
             @RequestParam(value = "value", required = true) final String title,
@@ -116,7 +118,7 @@ public class FileRestController {
         return ResponseEntity.ok().build();
     }
 
-    @RequestMapping(value = "format/uncategorized", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "format/uncategorized", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> listUncategorizedFile(final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
 
@@ -125,7 +127,7 @@ public class FileRestController {
         return ResponseEntity.ok(fileService.getRepository().findByUserAccountAndFileFormatIsNull(userAccount));
     }
 
-    @RequestMapping(value = "format/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "format/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> listFilesByCategory(@PathVariable final Long id, final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
         Optional<FileFormat> fileFormat = fileFormatService.findById(id);
