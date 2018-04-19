@@ -174,6 +174,20 @@ function fetchScores(algoName, varTypeId) {
         }
     });
 }
+function fetchDescription(algoName) {
+    var desc = $('#description');
+    $.ajax({
+        url: url_path + 'description/algo/' + algoName,
+        dataType: 'text',
+        type: 'GET',
+        success: function (data) {
+            desc.text(data);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            desc.text('Unable to get description.');
+        }
+    });
+}
 function fetchAlgorithms(algoType) {
     var list = $('#algorithm');
     $.ajax({
@@ -309,6 +323,7 @@ $(document).ready(function () {
         var varTypeId = $('input[name=varTypeId]:checked').val();
         fetchScores(algoName, varTypeId);
         fetchTests(algoName, varTypeId);
+        fetchDescription(algoName);
 
         $('#step4btn').prop("disabled", true);
     });

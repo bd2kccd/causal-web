@@ -124,6 +124,15 @@ public class TetradRestController {
         return ResponseEntity.ok(listFiles);
     }
 
+    @GetMapping(value = "description/algo/{algoName}", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<?> getAlgorithmDescription(@PathVariable final String algoName) {
+        TetradAlgorithm algo = TetradAlgorithms.getInstance().getTetradAlgorithm(algoName);
+
+        return (algo == null)
+                ? ResponseEntity.notFound().build()
+                : ResponseEntity.ok(algo.getDescription());
+    }
+
     @GetMapping(value = "algo/{algoTypeName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> listAlgorithms(@PathVariable final String algoTypeName) {
         if ("all".equals(algoTypeName)) {

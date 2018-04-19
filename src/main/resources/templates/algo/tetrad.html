@@ -20,6 +20,10 @@
             #varType {
                 margin-top: 20px;
             }
+            #description {
+                min-width: 100%;
+                resize: none;
+            }
         </style>
         <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{https://code.jquery.com/jquery-2.2.4.min.js}"></script>
         <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
@@ -167,8 +171,16 @@
                                                         </div>
                                                         <div class="col-lg-6">
                                                             <div class="form-group">
-                                                                <label for="algorithm"> Choose algorithm:</label>
+                                                                <label for="algorithm">Choose algorithm:</label>
                                                                 <select id="algorithm" class="form-control" size="10" th:field="*{algorithm}"></select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-12">
+                                                            <div class="form-group">
+                                                                <label for="description">Algorithm Description:</label>
+                                                                <textarea id="description" rows="10" readonly="readonly"></textarea>
                                                             </div>
                                                         </div>
                                                     </div>
