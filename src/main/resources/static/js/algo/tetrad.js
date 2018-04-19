@@ -125,7 +125,11 @@ function fetchParameters() {
     $('#test_name').html($("#test :selected").text().toLowerCase());
 }
 function fetchTests(algoName, varTypeId) {
-    var list = $('select[id="test"]');
+    if (!algoName) {
+        return;
+    }
+
+    var list = $('#test');
     $.ajax({
         url: url_path + 'test/algo/' + algoName + '/varType/' + varTypeId,
         dataType: 'json',
@@ -150,7 +154,11 @@ function fetchTests(algoName, varTypeId) {
     });
 }
 function fetchScores(algoName, varTypeId) {
-    var list = $('select[id="score"]');
+    if (!algoName) {
+        return;
+    }
+
+    var list = $('#score');
     $.ajax({
         url: url_path + 'score/algo/' + algoName + '/varType/' + varTypeId,
         dataType: 'json',
@@ -175,23 +183,23 @@ function fetchScores(algoName, varTypeId) {
     });
 }
 function fetchDescription(algoName) {
-    var desc = $('#description');
+    if (!algoName) {
+        return;
+    }
+
     $.ajax({
         url: url_path + 'description/algo/' + algoName,
         dataType: 'text',
         type: 'GET',
         success: function (data) {
-            desc.text(data);
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            desc.text('Unable to get description.');
+            $('#description').text(data);
         }
     });
 }
 function fetchAlgorithms(algoType) {
     var list = $('#algorithm');
     $.ajax({
-        url: url_path + 'algo/' + algoType,
+        url: url_path + 'algo/' + algoType + '/' + datatype,
         dataType: 'json',
         type: 'GET',
         success: function (data) {
@@ -208,8 +216,21 @@ function fetchAlgorithms(algoType) {
         complete: function () {
             if (list.is(':empty')) {
                 list.prop("disabled", true);
+                $('#description').text('');
+                disableButtonsAtStep2();
+
+                // clear scores
+                var scores = $('#score');
+                scores.empty();
+                scores.prop("disabled", true);
+
+                // clear tests
+                var tests = $('#test');
+                scores.empty();
+                tests.prop("disabled", true);
             } else {
                 list.prop("disabled", false);
+                $('#step2NextBtn').prop("disabled", false);
                 $('#algorithm option:first').attr('selected', 'selected');
                 list.trigger('change');
             }
@@ -341,6 +362,7 @@ $(document).ready(function () {
             $("#algorithm").trigger('change');
         }
         step_btn = $(this).attr('id');
+        $('input:radio[name="algoType"]:checked').click();
     });
     $('#step3btn').click(function (e) {
         if (step_btn === 'step2btn') {

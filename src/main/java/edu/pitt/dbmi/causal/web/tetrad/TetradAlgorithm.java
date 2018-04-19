@@ -18,6 +18,8 @@
  */
 package edu.pitt.dbmi.causal.web.tetrad;
 
+import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.Algorithm;
@@ -38,6 +40,8 @@ public class TetradAlgorithm implements Serializable, Comparable<TetradAlgorithm
     private final AnnotatedClass<Algorithm> algorithm;
     private final boolean requiredScore;
     private final boolean requiredTest;
+    private final boolean acceptMultiDataset;
+    private final boolean acceptKnowledge;
     private final String description;
 
     public TetradAlgorithm(AnnotatedClass<Algorithm> algorithm) {
@@ -48,6 +52,8 @@ public class TetradAlgorithm implements Serializable, Comparable<TetradAlgorithm
         this.algorithm = algorithm;
         this.requiredScore = UsesScoreWrapper.class.isAssignableFrom(algorithm.getClazz());
         this.requiredTest = TakesIndependenceWrapper.class.isAssignableFrom(algorithm.getClazz());
+        this.acceptMultiDataset = MultiDataSetAlgorithm.class.isAssignableFrom(algorithm.getClazz());
+        this.acceptKnowledge = HasKnowledge.class.isAssignableFrom(algorithm.getClazz());
         this.description = AlgorithmDescriptions.getInstance().get(algorithm.getAnnotation().command()).trim();
     }
 
@@ -71,6 +77,14 @@ public class TetradAlgorithm implements Serializable, Comparable<TetradAlgorithm
 
     public boolean isRequiredTest() {
         return requiredTest;
+    }
+
+    public boolean isAcceptMultiDataset() {
+        return acceptMultiDataset;
+    }
+
+    public boolean isAcceptKnowledge() {
+        return acceptKnowledge;
     }
 
     public String getDescription() {

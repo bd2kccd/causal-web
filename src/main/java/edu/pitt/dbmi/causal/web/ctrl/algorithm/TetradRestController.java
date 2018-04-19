@@ -22,6 +22,7 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.DataType;
 import edu.pitt.dbmi.causal.web.exception.ValidationException;
 import edu.pitt.dbmi.causal.web.model.AppUser;
+import edu.pitt.dbmi.causal.web.model.Option;
 import edu.pitt.dbmi.causal.web.model.OptionModel;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
 import edu.pitt.dbmi.causal.web.service.algorithm.TetradService;
@@ -41,8 +42,10 @@ import edu.pitt.dbmi.ccd.db.service.FileGroupService;
 import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,8 +136,8 @@ public class TetradRestController {
                 : ResponseEntity.ok(algo.getDescription());
     }
 
-    @GetMapping(value = "algo/{algoTypeName}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> listAlgorithms(@PathVariable final String algoTypeName) {
+    @GetMapping(value = "algo/{algoTypeName}/single", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> listSingleDatasetAlgorithms(@PathVariable final String algoTypeName) {
         if ("all".equals(algoTypeName)) {
             return ResponseEntity.ok(TetradAlgorithms.getInstance().getOptions());
         } else {
@@ -145,6 +148,28 @@ public class TetradRestController {
 
             return ResponseEntity.ok(TetradAlgorithms.getInstance().getOptions(algType));
         }
+    }
+    
+    @GetMapping(value = "algo/{algoTypeName}/multiple", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> listMultiDatasetAlgorithms(@PathVariable final String algoTypeName) {
+        TetradAlgorithms algorithms = TetradAlgorithms.getInstance();
+        final List<Option> options = new LinkedList<>();
+        if ("all".equals(algoTypeName)) {
+            algorithms.getOptions().stream()
+                    .filter(e -> algorithms.getTetradAlgorithm(e.getValue()).isAcceptMultiDataset())
+                    .collect(Collectors.toCollection(() -> options));
+        } else {
+            AlgType algType = AlgoTypes.getInstance().getAlgType(algoTypeName);
+            if (algType == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            algorithms.getOptions(algType).stream()
+                    .filter(e -> algorithms.getTetradAlgorithm(e.getValue()).isAcceptMultiDataset())
+                    .collect(Collectors.toCollection(() -> options));
+        }
+
+        return ResponseEntity.ok(options);
     }
 
     @GetMapping(value = "score/algo/{algoName}/varType/{varTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.TetradProperties;
 import edu.pitt.dbmi.causal.web.model.Option;
 import edu.pitt.dbmi.causal.web.model.OptionModel;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -135,6 +136,10 @@ public class TetradScores {
     }
 
     public List<Option> getOptions(DataType dataType) {
+        if (dataType == null || !optsByDataType.containsKey(dataType)) {
+            return Collections.EMPTY_LIST;
+        }
+
         return optsByDataType.get(dataType);
     }
 

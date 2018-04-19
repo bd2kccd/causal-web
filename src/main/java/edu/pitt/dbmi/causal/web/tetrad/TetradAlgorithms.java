@@ -89,7 +89,11 @@ public class TetradAlgorithms {
     }
 
     public List<Option> getOptions(AlgType algType) {
-        return (algType == null) ? null : optionsByAlgType.get(algType);
+        if (algType == null || !optionsByAlgType.containsKey(algType)) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return optionsByAlgType.get(algType);
     }
 
     public static TetradAlgorithms getInstance() {
