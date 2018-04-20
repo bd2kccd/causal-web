@@ -49,7 +49,7 @@ public class FileManagementService {
 
     private final String DATA_FOLDER = "data";
     private final String RESULT_FOLDER = "results";
-    private final String LIBRARY_FOLDER = "lib";
+    private final String TMP_FOLDER = "tmp";
 
     private final CcdProperties ccdProperties;
     private final FileService fileService;
@@ -125,12 +125,10 @@ public class FileManagementService {
     }
 
     public void setupUserHomeDirectory(UserAccount userAccount) {
-        String workspace = ccdProperties.getWorkspaceDir();
-        String homeFolder = userAccount.getAccount();
-
         List<Path> directories = new LinkedList<>();
-        directories.add(Paths.get(workspace, homeFolder, DATA_FOLDER));
-        directories.add(Paths.get(workspace, homeFolder, RESULT_FOLDER));
+        directories.add(getUserDataDirectory(userAccount));
+        directories.add(getUserTempDirectory(userAccount));
+        directories.add(getUserResultDirectory(userAccount));
 
         directories.forEach(directory -> {
             if (Files.notExists(directory)) {
@@ -155,6 +153,13 @@ public class FileManagementService {
         String userFolder = userAccount.getAccount();
 
         return Paths.get(rootDir, userFolder, DATA_FOLDER);
+    }
+
+    public Path getUserTempDirectory(UserAccount userAccount) {
+        String rootDir = ccdProperties.getWorkspaceDir();
+        String userFolder = userAccount.getAccount();
+
+        return Paths.get(rootDir, userFolder, TMP_FOLDER);
     }
 
     public Path getUserResultDirectory(UserAccount userAccount) {
