@@ -29,7 +29,6 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -68,11 +67,9 @@ public class JobQueueRestController {
             return ResponseEntity.notFound().build();
         }
 
-        if (jobQueueService.cancelJob(jobQueue)) {
-            return ResponseEntity.ok(toJobQueueListItem(jobQueue));
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to cancel job.");
-        }
+        jobQueueService.setStatusCanceled(jobQueue);
+
+        return ResponseEntity.ok(toJobQueueListItem(jobQueue));
     }
 
     @GetMapping
