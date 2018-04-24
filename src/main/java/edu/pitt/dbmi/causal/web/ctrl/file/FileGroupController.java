@@ -148,6 +148,9 @@ public class FileGroupController {
     public String showFileGroup(@PathVariable final Long groupId, final AppUser appUser, final Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
 
+        model.addAttribute("varTypes", variableTypeService.findAll());
+        model.addAttribute("dataGroups", tetradDataFileService.getFileGroupedByVariableTypeId(userAccount));
+
         // add form if not exists
         if (!model.containsAttribute("fileGroupForm")) {
             FileGroup fileGroup = fileGroupService.getRepository()
@@ -158,9 +161,6 @@ public class FileGroupController {
 
             model.addAttribute("fileGroupForm", groupFileService.createFileGroupForm(fileGroup));
         }
-
-        model.addAttribute("varTypes", variableTypeService.findAll());
-        model.addAttribute("dataGroups", tetradDataFileService.getFileGroupedByVariableTypeId(userAccount));
 
         return ViewPath.FILEGROUP_VIEW;
     }
@@ -231,6 +231,7 @@ public class FileGroupController {
         }
 
         model.addAttribute("varTypes", variableTypeService.findAll());
+        model.addAttribute("dataGroups", tetradDataFileService.getFileGroupedByVariableTypeId(userAccount));
 
         return ViewPath.FILEGROUP_VIEW;
     }

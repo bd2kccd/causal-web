@@ -19,8 +19,12 @@
         <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
         <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
         <script src="../../static/vendors/bootstrap-duallistbox/jquery.bootstrap-duallistbox.min.js" th:src="@{/vendors/bootstrap-duallistbox/jquery.bootstrap-duallistbox.min.js}"></script>
-        <script th:inline="javascript">
-            var listUrl = /*[[@{/secured/file/tetrad/data/}]]*/ '';
+        <script>
+            var var_types = $('input:radio[name="varTypeId"]');
+            for (i = 1; i <= var_types.length; i++) {
+                $('#selectgroup_' + i).bootstrapDualListbox();
+            }
+            $(".datagroup").hide();
         </script>
     </head>
     <body>
@@ -66,10 +70,14 @@
                                             </label>
                                             <span class="help-block" th:if="${#fields.hasErrors('varTypeId')}" th:errors="*{varTypeId}">Variable type is required.</span>
                                         </div>
-                                        <div class="well dataGroup" th:id="'dataGroup_' + ${opt.id}" th:each="opt : ${varTypes}">
+                                        <div class="well datagroup" th:id="'datagroup_' + ${element.key}" th:each="element : ${dataGroups}">
                                             <div class="form-group" th:class="${#fields.hasErrors('fileIds')} ? 'form-group has-error' : 'form-group'">
                                                 <label for="fileIds">Click on file from the left to move to the right for grouping.</label>
-                                                <select multiple="multiple" th:id="'selectOpt_' + ${opt.id}" class="form-control" size="12" th:field="*{fileIds}" required="required">
+                                                <select multiple="multiple" th:id="'selectgroup_' + ${element.key}" class="form-control" size="12" th:field="*{fileIds}" required="required">
+                                                    <option value=""
+                                                            th:each="file : ${element.value}"
+                                                            th:value="${file.id}"
+                                                            th:text="${file.title}">sim_data_100vars_100_cases.txt</option>
                                                 </select>
                                                 <span class="help-block" th:if="${#fields.hasErrors('fileIds')}" th:errors="*{fileIds}">Please select at least one file.</span>
                                             </div>

@@ -83,7 +83,7 @@ public class GroupFileService {
         Long varTypeId = fileGroup.getVariableType().getId();
 
         List<Long> fileIds = fileGroup.getFiles().stream()
-                .map(e -> e.getId())
+                .map(File::getId)
                 .collect(Collectors.toList());
 
         return new FileGroupForm(groupName, varTypeId, fileIds);
