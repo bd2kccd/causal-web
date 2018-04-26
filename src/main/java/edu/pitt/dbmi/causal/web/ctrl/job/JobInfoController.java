@@ -82,7 +82,7 @@ public class JobInfoController {
             model.addAttribute("algoParams", jobInfoCtrlService.getAlgoParameters(params));
         }
 
-        model.addAttribute("results", jobResultService.getRepository().getFiles(jobInfo));
+        model.addAttribute("results", jobResultService.getRepository().findByJobInfoAndUserAccount(jobInfo, userAccount));
 
         return ViewPath.JOB_INFO_VIEW;
     }
