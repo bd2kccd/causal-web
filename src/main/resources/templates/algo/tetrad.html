@@ -107,7 +107,7 @@
                                                             <div class="panel panel-default">
                                                                 <div class="panel-body">
                                                                     <div class="table-responsive">
-                                                                        <table id="single_datatable" class="table table-striped table-hover table-condensed" cellspacing="0" width="100%">
+                                                                        <table id="single_datatable" class="table table-striped table-hover table-condensed disabled compact" cellspacing="0" width="100%">
                                                                             <thead>
                                                                                 <tr>
                                                                                     <th>ID</th>
@@ -128,7 +128,7 @@
                                                             <div class="panel panel-default">
                                                                 <div class="panel-body">
                                                                     <div class="table-responsive">
-                                                                        <table id="multi_datatable" class="table table-striped table-hover table-condensed" cellspacing="0" width="100%">
+                                                                        <table id="multi_datatable" class="table table-striped table-hover table-condensed disabled compact" cellspacing="0" width="100%">
                                                                             <thead>
                                                                                 <tr>
                                                                                     <th>ID</th>
@@ -154,6 +154,11 @@
                                     <div class="col-xs-12">
                                         <div class="col-md-12">
                                             <h3>Step 2: Select Algorithm</h3>
+                                            <ul class="list-group">
+                                                <li class="list-group-item list-group-item-success">
+                                                    <b>Dataset:</b> <span class="dataset_name"></span>
+                                                </li>
+                                            </ul>
                                             <div class="panel panel-primary">
                                                 <div class="panel-heading">Algorithm Filters</div>
                                                 <div class="panel-body">
@@ -213,6 +218,16 @@
                                     <div class="col-xs-12">
                                         <div class="col-md-12">
                                             <h3>Step 3: Set Parameters</h3>
+                                            <ul class="list-group">
+                                                <li class="list-group-item list-group-item-success">
+                                                    <b>Dataset:</b> <span class="dataset_name"></span>
+                                                </li>
+                                                <li class="list-group-item list-group-item-success">
+                                                    <b>Algorithm:</b> <span class="algo_name"></span><br />
+                                                    <b>Test:</b> <span class="test_name"></span><br />
+                                                    <b>Score:</b> <span class="score_name"></span>
+                                                </li>
+                                            </ul>
                                             <div class="panel panel-primary">
                                                 <div class="panel-heading">Parameters</div>
                                                 <div class="panel-body">
@@ -236,7 +251,7 @@
                                                             <tbody>
                                                                 <tr>
                                                                     <td class="col-md-3">File:</td>
-                                                                    <td id="dataset_name"></td>
+                                                                    <td class="dataset_name"></td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td class="col-md-3">File Type:</td>
@@ -255,15 +270,15 @@
                                                             <tbody>
                                                                 <tr>
                                                                     <td class="col-md-3">Algorithm:</td>
-                                                                    <td id="algo_name"></td>
+                                                                    <td class="algo_name"></td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td class="col-md-3">Score:</td>
-                                                                    <td id="score_name"></td>
+                                                                    <td class="score_name"></td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td class="col-md-3">Test:</td>
-                                                                    <td id="test_name"></td>
+                                                                    <td class="test_name"></td>
                                                                 </tr>
                                                             </tbody>
                                                         </table>
@@ -300,6 +315,6 @@
         <script src="../../static/vendors/momentjs/moment.min.js" th:src="@{/vendors/momentjs/moment.min.js}"></script>
         <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
         <script src="../../static/js/algo/tetrad-valid.min.js" th:src="@{/js/algo/tetrad-valid.min.js}"></script>
-        <script src="../../static/js/algo/tetrad.min.js" th:src="@{/js/algo/tetrad.min.js}"></script>
+        <script src="../../static/js/algo/tetrad.js" th:src="@{/js/algo/tetrad.js}"></script>
     </body>
 </html>

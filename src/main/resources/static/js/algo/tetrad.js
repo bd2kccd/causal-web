@@ -25,7 +25,7 @@ function listSelectAction(dt, rowIndex) {
     $('input:hidden[name="datasetId"]').val(dt.cell(rowIndex, 0).data());
 
     // update summary table
-    $('#dataset_name').html(dt.cell(rowIndex, 1).data());
+    $('.dataset_name').html(dt.cell(rowIndex, 1).data());
     $('#data_type').html(datatype.toLowerCase());
     $('#var_type').html($('input:radio[name="varTypeId"]:checked').next().text().toLowerCase());
 }
@@ -120,9 +120,9 @@ function fetchParameters() {
     });
 
     // update summary table
-    $('#algo_name').html($("#algorithm :selected").text().toLowerCase());
-    $('#score_name').html($("#score :selected").text().toLowerCase());
-    $('#test_name').html($("#test :selected").text().toLowerCase());
+    $('.algo_name').html($("#algorithm :selected").text().toLowerCase());
+    $('.score_name').html($("#score :selected").text().toLowerCase());
+    $('.test_name').html($("#test :selected").text().toLowerCase());
 }
 function fetchTests(algoName, varTypeId) {
     if (!algoName) {
