@@ -27,6 +27,7 @@ import edu.pitt.dbmi.ccd.db.entity.JobInfo;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.AlgorithmTypeService;
 import edu.pitt.dbmi.ccd.db.service.JobInfoService;
+import edu.pitt.dbmi.ccd.db.service.JobResultService;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -50,12 +51,14 @@ public class JobInfoController {
     private final AppUserService appUserService;
     private final JobInfoService jobInfoService;
     private final JobInfoCtrlService jobInfoCtrlService;
+    private final JobResultService jobResultService;
 
     @Autowired
-    public JobInfoController(AppUserService appUserService, JobInfoService jobInfoService, JobInfoCtrlService jobInfoCtrlService) {
+    public JobInfoController(AppUserService appUserService, JobInfoService jobInfoService, JobInfoCtrlService jobInfoCtrlService, JobResultService jobResultService) {
         this.appUserService = appUserService;
         this.jobInfoService = jobInfoService;
         this.jobInfoCtrlService = jobInfoCtrlService;
+        this.jobResultService = jobResultService;
     }
 
     @GetMapping("{id}")
@@ -78,6 +81,8 @@ public class JobInfoController {
             model.addAttribute("algoInfo", jobInfoCtrlService.getAlgoInfos(params));
             model.addAttribute("algoParams", jobInfoCtrlService.getAlgoParameters(params));
         }
+
+        model.addAttribute("results", jobResultService.getRepository().getFiles(jobInfo));
 
         return ViewPath.JOB_INFO_VIEW;
     }
