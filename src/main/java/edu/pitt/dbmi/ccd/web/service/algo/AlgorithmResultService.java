@@ -244,7 +244,7 @@ public class AlgorithmResultService {
         return info;
     }
 
-
+    // Generating d3 graph from the Tetrad graph JSON file instead of text result file - Zhou
     public List<Node> extractEdgesFromTetradGraphJson(final String fileName, final String username) {
         List<Node> nodes = new LinkedList<>();
 
@@ -285,7 +285,7 @@ public class AlgorithmResultService {
                     endpoint2Str = "o";
                 }
                 // Produce a string representation of the edge
-                String edgeType = endpoint1Str + "-" + endpoint2Str;
+                String edgeType = String.format("%s-%s", endpoint1Str, endpoint2Str);
                 
                 // Create node
                 Node node = new Node(tetradGraphEdge.getNode1().getName(), tetradGraphEdge.getNode2().getName(), edgeType);
@@ -296,7 +296,7 @@ public class AlgorithmResultService {
                 List<String> edgeTypeProbabilitiesStrings = new LinkedList<>();
                 
                 edgeTypeProbabilities.forEach(edgeProb -> {
-                    edgeTypeProbabilitiesStrings.add(String.valueOf(edgeProb.getEdgeType()) + ": " + edgeProb.getProbability());
+                    edgeTypeProbabilitiesStrings.add(String.format("[%s] %s", String.valueOf(edgeProb.getEdgeType()), edgeProb.getProbability()));
                 });
                 
                 // Set bootstrap edge probabilities

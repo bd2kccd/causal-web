@@ -182,7 +182,7 @@ function plotGraph(links) {
                 if (d.bootstrap !== null) {
                     var bootstrapString = "";
                     d.bootstrap.forEach(function(item) {
-                        bootstrapString += item;
+                        bootstrapString += item + "<br>";
                     });
 
                     div.transition()
