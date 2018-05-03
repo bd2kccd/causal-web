@@ -21,6 +21,7 @@ package edu.pitt.dbmi.ccd.web.service.algo;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.graph.EdgeTypeProbability;
+import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.JsonUtils;
@@ -37,6 +38,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -295,8 +297,18 @@ public class AlgorithmResultService {
                 
                 List<String> edgeTypeProbabilitiesStrings = new LinkedList<>();
                 
+                HashMap<EdgeType, String> map = new HashMap<>();
+                map.put(EdgeType.aa, "<->");
+                map.put(EdgeType.ac, "<-o");
+                map.put(EdgeType.at, "<--");
+                map.put(EdgeType.ca, "o->");
+                map.put(EdgeType.cc, "o-o");
+                map.put(EdgeType.nil, "no edge");
+                map.put(EdgeType.ta, "-->");
+                map.put(EdgeType.tt, "---");
+                
                 edgeTypeProbabilities.forEach(edgeProb -> {
-                    edgeTypeProbabilitiesStrings.add(String.format("[%s] %s", String.valueOf(edgeProb.getEdgeType()), edgeProb.getProbability()));
+                    edgeTypeProbabilitiesStrings.add(String.format("[%s] %s", map.get(edgeProb.getEdgeType()), edgeProb.getProbability()));
                 });
                 
                 // Set bootstrap edge probabilities
