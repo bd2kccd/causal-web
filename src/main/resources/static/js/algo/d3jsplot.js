@@ -180,10 +180,15 @@ function plotGraph(links) {
             })
             .on("mouseover", function (d) {
                 if (d.bootstrap !== null) {
+                    var bootstrapString = "";
+                    d.bootstrap.forEach(function(item) {
+                        bootstrapString += item;
+                    });
+
                     div.transition()
                             .duration(200)
                             .style("opacity", .9);
-                    div.html(d.bootstrap)
+                    div.html(bootstrapString)
                             .style("left", (d3.event.pageX) + "px")
                             .style("top", (d3.event.pageY - 28) + "px");
                 }

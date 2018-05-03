@@ -121,7 +121,7 @@ public class AlgorithmResultController implements ViewPath {
             @RequestParam(value = "file") final String fileName,
             @ModelAttribute("appUser") final AppUser appUser,
             final Model model) {
-        model.addAttribute("data", algorithmResultService.extractGraphNodes(fileName, appUser.getUsername()));
+        model.addAttribute("data", algorithmResultService.extractEdgesFromTetradGraphJson(fileName, appUser.getUsername()));
 
         return D3_GRAPH_VIEW;
     }

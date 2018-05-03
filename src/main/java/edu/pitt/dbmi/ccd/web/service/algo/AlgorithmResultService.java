@@ -18,6 +18,12 @@
  */
 package edu.pitt.dbmi.ccd.web.service.algo;
 
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edge.Property;
+import edu.cmu.tetrad.graph.EdgeTypeProbability;
+import edu.cmu.tetrad.graph.Endpoint;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.JsonUtils;
 import edu.pitt.dbmi.ccd.commons.file.info.BasicFileInfo;
 import edu.pitt.dbmi.ccd.commons.file.info.FileInfos;
 import edu.pitt.dbmi.ccd.web.model.d3.Node;
@@ -28,6 +34,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -36,7 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
@@ -58,10 +64,6 @@ import org.springframework.stereotype.Service;
 public class AlgorithmResultService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmResultService.class);
-
-    private final Set<String> edgeProperties = Arrays.stream(new String[]{
-        "nl", "pl", "dd", "pd"
-    }).collect(Collectors.toSet());
 
     private final String workspace;
     private final String resultFolder;
@@ -153,8 +155,8 @@ public class AlgorithmResultService {
             List<BasicFileInfo> results = FileInfos.listBasicPathInfo(files);
             results.forEach(result -> {
                 String fileName = result.getFilename();
-                // only accept files that ends in .txt
-                if (fileName.endsWith(".txt")) {
+                // only accept files that ends in "_graph.json"
+                if (fileName.endsWith("_graph.json")) {
                     ResultFileInfo fileInfo = new ResultFileInfo();
                     fileInfo.setCreationDate(new Date(result.getCreationTime()));
                     fileInfo.setFileName(fileName);
@@ -242,93 +244,84 @@ public class AlgorithmResultService {
         return info;
     }
 
-    public List<Node> extractGraphNodes(final String fileName, final String username) {
+
+    public List<Node> extractEdgesFromTetradGraphJson(final String fileName, final String username) {
         List<Node> nodes = new LinkedList<>();
 
         Path file = Paths.get(workspace, username, resultFolder, algorithmResultFolder, fileName);
-        try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
-            Pattern space = Pattern.compile("\\s+");
-            boolean isData = false;
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                line = line.trim();
-                if (isData) {
-                    if (line.isEmpty()) {
-                        isData = false;
-                    } else {
-                        String[] data = space.split(line);
-                        if (data.length >= 4) {
-                            String source = data[1].trim();
-                            String target = data[3].trim();
-                            String edge = data[2].trim();
 
-                            Node node = new Node(source, target, edge);
+        try {
+            // Read Tetrad generated json file
+            String contents = new String(Files.readAllBytes(file));
 
-                            // get edge properties
-                            List<String> edgeProps = new LinkedList<>();
-                            for (int i = 4; i < data.length; i++) {
-                                String e = data[i].trim();
-                                if (edgeProperties.contains(e)) {
-                                    edgeProps.add(e);
-                                }
-                            }
-                            if (!edgeProps.isEmpty()) {
-                                node.setEdgeProps(edgeProps);
-                            }
+            // Parse to Tetrad graph
+            Graph tetradGraph = JsonUtils.parseJSONObjectToTetradGraph(contents);
+            
+            // Extract the edges, this is the tetrad graph edges.
+            // We'll convert them into cyto Edge
+            Set<Edge> tetradGraphEdges = tetradGraph.getEdges();
 
-                            // get bootstrap edge probabilities
-                            node.setBootstrap(getBootstrapData(line));
+            // For each edge determine the types of endpoints to figure out edge type.
+            // Basically convert to these '-->', 'o-o', or 'o->' strings
+            tetradGraphEdges.stream().forEach((tetradGraphEdge) -> {
+                Endpoint endpoint1 = tetradGraphEdge.getEndpoint1();
+                Endpoint endpoint2 = tetradGraphEdge.getEndpoint2();
 
-                            nodes.add(node);
-                        }
-                    }
-                } else if ("Graph Edges:".equals(line)) {
-                    isData = true;
-                    nodes.clear();
+                String endpoint1Str = "";
+                if (endpoint1 == Endpoint.TAIL) {
+                    endpoint1Str = "-";
+                } else if (endpoint1 == Endpoint.ARROW) {
+                    endpoint1Str = "<";
+                } else if (endpoint1 == Endpoint.CIRCLE) {
+                    endpoint1Str = "o";
                 }
-            }
-        } catch (IOException exception) {
-            LOGGER.error(String.format("Unable to read file '%s'.", fileName), exception);
-        }
 
+                String endpoint2Str = "";
+                if (endpoint2 == Endpoint.TAIL) {
+                    endpoint2Str = "-";
+                } else if (endpoint2 == Endpoint.ARROW) {
+                    endpoint2Str = ">";
+                } else if (endpoint2 == Endpoint.CIRCLE) {
+                    endpoint2Str = "o";
+                }
+                // Produce a string representation of the edge
+                String edgeType = endpoint1Str + "-" + endpoint2Str;
+                
+                // Create node
+                Node node = new Node(tetradGraphEdge.getNode1().getName(), tetradGraphEdge.getNode2().getName(), edgeType);
+
+                // Extract the probability of an edge
+                List<EdgeTypeProbability> edgeTypeProbabilities = tetradGraphEdge.getEdgeTypeProbabilities();
+                
+                List<String> edgeTypeProbabilitiesStrings = new LinkedList<>();
+                
+                edgeTypeProbabilities.forEach(edgeProb -> {
+                    edgeTypeProbabilitiesStrings.add(String.valueOf(edgeProb.getEdgeType()) + ": " + edgeProb.getProbability());
+                });
+                
+                // Set bootstrap edge probabilities
+                node.setBootstrap(edgeTypeProbabilitiesStrings);
+
+                // Edge properties
+                ArrayList<Property> edgeProperties = tetradGraphEdge.getProperties();
+                
+                List<String> edgeProps = new LinkedList<>();
+                
+                edgeProperties.forEach(prob -> {
+                    edgeProps.add(String.valueOf(prob));
+                });
+                        
+                if (!edgeProps.isEmpty()) {
+                    node.setEdgeProps(edgeProps);
+                }
+
+                nodes.add(node);
+            });
+        } catch (IOException e) {
+            LOGGER.error(String.format("Unable to read Tetrad graph JSON file '%s'.", fileName), e);
+        }
+        
         return nodes;
-    }
-
-    private String getBootstrapData(String line) {
-        List<String> edges = new LinkedList<>();
-        List<String> probs = new LinkedList<>();
-
-        // get edge types
-        Pattern bracket = Pattern.compile("\\[(.*?)\\]");
-        Matcher matcher = bracket.matcher(line);
-        while (matcher.find()) {
-            edges.add(matcher.group());
-        }
-
-        int size = edges.size();
-        if (size > 0) {
-            // get edge probabilities
-            Pattern digits = Pattern.compile("(\\d.\\d+)");
-            matcher = digits.matcher(line);
-            while (matcher.find()) {
-                probs.add(matcher.group());
-            }
-
-            if (probs.size() == size) {
-                String[] edgeArray = edges.toArray(new String[edges.size()]);
-                String[] probArray = probs.toArray(new String[probs.size()]);
-
-                List<String> results = new LinkedList<>();
-                for (int i = 0; i < edgeArray.length; i++) {
-                    results.add(String.format("%s %s", edgeArray[i], probArray[i]));
-                }
-
-                return results.stream().collect(Collectors.joining("<br />"));
-            } else {
-                return null;
-            }
-        } else {
-            return null;
-        }
     }
 
 }

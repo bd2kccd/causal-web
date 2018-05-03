@@ -124,6 +124,11 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
         </dependency>
+        <dependency>
+            <groupId>edu.cmu</groupId>
+            <artifactId>tetrad-lib</artifactId>
+            <version>6.4.0</version>
+        </dependency>
     </dependencies>
 
     <build>
