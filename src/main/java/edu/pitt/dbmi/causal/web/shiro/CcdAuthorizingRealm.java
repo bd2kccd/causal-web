@@ -19,11 +19,10 @@
 package edu.pitt.dbmi.causal.web.shiro;
 
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.entity.UserRole;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -57,13 +56,10 @@ public class CcdAuthorizingRealm extends AuthorizingRealm {
             throw new UnknownAccountException("Account does not exist");
         }
 
-        Set<String> roles = new LinkedHashSet<>();
-        List<UserRole> userRoles = userAccount.getUserRoles();
-        userRoles.forEach(userRole -> {
-            roles.add(userRole.getName());
-        });
-        Set<String> permissions = new LinkedHashSet<>();
-        permissions.add("*");
+        Set<String> roles = userAccount.getUserRoles().stream()
+                .map(e -> e.getName())
+                .collect(Collectors.toSet());
+        Set<String> permissions = Collections.singleton("*");
 
         SimpleAuthorizationInfo authorizationInfo = new SimpleAuthorizationInfo(roles);
         authorizationInfo.setStringPermissions(permissions);

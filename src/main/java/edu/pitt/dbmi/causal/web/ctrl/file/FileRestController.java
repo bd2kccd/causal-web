@@ -26,7 +26,6 @@ import edu.pitt.dbmi.ccd.db.entity.FileFormat;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileFormatService;
 import edu.pitt.dbmi.ccd.db.service.FileService;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,14 +129,14 @@ public class FileRestController {
     @GetMapping(value = "format/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> listFilesByCategory(@PathVariable final Long id, final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        Optional<FileFormat> fileFormat = fileFormatService.findById(id);
-        if (!fileFormat.isPresent()) {
+        FileFormat fileFormat = fileFormatService.findById(id);
+        if (fileFormat == null) {
             return ResponseEntity.notFound().build();
         }
 
         fileManagementService.syncFilesWithDatabase(userAccount);
 
-        return ResponseEntity.ok(fileService.getRepository().findByUserAccountAndFileFormat(userAccount, fileFormat.get()));
+        return ResponseEntity.ok(fileService.getRepository().findByFileFormatAndUserAccount(fileFormat, userAccount));
     }
 
 }

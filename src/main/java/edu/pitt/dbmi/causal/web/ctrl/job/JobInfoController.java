@@ -27,7 +27,7 @@ import edu.pitt.dbmi.ccd.db.entity.JobInfo;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.AlgorithmTypeService;
 import edu.pitt.dbmi.ccd.db.service.JobInfoService;
-import edu.pitt.dbmi.ccd.db.service.JobResultService;
+import edu.pitt.dbmi.ccd.db.service.JobStatusService;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -51,14 +51,12 @@ public class JobInfoController {
     private final AppUserService appUserService;
     private final JobInfoService jobInfoService;
     private final JobInfoCtrlService jobInfoCtrlService;
-    private final JobResultService jobResultService;
 
     @Autowired
-    public JobInfoController(AppUserService appUserService, JobInfoService jobInfoService, JobInfoCtrlService jobInfoCtrlService, JobResultService jobResultService) {
+    public JobInfoController(AppUserService appUserService, JobInfoService jobInfoService, JobInfoCtrlService jobInfoCtrlService) {
         this.appUserService = appUserService;
         this.jobInfoService = jobInfoService;
         this.jobInfoCtrlService = jobInfoCtrlService;
-        this.jobResultService = jobResultService;
     }
 
     @GetMapping("{id}")
@@ -70,19 +68,24 @@ public class JobInfoController {
             throw new ResourceNotFoundException();
         }
 
+        model.addAttribute("jobInfoId", jobInfo.getId());
         model.addAttribute("title", jobInfo.getName());
         model.addAttribute("generalInfo", jobInfoCtrlService.getGeneralInfo(jobInfo));
-        model.addAttribute("dataset", jobInfoCtrlService.getFiles(jobInfo.getDatasetId(), jobInfo.isSingleDataset()));
+        model.addAttribute("dataset", jobInfoCtrlService.getFiles(jobInfo.getDatasetFileId(), jobInfo.isSingleDataset()));
 
-        boolean isTetradJob = AlgorithmTypeService.TETRAD_SHORT_NAME
-                .equals(jobInfo.getAlgorithmType().getShortName());
+        boolean isTetradJob = AlgorithmTypeService.TETRAD_ID == jobInfo.getAlgorithmType().getId().longValue();
         if (isTetradJob) {
             Map<String, String> params = jobInfoCtrlService.parseParameters(jobInfo.getAlgoParam());
             model.addAttribute("algoInfo", jobInfoCtrlService.getAlgoInfos(params));
             model.addAttribute("algoParams", jobInfoCtrlService.getAlgoParameters(params));
         }
 
-        model.addAttribute("results", jobResultService.getRepository().findByJobInfoAndUserAccount(jobInfo, userAccount));
+        long jobStatusId = jobInfo.getJobStatus().getId();
+        if (jobStatusId == JobStatusService.FINISHED_ID
+                || jobStatusId == JobStatusService.FAILED_ID
+                || jobStatusId == JobStatusService.CANCELED_ID) {
+            model.addAttribute("results", jobInfoCtrlService.listResultFiles(jobInfo, userAccount));
+        }
 
         return ViewPath.JOB_INFO_VIEW;
     }

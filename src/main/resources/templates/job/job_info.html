@@ -123,9 +123,7 @@
                                     <table class="table table-striped table-condensed">
                                         <tbody>
                                             <tr th:each="file : ${results}">
-                                                <td><a href="#" th:href="@{${'/secured/file/' + file.id}}" th:text="${file.title}"></a></td>
-                                                <td th:text="${#dates.format(file.creationTime,'MMM dd, yyyy hh:mm:ss aaa')}"></td>
-                                                <td th:text="${@fileUtils.byteToSize(file.fileSize)}"></td>
+                                                <td><a href="#" th:text="${file}"></a></td>
                                             </tr>
                                         </tbody>
                                     </table>

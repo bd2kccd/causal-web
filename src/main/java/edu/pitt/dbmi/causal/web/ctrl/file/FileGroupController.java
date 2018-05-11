@@ -34,7 +34,6 @@ import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
 import org.slf4j.Logger;
@@ -111,18 +110,17 @@ public class FileGroupController {
             return ViewPath.REDIRECT_FILEGROUP + groupId;
         }
 
-        Optional<VariableType> varType = variableTypeService.getRepository()
-                .findById(fileGroupForm.getVarTypeId());
-        if (!varType.isPresent()) {
+        VariableType varType = variableTypeService.findById(fileGroupForm.getVarTypeId());
+        if (varType == null) {
             throw new ResourceNotFoundException();
         }
 
         List<File> files = tetradDataFileService.getRepository()
-                .find(userAccount, varType.get(), fileGroupForm.getFileIds()).stream()
+                .find(userAccount, varType, fileGroupForm.getFileIds()).stream()
                 .map(TetradDataFile::getFile)
                 .collect(Collectors.toList());
         if (files.isEmpty()) {
-            String errMsg = String.format("Please select file(s) for '%s' variable type.", varType.get().getName());
+            String errMsg = String.format("Please select file(s) for '%s' variable type.", varType.getName());
             bindingResult.rejectValue("fileIds", "fileGroupForm.fileIds", errMsg);
             redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.fileGroupForm", bindingResult);
             redirAttrs.addFlashAttribute("fileGroupForm", fileGroupForm);
@@ -188,18 +186,17 @@ public class FileGroupController {
             return ViewPath.REDIRECT_FILEGROUP_NEW;
         }
 
-        Optional<VariableType> varType = variableTypeService.getRepository()
-                .findById(fileGroupForm.getVarTypeId());
-        if (!varType.isPresent()) {
+        VariableType varType = variableTypeService.findById(fileGroupForm.getVarTypeId());
+        if (varType == null) {
             throw new ResourceNotFoundException();
         }
 
         List<File> files = tetradDataFileService.getRepository()
-                .find(userAccount, varType.get(), fileGroupForm.getFileIds()).stream()
+                .find(userAccount, varType, fileGroupForm.getFileIds()).stream()
                 .map(TetradDataFile::getFile)
                 .collect(Collectors.toList());
         if (files.isEmpty()) {
-            String errMsg = String.format("Please select file(s) for '%s' variable type.", varType.get().getName());
+            String errMsg = String.format("Please select file(s) for '%s' variable type.", varType.getName());
             bindingResult.rejectValue("fileIds", "fileGroupForm.fileIds", errMsg);
             redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.fileGroupForm", bindingResult);
             redirAttrs.addFlashAttribute("fileGroupForm", fileGroupForm);
@@ -208,7 +205,7 @@ public class FileGroupController {
         }
 
         try {
-            groupFileService.saveFileGroup(fileGroupForm.getGroupName(), varType.get(), userAccount, files);
+            groupFileService.saveFileGroup(fileGroupForm.getGroupName(), varType, userAccount, files);
         } catch (Exception exception) {
             LOGGER.error("Unable to create new file group.", exception);
 

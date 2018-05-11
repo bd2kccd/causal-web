@@ -24,8 +24,6 @@ import edu.pitt.dbmi.ccd.db.entity.FileGroup;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.entity.VariableType;
 import edu.pitt.dbmi.ccd.db.service.FileGroupService;
-import edu.pitt.dbmi.ccd.db.service.FileTypeService;
-import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import java.util.Date;
 import java.util.List;
@@ -42,17 +40,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class GroupFileService {
 
-    private final VariableTypeService variableTypeService;
     private final FileGroupService fileGroupService;
-    private final FileTypeService fileTypeService;
-    private final TetradDataFileService tetradDataFileService;
 
     @Autowired
-    public GroupFileService(VariableTypeService variableTypeService, FileGroupService fileGroupService, FileTypeService fileTypeService, TetradDataFileService tetradDataFileService) {
-        this.variableTypeService = variableTypeService;
+    public GroupFileService(FileGroupService fileGroupService) {
         this.fileGroupService = fileGroupService;
-        this.fileTypeService = fileTypeService;
-        this.tetradDataFileService = tetradDataFileService;
     }
 
     public FileGroup updateFileGroup(FileGroup fileGroup, String name, List<File> files) {
@@ -63,17 +55,15 @@ public class GroupFileService {
     }
 
     public FileGroup saveFileGroup(String name, VariableType varType, UserAccount userAccount, List<File> files) {
-        return fileGroupService.getRepository()
-                .save(new FileGroup(name, new Date(), varType, userAccount, files));
+        FileGroup fileGroup = new FileGroup(name, new Date(), varType, userAccount);
+        fileGroup.setFiles(files);
+
+        return fileGroupService.getRepository().save(fileGroup);
     }
 
     public FileGroupForm createFileGroupForm() {
         FileGroupForm fileGroupForm = new FileGroupForm();
-
-        List<VariableType> varTypes = variableTypeService.findAll();
-        if (!varTypes.isEmpty()) {
-            fileGroupForm.setVarTypeId(varTypes.get(0).getId());
-        }
+        fileGroupForm.setVarTypeId(VariableTypeService.CONTINUOUS_ID);
 
         return fileGroupForm;
     }

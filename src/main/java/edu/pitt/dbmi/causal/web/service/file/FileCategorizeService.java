@@ -37,8 +37,6 @@ import edu.pitt.dbmi.data.Delimiter;
 import edu.pitt.dbmi.data.reader.BasicDataFileReader;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +50,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class FileCategorizeService {
+
+    private final long TETRAD_TAB_FORMAT = FileFormatService.TETRAD_TAB_ID;
+    private final long TETRAD_VAR_FORMAT = FileFormatService.TETRAD_VAR_ID;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileCategorizeService.class);
 
@@ -75,65 +76,56 @@ public class FileCategorizeService {
     }
 
     public FileFormat categorizeFile(FileCategorizeForm fileCategorizeForm, File file, UserAccount userAccount) {
-        Optional<FileFormat> fileFormat = fileFormatService.findById(fileCategorizeForm.getFileFormatId());
-        if (fileFormat.isPresent()) {
-            FileFormat prevFileFormat = file.getFileFormat();
-            if (prevFileFormat != null && prevFileFormat.getId().equals(fileFormat.get().getId())) {
-                if (!fileFormat.get().getShortName().equals(FileFormatService.TETRAD_TAB_SHORT_NAME)) {
-                    return fileFormat.get();
+        FileFormat fileFmt = fileFormatService.findById(fileCategorizeForm.getFileFormatId());
+        if (fileFmt == null) {
+            fileService.changeFileFormat(file, fileFmt);
+        } else {
+            long fileFmtId = fileFmt.getId();
+
+            FileFormat prevFileFmt = file.getFileFormat();
+            if (prevFileFmt != null && prevFileFmt.getId() == fileFmtId) {
+                if (fileFmtId != TETRAD_TAB_FORMAT) {
+                    return fileFmt;
                 }
             }
 
-            switch (fileFormat.get().getShortName()) {
-                case FileFormatService.TETRAD_TAB_SHORT_NAME:
-                    tetradDataFileService.save(createTetradDataFile(fileCategorizeForm, file, userAccount));
-                    break;
-                case FileFormatService.TETRAD_VAR_SHORT_NAME:
-                    tetradVariableFileService.save(createTetradVariableFile(file, userAccount));
-                    break;
-                default:
-                    fileService.changeFileFormat(file, fileFormat.get());
+            if (fileFmtId == TETRAD_TAB_FORMAT) {
+                tetradDataFileService.save(createTetradDataFile(fileCategorizeForm, file, userAccount));
+            } else if (fileFmtId == TETRAD_VAR_FORMAT) {
+                tetradVariableFileService.save(createTetradVariableFile(file, userAccount));
+            } else {
+                fileService.changeFileFormat(file, fileFmt);
             }
         }
 
-        return fileFormat.get();
+        return fileFmt;
     }
 
     public FileCategorizeForm createForm(File file) {
         FileCategorizeForm form = new FileCategorizeForm(true);
+        form.setVariableTypeId(VariableTypeService.CONTINUOUS_ID);
+        form.setDataDelimiterId(DataDelimiterService.TAB_DELIM_ID);
+        form.setQuoteChar('"');
+        form.setMissingValueMarker("*");
+        form.setCommentMarker("#");
 
         FileFormat fileFormat = file.getFileFormat();
-        if (fileFormat != null && fileFormat.getShortName().equals(FileFormatService.TETRAD_TAB_SHORT_NAME)) {
-            TetradDataFile dataFile = tetradDataFileService.getRepository().findByFile(file);
-            if (dataFile != null) {
-                form.setVariableTypeId(dataFile.getVariableType().getId());
-                form.setDataDelimiterId(dataFile.getDataDelimiter().getId());
-                form.setQuoteChar(dataFile.getQuoteChar());
-                form.setMissingValueMarker(dataFile.getMissingMarker());
-                form.setCommentMarker(dataFile.getCommentMarker());
-                form.setHasHeader(dataFile.isHasHeader());
-            }
-        } else {
-            List<VariableType> variableTypes = variableTypeService.findAll();
-            if (!variableTypes.isEmpty()) {
-                form.setVariableTypeId(variableTypes.get(0).getId());
-            }
-
-            List<DataDelimiter> dataDelimiters = dataDelimiterService.findAll();
-            if (!dataDelimiters.isEmpty()) {
-                form.setDataDelimiterId(dataDelimiters.get(0).getId());
-            }
-
-            form.setQuoteChar('"');
-            form.setMissingValueMarker("*");
-            form.setCommentMarker("#");
-        }
-
         if (fileFormat == null) {
-            fileFormat = fileFormatService.findByShortName(FileFormatService.TETRAD_TAB_SHORT_NAME);
+            form.setFileFormatId(FileFormatService.TETRAD_TAB_ID);
+        } else {
+            if (fileFormat.getId() == TETRAD_TAB_FORMAT) {
+                TetradDataFile dataFile = tetradDataFileService.getRepository().findByFile(file);
+                if (dataFile != null) {
+                    form.setVariableTypeId(dataFile.getVariableType().getId());
+                    form.setDataDelimiterId(dataFile.getDataDelimiter().getId());
+                    form.setQuoteChar(dataFile.getQuoteChar());
+                    form.setMissingValueMarker(dataFile.getMissingMarker());
+                    form.setCommentMarker(dataFile.getCommentMarker());
+                    form.setHasHeader(dataFile.isHasHeader());
+                }
+            }
+            form.setFileFormatId(fileFormat.getId());
         }
-
-        form.setFileFormatId(fileFormat.getId());
 
         return form;
     }
@@ -164,22 +156,22 @@ public class FileCategorizeService {
         String missValMark = fileCategorizeForm.getMissingValueMarker();
         String cmntMark = fileCategorizeForm.getCommentMarker();
 
-        Optional<DataDelimiter> dataDelim = dataDelimiterService.findById(delimId);
-        Optional<VariableType> varType = variableTypeService.findById(varId);
+        DataDelimiter dataDelim = dataDelimiterService.findById(delimId);
+        VariableType varType = variableTypeService.findById(varId);
 
         TetradDataFile dataFile = new TetradDataFile();
         dataFile.setCommentMarker(cmntMark);
-        dataFile.setDataDelimiter(dataDelim.isPresent() ? dataDelim.get() : null);
+        dataFile.setDataDelimiter(dataDelim);
         dataFile.setFile(file);
         dataFile.setHasHeader(hasHeader);
         dataFile.setMissingMarker(missValMark);
         dataFile.setQuoteChar(quoteChar);
-        dataFile.setVariableType(varType.isPresent() ? varType.get() : null);
+        dataFile.setVariableType(varType);
         dataFile.setUserAccount(userAccount);
 
         Path localDataFile = fileManagementService.getLocalFile(file, userAccount);
         try {
-            BasicDataFileReader fileReader = new BasicDataFileReader(localDataFile.toFile(), getDelimiter(dataDelim.isPresent() ? dataDelim.get() : null));
+            BasicDataFileReader fileReader = new BasicDataFileReader(localDataFile.toFile(), getDelimiter(dataDelim));
             dataFile.setNumOfVars(fileReader.getNumberOfColumns());
             dataFile.setNumOfCases(hasHeader ? fileReader.getNumberOfLines() - 1 : fileReader.getNumberOfLines());
         } catch (IOException exception) {
@@ -195,23 +187,23 @@ public class FileCategorizeService {
             return null;
         }
 
-        switch (dataDelimiter.getShortName()) {
-            case DataDelimiterService.COLON_DELIM_SHORT_NAME:
-                return Delimiter.COLON;
-            case DataDelimiterService.COMMA_DELIM_SHORT_NAME:
-                return Delimiter.COMMA;
-            case DataDelimiterService.PIPE_DELIM_SHORT_NAME:
-                return Delimiter.PIPE;
-            case DataDelimiterService.SEMICOLON_DELIM_SHORT_NAME:
-                return Delimiter.SEMICOLON;
-            case DataDelimiterService.SPACE_DELIM_SHORT_NAME:
-                return Delimiter.SPACE;
-            case DataDelimiterService.TAB_DELIM_SHORT_NAME:
-                return Delimiter.TAB;
-            case DataDelimiterService.WHITESPACE_DELIM_SHORT_NAME:
-                return Delimiter.WHITESPACE;
-            default:
-                return null;
+        long id = dataDelimiter.getId();
+        if (id == DataDelimiterService.COLON_DELIM_ID) {
+            return Delimiter.COLON;
+        } else if (id == DataDelimiterService.COMMA_DELIM_ID) {
+            return Delimiter.COMMA;
+        } else if (id == DataDelimiterService.PIPE_DELIM_ID) {
+            return Delimiter.PIPE;
+        } else if (id == DataDelimiterService.SEMICOLON_DELIM_ID) {
+            return Delimiter.SEMICOLON;
+        } else if (id == DataDelimiterService.SPACE_DELIM_ID) {
+            return Delimiter.SPACE;
+        } else if (id == DataDelimiterService.TAB_DELIM_ID) {
+            return Delimiter.TAB;
+        } else if (id == DataDelimiterService.WHITESPACE_DELIM_ID) {
+            return Delimiter.WHITESPACE;
+        } else {
+            return null;
         }
     }
 

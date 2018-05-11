@@ -25,7 +25,6 @@ import edu.pitt.dbmi.causal.web.service.AppUserService;
 import edu.pitt.dbmi.causal.web.service.file.FileUploadService;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.service.FileService;
 import java.io.IOException;
 import java.nio.file.Path;
 import javax.servlet.http.HttpServletResponse;
@@ -54,13 +53,11 @@ public class FileUploadController {
 
     private final AppUserService appUserService;
     private final FileUploadService fileUploadService;
-    private final FileService fileService;
 
     @Autowired
-    public FileUploadController(AppUserService appUserService, FileUploadService fileUploadService, FileService fileService) {
+    public FileUploadController(AppUserService appUserService, FileUploadService fileUploadService) {
         this.appUserService = appUserService;
         this.fileUploadService = fileUploadService;
-        this.fileService = fileService;
     }
 
     @GetMapping
@@ -79,7 +76,7 @@ public class FileUploadController {
                         res.getWriter().println("Upload failed.");
                         res.setStatus(FAIL_STATUS);
                     } else {
-                        File fileEntity = fileService.persistLocalFile(uploadedFile, userAccount);
+                        File fileEntity = fileUploadService.persistFile(uploadedFile, userAccount);
                         res.getWriter().println(fileEntity.getMd5CheckSum());
                     }
                 }

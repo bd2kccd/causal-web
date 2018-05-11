@@ -21,7 +21,9 @@ package edu.pitt.dbmi.causal.web.service.file;
 import edu.pitt.dbmi.causal.web.model.file.ResumableChunk;
 import edu.pitt.dbmi.causal.web.service.filesys.FileManagementService;
 import edu.pitt.dbmi.causal.web.util.FileSys;
+import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.FileService;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -46,10 +48,16 @@ public class FileUploadService {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileUploadService.class);
 
     private final FileManagementService fileManagementService;
+    private final FileService fileService;
 
     @Autowired
-    public FileUploadService(FileManagementService fileManagementService) {
+    public FileUploadService(FileManagementService fileManagementService, FileService fileService) {
         this.fileManagementService = fileManagementService;
+        this.fileService = fileService;
+    }
+
+    public File persistFile(Path file, UserAccount userAccount) {
+        return fileService.persistLocalFile(file, FileManagementService.DATA_FOLDER, userAccount);
     }
 
     public boolean isSupported(ResumableChunk chunk) {

@@ -27,7 +27,6 @@ import edu.pitt.dbmi.ccd.db.entity.VariableType;
 import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -62,13 +61,13 @@ public class TetradFileRestController {
     @GetMapping(value = "data/{varTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> listDataFilesByVarId(@PathVariable final Long varTypeId, final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        Optional<VariableType> varType = variableTypeService.findById(varTypeId);
-        if (!varType.isPresent()) {
+        VariableType varType = variableTypeService.findById(varTypeId);
+        if (varType == null) {
             throw new ResourceNotFoundException();
         }
 
         List<ListItem> list = tetradDataFileService.getRepository()
-                .getTetradDataListItem(userAccount, varType.get());
+                .getTetradDataListItem(userAccount, varType);
 
         return ResponseEntity.ok(list);
     }

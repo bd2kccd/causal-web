@@ -33,7 +33,6 @@ import edu.pitt.dbmi.ccd.db.service.DataDelimiterService;
 import edu.pitt.dbmi.ccd.db.service.FileFormatService;
 import edu.pitt.dbmi.ccd.db.service.FileService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
-import java.util.Optional;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
@@ -135,19 +134,19 @@ public class FileController {
         model.addAttribute("formatOpts", fileFormatService.getFileFormatOptions());
         model.addAttribute("delimOpts", dataDelimiterService.findAll());
         model.addAttribute("varOpts", variableTypeService.findAll());
-        model.addAttribute("tetradTabFileFormatId", fileFormatService.findByShortName(FileFormatService.TETRAD_TAB_SHORT_NAME).getId());
+        model.addAttribute("tetradTabFileFormatId", FileFormatService.TETRAD_TAB_ID);
 
         return ViewPath.FILE_INFO_VIEW;
     }
 
     @GetMapping("format/{id}")
     public String showFileList(@PathVariable final Long id, final Model model, final AppUser appUser) {
-        Optional<FileFormat> fileFormat = fileFormatService.findById(id);
-        if (fileFormat.isPresent()) {
-            model.addAttribute("fileFormat", fileFormat.get());
-        } else {
+        FileFormat fileFormat = fileFormatService.findById(id);
+        if (fileFormat == null) {
             throw new ResourceNotFoundException();
         }
+
+        model.addAttribute("fileFormat", fileFormat);
 
         return ViewPath.FILE_LIST_VIEW;
     }

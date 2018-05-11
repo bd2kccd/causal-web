@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,8 +48,8 @@ public class FileManagementService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileManagementService.class);
 
-    private final String DATA_FOLDER = "data";
-    private final String RESULT_FOLDER = "results";
+    public static final String DATA_FOLDER = "data";
+    public static final String RESULT_FOLDER = "results";
 
     private final CcdProperties ccdProperties;
     private final FileService fileService;
@@ -118,7 +119,7 @@ public class FileManagementService {
             }
 
             if (!filesToSave.isEmpty()) {
-                fileService.persistLocalFiles(filesToSave, userAccount);
+                fileService.persistLocalFiles(filesToSave, DATA_FOLDER, userAccount);
             }
         }
     }
@@ -158,6 +159,22 @@ public class FileManagementService {
         String userFolder = userAccount.getAccount();
 
         return Paths.get(rootDir, userFolder, RESULT_FOLDER);
+    }
+
+    public List<String> listResultFiles(String folder, UserAccount userAccount) {
+        List<String> files = new LinkedList<>();
+
+        try {
+            String root = getUserResultDirectory(userAccount).toString();
+            Files.walk(Paths.get(root, folder))
+                    .filter(Files::isRegularFile)
+                    .map(e -> e.getFileName().toString())
+                    .collect(Collectors.toCollection(() -> files));
+        } catch (IOException exception) {
+            LOGGER.error("", exception);
+        }
+
+        return files;
     }
 
 }

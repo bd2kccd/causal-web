@@ -31,12 +31,10 @@ import edu.pitt.dbmi.causal.web.tetrad.TetradScores;
 import edu.pitt.dbmi.causal.web.tetrad.TetradTest;
 import edu.pitt.dbmi.causal.web.tetrad.TetradTests;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.entity.VariableType;
 import edu.pitt.dbmi.ccd.db.service.JobQueueService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -67,12 +65,7 @@ public class TetradService {
 
     public TetradForm createTetradForm() {
         TetradForm tetradForm = new TetradForm();
-
-        Optional<VariableType> varType = variableTypeService.findAll().stream()
-                .findFirst();
-        if (varType.isPresent()) {
-            tetradForm.setVarTypeId(varType.get().getId());
-        }
+        tetradForm.setVarTypeId(VariableTypeService.CONTINUOUS_ID);
 
         tetradForm.setAlgoType(AlgoTypes.DEFAULT_VALUE);
 

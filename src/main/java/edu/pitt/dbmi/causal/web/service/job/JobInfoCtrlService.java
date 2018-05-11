@@ -19,6 +19,7 @@
 package edu.pitt.dbmi.causal.web.service.job;
 
 import edu.cmu.tetrad.util.ParamDescriptions;
+import edu.pitt.dbmi.causal.web.service.filesys.FileManagementService;
 import edu.pitt.dbmi.causal.web.tetrad.TetradAlgorithms;
 import edu.pitt.dbmi.causal.web.tetrad.TetradScores;
 import edu.pitt.dbmi.causal.web.tetrad.TetradTests;
@@ -27,6 +28,7 @@ import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileGroup;
 import edu.pitt.dbmi.ccd.db.entity.JobInfo;
 import edu.pitt.dbmi.ccd.db.entity.TetradDataFile;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileGroupService;
 import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
 import java.util.Arrays;
@@ -56,11 +58,17 @@ public class JobInfoCtrlService {
 
     private final FileGroupService fileGroupService;
     private final TetradDataFileService tetradDataFileService;
+    private final FileManagementService fileManagementService;
 
     @Autowired
-    public JobInfoCtrlService(FileGroupService fileGroupService, TetradDataFileService tetradDataFileService) {
+    public JobInfoCtrlService(FileGroupService fileGroupService, TetradDataFileService tetradDataFileService, FileManagementService fileManagementService) {
         this.fileGroupService = fileGroupService;
         this.tetradDataFileService = tetradDataFileService;
+        this.fileManagementService = fileManagementService;
+    }
+
+    public List<String> listResultFiles(JobInfo jobInfo, UserAccount userAccount) {
+        return fileManagementService.listResultFiles(jobInfo.getName(), userAccount);
     }
 
     public Map<String, String> getAlgoInfos(Map<String, String> parameters) {
