@@ -20,6 +20,7 @@ package edu.pitt.dbmi.causal.web.ctrl.job;
 
 import edu.pitt.dbmi.causal.web.model.AppUser;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
+import edu.pitt.dbmi.ccd.db.JobQueueException;
 import edu.pitt.dbmi.ccd.db.domain.job.JobQueueListItem;
 import edu.pitt.dbmi.ccd.db.entity.JobInfo;
 import edu.pitt.dbmi.ccd.db.entity.JobQueue;
@@ -62,12 +63,13 @@ public class JobQueueRestController {
     @DeleteMapping("{id}")
     public ResponseEntity<?> cancelJob(@PathVariable final Long id, final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        JobQueue jobQueue = jobQueueService.getRepository().findByIdAndUserAccount(id, userAccount);
-        if (jobQueue == null) {
-            return ResponseEntity.notFound().build();
+        JobQueue jobQueue = jobQueueService.getRepository()
+                .findByIdAndUserAccount(id, userAccount);
+        try {
+            jobQueueService.setStatusCanceled(jobQueue);
+        } catch (JobQueueException exception) {
+            return ResponseEntity.badRequest().body(exception.getMessage());
         }
-
-        jobQueueService.setStatusCanceled(jobQueue);
 
         return ResponseEntity.ok(toJobQueueListItem(jobQueue));
     }

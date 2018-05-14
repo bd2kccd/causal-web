@@ -52,6 +52,9 @@ $(document).ready(function () {
             type: 'DELETE',
             success: function (data) {
                 row.data(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert(jqXHR.responseText);
             }
         });
     });
