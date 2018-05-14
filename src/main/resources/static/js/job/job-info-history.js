@@ -17,6 +17,19 @@ $(document).ready(function () {
                 }, "targets": [2]
             }
         ],
+        "rowCallback": function (row, data, index) {
+            switch (data.status) {
+                case 'Failed':
+                    $(row).addClass('danger');
+                    break;
+                case 'Cancel':
+                    $(row).addClass('warning');
+                    break;
+                case 'Finished':
+                    $(row).addClass('success');
+                    break;
+            }
+        },
         "order": [[2, "desc"]]
     });
 });
