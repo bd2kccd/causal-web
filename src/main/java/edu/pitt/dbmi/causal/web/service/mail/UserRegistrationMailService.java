@@ -22,9 +22,9 @@ import edu.pitt.dbmi.causal.web.model.mail.UserActivationMail;
 import edu.pitt.dbmi.causal.web.model.mail.UserRegistrationAlertMail;
 import edu.pitt.dbmi.causal.web.prop.CcdEmailProperties;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.entity.UserInformation;
+import edu.pitt.dbmi.ccd.db.entity.UserProfile;
 import edu.pitt.dbmi.ccd.db.entity.UserRegistration;
-import edu.pitt.dbmi.ccd.db.service.UserInformationService;
+import edu.pitt.dbmi.ccd.db.service.UserProfileService;
 import edu.pitt.dbmi.ccd.db.service.UserRegistrationService;
 import edu.pitt.dbmi.ccd.db.util.InetUtils;
 import edu.pitt.dbmi.ccd.mail.AbstractTemplateMailService;
@@ -51,14 +51,14 @@ public class UserRegistrationMailService extends AbstractTemplateMailService {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserRegistrationMailService.class);
 
     private final CcdEmailProperties ccdEmailProperties;
-    private final UserInformationService userInformationService;
+    private final UserProfileService userProfileService;
     private final UserRegistrationService userRegistrationService;
 
     @Autowired
-    public UserRegistrationMailService(CcdEmailProperties ccdEmailProperties, UserInformationService userInformationService, UserRegistrationService userRegistrationService, SpringTemplateEngine templateEngine, JavaMailSender javaMailSender) {
-        super(templateEngine, javaMailSender);
+    public UserRegistrationMailService(CcdEmailProperties ccdEmailProperties, UserProfileService userProfileService, UserRegistrationService userRegistrationService, SpringTemplateEngine templateEngine, JavaMailSender mailSender) {
+        super(templateEngine, mailSender);
         this.ccdEmailProperties = ccdEmailProperties;
-        this.userInformationService = userInformationService;
+        this.userProfileService = userProfileService;
         this.userRegistrationService = userRegistrationService;
     }
 
@@ -71,12 +71,12 @@ public class UserRegistrationMailService extends AbstractTemplateMailService {
     public void sendUserRegistrationAlertToAdmin(UserAccount userAccount) {
         String[] sendTo = ccdEmailProperties.getAdminSendTo();
         if (sendTo.length > 0) {
-            UserInformation userInfo = userInformationService.getRepository()
+            UserProfile userProfile = userProfileService.getRepository()
                     .findByUserAccount(userAccount);
             UserRegistration userRegistration = userRegistrationService.getRepository()
                     .findByUserAccount(userAccount);
 
-            String email = userInfo.getEmail();
+            String email = userProfile.getEmail();
             Date registrationDate = userRegistration.getRegistrationDate();
             Long location = userRegistration.getRegistrationLocation();
 
@@ -103,12 +103,12 @@ public class UserRegistrationMailService extends AbstractTemplateMailService {
      */
     @Async
     public void sendAccountActivationToUser(final UserAccount userAccount, final URI activationLink) {
-        UserInformation userInfo = userInformationService.getRepository()
+        UserProfile userProfile = userProfileService.getRepository()
                 .findByUserAccount(userAccount);
         UserRegistration userRegistration = userRegistrationService.getRepository()
                 .findByUserAccount(userAccount);
 
-        String email = userInfo.getEmail();
+        String email = userProfile.getEmail();
         Date registrationDate = userRegistration.getRegistrationDate();
 
         UserActivationMail userActivation = new UserActivationMail();

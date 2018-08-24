@@ -1,22 +1,21 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
     <head>
-        <meta charset="utf-8" />
-        <meta http-equiv="x-ua-compatible" content="ie=edge" />
-        <title>Causal Web: Home</title>
-        <meta name="description" content="causal" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta charset="UTF-8" />
+        <meta name="description" content="Center for Causal Discovery" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Causal Web</title>
         <link rel="apple-touch-icon" href="../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
         <link rel="icon" href="../static/favicon.ico" th:href="@{/favicon.ico}" />
-        <link rel="stylesheet" href="../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css}" />
-        <link rel="stylesheet" href="../static/vendors/bootstrap/css/bootstrap-theme.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css}" />
-        <link rel="stylesheet" href="../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css}"/>
-        <link rel="stylesheet" href="../static/vendors/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.min.css}" />
-        <link rel="stylesheet" href="../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
-        <script src="../static/vendors/jquery/jquery.min.js" th:src="@{https://code.jquery.com/jquery-2.2.4.min.js}"></script>
-        <script src="../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
-        <script src="../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
-        <script src="../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
+        <link rel="stylesheet" href="../static/vendor/bootstrap/css/bootstrap.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css}" />
+        <link rel="stylesheet" href="../static/vendor/font-awesome/css/font-awesome.min.css" th:href="@{https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css}" />
+        <link rel="stylesheet" href="../static/vendor/metismenu/metisMenu.min.css" th:href="@{/vendor/metismenu/metisMenu.min.css}" />
+        <link rel="stylesheet" href="../static/vendor/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendor/sb-admin-2/css/sb-admin-2.min.css}" />
+        <link rel="stylesheet" href="../static/css/styles.css" th:href="@{/css/styles.min.css}" />
+        <script src="../static/vendor/jquery/jquery-3.3.1.min.js" th:src="@{https://code.jquery.com/jquery-3.3.1.min.js}"></script>
+        <script src="../static/vendor/bootstrap/js/bootstrap.min.js" th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
+        <script src="../static/vendor/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendor/sb-admin-2/js/sb-admin-2.min.js}"></script>
+        <script src="../static/vendor/metismenu/metisMenu.min.js" th:src="@{/vendor/metismenu/metisMenu.min.js}"></script>
     </head>
     <body>
         <div id="wrapper">
@@ -35,57 +34,11 @@
                         <p class="text-muted" th:each="msg : ${@ccdProperties.getWelcome()}" th:text="${msg}"></p>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-lg-3 col-md-4 col-sm-6">
-                        <div class="panel panel-primary">
-                            <div class="panel-heading">
-                                <div class="row">
-                                    <div class="col-xs-3">
-                                        <i class="fa fa-file fa-5x white"></i>
-                                    </div>
-                                    <div class="col-xs-9 text-right">
-                                        <div class="huge" th:text="${numOfFiles}">64</div>
-                                        <div>File</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <a href="file/file.html" th:href="@{/secured/file}">
-                                <div class="panel-footer">
-                                    <span class="pull-left">View Files</span>
-                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-                                    <div class="clearfix"></div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-4 col-sm-6">
-                        <div class="panel panel-green">
-                            <div class="panel-heading">
-                                <div class="row">
-                                    <div class="col-xs-3">
-                                        <i class="fa fa-file-o fa-5x white"></i>
-                                    </div>
-                                    <div class="col-xs-9 text-right">
-                                        <div class="huge" th:text="${numOfFileGroups}">128</div>
-                                        <div>File Group</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <a href="algorithm/algorithmResults.html" th:href="@{/secured/file/group}">
-                                <div class="panel-footer">
-                                    <span class="pull-left">View File Groups</span>
-                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-                                    <div class="clearfix"></div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <footer th:replace="fragments/footer :: footer">
+                <footer>
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="page-header"></div>
-                            <p class="text-muted">Copyright &copy; 1900 University of Pittsburgh Department of Biomedical Informatics</p>
+                            <p class="text-muted">Copyright &copy; <span th:text="${#dates.year(#dates.createNow()) + ' ' + @environment.getProperty('ccd.app.copyright')}">University of Pittsburgh</span></p>
                         </div>
                     </div>
                 </footer>

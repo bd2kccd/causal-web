@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 University of Pittsburgh.
+ * Copyright (C) 2018 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,6 @@
 package edu.pitt.dbmi.causal.web.prop;
 
 import java.util.List;
-import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
@@ -59,48 +58,24 @@ public class CcdProperties {
         return workspaceDir;
     }
 
-    public void setWorkspaceDir(String workspaceDir) {
-        this.workspaceDir = workspaceDir;
-    }
-
     public boolean isRequireActivation() {
         return requireActivation;
-    }
-
-    public void setRequireActivation(boolean requireActivation) {
-        this.requireActivation = requireActivation;
     }
 
     public String getTitle() {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public String getCopyright() {
         return copyright;
-    }
-
-    public void setCopyright(String copyright) {
-        this.copyright = copyright;
     }
 
     public String getAgreement() {
         return agreement;
     }
 
-    public void setAgreement(String agreement) {
-        this.agreement = agreement;
-    }
-
     public List<String> getWelcome() {
         return welcome;
-    }
-
-    public void setWelcome(List<String> welcome) {
-        this.welcome = welcome;
     }
 
 }

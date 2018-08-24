@@ -18,7 +18,6 @@
  */
 package edu.pitt.dbmi.causal.web.ctrl;
 
-import static edu.pitt.dbmi.causal.web.ctrl.ViewPath.REDIRECT_FEEDBACK_VIEW;
 import edu.pitt.dbmi.causal.web.model.FeedbackForm;
 import edu.pitt.dbmi.causal.web.service.mail.FeedbackMailService;
 import javax.validation.Valid;
@@ -74,7 +73,7 @@ public class FeedbackController {
 
         redirectAttributes.addFlashAttribute("feedbackForm", feedbackForm);
 
-        return REDIRECT_FEEDBACK_VIEW;
+        return SitePaths.REDIRECT_FEEDBACK;
     }
 
     @GetMapping
@@ -83,7 +82,7 @@ public class FeedbackController {
             model.addAttribute("feedbackForm", new FeedbackForm());
         }
 
-        return ViewPath.FEEDBACK_VIEW;
+        return SiteViews.FEEDBACK;
     }
 
 }

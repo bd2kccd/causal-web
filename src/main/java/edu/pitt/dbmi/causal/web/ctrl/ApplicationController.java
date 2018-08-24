@@ -22,8 +22,6 @@ import edu.pitt.dbmi.causal.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.causal.web.model.AppUser;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.service.FileGroupService;
-import edu.pitt.dbmi.ccd.db.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -42,38 +40,34 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 public class ApplicationController {
 
     private final AppUserService appUserService;
-    private final FileService fileService;
-    private final FileGroupService fileGroupService;
 
     @Autowired
-    public ApplicationController(AppUserService appUserService, FileService fileService, FileGroupService fileGroupService) {
+    public ApplicationController(AppUserService appUserService) {
         this.appUserService = appUserService;
-        this.fileService = fileService;
-        this.fileGroupService = fileGroupService;
     }
 
     @GetMapping("/")
     public String showIndexPage() {
-        return ViewPath.REDIRECT_LOGIN;
+        return SitePaths.REDIRECT_LOGIN;
     }
 
-    @GetMapping(ViewPath.HOME)
+    @GetMapping(SitePaths.HOME)
     public String showHomePage(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
 
-        model.addAttribute("numOfFiles", fileService.getRepository().countByUserAccount(userAccount));
-        model.addAttribute("numOfFileGroups", fileGroupService.getRepository().countByUserAccount(userAccount));
+        model.addAttribute("numOfFiles", 0);
+        model.addAttribute("numOfFileGroups", 0);
 
-        return ViewPath.HOME_VIEW;
+        return SiteViews.HOME;
     }
 
-    @GetMapping(ViewPath.MESSAGE)
+    @GetMapping(SitePaths.MESSAGE)
     public String showMessage(final Model model) {
         if (!model.containsAttribute("message")) {
             throw new ResourceNotFoundException();
         }
 
-        return ViewPath.MESSAGE_VIEW;
+        return SiteViews.MESSAGE;
     }
 
 }

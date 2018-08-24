@@ -32,7 +32,9 @@ import javax.validation.constraints.NotNull;
 public class FileGroupForm {
 
     @NotBlank(message = "Please enter a name for the file group.")
-    private String groupName;
+    private String name;
+
+    private String description;
 
     @NotNull
     private Long varTypeId;
@@ -43,18 +45,20 @@ public class FileGroupForm {
     public FileGroupForm() {
     }
 
-    public FileGroupForm(String groupName, Long varTypeId, List<Long> fileIds) {
-        this.groupName = groupName;
-        this.varTypeId = varTypeId;
-        this.fileIds = fileIds;
+    public String getName() {
+        return name;
     }
 
-    public String getGroupName() {
-        return groupName;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Long getVarTypeId() {

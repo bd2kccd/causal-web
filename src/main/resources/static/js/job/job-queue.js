@@ -1,33 +1,44 @@
 $(document).ready(function () {
     var job_queue_tbl = $('#job_queue_tbl').DataTable({
-        "sAjaxSource": ws_path,
+        "sAjaxSource": encodeURI(ws_job_queue_url),
         "sAjaxDataProp": "",
         "aoColumns": [
-            {"mData": function (data) {
-                    return '<a href="' + job_info_path + data.id + '">' + data.name + '</a>';
-                }
-            },
+            {"mData": "name"},
             {"mData": "creationTime"},
             {"mData": "status"},
-            {"mData": "location"},
+            {"mData": function (source) {
+                    return {"id": source.id};
+                }},
             {"mData": "status"}
         ],
         "columnDefs": [
             {"render": function (data) {
                     return moment(data).format('MMM DD, YYYY hh:mm:ss A');
-                }, "targets": 1
+                }, "width": "0", "className": "text-center", "targets": 1
             },
             {"render": function (data) {
-                    if ('Canceled' == data || 'Finished' == data || 'Terminated' == data) {
-                        return '<button class="btn btn-danger btn-xs cancel" data-placement="top" data-toggle="tooltip" title="Cancel Job" disabled="disabled">'
+                    return data;
+                }, "width": "0", "className": "text-center", "targets": 2
+            },
+            {"render": function (data) {
+                    var url = job_detail_url + '/' + data.id;
+
+                    return '<a class="btn btn-xs btn-success"  href="' + encodeURI(url) + '" data-placement="top" data-toggle="tooltip" title="View Details">'
+                            + '<span class="fa fa-info-circle"></span>'
+                            + '</a>';
+                }, "orderable": false, "bSearchable": false, "width": "0", "className": "text-center", "targets": 3
+            },
+            {"render": function (data) {
+                    if ('Canceled' === data || 'Finished' === data || 'Terminated' === data) {
+                        return '<button class="btn btn-xs btn-danger cancel" data-placement="top" data-toggle="tooltip" title="Cancel Job" disabled="disabled">'
                                 + '<span class="glyphicon glyphicon-trash"></span>'
                                 + '</button>';
                     } else {
-                        return '<button class="btn btn-danger btn-xs cancel" data-placement="top" data-toggle="tooltip" title="Cancel Job">'
+                        return '<button class="btn btn-xs btn-danger cancel" data-placement="top" data-toggle="tooltip" title="Cancel Job">'
                                 + '<span class="glyphicon glyphicon-trash"></span>'
                                 + '</button>';
                     }
-                }, "orderable": false, "bSearchable": false, "targets": 4
+                }, "orderable": false, "bSearchable": false, "width": "0", "className": "text-center", "targets": 4
             }
         ],
         "order": [[1, "desc"]]
@@ -37,7 +48,7 @@ $(document).ready(function () {
         var rowNum = $(this).parents('tr')[0];
         var row = job_queue_tbl.row(rowNum);
         var rowData = row.data();
-        $('#confirm_cancel').find('.modal-title').text('Job Cancel Request: ' + rowData['name']);
+        $('#job_name').text(rowData['name']);
         $('#cancel_btn').data('id', row.index());
         $('#confirm_cancel').modal('toggle');
     });
@@ -47,8 +58,9 @@ $(document).ready(function () {
         var row = job_queue_tbl.row(rowNum);
         var rowData = row.data();
 
+        alert(encodeURI(ws_job_queue_url + '/' + rowData['id']));
         $.ajax({
-            url: ws_path + rowData['id'],
+            url: encodeURI(ws_job_queue_url + '/' + rowData['id']),
             type: 'DELETE',
             success: function (data) {
                 row.data(data);

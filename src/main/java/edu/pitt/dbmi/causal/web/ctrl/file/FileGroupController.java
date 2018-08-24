@@ -18,31 +18,27 @@
  */
 package edu.pitt.dbmi.causal.web.ctrl.file;
 
-import edu.pitt.dbmi.causal.web.ctrl.ViewPath;
+import edu.pitt.dbmi.causal.web.ctrl.SitePaths;
+import edu.pitt.dbmi.causal.web.ctrl.SiteViews;
 import edu.pitt.dbmi.causal.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.causal.web.model.AppUser;
 import edu.pitt.dbmi.causal.web.model.file.FileGroupForm;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
 import edu.pitt.dbmi.causal.web.service.file.GroupFileService;
-import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileGroup;
-import edu.pitt.dbmi.ccd.db.entity.TetradDataFile;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.entity.VariableType;
 import edu.pitt.dbmi.ccd.db.service.FileGroupService;
 import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 import javax.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -61,8 +57,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping(value = "secured/file/group")
 public class FileGroupController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileGroupController.class);
-
     private final AppUserService appUserService;
     private final VariableTypeService variableTypeService;
     private final FileGroupService fileGroupService;
@@ -78,89 +72,74 @@ public class FileGroupController {
         this.groupFileService = groupFileService;
     }
 
-    @PostMapping("{groupId}")
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
+    }
+
+    @PostMapping("{id}")
     public String updateFileGroup(
             @Valid @ModelAttribute("fileGroupForm") final FileGroupForm fileGroupForm,
             final BindingResult bindingResult,
-            @PathVariable final Long groupId,
-            @ModelAttribute("appUser") final AppUser appUser,
+            @PathVariable final Long id,
+            final AppUser appUser,
             final Model model,
             final RedirectAttributes redirAttrs) {
         if (bindingResult.hasErrors()) {
             redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.fileGroupForm", bindingResult);
             redirAttrs.addFlashAttribute("fileGroupForm", fileGroupForm);
 
-            return ViewPath.REDIRECT_FILEGROUP + groupId;
+            return SitePaths.REDIRECT_FILEGROUP + "/" + id;
         }
 
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
 
-        FileGroup fileGroup = fileGroupService.getRepository()
-                .findByIdAndUserAccount(groupId, userAccount);
+        FileGroup fileGroup = fileGroupService.getRepository().findByIdAndUserAccount(id, userAccount);
         if (fileGroup == null) {
             throw new ResourceNotFoundException();
         }
 
-        if (!fileGroup.getName().equalsIgnoreCase(fileGroupForm.getGroupName())
-                && fileGroupService.getRepository().existsByNameAndUserAccount(fileGroupForm.getGroupName(), userAccount)) {
+        // ensure unique group name
+        if (!fileGroup.getName().equalsIgnoreCase(fileGroupForm.getName())
+                && fileGroupService.getRepository().existsByNameAndUserAccount(fileGroupForm.getName(), userAccount)) {
             bindingResult.rejectValue("groupName", "fileGroupForm.groupName", "Name already existed.");
             redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.fileGroupForm", bindingResult);
             redirAttrs.addFlashAttribute("fileGroupForm", fileGroupForm);
 
-            return ViewPath.REDIRECT_FILEGROUP + groupId;
-        }
-
-        VariableType varType = variableTypeService.findById(fileGroupForm.getVarTypeId());
-        if (varType == null) {
-            throw new ResourceNotFoundException();
-        }
-
-        List<File> files = tetradDataFileService.getRepository()
-                .find(userAccount, varType, fileGroupForm.getFileIds()).stream()
-                .map(TetradDataFile::getFile)
-                .collect(Collectors.toList());
-        if (files.isEmpty()) {
-            String errMsg = String.format("Please select file(s) for '%s' variable type.", varType.getName());
-            bindingResult.rejectValue("fileIds", "fileGroupForm.fileIds", errMsg);
-            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.fileGroupForm", bindingResult);
-            redirAttrs.addFlashAttribute("fileGroupForm", fileGroupForm);
-
-            return ViewPath.REDIRECT_FILEGROUP + groupId;
+            return SitePaths.REDIRECT_FILEGROUP + "/" + id;
         }
 
         try {
-            groupFileService.updateFileGroup(fileGroup, fileGroupForm.getGroupName(), files);
-        } catch (Exception exception) {
-            LOGGER.error("Unable to update file group.", exception);
-
-            redirAttrs.addFlashAttribute("errorMsg", Collections.singletonList("Failed to update file group."));
+            groupFileService.saveFileGroup(fileGroupForm, fileGroup, userAccount);
+        } catch (ResourceNotFoundException exception) {
             redirAttrs.addFlashAttribute("fileGroupForm", fileGroupForm);
+            redirAttrs.addFlashAttribute("errorMsg", exception.getMessage());
 
-            return ViewPath.REDIRECT_FILEGROUP_NEW;
+            return SitePaths.REDIRECT_NEW_FILEGROUP;
         }
 
-        return ViewPath.REDIRECT_FILEGROUP_LIST;
+        return SitePaths.REDIRECT_FILEGROUP + "/" + fileGroup.getId();
     }
 
-    @GetMapping("{groupId}")
-    public String showFileGroup(@PathVariable final Long groupId, final AppUser appUser, final Model model) {
+    @GetMapping("{id}")
+    public String showFileGroup(@PathVariable final Long id, final AppUser appUser, final Model model) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
 
-        model.addAttribute("varTypes", variableTypeService.findAll());
-        model.addAttribute("dataGroups", tetradDataFileService.getFileGroupedByVariableTypeId(userAccount));
+        FileGroup fileGroup = fileGroupService.getRepository().findByIdAndUserAccount(id, userAccount);
+        if (fileGroup == null) {
+            throw new ResourceNotFoundException();
+        }
 
         // add form if not exists
         if (!model.containsAttribute("fileGroupForm")) {
-            FileGroup fileGroup = fileGroupService.getRepository()
-                    .findByIdAndUserAccount(groupId, userAccount);
-            if (fileGroup == null) {
-                throw new ResourceNotFoundException();
-            }
-
             model.addAttribute("fileGroupForm", groupFileService.createFileGroupForm(fileGroup));
         }
 
-        return ViewPath.FILEGROUP_VIEW;
+        model.addAttribute("fileGroup", fileGroup);
+        model.addAttribute("varTypes", variableTypeService.findAll());
+        model.addAttribute("dataGroups", tetradDataFileService.getFileGroupedByVariableTypeId(userAccount));
+
+        return SiteViews.FILEGROUP_DETAIL;
     }
 
     @PostMapping("new")
@@ -174,48 +153,30 @@ public class FileGroupController {
             redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.fileGroupForm", bindingResult);
             redirAttrs.addFlashAttribute("fileGroupForm", fileGroupForm);
 
-            return ViewPath.REDIRECT_FILEGROUP_NEW;
+            return SitePaths.REDIRECT_NEW_FILEGROUP;
         }
 
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        if (fileGroupService.getRepository().existsByNameAndUserAccount(fileGroupForm.getGroupName(), userAccount)) {
+
+        // ensure unique group name
+        if (fileGroupService.getRepository().existsByNameAndUserAccount(fileGroupForm.getName(), userAccount)) {
             bindingResult.rejectValue("groupName", "fileGroupForm.groupName", "Name already existed.");
             redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.fileGroupForm", bindingResult);
             redirAttrs.addFlashAttribute("fileGroupForm", fileGroupForm);
 
-            return ViewPath.REDIRECT_FILEGROUP_NEW;
-        }
-
-        VariableType varType = variableTypeService.findById(fileGroupForm.getVarTypeId());
-        if (varType == null) {
-            throw new ResourceNotFoundException();
-        }
-
-        List<File> files = tetradDataFileService.getRepository()
-                .find(userAccount, varType, fileGroupForm.getFileIds()).stream()
-                .map(TetradDataFile::getFile)
-                .collect(Collectors.toList());
-        if (files.isEmpty()) {
-            String errMsg = String.format("Please select file(s) for '%s' variable type.", varType.getName());
-            bindingResult.rejectValue("fileIds", "fileGroupForm.fileIds", errMsg);
-            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.fileGroupForm", bindingResult);
-            redirAttrs.addFlashAttribute("fileGroupForm", fileGroupForm);
-
-            return ViewPath.REDIRECT_FILEGROUP_NEW;
+            return SitePaths.REDIRECT_NEW_FILEGROUP;
         }
 
         try {
-            groupFileService.saveFileGroup(fileGroupForm.getGroupName(), varType, userAccount, files);
-        } catch (Exception exception) {
-            LOGGER.error("Unable to create new file group.", exception);
+            FileGroup fileGroup = groupFileService.addNewFileGroup(fileGroupForm, userAccount);
 
-            redirAttrs.addFlashAttribute("errorMsg", Collections.singletonList("Failed to create new file group."));
+            return SitePaths.REDIRECT_FILEGROUP + "/" + fileGroup.getId();
+        } catch (ResourceNotFoundException exception) {
             redirAttrs.addFlashAttribute("fileGroupForm", fileGroupForm);
+            redirAttrs.addFlashAttribute("errorMsg", exception.getMessage());
 
-            return ViewPath.REDIRECT_FILEGROUP_NEW;
+            return SitePaths.REDIRECT_NEW_FILEGROUP;
         }
-
-        return ViewPath.REDIRECT_FILEGROUP_LIST;
     }
 
     @GetMapping("new")
@@ -230,12 +191,12 @@ public class FileGroupController {
         model.addAttribute("varTypes", variableTypeService.findAll());
         model.addAttribute("dataGroups", tetradDataFileService.getFileGroupedByVariableTypeId(userAccount));
 
-        return ViewPath.FILEGROUP_VIEW;
+        return SiteViews.FILEGROUP_NEW;
     }
 
     @GetMapping
     public String showFileGroupList(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
-        return ViewPath.FILEGROUP_LIST_VIEW;
+        return SiteViews.FILEGROUP;
     }
 
 }

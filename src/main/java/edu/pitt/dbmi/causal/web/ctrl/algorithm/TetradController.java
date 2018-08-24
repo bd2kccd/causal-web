@@ -18,20 +18,16 @@
  */
 package edu.pitt.dbmi.causal.web.ctrl.algorithm;
 
-import edu.pitt.dbmi.causal.web.ctrl.ViewPath;
+import edu.pitt.dbmi.causal.web.ctrl.SitePaths;
+import edu.pitt.dbmi.causal.web.ctrl.SiteViews;
 import edu.pitt.dbmi.causal.web.exception.ValidationException;
 import edu.pitt.dbmi.causal.web.model.AppUser;
 import edu.pitt.dbmi.causal.web.model.algorithm.TetradForm;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
-import edu.pitt.dbmi.causal.web.service.algorithm.TetradService;
+import edu.pitt.dbmi.causal.web.service.algorithm.TetradJobService;
 import edu.pitt.dbmi.causal.web.service.algorithm.TetradValidationService;
 import edu.pitt.dbmi.causal.web.tetrad.AlgoTypes;
-import edu.pitt.dbmi.causal.web.tetrad.TetradAlgorithm;
-import edu.pitt.dbmi.causal.web.tetrad.TetradAlgorithms;
-import edu.pitt.dbmi.causal.web.tetrad.TetradScore;
-import edu.pitt.dbmi.causal.web.tetrad.TetradScores;
-import edu.pitt.dbmi.causal.web.tetrad.TetradTest;
-import edu.pitt.dbmi.causal.web.tetrad.TetradTests;
+import edu.pitt.dbmi.ccd.db.code.VariableTypeCodes;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import javax.validation.Valid;
@@ -66,14 +62,14 @@ public class TetradController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TetradController.class);
 
-    private final TetradService tetradService;
+    private final TetradJobService tetradJobService;
     private final TetradValidationService tetradValidationService;
     private final VariableTypeService variableTypeService;
     private final AppUserService appUserService;
 
     @Autowired
-    public TetradController(TetradService tetradService, TetradValidationService tetradValidationService, VariableTypeService variableTypeService, AppUserService appUserService) {
-        this.tetradService = tetradService;
+    public TetradController(TetradJobService tetradJobService, TetradValidationService tetradValidationService, VariableTypeService variableTypeService, AppUserService appUserService) {
+        this.tetradJobService = tetradJobService;
         this.tetradValidationService = tetradValidationService;
         this.variableTypeService = variableTypeService;
         this.appUserService = appUserService;
@@ -85,7 +81,7 @@ public class TetradController {
     }
 
     @PostMapping
-    public String runTetrad(
+    public String addToJobQueue(
             @Valid @ModelAttribute("tetradForm") final TetradForm tetradForm,
             final BindingResult bindingResult,
             @RequestBody MultiValueMap<String, String> formData,
@@ -96,50 +92,23 @@ public class TetradController {
             redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.tetradForm", bindingResult);
             redirAttrs.addFlashAttribute("tetradForm", tetradForm);
 
-            return ViewPath.REDIRECT_TETRAD_VIEW;
-        }
-
-        Long datasetId = tetradForm.getDatasetId();
-        boolean isSingleFile = tetradForm.isSingleFile();
-        try {
-            tetradValidationService.validateDataset(datasetId, isSingleFile);
-        } catch (ValidationException exception) {
-            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.tetradForm", bindingResult);
-            redirAttrs.addFlashAttribute("tetradForm", tetradForm);
-            redirAttrs.addFlashAttribute("errorMsg", exception.getErrorMessage());
-
-            return ViewPath.REDIRECT_TETRAD_VIEW;
-        }
-
-        String algorithmName = tetradForm.getAlgorithm();
-        String testName = tetradForm.getTest();
-        String scoreName = tetradForm.getScore();
-        try {
-            tetradValidationService.validateExistence(algorithmName, testName, scoreName);
-        } catch (ValidationException exception) {
-            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.tetradForm", bindingResult);
-            redirAttrs.addFlashAttribute("tetradForm", tetradForm);
-            redirAttrs.addFlashAttribute("errorMsg", exception.getErrorMessage());
-
-            return ViewPath.REDIRECT_TETRAD_VIEW;
-        }
-
-        TetradAlgorithm algorithm = TetradAlgorithms.getInstance().getTetradAlgorithm(algorithmName);
-        TetradScore score = TetradScores.getInstance().getTetradScore(scoreName);
-        TetradTest test = TetradTests.getInstance().getTetradTest(testName);
-        try {
-            tetradValidationService.validateRequirement(algorithm, score, test);
-        } catch (ValidationException exception) {
-            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.tetradForm", bindingResult);
-            redirAttrs.addFlashAttribute("tetradForm", tetradForm);
-            redirAttrs.addFlashAttribute("errorMsg", exception.getErrorMessage());
-
-            return ViewPath.REDIRECT_TETRAD_VIEW;
+            return SitePaths.REDIRECT_TETRAD;
         }
 
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+
         try {
-            tetradService.enqueueJob(tetradForm, formData, userAccount);
+            tetradValidationService.validate(tetradForm, formData, userAccount);
+        } catch (ValidationException exception) {
+            redirAttrs.addFlashAttribute("org.springframework.validation.BindingResult.tetradForm", bindingResult);
+            redirAttrs.addFlashAttribute("tetradForm", tetradForm);
+            redirAttrs.addFlashAttribute("errorMsg", exception.getErrorMessage());
+
+            return SitePaths.REDIRECT_TETRAD;
+        }
+
+        try {
+            tetradJobService.submitJob(tetradForm, formData, userAccount);
         } catch (Exception exception) {
             String errMsg = "Unable to submit job.";
             LOGGER.error(errMsg, exception);
@@ -148,24 +117,26 @@ public class TetradController {
             redirAttrs.addFlashAttribute("tetradForm", tetradForm);
             redirAttrs.addFlashAttribute("errorMsg", errMsg);
 
-            return ViewPath.REDIRECT_TETRAD_VIEW;
+            return SitePaths.REDIRECT_TETRAD;
         }
 
-        return ViewPath.REDIRECT_JOB_QUEUE;
+        return SitePaths.REDIRECT_JOB_QUEUE;
     }
 
     @GetMapping
-    public String showTetradView(
-            @ModelAttribute("appUser") final AppUser appUser,
-            final Model model) {
+    public String show(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
         if (!model.containsAttribute("tetradForm")) {
-            model.addAttribute("tetradForm", tetradService.createTetradForm());
+            TetradForm tetradForm = new TetradForm();
+            tetradForm.setVarTypeId(variableTypeService.findByCode(VariableTypeCodes.CONTINUOUS).getId());
+            tetradForm.setAlgoType(AlgoTypes.DEFAULT_VALUE);
+
+            model.addAttribute("tetradForm", tetradForm);
         }
 
         model.addAttribute("varTypes", variableTypeService.findAll());
         model.addAttribute("algoTypes", AlgoTypes.getInstance().getOptions());
 
-        return ViewPath.TETRAD_VIEW;
+        return SiteViews.TETRAD;
     }
 
 }

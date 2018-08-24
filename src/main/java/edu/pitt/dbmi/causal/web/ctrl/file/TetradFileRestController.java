@@ -44,7 +44,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
  */
 @RestController
 @SessionAttributes("appUser")
-@RequestMapping(value = "secured/file/tetrad")
+@RequestMapping(value = "secured/ws/file/tetrad")
 public class TetradFileRestController {
 
     private final AppUserService appUserService;
@@ -61,13 +61,14 @@ public class TetradFileRestController {
     @GetMapping(value = "data/{varTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> listDataFilesByVarId(@PathVariable final Long varTypeId, final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+
         VariableType varType = variableTypeService.findById(varTypeId);
         if (varType == null) {
             throw new ResourceNotFoundException();
         }
 
         List<ListItem> list = tetradDataFileService.getRepository()
-                .getTetradDataListItem(userAccount, varType);
+                .getListItems(userAccount, varType);
 
         return ResponseEntity.ok(list);
     }

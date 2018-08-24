@@ -18,7 +18,7 @@
  */
 package edu.pitt.dbmi.causal.web.ctrl.file;
 
-import edu.pitt.dbmi.causal.web.ctrl.ViewPath;
+import edu.pitt.dbmi.causal.web.ctrl.SiteViews;
 import edu.pitt.dbmi.causal.web.model.AppUser;
 import edu.pitt.dbmi.causal.web.model.file.ResumableChunk;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
@@ -62,7 +62,7 @@ public class FileUploadController {
 
     @GetMapping
     public String showDataUploadView() {
-        return ViewPath.FILE_UPLOAD_VIEW;
+        return SiteViews.FILE_UPLOAD;
     }
 
     @PostMapping("chunk")

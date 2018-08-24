@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 University of Pittsburgh.
+ * Copyright (C) 2018 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -55,11 +55,6 @@ public class UserRegistrationForm {
 
     public UserRegistrationForm(boolean agree) {
         this.agree = agree;
-    }
-
-    @Override
-    public String toString() {
-        return "UserRegistrationForm{" + "firstName=" + firstName + ", middleName=" + middleName + ", lastName=" + lastName + ", email=" + email + ", password=" + password + ", confirmPassword=" + confirmPassword + ", agree=" + agree + '}';
     }
 
     public String getFirstName() {

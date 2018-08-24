@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="description" content="Center for Causal Discovery" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Causal Web</title>
+        <link rel="apple-touch-icon" href="../../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
+        <link rel="icon" href="../../static/favicon.ico" th:href="@{/favicon.ico}" />
+        <link rel="stylesheet" href="../../static/vendor/bootstrap/css/bootstrap.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css}" />
+        <link rel="stylesheet" href="../../static/vendor/font-awesome/css/font-awesome.min.css" th:href="@{https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css}" />
+        <link rel="stylesheet" href="../../static/vendor/metismenu/metisMenu.min.css" th:href="@{/vendor/metismenu/metisMenu.min.css}" />
+        <link rel="stylesheet" href="../../static/vendor/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendor/sb-admin-2/css/sb-admin-2.min.css}" />
+        <link rel="stylesheet" href="../../static/vendor/bootstrap-duallistbox/bootstrap-duallistbox.min.css" th:href="@{/vendor/bootstrap-duallistbox/bootstrap-duallistbox.min.css}" />
+        <link rel="stylesheet" href="../../static/vendor/datatables/datatables.min.css" th:href="@{https://cdn.datatables.net/v/bs/dt-1.10.18/r-2.2.2/datatables.min.css}" />
+        <link rel="stylesheet" href="../../static/css/styles.css" th:href="@{/css/styles.min.css}" />
+        <script src="../../static/vendor/jquery/jquery-3.3.1.min.js" th:src="@{https://code.jquery.com/jquery-3.3.1.min.js}"></script>
+        <script src="../../static/vendor/bootstrap/js/bootstrap.min.js" th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
+        <script src="../../static/vendor/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendor/sb-admin-2/js/sb-admin-2.min.js}"></script>
+        <script src="../../static/vendor/metismenu/metisMenu.min.js" th:src="@{/vendor/metismenu/metisMenu.min.js}"></script>
+        <script src="../../static/vendor/bootstrap-duallistbox/jquery.bootstrap-duallistbox.min.js" th:src="@{/vendor/bootstrap-duallistbox/jquery.bootstrap-duallistbox.min.js}"></script>
+        <script src="../../static/vendor/datatables/datatables.min.js" th:src="@{https://cdn.datatables.net/v/bs/dt-1.10.18/r-2.2.2/datatables.min.js}"></script>
+        <script th:inline="javascript">
+            var filegroup_id = /*[[${fileGroup.id}]]*/ '';
+            var filegroup_url = /*[[@{/secured/ws/file/group}]]*/ '';
+            var file_info_url = /*[[@{/secured/file}]]*/ '';
+        </script>
+    </head>
+    <body>
+        <div id="wrapper">
+            <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0" th:replace="fragments/navigation :: nav"></nav>
+            <div id="page-wrapper">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <ul class="breadcrumb breadcrumb-top">
+                            <li><a href="#" th:href="@{/secured/home}">Home</a></li>
+                            <li><a href="#" th:href="@{/secured/file/group}">File Group</a></li>
+                            <li class="active">File Group Detail</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h3 class="page-header">File Group: <span th:text="${fileGroupForm.name}"></span></h3>
+                    </div>
+                </div>
+                <div class="row" th:if="${errorMsg}">
+                    <div class="col-lg-12">
+                        <div class="alert alert-danger text-center" role="alert" th:if="${errorMsg}">
+                            <p th:each="msg : ${errorMsg}" th:text="${msg}"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default-pitt" id="view_filegroup_detail" th:style="${errorMsg} ? 'display: none;' : 'display: block;'">
+                            <div class="panel-heading clearfix">
+                                <span class="panel-title pull-left" style="padding-top: 7.5px;"><i class="fa fa-file-o fa-fw"></i> File Group Details</span>
+                                <button type="button" class="btn btn-default btn-sm pull-right" id="edit_info">
+                                    <span class="fa fa-pencil-square-o"></span> Edit
+                                </button>
+                            </div>
+                            <div class="panel-body">
+                                <form>
+                                    <fieldset>
+                                        <div class="form-group">
+                                            <label for="displayName">Name:</label>
+                                            <input class="form-control" id="displayName" type="text" value="" th:value="${fileGroup.name}" disabled="disabled" />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="displayDescription">Description:</label>
+                                            <textarea id="displayDescription" rows="5" style="width: 100%; resize: none;" readonly="readonly" th:text="${fileGroup.description}"></textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="displayVarType">Variable Type:</label>
+                                            <input class="form-control" id="displayVarType" type="text" value="" th:value="${fileGroup.variableType.name}" disabled="disabled" />
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Files:</label>
+                                            <div class="panel panel-default">
+                                                <div class="panel-body">
+                                                    <div class="table-responsive">
+                                                        <table id="file_tbl" class="table table-striped table-hover table-condensed display compact nowrap" style="width:100%">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Name</th>
+                                                                    <th>Size</th>
+                                                                    <th>Creation Time</th>
+                                                                    <th>Detail</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="panel panel-default-pitt" id="edit_filegroup_detail" th:style="${errorMsg} ? 'display: block;' : 'display: none;'">
+                            <div class="panel-heading clearfix">
+                                <span class="panel-title pull-left" style="padding-top: 7.5px;"><i class="fa fa-file-o fa-fw"></i> File Group Details</span>
+                                <button type="button" class="btn btn-default btn-sm pull-right" id="cancel_info">
+                                    <span class="glyphicon glyphicon-remove-sign"></span> Cancel
+                                </button>
+                            </div>
+                            <div class="panel-body">
+                                <form id="fileGroupForm" method="post" role="form" action="" th:object="${fileGroupForm}">
+                                    <fieldset>
+                                        <div class="form-group" th:class="${#fields.hasErrors('name')} ? 'form-group has-error' : 'form-group'">
+                                            <label for="name">Name:</label>
+                                            <input class="form-control" id="name" name="name" type="text" value="" th:value="*{name}" th:field="*{name}" required="required" />
+                                            <span class="help-block" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Please enter a name for the file group.</span>
+                                        </div>
+                                        <div class="form-group" th:class="${#fields.hasErrors('description')} ? 'form-group has-error' : 'form-group'">
+                                            <label for="description">Description:</label>
+                                            <textarea id="description" class="form-control" name="description" th:field="*{description}" rows="5"></textarea>
+                                            <span th:if="${#fields.hasErrors('description')}" class="help-block" th:errors="*{description}">Invalid description.</span>
+                                        </div>
+                                        <div class="form-group" th:class="${#fields.hasErrors('varTypeId')} ? 'form-group has-error' : 'form-group'">
+                                            <label>Variable Type:</label>
+                                            <label class="radio-inline" th:each="opt : ${varTypes}">
+                                                <input type="radio" th:field="*{varTypeId}" th:value="${opt.id}" /> <span th:text="${opt.name}">tetrad variable</span>
+                                            </label>
+                                            <span class="help-block" th:if="${#fields.hasErrors('varTypeId')}" th:errors="*{varTypeId}">Variable type is required.</span>
+                                        </div>
+                                        <div class="well datagroup" th:id="'datagroup_' + ${element.key}" th:each="element : ${dataGroups}">
+                                            <div class="form-group" th:class="${#fields.hasErrors('fileIds')} ? 'form-group has-error' : 'form-group'">
+                                                <label for="fileIds">Click on the files from the left to move to the right for grouping them together.</label>
+                                                <select multiple="multiple" class="form-control" size="12" required="required" th:id="'filegroup_' + ${element.key}" th:field="*{fileIds}">
+                                                    <option value=""
+                                                            th:each="file : ${element.value}"
+                                                            th:value="${file.id}"
+                                                            th:text="${file.name}">sim_data_100vars_100_cases.txt</option>
+                                                </select>
+                                                <span class="help-block" th:if="${#fields.hasErrors('fileIds')}" th:errors="*{fileIds}">Please select at least one file.</span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="submit" class="btn btn-lg btn-block btn-success" value="Save" />
+                                        </div>
+                                    </fieldset>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <footer>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="page-header"></div>
+                            <p class="text-muted">Copyright &copy; <span th:text="${#dates.year(#dates.createNow()) + ' ' + @environment.getProperty('ccd.app.copyright')}">University of Pittsburgh</span></p>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <script src="../../static/vendor/momentjs/moment.min.js" th:src="@{/vendor/momentjs/moment.min.js}"></script>
+        <script src="../../static/vendor/jquery-validation/jquery.validate.min.js" th:src="@{https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.min.js}"></script>
+        <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
+        <script src="../../static/js/file/filegroup-detail.js" th:src="@{/js/file/filegroup-detail.min.js}"></script>
+    </body>
+</html>

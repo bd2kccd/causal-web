@@ -21,14 +21,13 @@ package edu.pitt.dbmi.causal.web.service;
 import edu.pitt.dbmi.causal.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.causal.web.model.AppUser;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.entity.UserInformation;
 import edu.pitt.dbmi.ccd.db.entity.UserLogin;
+import edu.pitt.dbmi.ccd.db.entity.UserProfile;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
-import edu.pitt.dbmi.ccd.db.service.UserInformationService;
 import edu.pitt.dbmi.ccd.db.service.UserLoginService;
+import edu.pitt.dbmi.ccd.db.service.UserProfileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -45,32 +44,31 @@ public class AppUserService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AppUserService.class);
 
     private final UserAccountService userAccountService;
-    private final UserInformationService userInformationService;
+    private final UserProfileService userProfileService;
     private final UserLoginService userLoginService;
 
-    @Autowired
-    public AppUserService(UserAccountService userAccountService, UserInformationService userInformationService, UserLoginService userLoginService) {
+    public AppUserService(UserAccountService userAccountService, UserProfileService userProfileService, UserLoginService userLoginService) {
         this.userAccountService = userAccountService;
-        this.userInformationService = userInformationService;
+        this.userProfileService = userProfileService;
         this.userLoginService = userLoginService;
     }
 
     public AppUser create(UserAccount userAccount, boolean federatedUser, String ipAddress) {
 
         // clear any account related request if user successfully signed
-        userAccountService.clearActionKey(userAccount);
+        userAccountService.clearActivationKey(userAccount);
 
         userAccount = updateCache(userAccount);
 
         UserLogin userLogin = userLoginService
-                .logUserLogin(userAccount, ipAddress);
-        UserInformation userInfo = userInformationService.getRepository()
+                .logUser(userAccount, ipAddress);
+        UserProfile userProfile = userProfileService.getRepository()
                 .findByUserAccount(userAccount);
 
         AppUser appUser = new AppUser();
-        appUser.setFirstName(userInfo.getFirstName());
-        appUser.setMiddleName(userInfo.getMiddleName());
-        appUser.setLastName(userInfo.getLastName());
+        appUser.setFirstName(userProfile.getFirstName());
+        appUser.setMiddleName(userProfile.getMiddleName());
+        appUser.setLastName(userProfile.getLastName());
         appUser.setUsername(userAccount.getUsername());
         appUser.setLastLogin(userLogin.getLoginDate());
         appUser.setFederatedUser(federatedUser);
@@ -78,28 +76,28 @@ public class AppUserService {
         return appUser;
     }
 
-    public AppUser updateUserInformation(UserInformation userInfo, AppUser appUser) {
+    public AppUser updateUserInformation(UserProfile userProfile, AppUser appUser) {
         try {
-            userInformationService.getRepository().save(userInfo);
+            userProfileService.getRepository().save(userProfile);
         } catch (Exception exception) {
             LOGGER.error("Unable to update user information.", exception);
 
             return null;
         }
 
-        appUser.setFirstName(userInfo.getFirstName());
-        appUser.setMiddleName(userInfo.getMiddleName());
-        appUser.setLastName(userInfo.getLastName());
+        appUser.setFirstName(userProfile.getFirstName());
+        appUser.setMiddleName(userProfile.getMiddleName());
+        appUser.setLastName(userProfile.getLastName());
 
         appUser.updateFullName();
 
         return appUser;
     }
 
-    public UserInformation retrieveUserInformation(AppUser appUser) {
+    public UserProfile retrieveUserInformation(AppUser appUser) {
         UserAccount userAccount = retrieveUserAccount(appUser);
 
-        return userInformationService.getRepository()
+        return userProfileService.getRepository()
                 .findByUserAccount(userAccount);
     }
 

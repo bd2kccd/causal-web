@@ -83,7 +83,7 @@ public class Auth0AuthenticationController {
         if (userAccount == null) {
             redirAttrs.addFlashAttribute("userRegistrationForm", createRegistrationForm(auth0User));
 
-            return ViewPath.REDIRECT_AUTH0_USER_REGISTRATION;
+            return SitePaths.REDIRECT_AUTH0_USER_REGISTRATION;
         } else if (userAccount.isActivated()) {
             Subject subject = authService.login(userAccount, req, res);
             if (subject.isAuthenticated()) {
@@ -97,18 +97,18 @@ public class Auth0AuthenticationController {
 
                 redirAttrs.addFlashAttribute("appUser", appUser);
 
-                return ViewPath.REDIRECT_HOME;
+                return SitePaths.REDIRECT_HOME;
             } else {
                 redirAttrs.addFlashAttribute("errorMsg", LOGIN_FAILED);
 
-                return ViewPath.REDIRECT_LOGIN;
+                return SitePaths.REDIRECT_LOGIN;
             }
         } else {
             redirAttrs.addFlashAttribute("errorMsg", UNACTIVATED_ACCOUNT);
             SessionUtils.setTokens(req, null);
             SessionUtils.setAuth0User(req, null);
 
-            return ViewPath.REDIRECT_LOGIN;
+            return SitePaths.REDIRECT_LOGIN;
         }
     }
 

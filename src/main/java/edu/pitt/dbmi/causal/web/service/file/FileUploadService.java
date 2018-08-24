@@ -19,7 +19,6 @@
 package edu.pitt.dbmi.causal.web.service.file;
 
 import edu.pitt.dbmi.causal.web.model.file.ResumableChunk;
-import edu.pitt.dbmi.causal.web.service.filesys.FileManagementService;
 import edu.pitt.dbmi.causal.web.util.FileSys;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
@@ -31,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,15 +86,19 @@ public class FileUploadService {
         int numOfChunks = chunk.getResumableTotalChunks();
         String usrDataDir = fileManagementService.getUserDataDirectory(userAccount).toAbsolutePath().toString();
 
-        Path combinedFile = Paths.get(usrDataDir, fileName);
+        if (fileService.getRepository().existsByFileNameAndUserAccount(fileName, userAccount)) {
+            Set<String> fileNames = fileService.getRepository().getFileNames(userAccount);
+            for (int i = 1; i < Integer.MAX_VALUE; i++) {
+                String name = String.format("%s_(%d)", fileName, i);
+                if (!fileNames.contains(name)) {
+                    fileName = name;
+                    break;
+                }
+            }
 
-        // delete the existing file
-        try {
-            Files.deleteIfExists(combinedFile);
-        } catch (IOException exception) {
-            LOGGER.error(exception.getMessage());
-            return null;
         }
+
+        Path combinedFile = Paths.get(usrDataDir, fileName);
 
         // combine the file chunks
         try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(combinedFile.toFile(), false))) {

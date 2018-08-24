@@ -26,12 +26,6 @@ import org.springframework.context.annotation.Import;
 
 /**
  *
- * Jan 15, 2018 5:41:30 PM
- *
- * @author Kevin V. Bui (kvb2@pitt.edu)
- */
-/**
- *
  * Apr 2, 2017 11:19:17 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -43,9 +37,6 @@ import org.springframework.context.annotation.Import;
 })
 public class CausalWebApplication {
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
         SpringApplication.run(CausalWebApplication.class, args);
     }

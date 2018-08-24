@@ -42,7 +42,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
  */
 @RestController
 @SessionAttributes("appUser")
-@RequestMapping(value = "secured/file/group")
+@RequestMapping(value = "secured/ws/file/group")
 public class FileGroupRestController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileGroupRestController.class);
@@ -56,30 +56,35 @@ public class FileGroupRestController {
         this.fileGroupService = fileGroupService;
     }
 
-    @DeleteMapping("{groupId}")
-    public ResponseEntity<?> deleteFile(
-            @PathVariable final Long groupId,
-            final AppUser appUser) {
+    @GetMapping("{id}/file")
+    public ResponseEntity<?> listFileGroups(@PathVariable final Long id, final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
 
-        if (fileGroupService.getRepository().existsByIdAndUserAccount(groupId, userAccount)) {
+        return ResponseEntity.ok(fileGroupService.getRepository().getFiles(id, userAccount));
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<?> deleteFile(@PathVariable final Long id, final AppUser appUser) {
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+
+        if (fileGroupService.getRepository().existsByIdAndUserAccount(id, userAccount)) {
             try {
                 fileGroupService.getRepository()
-                        .deleteByIdAndUserAccount(groupId, userAccount);
+                        .deleteByIdAndUserAccount(id, userAccount);
             } catch (Exception exception) {
                 LOGGER.error(exception.getMessage());
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("Unable to delete file group.");
             }
 
-            return ResponseEntity.ok(groupId);
+            return ResponseEntity.ok(id);
         } else {
             return ResponseEntity.notFound().build();
         }
     }
 
-    @GetMapping("list")
-    public ResponseEntity<?> listFileGrops(final AppUser appUser) {
+    @GetMapping
+    public ResponseEntity<?> listFileGroups(final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
 
         return ResponseEntity.ok(fileGroupService.getRepository()

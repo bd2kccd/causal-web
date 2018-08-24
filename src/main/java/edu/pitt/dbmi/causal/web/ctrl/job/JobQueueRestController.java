@@ -20,20 +20,11 @@ package edu.pitt.dbmi.causal.web.ctrl.job;
 
 import edu.pitt.dbmi.causal.web.model.AppUser;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
-import edu.pitt.dbmi.ccd.db.JobQueueException;
-import edu.pitt.dbmi.ccd.db.domain.job.JobQueueListItem;
-import edu.pitt.dbmi.ccd.db.entity.JobInfo;
-import edu.pitt.dbmi.ccd.db.entity.JobQueue;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
-import edu.pitt.dbmi.ccd.db.service.JobQueueService;
-import java.util.Date;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import edu.pitt.dbmi.ccd.db.service.JobRunService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttributes;
@@ -49,49 +40,21 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @RequestMapping(value = "secured/ws/job/queue")
 public class JobQueueRestController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobQueueRestController.class);
-
     private final AppUserService appUserService;
-    private final JobQueueService jobQueueService;
+    private final JobRunService jobRunService;
 
     @Autowired
-    public JobQueueRestController(AppUserService appUserService, JobQueueService jobQueueService) {
+    public JobQueueRestController(AppUserService appUserService, JobRunService jobRunService) {
         this.appUserService = appUserService;
-        this.jobQueueService = jobQueueService;
-    }
-
-    @DeleteMapping("{id}")
-    public ResponseEntity<?> cancelJob(@PathVariable final Long id, final AppUser appUser) {
-        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        JobQueue jobQueue = jobQueueService.getRepository()
-                .findByIdAndUserAccount(id, userAccount);
-        try {
-            jobQueueService.setStatusCanceled(jobQueue);
-        } catch (JobQueueException exception) {
-            return ResponseEntity.badRequest().body(exception.getMessage());
-        }
-
-        return ResponseEntity.ok(toJobQueueListItem(jobQueue));
+        this.jobRunService = jobRunService;
     }
 
     @GetMapping
     public ResponseEntity<?> list(final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
 
-        return ResponseEntity.ok(jobQueueService.getRepository()
-                .getJobQueueListItems(userAccount));
-    }
-
-    public JobQueueListItem toJobQueueListItem(JobQueue jobQueue) {
-        JobInfo jobInfo = jobQueue.getJobInfo();
-
-        Long id = jobQueue.getId();
-        String name = jobInfo.getName();
-        Date creationTime = jobInfo.getCreationTime();
-        String status = jobInfo.getJobStatus().getName();
-        String location = jobInfo.getJobLocation().getName();
-
-        return new JobQueueListItem(id, name, creationTime, status, location);
+        return ResponseEntity.ok(jobRunService.getRepository()
+                .getJobRunListItems(userAccount));
     }
 
 }

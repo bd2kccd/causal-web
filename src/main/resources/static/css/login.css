@@ -1,27 +1,9 @@
-.login-panel {
+.login_panel{
     margin-top: 25%;
 }
-.profile-img {
+.profile_img{
     width: 120px;
     height: 120px;
     margin: 0 auto 20px;
     display: block;
-}
-footer {
-    padding-top: 50px;
-}
-hr {
-    margin-top: 20px;
-    margin-bottom: 20px;
-    border: 0;
-    border-top: 1px solid #797979;
-}
-.registration {
-    text-align: center;
-}
-.auth0 {
-    display: block;
-    margin-top: 20px;
-    margin-bottom: 15px;
-    text-align: center;
 }

@@ -1,116 +1,82 @@
 @import url(https://fonts.googleapis.com/css?family=Ruda:400,700,900);
 body {
-    color: #333;
     font-family: 'Ruda', sans-serif;
-    padding: 0px !important;
-    margin: 0px !important;
+    background-color: #f8f8f8;
 }
-.fa {
-    color: #111150;
+ul > li a > .fa {
+    color: #1c2957;
+}
+.navbar-pitt {
+    background-color: #1c2957;
+    border-color: #1c2957;
+}
+a.navbar_color {
+    color: #eeeeee;
+}
+.title-header {
+    padding-bottom: 9px;
+    border-bottom: 1px solid #eee;
 }
 .pitt-color {
-    color: #111150;
+    color: #1c2957;
 }
 .panel-default-pitt {
-    border-color: #111150;
+    border-color: #1c2957;
 }
 .panel-default-pitt > .panel-heading + .panel-collapse > .panel-body {
-    border-top-color: #111150;
+    border-top-color: #1c2957;
 }
 .panel-default-pitt > .panel-footer + .panel-collapse > .panel-body {
-    border-bottom-color: #111150;
+    border-bottom-color: #1c2957;
 }
 .panel-default-pitt > .panel-heading {
-    background-image: -webkit-linear-gradient(top, #000094 0%, #111150 100%);
-    background-image:      -o-linear-gradient(top, #000094 0%, #111150 100%);
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#000094), to(#111150));
-    background-image:         linear-gradient(to bottom, #000094 0%, #111150 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#000094', endColorstr='#111150', GradientType=0);
-    background-repeat: repeat-x;
     color: #f5f5f5;
-    border-color: #111150;
+    background-color: #1c2957;
+    border-color: #1c2957;
 }
 .btn-default-pitt {
-    text-shadow: 0 1px 0 #000094;
-    background-image: -webkit-linear-gradient(top, #000094 0%, #111150 100%);
-    background-image:      -o-linear-gradient(top, #000094 0%, #111150 100%);
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#000094), to(#111150));
-    background-image:         linear-gradient(to bottom, #000094 0%, #111150 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#000094fffff', endColorstr='#ffe0e0e0', GradientType=0);
-    filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
-    background-repeat: repeat-x;
-    border-color: #dbdbdb;
-    border-color: #111150;
+    color: #f5f5f5;
+    background-color: #000086;
+    border-color: #000086;
 }
 .btn-default-pitt:hover,
 .btn-default-pitt:focus {
-    background-color: #111150;
+    color: #f5f5f5;
+    background-color: #0029b6;
     background-position: 0 -15px;
-    border-color: #111150;
-}
-.btn-default-pitt:active,
-.btn-default-pitt.active {
-    background-color: #111150;
-    border-color: #111150;
-}
-.btn-default-pitt {
-    color: #f5f5f5;
-}
-.btn-default-pitt:focus,
-.btn-default-pitt.focus {
-    color: #f5f5f5;
-}
-.btn-default-pitt:hover {
-    color: #f5f5f5;
+    border-color: #000086;
 }
 a:link {
     text-decoration: none;
 }
 .modal-header {
-    background-image: -webkit-linear-gradient(top, #000094 0%, #111150 100%);
-    background-image:      -o-linear-gradient(top, #000094 0%, #111150 100%);
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#000094), to(#111150));
-    background-image:         linear-gradient(to bottom, #000094 0%, #111150 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#000094', endColorstr='#111150', GradientType=0);
-    background-repeat: repeat-x;
     color: #f5f5f5;
-    border-color: #111150;
+    background-color: #1c2957;
+    border-color: #1c2957;
 }
 .modal-content  {
     -webkit-border-radius: 0px !important;
     -moz-border-radius: 0px !important;
     border-radius: 0px !important; 
 }
-.close-pitt {
-    color: #fff;
+.header_description {
+    margin-bottom: 30px;
 }
-.close-pitt:hover,
-.close-pitt:focus {
-    color: #fff;
-}
-.white {
-    color: #fff;
-}
-.m-ticker span {
-    display: block;
-    font-size: 0.8em;
-    line-height: 1em;
-}
-.navbar_pitt {
-    background-color: #111150;
-    border-color: #111150;
-}
-.nav > li > a {
-    color: #333;
-    font-size: 15px;
-}
-.title-header {
+.breadcrumb-top {
     padding-bottom: 9px;
-    border-bottom: 1px solid #eee;
+    margin: 40px 0 0 0;
 }
-.medium {
-    font-size: 25px;
+.component-spacing {
+    margin: 20px 0 20px;
 }
-a.navbar_color {
-    color: #eeeeee;
+.table td.condensed {
+    white-space: nowrap;
+    width: 1%;
+}
+.btn-submit {
+    padding-bottom: 9px;
+    margin: 40px 0 20px;
+}
+.alert-danger-text {
+  color: #a94442;
 }

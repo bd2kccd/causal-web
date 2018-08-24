@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 University of Pittsburgh.
+ * Copyright (C) 2018 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,22 +34,26 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+/**
+ *
+ * Oct 4, 2016 12:16:46 PM
+ *
+ * @author Kevin V. Bui (kvb2@pitt.edu)
+ */
 @Profile("shiro")
 @Controller
 @SessionAttributes("appUser")
 public class ShiroLoginController {
 
-    private static final String LOGIN_VIEW = "shiro_login";
-
     private static final String LOGOUT_SUCCESS = "You Have Successfully Logged Out.";
 
-    @GetMapping(ViewPath.LOGIN)
+    @GetMapping(SitePaths.LOGIN)
     public String showLoginPage(final SessionStatus sessionStatus, final Model model, HttpServletRequest req) {
         Subject currentUser = SecurityUtils.getSubject();
         if (sessionStatus.isComplete()) {
             currentUser.logout();
         } else if (currentUser.isAuthenticated()) {
-            return ViewPath.REDIRECT_HOME;
+            return SitePaths.REDIRECT_HOME;
         } else {
             sessionStatus.setComplete();
         }
@@ -58,11 +62,11 @@ public class ShiroLoginController {
             model.addAttribute("loginForm", new LoginForm(true));
         }
 
-        return LOGIN_VIEW;
+        return SiteViews.SHIRO_LOGIN;
     }
 
     @CacheEvict(cacheNames = {"appUserServiceUserAccount"}, key = "#appUser.username")
-    @GetMapping(ViewPath.LOGOUT)
+    @GetMapping(SitePaths.LOGOUT)
     public String logOut(
             @ModelAttribute("appUser") final AppUser appUser,
             final SessionStatus sessionStatus,
@@ -81,7 +85,7 @@ public class ShiroLoginController {
             httpSession.invalidate();
         }
 
-        return ViewPath.REDIRECT_LOGIN;
+        return SitePaths.REDIRECT_LOGIN;
     }
 
 }

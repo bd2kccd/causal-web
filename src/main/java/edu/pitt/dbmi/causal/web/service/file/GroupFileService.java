@@ -18,12 +18,16 @@
  */
 package edu.pitt.dbmi.causal.web.service.file;
 
+import edu.pitt.dbmi.causal.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.causal.web.model.file.FileGroupForm;
+import edu.pitt.dbmi.ccd.db.code.VariableTypeCodes;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileGroup;
+import edu.pitt.dbmi.ccd.db.entity.TetradDataFile;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.entity.VariableType;
 import edu.pitt.dbmi.ccd.db.service.FileGroupService;
+import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
 import edu.pitt.dbmi.ccd.db.service.VariableTypeService;
 import java.util.Date;
 import java.util.List;
@@ -41,42 +45,89 @@ import org.springframework.stereotype.Service;
 public class GroupFileService {
 
     private final FileGroupService fileGroupService;
+    private final VariableTypeService variableTypeService;
+    private final TetradDataFileService tetradDataFileService;
 
     @Autowired
-    public GroupFileService(FileGroupService fileGroupService) {
+    public GroupFileService(FileGroupService fileGroupService, VariableTypeService variableTypeService, TetradDataFileService tetradDataFileService) {
         this.fileGroupService = fileGroupService;
+        this.variableTypeService = variableTypeService;
+        this.tetradDataFileService = tetradDataFileService;
     }
 
-    public FileGroup updateFileGroup(FileGroup fileGroup, String name, List<File> files) {
-        fileGroup.setName(name);
+    public FileGroup saveFileGroup(FileGroupForm fileGroupForm, FileGroup fileGroup, UserAccount userAccount) throws ResourceNotFoundException {
+        VariableType variableType = variableTypeService.findById(fileGroupForm.getVarTypeId());
+        if (variableType == null) {
+            throw new ResourceNotFoundException("No such variable type found.");
+        }
+
+        List<File> files = tetradDataFileService.getRepository()
+                .find(userAccount, variableType, fileGroupForm.getFileIds()).stream()
+                .map(TetradDataFile::getFile)
+                .collect(Collectors.toList());
+        if (files.isEmpty()) {
+            throw new ResourceNotFoundException("No such dataset found.");
+        }
+
+        fileGroup.setName(fileGroupForm.getName());
+        fileGroup.setDescription(fileGroupForm.getDescription());
+        fileGroup.setVariableType(variableType);
         fileGroup.setFiles(files);
 
         return fileGroupService.getRepository().save(fileGroup);
     }
 
-    public FileGroup saveFileGroup(String name, VariableType varType, UserAccount userAccount, List<File> files) {
-        FileGroup fileGroup = new FileGroup(name, new Date(), varType, userAccount);
+    public FileGroup addNewFileGroup(FileGroupForm fileGroupForm, UserAccount userAccount) throws ResourceNotFoundException {
+        VariableType variableType = variableTypeService.findById(fileGroupForm.getVarTypeId());
+        if (variableType == null) {
+            throw new ResourceNotFoundException("No such variable type found.");
+        }
+
+        List<File> files = tetradDataFileService.getRepository()
+                .find(userAccount, variableType, fileGroupForm.getFileIds()).stream()
+                .map(TetradDataFile::getFile)
+                .collect(Collectors.toList());
+        if (files.isEmpty()) {
+            throw new ResourceNotFoundException("No such dataset found.");
+        }
+
+        FileGroup fileGroup = new FileGroup();
+        fileGroup.setName(fileGroupForm.getName());
+        fileGroup.setDescription(fileGroupForm.getDescription());
+        fileGroup.setCreationTime(new Date());
+        fileGroup.setVariableType(variableType);
         fileGroup.setFiles(files);
+        fileGroup.setUserAccount(userAccount);
 
         return fileGroupService.getRepository().save(fileGroup);
     }
 
     public FileGroupForm createFileGroupForm() {
+        VariableType variableType = variableTypeService
+                .findByCode(VariableTypeCodes.CONTINUOUS);
+
         FileGroupForm fileGroupForm = new FileGroupForm();
-        fileGroupForm.setVarTypeId(VariableTypeService.CONTINUOUS_ID);
+        fileGroupForm.setVarTypeId(variableType.getId());
 
         return fileGroupForm;
     }
 
     public FileGroupForm createFileGroupForm(FileGroup fileGroup) {
-        String groupName = fileGroup.getName();
+        String name = fileGroup.getName();
+        String description = fileGroup.getDescription();
         Long varTypeId = fileGroup.getVariableType().getId();
 
         List<Long> fileIds = fileGroup.getFiles().stream()
                 .map(File::getId)
                 .collect(Collectors.toList());
 
-        return new FileGroupForm(groupName, varTypeId, fileIds);
+        FileGroupForm form = new FileGroupForm();
+        form.setName(name);
+        form.setDescription(description);
+        form.setVarTypeId(varTypeId);
+        form.setFileIds(fileIds);
+
+        return form;
     }
 
 }

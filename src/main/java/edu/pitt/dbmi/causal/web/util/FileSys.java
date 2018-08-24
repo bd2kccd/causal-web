@@ -36,21 +36,23 @@ import java.util.List;
  */
 public class FileSys {
 
-    public static List<Path> listFilesInDirectory(Path dir, boolean showHidden) throws IOException {
+    /**
+     * Retrieve all the files in the directory.
+     *
+     * @param dir directory to search for files
+     * @param showHidden retrieve hidden files
+     * @return
+     * @throws IOException when unable to read the directory
+     */
+    public static List<Path> getFilesInDirectory(Path dir, boolean showHidden) throws IOException {
         List<Path> list = new LinkedList<>();
 
-        if (showHidden) {
-            try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(dir, path -> {
-                return Files.isRegularFile(path);
-            })) {
-                directoryStream.forEach(list::add);
-            }
-        } else {
-            try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(dir, path -> {
-                return Files.isRegularFile(path) && !Files.isHidden(path);
-            })) {
-                directoryStream.forEach(list::add);
-            }
+        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(dir, path -> {
+            return showHidden
+                    ? Files.isRegularFile(path)
+                    : Files.isRegularFile(path) && !Files.isHidden(path);
+        })) {
+            directoryStream.forEach(list::add);
         }
 
         return list;

@@ -55,7 +55,7 @@ public class PasswordResetService {
 
     public boolean proccessPasswordResetRequestForm(UserAccount userAccount, String newPassword) {
         userAccount.setPassword(passwordService.encryptPassword(newPassword));
-        userAccount.setActionKey(null);
+        userAccount.setActivationKey(null);
         try {
             userAccountService.getRepository()
                     .save(userAccount);
@@ -76,7 +76,7 @@ public class PasswordResetService {
                 .build().toString();
 
         try {
-            userAccount.setActionKey(activationKey);
+            userAccount.setActivationKey(activationKey);
             userAccount = userAccountService.getRepository()
                     .save(userAccount);
         } catch (Exception exception) {

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="description" content="Center for Causal Discovery" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Causal Web</title>
+        <link rel="apple-touch-icon" href="../../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
+        <link rel="icon" href="../../static/favicon.ico" th:href="@{/favicon.ico}" />
+        <link rel="stylesheet" href="../../static/vendor/bootstrap/css/bootstrap.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css}" />
+        <link rel="stylesheet" href="../../static/vendor/font-awesome/css/font-awesome.min.css" th:href="@{https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css}" />
+        <link rel="stylesheet" href="../../static/vendor/metismenu/metisMenu.min.css" th:href="@{/vendor/metismenu/metisMenu.min.css}" />
+        <link rel="stylesheet" href="../../static/vendor/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendor/sb-admin-2/css/sb-admin-2.min.css}" />
+        <link rel="stylesheet" href="../../static/css/styles.css" th:href="@{/css/styles.min.css}" />
+        <script src="../../static/vendor/jquery/jquery-3.3.1.min.js" th:src="@{https://code.jquery.com/jquery-3.3.1.min.js}"></script>
+        <script src="../../static/vendor/bootstrap/js/bootstrap.min.js" th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
+        <script src="../../static/vendor/metismenu/metisMenu.min.js" th:src="@{/vendor/metismenu/metisMenu.min.js}"></script>
+        <script src="../../static/vendor/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendor/sb-admin-2/js/sb-admin-2.min.js}"></script>
+    </head>
+    <body>
+        <div id="wrapper">
+            <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0" th:replace="fragments/navigation :: nav"></nav>
+            <div id="page-wrapper">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <ul class="breadcrumb breadcrumb-top">
+                            <li><a href="#" th:href="@{/secured/home}">Home</a></li>
+                            <li><a href="#" th:href="@{/secured/job/queue}">Job Queue</a></li>
+                            <li class="active">Job Detail</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h3 class="page-header">Job Detail: <span th:text="${jobDetail.name}"></span></h3>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default-pitt" id="view_job_description" th:style="${errorMsg} ? 'display: none;' : 'display: block;'">
+                            <div class="panel-heading clearfix">
+                                <span class="panel-title pull-left" style="padding-top: 7.5px;"><i class="fa fa-file-o fa-fw"></i> Job Description</span>
+                                <button type="button" class="btn btn-default btn-sm pull-right" id="edit_info">
+                                    <span class="fa fa-pencil-square-o"></span> Edit
+                                </button>
+                            </div>
+                            <div class="panel-body">
+                                <form>
+                                    <fieldset>
+                                        <div class="form-group">
+                                            <label for="displayName">Name:</label>
+                                            <input class="form-control" id="displayName" type="text" value="" th:value="${jobDetail.name}" disabled="disabled" />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="displayDescription">Description:</label>
+                                            <textarea id="displayDescription" rows="5" style="width: 100%; resize: none;" readonly="readonly" th:text="${jobDetail.description}"></textarea>
+                                        </div>
+                                    </fieldset>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="panel panel-default-pitt" id="edit_job_description" th:style="${errorMsg} ? 'display: block;' : 'display: none;'">
+                            <div class="panel-heading clearfix">
+                                <span class="panel-title pull-left" style="padding-top: 7.5px;"><i class="fa fa-file-o fa-fw"></i> Job Description</span>
+                                <button type="button" class="btn btn-default btn-sm pull-right" id="cancel_info">
+                                    <span class="fa fa-times"></span> Cancel
+                                </button>
+                            </div>
+                            <div class="panel-body">
+                                <form id="jobDetailForm" role="form" method="post" action="" th:object="${jobDetailForm}">
+                                    <fieldset>
+                                        <div class="form-group" th:class="${#fields.hasErrors('name')} ? 'form-group has-error' : 'form-group'">
+                                            <label for="name">Name:</label>
+                                            <input class="form-control" id="name" name="name" type="text" value="" th:value="*{name}" th:field="*{name}" />
+                                            <span class="help-block" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Please enter a name for the file group.</span>
+                                        </div>
+                                        <div class="form-group" th:class="${#fields.hasErrors('description')} ? 'form-group has-error' : 'form-group'">
+                                            <label for="description">Description:</label>
+                                            <textarea id="description" class="form-control" name="description" th:field="*{description}" rows="5"></textarea>
+                                            <span th:if="${#fields.hasErrors('description')}" class="help-block" th:errors="*{description}">Invalid description.</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="submit" class="btn btn-lg btn-block btn-success" value="Save" />
+                                        </div>
+                                    </fieldset>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-condensed">
+                                        <caption>Job Submission</caption>
+                                        <tbody>
+                                            <tr th:each="detail : ${submissionDetails}">
+                                                <td class="condensed"><b th:text="${detail.key} + ':'"></b></td>
+                                                <td th:text="${detail.value}"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                    </div>
+                </div>
+                <footer>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="page-header"></div>
+                            <p class="text-muted">Copyright &copy; <span th:text="${#dates.year(#dates.createNow()) + ' ' + @environment.getProperty('ccd.app.copyright')}">University of Pittsburgh</span></p>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <script src="../../static/vendor/jquery-validation/jquery.validate.min.js" th:src="@{https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.min.js}"></script>
+        <script src="../../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
+        <script src="../../static/js/job/job-detail.js" th:src="@{/js/job/job-detail.min.js}"></script>
+    </body>
+</html>

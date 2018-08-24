@@ -18,7 +18,8 @@
  */
 package edu.pitt.dbmi.causal.web.ctrl.account;
 
-import edu.pitt.dbmi.causal.web.ctrl.ViewPath;
+import edu.pitt.dbmi.causal.web.ctrl.SitePaths;
+import edu.pitt.dbmi.causal.web.ctrl.SiteViews;
 import edu.pitt.dbmi.causal.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.causal.web.model.account.PasswordReset;
 import edu.pitt.dbmi.causal.web.model.account.PasswordResetRequestForm;
@@ -52,7 +53,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping(value = "user/account/password/reset")
 public class PasswordResetController {
 
-    private static final String[] USER_NOT_FOUND = {"Password Reset Failed!", "No such account found."};
     private static final String[] UNACTIVATED_ACCOUNT = {"Password Reset Failed!", "Account has not been activated."};
     private static final String[] UNSUCCESSFUL_REQUEST = {"Password Reset Request Failed!", "Unable to proccess password reset request."};
     private static final String[] SUCCESSFUL_REQUEST = {"Password Reset Request Success!", "Please check your email for information on resetting your password."};
@@ -86,9 +86,9 @@ public class PasswordResetController {
             return "redirect:/user/account/password/reset/form?reset=" + passwordReset.getActivationKey();
         }
 
-        String actionKey = new String(Base64.getUrlDecoder().decode(passwordReset.getActivationKey()));
+        String activationKey = new String(Base64.getUrlDecoder().decode(passwordReset.getActivationKey()));
         UserAccount userAccount = userAccountService.getRepository()
-                .findByActionKey(actionKey);
+                .findByActivationKey(activationKey);
         if (userAccount == null) {
             throw new ResourceNotFoundException();
         }
@@ -96,7 +96,7 @@ public class PasswordResetController {
         if (passwordResetService.proccessPasswordResetRequestForm(userAccount, passwordReset.getPassword())) {
             redirectAttributes.addFlashAttribute("successMsg", PASSWORD_RESET_SUCCESS);
 
-            return ViewPath.REDIRECT_LOGIN;
+            return SitePaths.REDIRECT_LOGIN;
         } else {
             redirectAttributes.addFlashAttribute("passwordReset", passwordReset);
             redirectAttributes.addFlashAttribute("errorMsg", PASSWORD_RESET_FAILED);
@@ -111,7 +111,7 @@ public class PasswordResetController {
             final HttpServletRequest request,
             final Model model) {
         String activationKey = new String(Base64.getUrlDecoder().decode(resetKey));
-        if (userAccountService.getRepository().existsByActionKey(activationKey)) {
+        if (userAccountService.getRepository().existsByActivationKey(activationKey)) {
             if (!model.containsAttribute("passwordReset")) {
                 model.addAttribute("passwordReset", new PasswordReset(resetKey));
             }
@@ -119,7 +119,7 @@ public class PasswordResetController {
             throw new ResourceNotFoundException();
         }
 
-        return ViewPath.USER_PASSWORD_RESET_VIEW;
+        return SiteViews.USER_PASSWORD_RESET;
     }
 
     @GetMapping
@@ -128,7 +128,7 @@ public class PasswordResetController {
             model.addAttribute("resetRequestForm", new PasswordResetRequestForm());
         }
 
-        return ViewPath.PASSWORD_RESET_REQUEST_VIEW;
+        return SiteViews.PASSWORD_RESET_REQUEST;
     }
 
     @PostMapping
@@ -141,39 +141,34 @@ public class PasswordResetController {
             redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.passwordRecovery", bindingResult);
             redirectAttributes.addFlashAttribute("passwordRecovery", passwordRecovery);
 
-            return ViewPath.REDIRECT_PASSWORD_RESET_REQUEST;
+            return SitePaths.REDIRECT_PASSWORD_RESET_REQUEST;
         }
 
         String email = passwordRecovery.getEmail();
         UserAccount userAccount = userAccountService.getRepository()
                 .findByUsername(email);
 
-        // ensure account existed
-        if (userAccount == null) {
-            redirectAttributes.addFlashAttribute("passwordRecovery", passwordRecovery);
-            redirectAttributes.addFlashAttribute("errorMsg", USER_NOT_FOUND);
+        if (userAccount != null) {
+            // ensure account is activated
+            if (!userAccount.isActivated()) {
+                redirectAttributes.addFlashAttribute("passwordRecovery", passwordRecovery);
+                redirectAttributes.addFlashAttribute("errorMsg", UNACTIVATED_ACCOUNT);
 
-            return ViewPath.REDIRECT_PASSWORD_RESET_REQUEST;
+                return SitePaths.REDIRECT_PASSWORD_RESET_REQUEST;
+            }
+
+            if (!passwordResetService.proccessPasswordResetRequest(userAccount, request)) {
+                redirectAttributes.addFlashAttribute("passwordRecovery", passwordRecovery);
+                redirectAttributes.addFlashAttribute("errorMsg", UNSUCCESSFUL_REQUEST);
+
+                return SitePaths.REDIRECT_PASSWORD_RESET_REQUEST;
+            }
         }
 
-        // ensure account is activated
-        if (!userAccount.isActivated()) {
-            redirectAttributes.addFlashAttribute("passwordRecovery", passwordRecovery);
-            redirectAttributes.addFlashAttribute("errorMsg", UNACTIVATED_ACCOUNT);
+        // return success even if user account does not exist
+        redirectAttributes.addFlashAttribute("successMsg", SUCCESSFUL_REQUEST);
 
-            return ViewPath.REDIRECT_PASSWORD_RESET_REQUEST;
-        }
-
-        if (passwordResetService.proccessPasswordResetRequest(userAccount, request)) {
-            redirectAttributes.addFlashAttribute("successMsg", SUCCESSFUL_REQUEST);
-
-            return ViewPath.REDIRECT_LOGIN;
-        } else {
-            redirectAttributes.addFlashAttribute("passwordRecovery", passwordRecovery);
-            redirectAttributes.addFlashAttribute("errorMsg", UNSUCCESSFUL_REQUEST);
-
-            return ViewPath.REDIRECT_PASSWORD_RESET_REQUEST;
-        }
+        return SitePaths.REDIRECT_LOGIN;
     }
 
 }

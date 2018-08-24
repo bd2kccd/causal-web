@@ -18,14 +18,15 @@
  */
 package edu.pitt.dbmi.causal.web.ctrl.account;
 
-import edu.pitt.dbmi.causal.web.ctrl.ViewPath;
+import edu.pitt.dbmi.causal.web.ctrl.SitePaths;
+import edu.pitt.dbmi.causal.web.ctrl.SiteViews;
 import edu.pitt.dbmi.causal.web.exception.ResourceNotFoundException;
 import edu.pitt.dbmi.causal.web.model.AppUser;
 import edu.pitt.dbmi.causal.web.model.account.UserRegistrationForm;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
 import edu.pitt.dbmi.causal.web.service.AuthService;
 import edu.pitt.dbmi.causal.web.service.account.AccountRegistrationService;
-import edu.pitt.dbmi.causal.web.service.filesys.FileManagementService;
+import edu.pitt.dbmi.causal.web.service.file.FileManagementService;
 import edu.pitt.dbmi.causal.web.service.mail.UserRegistrationMailService;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import javax.servlet.http.HttpServletRequest;
@@ -99,7 +100,7 @@ public class Auth0UserRegistrationController {
             redirAttrs.addFlashAttribute("userRegistrationForm", userRegistrationForm);
             redirAttrs.addFlashAttribute("errorMsg", REGISTRATION_ERROR);
 
-            return ViewPath.REDIRECT_AUTH0_USER_REGISTRATION;
+            return SitePaths.REDIRECT_AUTH0_USER_REGISTRATION;
         }
 
         // ensure account is created
@@ -108,24 +109,24 @@ public class Auth0UserRegistrationController {
         if (userAccount == null) {
             redirAttrs.addFlashAttribute("errorMsg", REGISTRATION_FAILED);
 
-            return ViewPath.REDIRECT_USER_REGISTRATION;
+            return SitePaths.REDIRECT_USER_REGISTRATION;
         }
 
         userRegistrationMailService.sendUserRegistrationAlertToAdmin(userAccount);
 
         Subject subject = authService.login(userAccount, req, res);
         if (subject.isAuthenticated()) {
-            fileManagementService.setupUserHomeDirectory(userAccount);
+            fileManagementService.createUserHomeDirectory(userAccount);
 
             AppUser appUser = appUserService
                     .create(userAccount, true, req.getRemoteAddr());
             redirAttrs.addFlashAttribute("appUser", appUser);
 
-            return ViewPath.REDIRECT_HOME;
+            return SitePaths.REDIRECT_HOME;
         } else {
             redirAttrs.addFlashAttribute("errorMsg", LOGIN_FAILED);
 
-            return ViewPath.REDIRECT_LOGIN;
+            return SitePaths.REDIRECT_LOGIN;
         }
     }
 
@@ -135,7 +136,7 @@ public class Auth0UserRegistrationController {
         if (sessionStatus.isComplete()) {
             currentUser.logout();
         } else if (currentUser.isAuthenticated()) {
-            return ViewPath.REDIRECT_HOME;
+            return SitePaths.REDIRECT_HOME;
         } else {
             sessionStatus.setComplete();
         }
@@ -146,7 +147,7 @@ public class Auth0UserRegistrationController {
 
         model.addAttribute("federated", true);
 
-        return ViewPath.USER_REGISTRATION_VIEW;
+        return SiteViews.USER_REGISTRATION;
     }
 
 }

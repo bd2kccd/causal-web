@@ -1,70 +1,67 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
     <head>
-        <meta charset="utf-8" />
-        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <meta charset="UTF-8" />
+        <meta name="description" content="Center for Causal Discovery" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Causal Web</title>
-        <meta name="description" content="causal" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="apple-touch-icon" href="../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
         <link rel="icon" href="../static/favicon.ico" th:href="@{/favicon.ico}" />
-        <link rel="stylesheet" href="../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css}" />
-        <link rel="stylesheet" href="../static/vendors/bootstrap/css/bootstrap-theme.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css}" />
-        <link rel="stylesheet" href="../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css}"/>
-        <link rel="stylesheet" href="../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
-        <link rel="stylesheet" href="../static/css/login.min.css" th:href="@{/css/login.min.css}" />
-        <script src="../static/vendors/jquery/jquery.min.js" th:src="@{https://code.jquery.com/jquery-2.2.4.min.js}"></script>
-        <script src="../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
+        <link rel="stylesheet" href="../static/vendor/bootstrap/css/bootstrap.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css}" />
+        <link rel="stylesheet" href="../static/vendor/font-awesome/css/font-awesome.min.css" th:href="@{https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css}" />
+        <link rel="stylesheet" href="../static/css/styles.css" th:href="@{/css/styles.min.css}" />
+        <link rel="stylesheet" href="../static/css/login.css" th:href="@{/css/login.min.css}" />
     </head>
     <body>
         <div class="container">
             <div class="row">
                 <div class="col-md-4 col-md-offset-4">
-                    <div class="panel panel-default-pitt login-panel">
-                        <div class="panel-heading">
-                            <h3 class="panel-title" th:text="${@environment.getProperty('ccd.app.title') + ' ' + @environment.getProperty('ccd.app.version')}">Causal Web</h3>
-                        </div>
-                        <div class="panel-body">
-                            <img class="profile-img" src="../static/img/ccd_logo.png" th:src="@{/img/ccd_logo.png}" alt="profile picture" />
-                            <div class="alert alert-success text-center" role="alert" th:if="${successMsg}">
-                                <p th:each="msg : ${successMsg}" th:text="${msg}"></p>
-                            </div>
-                            <div class="alert alert-danger text-center" role="alert" th:if="${errorMsg}">
-                                <p th:each="msg : ${errorMsg}" th:text="${msg}"></p>
-                            </div>
-                            <form role="form" id="login" method="POST" accept-charset="UTF-8" action="" th:action="@{/login}" th:object="${loginForm}">
-                                <fieldset>
-                                    <div class="form-group" th:class="${#fields.hasErrors('email')} ? 'form-group has-error' : 'form-group'">
-                                        <div class="input-group">
-                                            <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
-                                            <input class="form-control" placeholder="E-mail" name="email" type="email" required="required" autofocus="autofocus" th:field="*{email}" />
-                                        </div>
-                                        <span class="help-block" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Please enter a valid e-mail.</span>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="login_panel panel panel-default-pitt">
+                                <div class="panel-heading">
+                                    <span class="panel-title" th:text="${@environment.getProperty('ccd.app.title') + ' ' + @environment.getProperty('ccd.app.version')}">Causal Web</span>
+                                </div>
+                                <div class="panel-body">
+                                    <img class="profile_img" src="../static/img/ccd_logo.png" th:src="@{/img/ccd_logo.png}" alt="profile picture" />
+                                    <div class="alert alert-success text-center" role="alert" th:if="${successMsg}">
+                                        <p th:each="msg : ${successMsg}" th:text="${msg}"></p>
                                     </div>
-                                    <div class="form-group" th:class="${#fields.hasErrors('password')} ? 'form-group has-error' : 'form-group'">
-                                        <div class="input-group">
-                                            <span class="input-group-addon"><i class="fa fa-lock"></i></span>
-                                            <input type="password" class="form-control" placeholder="Password" name="password" value="" required="required" th:field="*{password}" />
-                                        </div>
-                                        <span class="help-block" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Please enter your password.</span>
+                                    <div class="alert alert-danger text-center" role="alert" th:if="${errorMsg}">
+                                        <p th:each="msg : ${errorMsg}" th:text="${msg}"></p>
                                     </div>
-                                    <div class="form-group">
-                                        <div class="checkbox">
-                                            <label for="rememberMe">
-                                                <input type="checkbox" id="rememberMe" name="rememberMe" value="true" checked="checked" th:field="*{rememberMe}" /> Remember Me
-                                            </label>
-                                            <span class="pull-right"><a href="#" th:href="@{/user/account/password/reset}">Forgot Password?</a></span>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <input type="submit" class="btn btn-block btn-lg btn-default btn-default-pitt" value="Sign In" />
-                                    </div>
-                                </fieldset>
-                            </form>
-                            <hr />
-                            <div class="registration">
-                                Don't have an account yet?<br/>
-                                <a href="#" th:href="@{/user/account/registration}">Create an account</a>
+                                    <form id="loginForm" role="form" method="post" accept-charset="UTF-8" action="" th:action="@{/login}" th:object="${loginForm}">
+                                        <fieldset>
+                                            <div class="form-group" th:class="${#fields.hasErrors('email')} ? 'form-group has-error' : 'form-group'">
+                                                <div class="input-group">
+                                                    <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
+                                                    <input class="form-control" placeholder="E-mail" name="email" type="email" required="required" autofocus="autofocus" th:field="*{email}" />
+                                                </div>
+                                                <span class="help-block" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Please enter a valid e-mail.</span>
+                                            </div>
+                                            <div class="form-group" th:class="${#fields.hasErrors('password')} ? 'form-group has-error' : 'form-group'">
+                                                <div class="input-group">
+                                                    <span class="input-group-addon"><i class="fa fa-lock"></i></span>
+                                                    <input type="password" class="form-control" placeholder="Password" name="password" value="" required="required" th:field="*{password}" />
+                                                </div>
+                                                <span class="help-block" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Please enter your password.</span>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="checkbox">
+                                                    <label for="rememberMe">
+                                                        <input type="checkbox" id="rememberMe" name="rememberMe" value="true" checked="checked" th:field="*{rememberMe}" /> Remember Me
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <input type="submit" class="btn btn-block btn-lg btn-default btn-default-pitt" value="Sign In" />
+                                            </div>
+                                        </fieldset>
+                                    </form>
+                                    <hr />
+                                    <p><a href="#" th:href="@{/user/account/password/reset}">Forgot Password?</a></p>
+                                    <p><a href="#" th:href="@{/user/account/registration}">Don't have an account yet?</a></p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -72,14 +69,17 @@
             </div>
             <footer>
                 <div class="row">
-                    <div class="text-center">
-                        <p class="text-muted" th:text="${'Copyright &copy; ' + #dates.year(#dates.createNow()) + ' ' + @environment.getProperty('ccd.app.copyright')}"></p>
+                    <div class="col-lg-12">
+                        <div class="text-center">
+                            <p class="text-muted">Copyright &copy; <span th:text="${#dates.year(#dates.createNow()) + ' ' + @environment.getProperty('ccd.app.copyright')}">University of Pittsburgh</span></p>
+                        </div>
                     </div>
                 </div>
             </footer>
         </div>
-        <script src="../static/vendors/jquery-validation/jquery.validate.min.js" th:src="@{https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.min.js}"></script>
-        <script src="../static/js/validation/custom.min.js" th:src="@{/js/validation/custom.min.js}"></script>
-        <script src="../static/js/login-valid.min.js" th:src="@{/js/login-valid.min.js}"></script>
+        <script src="../static/vendor/jquery/jquery-3.3.1.min.js" th:src="@{https://code.jquery.com/jquery-3.3.1.min.js}"></script>
+        <script src="../static/vendor/jquery-validation/jquery.validate.min.js" th:src="@{https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.min.js}"></script>
+        <script src="../static/js/validation/custom.js" th:src="@{/js/validation/custom.min.js}"></script>
+        <script src="../static/js/login.js" th:src="@{/js/login.min.js}"></script>
     </body>
 </html>

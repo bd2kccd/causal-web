@@ -50,18 +50,16 @@ public class Auth0LoginController {
 
     private static final String LOGOUT_SUCCESS = "You have successfully logged out.";
 
-    private static final String LOGIN_VIEW = "auth0_shiro_login";
-
     public Auth0LoginController() {
     }
 
-    @GetMapping(ViewPath.LOGIN)
+    @GetMapping(SitePaths.LOGIN)
     public String showLoginPage(final SessionStatus sessionStatus, final Model model, HttpServletRequest req) {
         Subject currentUser = SecurityUtils.getSubject();
         if (sessionStatus.isComplete()) {
             currentUser.logout();
         } else if (currentUser.isAuthenticated()) {
-            return ViewPath.REDIRECT_HOME;
+            return SitePaths.REDIRECT_HOME;
         } else {
             sessionStatus.setComplete();
         }
@@ -72,11 +70,11 @@ public class Auth0LoginController {
 
         initLoginPage(model, req);
 
-        return LOGIN_VIEW;
+        return SiteViews.AUTH0_LOGIN;
     }
 
     @CacheEvict(cacheNames = {"appUserServiceUserAccount"}, key = "#appUser.username")
-    @GetMapping(ViewPath.LOGOUT)
+    @GetMapping(SitePaths.LOGOUT)
     public String logOut(
             @ModelAttribute("appUser") final AppUser appUser,
             final SessionStatus sessionStatus,
@@ -100,7 +98,7 @@ public class Auth0LoginController {
             httpSession.invalidate();
         }
 
-        return ViewPath.REDIRECT_LOGIN;
+        return SitePaths.REDIRECT_LOGIN;
     }
 
     private void initLoginPage(Model model, HttpServletRequest req) {

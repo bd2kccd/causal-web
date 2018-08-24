@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.causal.web.model.algorithm;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -28,28 +29,51 @@ import javax.validation.constraints.NotNull;
  */
 public class TetradForm {
 
-    @NotNull
+    @NotBlank(message = "Job name is required.")
+    private String name;
+
+    private String description;
+
+    @NotNull(message = "Variable type is required.")
     private Long varTypeId;
 
-    @NotNull
-    private Long datasetId;
+    @NotNull(message = "Data file ID is required.")
+    private Long dataFileId;
 
-    private boolean singleFile;
+    private Long varFileId;
+
+    private Long knwlFileId;
+
+    private boolean singleDataFile;
 
     private String algoType;
 
+    @NotBlank(message = "Algorithm is required.")
     private String algorithm;
 
     private String score;
 
     private String test;
 
+    private int jvmMaxMem = 1;
+
     public TetradForm() {
     }
 
-    @Override
-    public String toString() {
-        return "TetradForm{" + "varTypeId=" + varTypeId + ", datasetId=" + datasetId + ", singleFile=" + singleFile + ", algoType=" + algoType + ", algorithm=" + algorithm + ", score=" + score + ", test=" + test + '}';
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Long getVarTypeId() {
@@ -60,20 +84,36 @@ public class TetradForm {
         this.varTypeId = varTypeId;
     }
 
-    public Long getDatasetId() {
-        return datasetId;
+    public Long getDataFileId() {
+        return dataFileId;
     }
 
-    public void setDatasetId(Long datasetId) {
-        this.datasetId = datasetId;
+    public void setDataFileId(Long dataFileId) {
+        this.dataFileId = dataFileId;
     }
 
-    public boolean isSingleFile() {
-        return singleFile;
+    public Long getVarFileId() {
+        return varFileId;
     }
 
-    public void setSingleFile(boolean singleFile) {
-        this.singleFile = singleFile;
+    public void setVarFileId(Long varFileId) {
+        this.varFileId = varFileId;
+    }
+
+    public Long getKnwlFileId() {
+        return knwlFileId;
+    }
+
+    public void setKnwlFileId(Long knwlFileId) {
+        this.knwlFileId = knwlFileId;
+    }
+
+    public boolean isSingleDataFile() {
+        return singleDataFile;
+    }
+
+    public void setSingleDataFile(boolean singleDataFile) {
+        this.singleDataFile = singleDataFile;
     }
 
     public String getAlgoType() {
@@ -106,6 +146,14 @@ public class TetradForm {
 
     public void setTest(String test) {
         this.test = test;
+    }
+
+    public int getJvmMaxMem() {
+        return jvmMaxMem;
+    }
+
+    public void setJvmMaxMem(int jvmMaxMem) {
+        this.jvmMaxMem = jvmMaxMem;
     }
 
 }

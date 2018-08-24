@@ -19,16 +19,24 @@
 package edu.pitt.dbmi.causal.web.service.algorithm;
 
 import edu.pitt.dbmi.causal.web.exception.ValidationException;
+import edu.pitt.dbmi.causal.web.model.algorithm.TetradForm;
 import edu.pitt.dbmi.causal.web.tetrad.TetradAlgorithm;
 import edu.pitt.dbmi.causal.web.tetrad.TetradAlgorithms;
 import edu.pitt.dbmi.causal.web.tetrad.TetradScore;
 import edu.pitt.dbmi.causal.web.tetrad.TetradScores;
 import edu.pitt.dbmi.causal.web.tetrad.TetradTest;
 import edu.pitt.dbmi.causal.web.tetrad.TetradTests;
+import edu.pitt.dbmi.ccd.db.code.FileFormatCodes;
+import edu.pitt.dbmi.ccd.db.entity.FileFormat;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.FileFormatService;
 import edu.pitt.dbmi.ccd.db.service.FileGroupService;
+import edu.pitt.dbmi.ccd.db.service.FileService;
 import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
+import edu.pitt.dbmi.ccd.db.service.TetradVariableFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
 
 /**
  *
@@ -48,60 +56,93 @@ public class TetradValidationService {
     private final ValidationException TEST_REQUIRED_EXCEPTION = new ValidationException("Test is required.");
     private final ValidationException TEST_SCORE_REQUIRED_EXCEPTION = new ValidationException("Both test and score is required.");
 
-    private final ValidationException NO_SUCH_DATASET_EXCEPTION = new ValidationException("No such dataset.");
+    private final ValidationException DATASET_REQUIRED_EXCEPTION = new ValidationException("Dataset file is required.");
+    private final ValidationException NO_SUCH_DATASET_EXCEPTION = new ValidationException("No such dataset file.");
+    private final ValidationException NO_SUCH_KNOWLEDGE_EXCEPTION = new ValidationException("No such knowledge file.");
+    private final ValidationException NO_SUCH_VARIABLE_EXCEPTION = new ValidationException("No such variable file.");
 
-    private final TetradDataFileService tetradDataFileService;
     private final FileGroupService fileGroupService;
+    private final FileFormatService fileFormatService;
+    private final FileService fileService;
+    private final TetradDataFileService tetradDataFileService;
+    private final TetradVariableFileService tetradVariableFileService;
 
     @Autowired
-    public TetradValidationService(TetradDataFileService tetradDataFileService, FileGroupService fileGroupService) {
-        this.tetradDataFileService = tetradDataFileService;
+    public TetradValidationService(FileGroupService fileGroupService, FileFormatService fileFormatService, FileService fileService, TetradDataFileService tetradDataFileService, TetradVariableFileService tetradVariableFileService) {
         this.fileGroupService = fileGroupService;
+        this.fileFormatService = fileFormatService;
+        this.fileService = fileService;
+        this.tetradDataFileService = tetradDataFileService;
+        this.tetradVariableFileService = tetradVariableFileService;
     }
 
-    public void validateDataset(Long datasetId, boolean isSingleFile) throws ValidationException {
-        if (isSingleFile) {
-            if (!tetradDataFileService.getRepository().existsById(datasetId)) {
-                throw NO_SUCH_DATASET_EXCEPTION;
-            }
-        } else {
-            if (!fileGroupService.getRepository().existsById(datasetId)) {
-                throw NO_SUCH_DATASET_EXCEPTION;
-            }
-        }
+    public void validate(TetradForm tetradForm, MultiValueMap<String, String> formData, UserAccount userAccount) throws ValidationException {
+        validateFile(tetradForm, userAccount);
+        validateAlgorithm(tetradForm);
     }
 
-    public void validateExistence(String algorithmName, String testName, String scoreName) throws ValidationException {
-        TetradAlgorithm algorithm = TetradAlgorithms.getInstance().getTetradAlgorithm(algorithmName);
+    private void validateAlgorithm(TetradForm tetradForm) {
+        String algoCmd = tetradForm.getAlgorithm();
+        TetradAlgorithm algorithm = TetradAlgorithms.getInstance().getTetradAlgorithm(algoCmd);
         if (algorithm == null) {
             throw NO_SUCH_ALGORITHM_EXCEPTION;
         }
 
-        TetradScore score = TetradScores.getInstance().getTetradScore(scoreName);
-        if (score == null && scoreName != null) {
+        String scoreCmd = tetradForm.getScore();
+        TetradScore score = TetradScores.getInstance().getTetradScore(scoreCmd);
+        if (scoreCmd != null && score == null) {
             throw NO_SUCH_SCORE_EXCEPTION;
         }
 
-        TetradTest test = TetradTests.getInstance().getTetradTest(testName);
-        if (test == null && testName != null) {
+        String testCmd = tetradForm.getTest();
+        TetradTest test = TetradTests.getInstance().getTetradTest(testCmd);
+        if (testCmd != null && test == null) {
             throw NO_SUCH_TEST_EXCEPTION;
-        }
-    }
-
-    public void validateRequirement(TetradAlgorithm algorithm, TetradScore score, TetradTest test) throws ValidationException {
-        if (algorithm == null) {
-            throw ALGORITHM_REQUIRED_EXCEPTION;
         }
 
         boolean missingScore = algorithm.isRequiredScore() && (score == null);
         boolean missingTest = algorithm.isRequiredTest() && (test == null);
-        if (missingTest || missingScore) {
-            if (missingTest && missingScore) {
-                throw TEST_SCORE_REQUIRED_EXCEPTION;
-            } else if (missingTest) {
-                throw TEST_REQUIRED_EXCEPTION;
+        if (missingTest && missingScore) {
+            throw TEST_SCORE_REQUIRED_EXCEPTION;
+        } else if (missingTest) {
+            throw TEST_REQUIRED_EXCEPTION;
+        } else if (missingScore) {
+            throw SCORE_REQUIRED_EXCEPTION;
+        }
+    }
+
+    private void validateFile(TetradForm tetradForm, UserAccount userAccount) throws ValidationException {
+        // validate dataset
+        boolean singleDataFile = tetradForm.isSingleDataFile();
+        Long id = tetradForm.getDataFileId();
+        if (id == null) {
+            throw DATASET_REQUIRED_EXCEPTION;
+        } else {
+            if (singleDataFile) {
+                if (!tetradDataFileService.getRepository().existsByIdAndUserAccount(id, userAccount)) {
+                    throw NO_SUCH_DATASET_EXCEPTION;
+                }
             } else {
-                throw SCORE_REQUIRED_EXCEPTION;
+                if (!fileGroupService.getRepository().existsByIdAndUserAccount(id, userAccount)) {
+                    throw NO_SUCH_DATASET_EXCEPTION;
+                }
+            }
+        }
+
+        // validate knowledge file
+        id = tetradForm.getKnwlFileId();
+        if (id != null) {
+            FileFormat fileFormat = fileFormatService.findByCode(FileFormatCodes.TETRAD_KNWL);
+            if (!fileService.getRepository().existsByIdAndFileFormatAndUserAccount(id, fileFormat, userAccount)) {
+                throw NO_SUCH_KNOWLEDGE_EXCEPTION;
+            }
+        }
+
+        // validate variable file
+        id = tetradForm.getVarFileId();
+        if (id != null) {
+            if (!tetradVariableFileService.getRepository().existsByIdAndUserAccount(id, userAccount)) {
+                throw NO_SUCH_VARIABLE_EXCEPTION;
             }
         }
     }

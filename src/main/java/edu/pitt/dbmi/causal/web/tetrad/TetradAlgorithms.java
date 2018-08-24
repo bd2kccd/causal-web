@@ -19,6 +19,7 @@
 package edu.pitt.dbmi.causal.web.tetrad;
 
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Algorithm;
 import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.Nonexecutable;
@@ -41,9 +42,15 @@ public class TetradAlgorithms {
 
     private static final TetradAlgorithms INSTANCE = new TetradAlgorithms();
 
-    private final Map<String, TetradAlgorithm> algoByShortName;
+    private final Map<String, TetradAlgorithm> algoByCmdName;
     private final Map<AlgType, List<Option>> optionsByAlgType;
+    private final Map<AlgType, List<Option>> multiDatasetOptionsByAlgType;
+    private final Map<AlgType, List<Option>> knowledgeOptionsByAlgType;
+    private final Map<AlgType, List<Option>> multiDatasetOptionsAndknowledgeOptionsByAlgType;
     private final List<Option> options;
+    private final List<Option> multiDatasetOptions;
+    private final List<Option> knowledgeOptions;
+    private final List<Option> multiDatasetOptionsAndknowledgeOptions;
 
     private TetradAlgorithms() {
         AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
@@ -55,37 +62,72 @@ public class TetradAlgorithms {
                 .sorted()
                 .collect(Collectors.toList());
 
-        this.algoByShortName = list.stream()
+        this.algoByCmdName = list.stream()
                 .collect(Collectors.toMap(e -> e.getAlgorithm().getAnnotation().command(), Function.identity()));
 
-        this.optionsByAlgType = new EnumMap<>(AlgType.class);
-        List<Option> opts = new LinkedList<>();
+        Map<AlgType, List<Option>> allOptsByAlgType = new EnumMap<>(AlgType.class);
+        Map<AlgType, List<Option>> multiDataOptsByAlgType = new EnumMap<>(AlgType.class);
+        Map<AlgType, List<Option>> knwlOptsByAlgType = new EnumMap<>(AlgType.class);
+        Map<AlgType, List<Option>> multiDataAndKnwlOptsByAlgType = new EnumMap<>(AlgType.class);
+        for (AlgType algType : AlgType.values()) {
+            allOptsByAlgType.put(algType, new LinkedList<>());
+            multiDataOptsByAlgType.put(algType, new LinkedList<>());
+            knwlOptsByAlgType.put(algType, new LinkedList<>());
+            multiDataAndKnwlOptsByAlgType.put(algType, new LinkedList<>());
+        }
+
+        List<Option> allOpts = new LinkedList<>();
+        List<Option> multiDataOpts = new LinkedList<>();
+        List<Option> knwlOpts = new LinkedList<>();
+        List<Option> multiDataAndKnwlOpts = new LinkedList<>();
+
         list.forEach(e -> {
-            AlgType algType = e.getAlgorithm().getAnnotation().algoType();
-            String value = e.getAlgorithm().getAnnotation().command();
-            String text = e.getAlgorithm().getAnnotation().name();
+            boolean acceptKnowledge = e.isAcceptKnowledge();
+            boolean acceptMultiDataset = e.isAcceptMultiDataset();
+
+            Algorithm algorithm = e.getAlgorithm().getAnnotation();
+            AlgType algType = algorithm.algoType();
+            String value = algorithm.command();
+            String text = algorithm.name();
 
             Option opt = new Option(value, text);
 
-            List<Option> listOpt = optionsByAlgType.get(algType);
-            if (listOpt == null) {
-                listOpt = new LinkedList<>();
-                optionsByAlgType.put(algType, listOpt);
+            allOpts.add(opt);
+            allOptsByAlgType.get(algType).add(opt);
+            if (acceptKnowledge && acceptMultiDataset) {
+                multiDataAndKnwlOpts.add(opt);
+                multiDataAndKnwlOptsByAlgType.get(algType).add(opt);
             }
-
-            listOpt.add(opt);
-            opts.add(opt);
+            if (acceptKnowledge) {
+                knwlOpts.add(opt);
+                knwlOptsByAlgType.get(algType).add(opt);
+            }
+            if (acceptMultiDataset) {
+                multiDataOpts.add(opt);
+                multiDataOptsByAlgType.get(algType).add(opt);
+            }
         });
 
-        this.options = Collections.unmodifiableList(opts);
+        this.optionsByAlgType = new EnumMap<>(AlgType.class);
+        allOptsByAlgType.forEach((k, v) -> optionsByAlgType.put(k, Collections.unmodifiableList(v)));
+
+        this.multiDatasetOptionsByAlgType = new EnumMap<>(AlgType.class);
+        multiDataOptsByAlgType.forEach((k, v) -> multiDatasetOptionsByAlgType.put(k, Collections.unmodifiableList(v)));
+
+        this.knowledgeOptionsByAlgType = new EnumMap<>(AlgType.class);
+        knwlOptsByAlgType.forEach((k, v) -> knowledgeOptionsByAlgType.put(k, Collections.unmodifiableList(v)));
+
+        this.multiDatasetOptionsAndknowledgeOptionsByAlgType = new EnumMap<>(AlgType.class);
+        multiDataAndKnwlOptsByAlgType.forEach((k, v) -> multiDatasetOptionsAndknowledgeOptionsByAlgType.put(k, Collections.unmodifiableList(v)));
+
+        this.options = Collections.unmodifiableList(allOpts);
+        this.multiDatasetOptions = Collections.unmodifiableList(multiDataOpts);
+        this.knowledgeOptions = Collections.unmodifiableList(knwlOpts);
+        this.multiDatasetOptionsAndknowledgeOptions = Collections.unmodifiableList(multiDataAndKnwlOpts);
     }
 
     public TetradAlgorithm getTetradAlgorithm(String shortName) {
-        return (shortName == null) ? null : algoByShortName.get(shortName);
-    }
-
-    public List<Option> getOptions() {
-        return options;
+        return (shortName == null) ? null : algoByCmdName.get(shortName);
     }
 
     public List<Option> getOptions(AlgType algType) {
@@ -94,6 +136,46 @@ public class TetradAlgorithms {
         }
 
         return optionsByAlgType.get(algType);
+    }
+
+    public List<Option> getMultiDatasetOptions(AlgType algType) {
+        if (algType == null || !multiDatasetOptionsByAlgType.containsKey(algType)) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return multiDatasetOptionsByAlgType.get(algType);
+    }
+
+    public List<Option> getKnowledgeOptions(AlgType algType) {
+        if (algType == null || !knowledgeOptionsByAlgType.containsKey(algType)) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return knowledgeOptionsByAlgType.get(algType);
+    }
+
+    public List<Option> getMultiDatasetOptionsAndknowledgeOptions(AlgType algType) {
+        if (algType == null || !multiDatasetOptionsAndknowledgeOptionsByAlgType.containsKey(algType)) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return multiDatasetOptionsAndknowledgeOptionsByAlgType.get(algType);
+    }
+
+    public List<Option> getOptions() {
+        return options;
+    }
+
+    public List<Option> getMultiDatasetOptions() {
+        return multiDatasetOptions;
+    }
+
+    public List<Option> getKnowledgeOptions() {
+        return knowledgeOptions;
+    }
+
+    public List<Option> getMultiDatasetOptionsAndknowledgeOptions() {
+        return multiDatasetOptionsAndknowledgeOptions;
     }
 
     public static TetradAlgorithms getInstance() {

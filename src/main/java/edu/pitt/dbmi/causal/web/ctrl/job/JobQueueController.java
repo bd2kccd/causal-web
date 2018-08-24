@@ -18,10 +18,7 @@
  */
 package edu.pitt.dbmi.causal.web.ctrl.job;
 
-import edu.pitt.dbmi.causal.web.ctrl.ViewPath;
-import edu.pitt.dbmi.causal.web.service.AppUserService;
-import edu.pitt.dbmi.ccd.db.service.JobQueueService;
-import org.springframework.beans.factory.annotation.Autowired;
+import edu.pitt.dbmi.causal.web.ctrl.SiteViews;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,18 +35,9 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @RequestMapping(value = "secured/job/queue")
 public class JobQueueController {
 
-    private final AppUserService appUserService;
-    private final JobQueueService jobQueueService;
-
-    @Autowired
-    public JobQueueController(AppUserService appUserService, JobQueueService jobQueueService) {
-        this.appUserService = appUserService;
-        this.jobQueueService = jobQueueService;
-    }
-
     @GetMapping
-    public String showJobQueueView() {
-        return ViewPath.JOB_QUEUE_VIEW;
+    public String showJobView() {
+        return SiteViews.JOB_QUEUE;
     }
 
 }

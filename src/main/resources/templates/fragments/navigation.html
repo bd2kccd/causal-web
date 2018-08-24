@@ -1,23 +1,21 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
     <head>
-        <meta charset="utf-8" />
-        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <meta charset="UTF-8" />
+        <meta name="description" content="Center for Causal Discovery" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Causal Web</title>
-        <meta name="description" content="causal" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="apple-touch-icon" href="../../static/apple-touch-icon.png" th:href="@{/apple-touch-icon.png}" />
         <link rel="icon" href="../../static/favicon.ico" th:href="@{/favicon.ico}" />
-        <link rel="stylesheet" href="../../static/vendors/bootstrap/css/bootstrap.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css}" />
-        <link rel="stylesheet" href="../../static/vendors/bootstrap/css/bootstrap-theme.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css}" />
-        <link rel="stylesheet" href="../../static/vendors/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendors/sb-admin-2/css/sb-admin-2.min.css}" />
-        <link rel="stylesheet" href="../../static/vendors/metisMenu/metisMenu.min.css" th:href="@{/vendors/metisMenu/metisMenu.min.css}" />
-        <link rel="stylesheet" href="../../static/vendors/font-awesome/css/font-awesome.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css}"/>
-        <link rel="stylesheet" href="../../static/css/styles.min.css" th:href="@{/css/styles.min.css}" />
-        <script src="../../static/vendors/jquery/jquery.min.js" th:src="@{https://code.jquery.com/jquery-2.2.4.min.js}"></script>
-        <script src="../../static/vendors/bootstrap/js/bootstrap.min.js" th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
-        <script src="../../static/vendors/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendors/sb-admin-2/js/sb-admin-2.min.js}"></script>
-        <script src="../../static/vendors/metisMenu/metisMenu.min.js" th:src="@{/vendors/metisMenu/metisMenu.min.js}"></script>
+        <link rel="stylesheet" href="../../static/vendor/bootstrap/css/bootstrap.min.css" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css}" />
+        <link rel="stylesheet" href="../../static/vendor/font-awesome/css/font-awesome.min.css" th:href="@{https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css}" />
+        <link rel="stylesheet" href="../../static/vendor/metismenu/metisMenu.min.css" th:href="@{/vendor/metismenu/metisMenu.min.css}" />
+        <link rel="stylesheet" href="../../static/vendor/sb-admin-2/css/sb-admin-2.min.css" th:href="@{/vendor/sb-admin-2/css/sb-admin-2.min.css}" />
+        <link rel="stylesheet" href="../../static/css/styles.css" th:href="@{/css/styles.min.css}" />
+        <script src="../../static/vendor/jquery/jquery-3.3.1.min.js" th:src="@{https://code.jquery.com/jquery-3.3.1.min.js}"></script>
+        <script src="../../static/vendor/bootstrap/js/bootstrap.min.js" th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
+        <script src="../../static/vendor/metismenu/metisMenu.min.js" th:src="@{/vendor/metismenu/metisMenu.min.js}"></script>
+        <script src="../../static/vendor/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendor/sb-admin-2/js/sb-admin-2.min.js}"></script>
     </head>
     <body>
         <div id="wrapper">
@@ -29,20 +27,22 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="../home.html" th:href="@{/secured/home}" th:text="${@environment.getProperty('ccd.app.title')}">Center for Casual Discovery</a>
+                    <a class="navbar-brand" href="#" th:href="@{/secured/home}">
+                        <span class="pitt-color" th:text="${@environment.getProperty('ccd.app.title') + ' ' + @environment.getProperty('ccd.app.version')}">Center for Causal Discovery</span>
+                    </a>
                 </div>
                 <ul class="nav navbar-top-links navbar-right">
                     <li class="dropdown">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                            <i class="fa fa-user fa-fw"></i>  <i class="fa fa-caret-down"></i>
+                            <i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu">
-                            <li>
-                                <a href="../../user/userProfile.html" th:href="@{/secured/account/profile}"><i class="fa fa-user fa-fw"></i> User Profile</a>
-                            </li>
+                        <ul class="dropdown-menu dropdown-user">
+                            <li><a href="#" th:href="@{/secured/account}"><i class="fa fa-user fa-fw"></i> User Account</a></li>
                             <li class="divider"></li>
                             <li>
-                                <a href="../shiroLogin.html" th:href="${appUser.federatedUser} ? ${@environment.getProperty('auth0.issuer') + 'v2/logout?returnTo='}+${#strings.replace(#httpServletRequest.getRequestURL(), #httpServletRequest.getRequestURI(), #httpServletRequest.getContextPath())}+${'/secured/logout&amp;client_id='+@environment.getProperty('auth0.clientId')} : @{/secured/logout}"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
+                                <a href="#" th:href="${appUser.federatedUser} ? ${@environment.getProperty('auth0.issuer') + 'v2/logout?returnTo='}+${#strings.replace(#httpServletRequest.getRequestURL(), #httpServletRequest.getRequestURI(), #httpServletRequest.getContextPath())}+${'/secured/logout&amp;client_id='+@environment.getProperty('auth0.clientId')} : @{/secured/logout}">
+                                    <i class="fa fa-sign-out fa-fw"></i> Logout
+                                </a>
                             </li>
                         </ul>
                     </li>
@@ -51,19 +51,19 @@
                     <div class="sidebar-nav navbar-collapse">
                         <ul class="nav" id="side-menu">
                             <li class="text-center">
-                                <a href="../home.html" th:href="@{/secured/home}"><img alt="CCD Logo" src="../../static/img/ccd_logo.png" th:src="@{/img/ccd_logo.png}" width="100" height="100" /></a>
+                                <a href="#" th:href="@{/secured/home}"><img alt="CCD Logo" src="../../static/img/ccd_logo.png" th:src="@{/img/ccd_logo.png}" width="100" height="100" /></a>
                             </li>
                             <li>
                                 <a href="#"><i class="fa fa-fw fa-file-text"></i> File Management<span class="fa arrow"></span></a>
                                 <ul class="nav nav-second-level">
                                     <li>
-                                        <a href="../file/fileUpload.html" th:href="@{/secured/file/upload}"><i class="fa fa-upload fa-fw"></i> File Upload</a>
+                                        <a href="#" th:href="@{/secured/file/upload}"><i class="fa fa-upload fa-fw"></i> File Upload</a>
                                     </li>
                                     <li>
-                                        <a href="../file/fileList.html" th:href="@{/secured/file}"><i class="fa fa-file-text-o fa-fw"></i> File</a>
+                                        <a href="#" th:href="@{/secured/file}"><i class="fa fa-file-text-o fa-fw"></i> File</a>
                                     </li>
                                     <li>
-                                        <a href="../file/fileList.html" th:href="@{/secured/file/group}"><i class="fa fa-file-text-o fa-fw"></i> File Group</a>
+                                        <a href="#" th:href="@{/secured/file/group}"><i class="fa fa-object-group fa-fw"></i> File Group</a>
                                     </li>
                                 </ul>
                             </li>
@@ -81,18 +81,16 @@
                                     <li>
                                         <a href="#" th:href="@{/secured/job/queue}"><i class="fa fa-fw fa-table"></i> Job Queue</a>
                                     </li>
-                                    <li>
-                                        <a href="#" th:href="@{/secured/job/info/history}"><i class="fa fa-fw fa-history"></i> Job History</a>
-                                    </li>
                                 </ul>
                             </li>
                             <li>
-                                <a href="../feedback.html" th:href="@{/secured/feedback}"><i class="fa fa-comment fa-fw"></i> Feedback</a>
+                                <a href="#" th:href="@{/secured/feedback}"><i class="fa fa-comment fa-fw"></i> Feedback</a>
                             </li>
                         </ul>
                     </div>
                 </div>
             </nav>
+            <div id="page-wrapper"></div>
         </div>
     </body>
 </html>

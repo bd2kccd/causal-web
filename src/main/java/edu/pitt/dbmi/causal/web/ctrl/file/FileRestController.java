@@ -20,14 +20,12 @@ package edu.pitt.dbmi.causal.web.ctrl.file;
 
 import edu.pitt.dbmi.causal.web.model.AppUser;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
-import edu.pitt.dbmi.causal.web.service.filesys.FileManagementService;
+import edu.pitt.dbmi.causal.web.service.file.FileManagementService;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileFormat;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileFormatService;
 import edu.pitt.dbmi.ccd.db.service.FileService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -35,9 +33,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
@@ -49,22 +45,20 @@ import org.springframework.web.bind.annotation.SessionAttributes;
  */
 @RestController
 @SessionAttributes("appUser")
-@RequestMapping(value = "secured/file")
+@RequestMapping(value = "secured/ws/file")
 public class FileRestController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileRestController.class);
-
     private final AppUserService appUserService;
-    private final FileManagementService fileManagementService;
     private final FileService fileService;
     private final FileFormatService fileFormatService;
+    private final FileManagementService fileManagementService;
 
     @Autowired
-    public FileRestController(AppUserService appUserService, FileManagementService fileManagementService, FileService fileService, FileFormatService fileFormatService) {
+    public FileRestController(AppUserService appUserService, FileService fileService, FileFormatService fileFormatService, FileManagementService fileManagementService) {
         this.appUserService = appUserService;
-        this.fileManagementService = fileManagementService;
         this.fileService = fileService;
         this.fileFormatService = fileFormatService;
+        this.fileManagementService = fileManagementService;
     }
 
     @DeleteMapping("{id}")
@@ -82,61 +76,23 @@ public class FileRestController {
         }
     }
 
-    @PostMapping(value = "title", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> updateFileTitle(
-            @RequestParam(value = "pk", required = true) final Long id,
-            @RequestParam(value = "value", required = true) final String title,
-            final AppUser appUser) {
-        if (id == null) {
-            return ResponseEntity.badRequest().body("File ID is required.");
-        }
-        if (title == null || title.isEmpty()) {
-            return ResponseEntity.badRequest().body("Title is required.");
-        }
-
+    @GetMapping(value = "{code}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> listUncategorizedFile(@PathVariable final short code, final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        File file = fileService.getRepository().findByIdAndUserAccount(id, userAccount);
-        if (file == null) {
-            return ResponseEntity.notFound().build();
-        }
 
-        if (!title.equals(file.getTitle())) {
-            if (fileService.getRepository().existsByTitleAndUserAccount(title, userAccount)) {
-                return ResponseEntity.badRequest().body("Title already in used. Plese enter a different title.");
-            } else {
-                file.setTitle(title);
-                try {
-                    fileService.getRepository().save(file);
-                } catch (Exception exception) {
-                    LOGGER.error(exception.getMessage());
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to update file title.");
+        switch (code) {
+            case -1:
+                return ResponseEntity.ok(fileService.getRepository().getAllFiles(userAccount));
+            case 0:
+                return ResponseEntity.ok(fileService.getRepository().getUncategorized(userAccount));
+            default:
+                FileFormat fileFormat = fileFormatService.findByCode(code);
+                if (fileFormat == null) {
+                    return ResponseEntity.notFound().build();
+                } else {
+                    return ResponseEntity.ok(fileService.getRepository().getByFileFormat(fileFormat, userAccount));
                 }
-            }
         }
-
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping(value = "format/uncategorized", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> listUncategorizedFile(final AppUser appUser) {
-        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-
-        fileManagementService.syncFilesWithDatabase(userAccount);
-
-        return ResponseEntity.ok(fileService.getRepository().findByUserAccountAndFileFormatIsNull(userAccount));
-    }
-
-    @GetMapping(value = "format/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> listFilesByCategory(@PathVariable final Long id, final AppUser appUser) {
-        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-        FileFormat fileFormat = fileFormatService.findById(id);
-        if (fileFormat == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        fileManagementService.syncFilesWithDatabase(userAccount);
-
-        return ResponseEntity.ok(fileService.getRepository().findByFileFormatAndUserAccount(fileFormat, userAccount));
     }
 
 }

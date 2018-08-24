@@ -47,11 +47,6 @@ public class LoginForm {
         this.rememberMe = rememberMe;
     }
 
-    @Override
-    public String toString() {
-        return "LoginForm{" + "email=" + email + ", password=" + password + ", rememberMe=" + rememberMe + '}';
-    }
-
     public String getEmail() {
         return email;
     }

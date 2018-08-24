@@ -20,7 +20,7 @@ package edu.pitt.dbmi.causal.web.service.account;
 
 import edu.pitt.dbmi.causal.web.model.account.UserRegistrationForm;
 import edu.pitt.dbmi.causal.web.prop.CcdProperties;
-import edu.pitt.dbmi.ccd.db.domain.account.UserAccountRegistration;
+import edu.pitt.dbmi.ccd.db.domain.UserAccountRegistration;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.UserAccountService;
 import java.util.Base64;
@@ -52,7 +52,7 @@ public class AccountRegistrationService {
 
     public boolean activateUserAccount(UserAccount userAccount) {
         userAccount.setActivated(true);
-        userAccount.setActionKey(null);
+        userAccount.setActivationKey(null);
         try {
             userAccountService.getRepository().save(userAccount);
         } catch (Exception exception) {
@@ -65,14 +65,14 @@ public class AccountRegistrationService {
     }
 
     public UserAccount findUserAccount(String activation) {
-        String actionKey;
+        String ativationKey;
         try {
-            actionKey = new String(Base64.getUrlDecoder().decode(activation));
+            ativationKey = new String(Base64.getUrlDecoder().decode(activation));
         } catch (IllegalArgumentException exception) {
             return null;
         }
 
-        return userAccountService.getRepository().findByActionKey(actionKey);
+        return userAccountService.getRepository().findByActivationKey(ativationKey);
     }
 
     public boolean accountExists(UserRegistrationForm userRegistrationForm) {
