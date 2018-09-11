@@ -19,8 +19,15 @@
 package edu.pitt.dbmi.causal.web.ctrl.job;
 
 import edu.pitt.dbmi.causal.web.ctrl.SiteViews;
+import edu.pitt.dbmi.causal.web.model.AppUser;
+import edu.pitt.dbmi.causal.web.service.AppUserService;
+import edu.pitt.dbmi.ccd.db.entity.UserAccount;
+import edu.pitt.dbmi.ccd.db.service.JobRunService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
@@ -35,8 +42,21 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @RequestMapping(value = "secured/job/queue")
 public class JobQueueController {
 
+    private final AppUserService appUserService;
+    private final JobRunService jobRunService;
+
+    @Autowired
+    public JobQueueController(AppUserService appUserService, JobRunService jobRunService) {
+        this.appUserService = appUserService;
+        this.jobRunService = jobRunService;
+    }
+
     @GetMapping
-    public String showJobView() {
+    public String showJobView(@ModelAttribute("appUser") final AppUser appUser, final Model model) {
+        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
+
+        model.addAttribute("jobRuns", jobRunService.getRepository().getJobRunListItems(userAccount));
+
         return SiteViews.JOB_QUEUE;
     }
 

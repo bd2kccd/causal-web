@@ -28,7 +28,6 @@ import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileGroupService;
 import edu.pitt.dbmi.ccd.db.service.TetradDataFileService;
 import edu.pitt.dbmi.ccd.db.service.TetradVariableFileService;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -136,16 +135,15 @@ public class JobInfoService {
     public Map<String, String> getJobParameters(JobDetail jobDetail) {
         Map<String, String> params = new TreeMap<>();
 
-        Arrays.stream(PIPE_PATTERN.split(jobDetail.getJobParameter()))
-                .forEach(e -> {
-                    String[] keyVal = COLON_PATTERN.split(e);
-                    if (keyVal.length == 2) {
-                        String key = keyVal[0];
-                        String val = keyVal[1];
-                        params.put(key, (val.equals("true") ? "yes" : val.equals("false") ? "no" : val));
-                    }
-                });
-
+//        Arrays.stream(PIPE_PATTERN.split(jobDetail.getJobParameter()))
+//                .forEach(e -> {
+//                    String[] keyVal = COLON_PATTERN.split(e);
+//                    if (keyVal.length == 2) {
+//                        String key = keyVal[0];
+//                        String val = keyVal[1];
+//                        params.put(key, (val.equals("true") ? "yes" : val.equals("false") ? "no" : val));
+//                    }
+//                });
         return params;
     }
 

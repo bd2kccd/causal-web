@@ -69,49 +69,60 @@ public class FileDetailService {
         return form;
     }
 
-    public Map<String, String> getShortFileDetails(File file) {
-        Map<String, String> fileInfo = new LinkedHashMap<>();
-        fileInfo.put("File Name", file.getFileName());
-        fileInfo.put("Name", file.getName());
-        fileInfo.put("Created", DateFormatUtils.format(file.getCreationTime()));
-        fileInfo.put("Size", FilePrint.toHumanReadableSize(file.getFileSize(), false));
+    public Map<String, String> getFullFileDetails(File file) {
+        Map<String, String> details = new LinkedHashMap<>();
+        details.put("Name", file.getName());
+        details.put("File Name", file.getFileName());
+        details.put("Creation Time", DateFormatUtils.format(file.getCreationTime()));
+        details.put("Size", FilePrint.toHumanReadableSize(file.getFileSize(), false));
+        details.put("MD5 Checksum", file.getMd5CheckSum());
 
-        return fileInfo;
+        return details;
+    }
+
+    public Map<String, String> getFileDetails(File file) {
+        Map<String, String> details = new LinkedHashMap<>();
+        details.put("File Name", file.getFileName());
+        details.put("Creation Time", DateFormatUtils.format(file.getCreationTime()));
+        details.put("Size", FilePrint.toHumanReadableSize(file.getFileSize(), false));
+        details.put("MD5 Checksum", file.getMd5CheckSum());
+
+        return details;
     }
 
     public Map<String, String> getCategorizationDetails(File file) {
-        Map<String, String> catInfo = new LinkedHashMap<>();
+        Map<String, String> details = new LinkedHashMap<>();
 
         FileFormat fileFormat = file.getFileFormat();
         if (fileFormat != null) {
-            catInfo.put("File Format", fileFormat.getName());
+            details.put("File Format", fileFormat.getName());
 
             switch (fileFormat.getCode()) {
                 case FileFormatCodes.TETRAD_TAB:
                     TetradDataFile dataFile = tetradDataFileService.getRepository()
                             .findByFile(file);
                     if (dataFile != null) {
-                        catInfo.put("Number of Variables", String.valueOf(dataFile.getNumOfVars()));
-                        catInfo.put("Number of Cases", String.valueOf(dataFile.getNumOfCases()));
-                        catInfo.put("Delimiter", dataFile.getDataDelimiter().getName());
-                        catInfo.put("Variable Type", dataFile.getVariableType().getName());
-                        catInfo.put("Has Header", dataFile.isHasHeader() ? "Yes" : "No");
-                        catInfo.put("Quote Character", String.valueOf(dataFile.getQuoteChar()));
-                        catInfo.put("Missing Value Marker", dataFile.getMissingMarker());
-                        catInfo.put("Comment Marker", dataFile.getCommentMarker());
+                        details.put("Number of Variables", String.valueOf(dataFile.getNumOfVars()));
+                        details.put("Number of Cases", String.valueOf(dataFile.getNumOfCases()));
+                        details.put("Delimiter", dataFile.getDataDelimiter().getName());
+                        details.put("Variable Type", dataFile.getVariableType().getName());
+                        details.put("Has Header", dataFile.isHasHeader() ? "Yes" : "No");
+                        details.put("Quote Character", String.valueOf(dataFile.getQuoteChar()));
+                        details.put("Missing Value Marker", dataFile.getMissingMarker());
+                        details.put("Comment Marker", dataFile.getCommentMarker());
                     }
                     break;
                 case FileFormatCodes.TETRAD_VAR:
                     TetradVariableFile varFile = tetradVariableFileService.getRepository()
                             .findByFile(file);
                     if (varFile != null) {
-                        catInfo.put("Number of Variables", String.valueOf(varFile.getNumOfVars()));
+                        details.put("Number of Variables", String.valueOf(varFile.getNumOfVars()));
                     }
                     break;
             }
         }
 
-        return catInfo;
+        return details;
     }
 
 }

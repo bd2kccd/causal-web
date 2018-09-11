@@ -48,6 +48,7 @@ public final class SiteViews {
     public static final String FILE = "file/file";
     public static final String FILE_DETAIL = "file/file_detail";
     public static final String FILE_CATEGORIZATION = "file/categorization";
+    public static final String FILE_RECATEGORIZATION = "file/recategorization";
     public static final String FILEGROUP = "file/filegroup";
     public static final String FILEGROUP_DETAIL = "file/filegroup_detail";
     public static final String FILEGROUP_NEW = "file/filegroup_new";
@@ -55,7 +56,7 @@ public final class SiteViews {
     public static final String TETRAD = "algorithm/tetrad";
 
     public static final String JOB_QUEUE = "job/job_queue";
-    public static final String JOB_DETAIL = "job/job_detail";
+    public static final String TETRAD_JOB_DETAIL = "job/tetrad_job_detail";
 
     private SiteViews() {
     }

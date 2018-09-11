@@ -105,7 +105,7 @@ function fetchParameters() {
             $.each(data, function (index, value) {
                 var txt = value['text'];
                 var id = value['value'];
-                param_html += '<tr><td class="condensed"><b>' + txt + ':</b></td><td><span class="alert-warning" id="param_' + id + '"></span></td></tr>';
+                param_html += '<tr><td class="condensed"><strong>' + txt + ':</strong></td><td><span class="alert-warning" id="param_' + id + '"></span></td></tr>';
             });
             $(params_tbody).append(param_html);
         },
@@ -256,7 +256,7 @@ $(document).ready(function () {
                 required: true
             },
             name: {
-                maxlength: 32,
+                maxlength: 64,
                 required: true
             },
             jvmMaxMem: {
@@ -275,7 +275,7 @@ $(document).ready(function () {
             }, test: {
                 required: "Please select a test of independence."
             }, name: {
-                maxlength: "Name cannot exceed 32 characters.",
+                maxlength: "Name cannot exceed 64 characters.",
                 required: "Please enter a name for the job."
             },
             jvmMaxMem: {

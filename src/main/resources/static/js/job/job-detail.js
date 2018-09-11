@@ -29,4 +29,6 @@ $(document).ready(function () {
         $("#view_job_description").show();
         $("#edit_job_description").hide();
     });
+
+    $('body').tooltip({selector: '[data-toggle="tooltip"]'});
 });

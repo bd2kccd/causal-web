@@ -24,7 +24,7 @@ import edu.pitt.dbmi.causal.web.exception.ValidationException;
 import edu.pitt.dbmi.causal.web.model.AppUser;
 import edu.pitt.dbmi.causal.web.model.algorithm.TetradForm;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
-import edu.pitt.dbmi.causal.web.service.algorithm.TetradJobService;
+import edu.pitt.dbmi.causal.web.service.algorithm.TetradJobSubmissionService;
 import edu.pitt.dbmi.causal.web.service.algorithm.TetradValidationService;
 import edu.pitt.dbmi.causal.web.tetrad.AlgoTypes;
 import edu.pitt.dbmi.ccd.db.code.VariableTypeCodes;
@@ -62,14 +62,14 @@ public class TetradController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TetradController.class);
 
-    private final TetradJobService tetradJobService;
+    private final TetradJobSubmissionService tetradJobSubmissionService;
     private final TetradValidationService tetradValidationService;
     private final VariableTypeService variableTypeService;
     private final AppUserService appUserService;
 
     @Autowired
-    public TetradController(TetradJobService tetradJobService, TetradValidationService tetradValidationService, VariableTypeService variableTypeService, AppUserService appUserService) {
-        this.tetradJobService = tetradJobService;
+    public TetradController(TetradJobSubmissionService tetradJobSubmissionService, TetradValidationService tetradValidationService, VariableTypeService variableTypeService, AppUserService appUserService) {
+        this.tetradJobSubmissionService = tetradJobSubmissionService;
         this.tetradValidationService = tetradValidationService;
         this.variableTypeService = variableTypeService;
         this.appUserService = appUserService;
@@ -108,7 +108,7 @@ public class TetradController {
         }
 
         try {
-            tetradJobService.submitJob(tetradForm, formData, userAccount);
+            tetradJobSubmissionService.submitJob(tetradForm, formData, userAccount);
         } catch (Exception exception) {
             String errMsg = "Unable to submit job.";
             LOGGER.error(errMsg, exception);

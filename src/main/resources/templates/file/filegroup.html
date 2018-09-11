@@ -23,10 +23,6 @@
         <script src="../../static/vendor/sb-admin-2/js/sb-admin-2.min.js" th:src="@{/vendor/sb-admin-2/js/sb-admin-2.min.js}"></script>
         <script src="../../static/vendor/metismenu/metisMenu.min.js" th:src="@{/vendor/metismenu/metisMenu.min.js}"></script>
         <script src="../../static/vendor/datatables/datatables.min.js" th:src="@{https://cdn.datatables.net/v/bs/dt-1.10.18/r-2.2.2/datatables.min.js}"></script>
-        <script th:inline="javascript">
-            var filegroup_url = /*[[@{/secured/file/group}]]*/ '';
-            var ws_filegroup_url = /*[[@{/secured/ws/file/group}]]*/ '';
-        </script>
     </head>
     <body>
         <div id="wrapper">
@@ -42,14 +38,12 @@
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
-                        <a class="btn btn-block btn-lg btn-info" role="button" href="#" th:href="@{/secured/file/group/new}">
-                            <i class="fa fa-plus fa-fw" aria-hidden="true"></i> Add New Group
-                        </a>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="panel panel-default-pitt list_panel" style="display: block;">
+                        <div class="panel panel-default" style="display: block;">
+                            <div class="panel-heading clearfix">
+                                <a class="btn pull-right btn-info" role="button" href="#" th:href="@{/secured/file/group/new}">
+                                    <i class="fa fa-plus fa-fw" aria-hidden="true"></i> Add New Group
+                                </a>
+                            </div>
                             <div class="panel-body">
                                 <div class="table-responsive">
                                     <table id="filegroup_tbl" class="table table-striped table-hover table-condensed display compact nowrap" style="width:100%">
@@ -62,6 +56,20 @@
                                             </tr>
                                         </thead>
                                         <tbody>
+                                            <tr th:each="fileGroup : ${fileGroups}">
+                                                <td th:text="${fileGroup.name}"></td>
+                                                <td th:text="${#dates.format(fileGroup.creationTime,'MMM dd, yyyy hh:mm:ss aaa')}"></td>                                                
+                                                <td>
+                                                    <a class="btn btn-xs btn-success" th:href="@{${'/secured/file/group/' + fileGroup.id}}" data-placement="top" data-toggle="tooltip" title="View Details">
+                                                        <span class="fa fa-info-circle"></span>
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-danger btn-xs delete" data-placement="top" data-toggle="tooltip" data-title="Delete" th:attr="data-href=@{${'/secured/ws/file/group/' + fileGroup.id}}">
+                                                        <span class="glyphicon glyphicon-trash"></span>
+                                                    </button>
+                                                </td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -89,17 +97,14 @@
                         <h4 class="modal-title" id="Heading">Delete File Group</h4>
                     </div>
                     <div class="modal-body">
-                        <div class="alert alert-danger">
+                        <div class="alert alert-info">
                             <p>
-                                <h4><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Warning!</h4>
-                                <b>
-                                    Deleting this file group will not delete any file.  However, deleting it will terminate
-                                    any job using this file group that has not started.
-                                </b>
+                                <h4><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Note!</h4>
+                                <b>Deleting the file group will not delete any of the files that are in it.</b>
                             </p>
                         </div>
-                        <p><b class="alert-danger-text">Are you sure you want to delete the file group listed below?</b></p>
-                        <p id="delete_file_name"></p>
+                        <p><b class="alert-danger-text">Are you sure you want to delete the file group below?</b></p>
+                        <p><b id="delete_file_name"></b></p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" id="del_btn" class="btn btn-danger" data-row="-1" data-dismiss="modal"><span class="glyphicon glyphicon-ok-sign"></span> Yes</button>

@@ -28,7 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -56,13 +55,6 @@ public class FileGroupRestController {
         this.fileGroupService = fileGroupService;
     }
 
-    @GetMapping("{id}/file")
-    public ResponseEntity<?> listFileGroups(@PathVariable final Long id, final AppUser appUser) {
-        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-
-        return ResponseEntity.ok(fileGroupService.getRepository().getFiles(id, userAccount));
-    }
-
     @DeleteMapping("{id}")
     public ResponseEntity<?> deleteFile(@PathVariable final Long id, final AppUser appUser) {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
@@ -81,14 +73,6 @@ public class FileGroupRestController {
         } else {
             return ResponseEntity.notFound().build();
         }
-    }
-
-    @GetMapping
-    public ResponseEntity<?> listFileGroups(final AppUser appUser) {
-        UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
-
-        return ResponseEntity.ok(fileGroupService.getRepository()
-                .findByUserAccount(userAccount));
     }
 
 }

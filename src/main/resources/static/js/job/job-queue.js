@@ -1,75 +1,17 @@
-$(document).ready(function () {
-    var job_queue_tbl = $('#job_queue_tbl').DataTable({
-        "sAjaxSource": encodeURI(ws_job_queue_url),
-        "sAjaxDataProp": "",
-        "aoColumns": [
-            {"mData": "name"},
-            {"mData": "creationTime"},
-            {"mData": "status"},
-            {"mData": function (source) {
-                    return {"id": source.id};
-                }},
-            {"mData": "status"}
-        ],
-        "columnDefs": [
-            {"render": function (data) {
-                    return moment(data).format('MMM DD, YYYY hh:mm:ss A');
-                }, "width": "0", "className": "text-center", "targets": 1
-            },
-            {"render": function (data) {
-                    return data;
-                }, "width": "0", "className": "text-center", "targets": 2
-            },
-            {"render": function (data) {
-                    var url = job_detail_url + '/' + data.id;
-
-                    return '<a class="btn btn-xs btn-success"  href="' + encodeURI(url) + '" data-placement="top" data-toggle="tooltip" title="View Details">'
-                            + '<span class="fa fa-info-circle"></span>'
-                            + '</a>';
-                }, "orderable": false, "bSearchable": false, "width": "0", "className": "text-center", "targets": 3
-            },
-            {"render": function (data) {
-                    if ('Canceled' === data || 'Finished' === data || 'Terminated' === data) {
-                        return '<button class="btn btn-xs btn-danger cancel" data-placement="top" data-toggle="tooltip" title="Cancel Job" disabled="disabled">'
-                                + '<span class="glyphicon glyphicon-trash"></span>'
-                                + '</button>';
-                    } else {
-                        return '<button class="btn btn-xs btn-danger cancel" data-placement="top" data-toggle="tooltip" title="Cancel Job">'
-                                + '<span class="glyphicon glyphicon-trash"></span>'
-                                + '</button>';
-                    }
-                }, "orderable": false, "bSearchable": false, "width": "0", "className": "text-center", "targets": 4
-            }
-        ],
-        "order": [[1, "desc"]]
-    });
-
-    $('#job_queue_tbl tbody').on('click', 'tr td .cancel', function () {
-        var rowNum = $(this).parents('tr')[0];
-        var row = job_queue_tbl.row(rowNum);
-        var rowData = row.data();
-        $('#job_name').text(rowData['name']);
-        $('#cancel_btn').data('id', row.index());
-        $('#confirm_cancel').modal('toggle');
-    });
-
-    $(document).on('click', '#cancel_btn', function (e) {
-        var rowNum = $('#cancel_btn').data('id');
-        var row = job_queue_tbl.row(rowNum);
-        var rowData = row.data();
-
-        alert(encodeURI(ws_job_queue_url + '/' + rowData['id']));
-        $.ajax({
-            url: encodeURI(ws_job_queue_url + '/' + rowData['id']),
-            type: 'DELETE',
-            success: function (data) {
-                row.data(data);
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                alert(jqXHR.responseText);
-            }
-        });
-    });
-
-    $('body').tooltip({selector: '[data-toggle="tooltip"]'});
+var job_queue_tbl = $('#job_queue_tbl').DataTable({
+    pageLength: 10,
+    responsive: true,
+    "aoColumns": [
+        {"mData": "name"},
+        {"mData": "creationTime"},
+        {"mData": "status"}
+    ],
+    "columnDefs": [
+        {"width": "0", "className": "text-center", "targets": 1},
+        {"width": "0", "className": "text-center", "targets": 2},
+        {"orderable": false, "bSearchable": false, "width": "0", "className": "text-center", "targets": 3},
+        {"orderable": false, "bSearchable": false, "width": "0", "className": "text-center", "targets": 4}
+    ],
+    "order": [[1, "desc"]]
 });
+$('body').tooltip({selector: '[data-toggle="tooltip"]'});

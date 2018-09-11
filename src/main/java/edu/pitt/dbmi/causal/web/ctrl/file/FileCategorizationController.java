@@ -126,14 +126,16 @@ public class FileCategorizationController {
             model.addAttribute("fileCategorizationForm", fileCategorizationService.createForm(file));
         }
         model.addAttribute("file", file);
-        model.addAttribute("fileInfo", fileDetailService.getShortFileDetails(file));
+        model.addAttribute("fileDetails", fileDetailService.getFullFileDetails(file));
         model.addAttribute("categorizationDetails", fileDetailService.getCategorizationDetails(file));
         model.addAttribute("formatOpts", fileFormatService.getFileFormatOptions());
         model.addAttribute("delimOpts", dataDelimiterService.findAll());
         model.addAttribute("varOpts", variableTypeService.findAll());
         model.addAttribute("tetrad_tab_format_id", FileFormatCodes.TETRAD_TAB);
 
-        return SiteViews.FILE_CATEGORIZATION;
+        return (file.getFileFormat() == null)
+                ? SiteViews.FILE_CATEGORIZATION
+                : SiteViews.FILE_RECATEGORIZATION;
     }
 
 }

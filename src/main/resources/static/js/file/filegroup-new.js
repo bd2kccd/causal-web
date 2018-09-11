@@ -1,11 +1,11 @@
 $('#fileGroupForm').validate({
     rules: {
-        groupName: {
+        name: {
             required: true
         }
     },
     messages: {
-        groupName: "Please enter a name for the file group."
+        name: "Please enter a name for the file group."
     },
     highlight: function (element) {
         $(element).closest('.form-group').addClass('has-error');

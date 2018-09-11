@@ -25,7 +25,7 @@ import edu.pitt.dbmi.causal.web.model.Option;
 import edu.pitt.dbmi.causal.web.model.OptionModel;
 import edu.pitt.dbmi.causal.web.model.ParamOption;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
-import edu.pitt.dbmi.causal.web.service.algorithm.TetradJobService;
+import edu.pitt.dbmi.causal.web.service.algorithm.TetradJobSubmissionService;
 import edu.pitt.dbmi.causal.web.tetrad.AlgoTypes;
 import edu.pitt.dbmi.causal.web.tetrad.TetradAlgorithm;
 import edu.pitt.dbmi.causal.web.tetrad.TetradAlgorithms;
@@ -82,7 +82,7 @@ public class TetradRestController {
     private static final String VARTYPE_NOT_FOUND = "No such variable type found.";
 
     private final AppUserService appUserService;
-    private final TetradJobService tetradService;
+    private final TetradJobSubmissionService tetradService;
     private final TetradDataFileService tetradDataFileService;
     private final TetradVariableFileService tetradVariableFileService;
     private final FileGroupService fileGroupService;
@@ -91,7 +91,7 @@ public class TetradRestController {
     private final FileFormatService fileFormatService;
 
     @Autowired
-    public TetradRestController(AppUserService appUserService, TetradJobService tetradService, TetradDataFileService tetradDataFileService, TetradVariableFileService tetradVariableFileService, FileGroupService fileGroupService, VariableTypeService variableTypeService, FileService fileService, FileFormatService fileFormatService) {
+    public TetradRestController(AppUserService appUserService, TetradJobSubmissionService tetradService, TetradDataFileService tetradDataFileService, TetradVariableFileService tetradVariableFileService, FileGroupService fileGroupService, VariableTypeService variableTypeService, FileService fileService, FileFormatService fileFormatService) {
         this.appUserService = appUserService;
         this.tetradService = tetradService;
         this.tetradDataFileService = tetradDataFileService;

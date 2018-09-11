@@ -37,7 +37,14 @@
                     <div class="col-lg-12">
                         <h3 class="page-header">File</h3>
                         <div class="header_description">
-                            <p>All uploaded files are uncategorized. Uncategorized files are <span class="alert-warning">highlighted</span>. <b>Files must be categorized before use</b>.</p>
+                            <p>Uncategorized files are <span class="alert-warning">highlighted</span>. <strong>Files must be categorized before use.</strong></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" id="err_msg" style="display: none;">
+                    <div class="col-lg-12">
+                        <div class="alert alert-danger text-center" role="alert">
+                            <p id="err_msg_txt"></p>
                         </div>
                     </div>
                 </div>
@@ -54,10 +61,31 @@
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
-                        <div class="panel panel-default list_panel">
+                        <div class="panel panel-default list_panel" id="list_all" style="display: block;">
                             <div class="panel-body">
                                 <div class="table-responsive">
-                                    <table id="file_tbl" class="table table-striped table-hover table-condensed display compact nowrap" style="width:100%">
+                                    <table id="all_file_tbl" class="table table-striped table-hover table-condensed display compact nowrap" style="width:100%">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Size</th>
+                                                <th>Creation Time</th>
+                                                <th>Type</th>
+                                                <th>Detail</th>
+                                                <th>Categ.</th>
+                                                <th>Delete</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default list_panel" id="list_specific" style="display: none;">
+                            <div class="panel-body">
+                                <div class="table-responsive">
+                                    <table id="specific_file_tbl" class="table table-striped table-hover table-condensed display compact nowrap" style="width:100%">
                                         <thead>
                                             <tr>
                                                 <th>Name</th>
@@ -99,10 +127,7 @@
                         <div class="alert alert-danger">
                             <p>
                                 <h4><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Warning!</h4>
-                                <b>
-                                    Deleting this file will also delete any file group that is associated with it, and it will terminate
-                                    any job using this file that has not started.
-                                </b>
+                                <strong>Deleting this file will also delete any of the file group that it is in.</strong>
                             </p>
                         </div>
                         <p><b class="alert-danger-text">Are you sure you want to delete the file listed below?</b></p>

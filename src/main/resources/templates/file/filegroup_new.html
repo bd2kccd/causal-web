@@ -60,7 +60,7 @@
                                         </div>
                                         <div class="form-group" th:class="${#fields.hasErrors('description')} ? 'form-group has-error' : 'form-group'">
                                             <label for="description">Description:</label>
-                                            <textarea id="description" class="form-control" name="description" th:field="*{description}" rows="5"></textarea>
+                                            <textarea id="description" class="form-control" name="description" th:field="*{description}" rows="5" style="width: 100%; resize: none;"></textarea>
                                             <span th:if="${#fields.hasErrors('description')}" class="help-block" th:errors="*{description}">Invalid description.</span>
                                         </div>
                                         <div class="form-group" th:class="${#fields.hasErrors('varTypeId')} ? 'form-group has-error' : 'form-group'">
@@ -70,10 +70,10 @@
                                             </label>
                                             <span class="help-block" th:if="${#fields.hasErrors('varTypeId')}" th:errors="*{varTypeId}">Variable type is required.</span>
                                         </div>
-                                        <div class="well datagroup" th:id="'datagroup_' + ${element.key}" th:each="element : ${dataGroups}">
+                                        <label>Files:</label>
+                                        <div class="well datagroup" th:id="${'datagroup_' + element.key}" th:each="element : ${dataGroups}">
                                             <div class="form-group" th:class="${#fields.hasErrors('fileIds')} ? 'form-group has-error' : 'form-group'">
-                                                <label for="fileIds">Click on the files from the left to move to the right for grouping them together.</label>
-                                                <select multiple="multiple" class="form-control" size="12" required="required" th:id="'filegroup_' + ${element.key}" th:field="*{fileIds}">
+                                                <select multiple="multiple" size="12" class="form-control" th:id="${'filegroup_' + element.key}" th:field="*{fileIds}">
                                                     <option value=""
                                                             th:each="file : ${element.value}"
                                                             th:value="${file.id}"
@@ -83,7 +83,7 @@
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <input type="submit" class="btn btn-lg btn-block btn-success" value="Save" />
+                                            <input type="submit" class="btn btn-lg btn-block btn-success btn-submit" value="Save" />
                                         </div>
                                     </fieldset>
                                 </form>

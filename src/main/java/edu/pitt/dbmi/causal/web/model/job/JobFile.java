@@ -16,37 +16,40 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.pitt.dbmi.causal.web.model.file;
-
-import java.util.List;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+package edu.pitt.dbmi.causal.web.model.job;
 
 /**
  *
- * Jun 29, 2017 11:02:23 AM
+ * Aug 30, 2018 11:04:06 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class FileGroupForm {
+public class JobFile {
 
-    @NotBlank(message = "Please enter a name for the file group.")
+    private Long id;
+
     private String name;
 
     private String description;
 
-    @NotNull
-    private Long varTypeId;
+    private boolean singleFile;
 
-    @NotEmpty(message = "Please select at least one file.")
-    private List<Long> fileIds;
-
-    public FileGroupForm() {
+    public JobFile() {
     }
 
-    public FileGroupForm(Long varTypeId) {
-        this.varTypeId = varTypeId;
+    public JobFile(Long id, String name, String description, boolean singleFile) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.singleFile = singleFile;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -65,20 +68,12 @@ public class FileGroupForm {
         this.description = description;
     }
 
-    public Long getVarTypeId() {
-        return varTypeId;
+    public boolean isSingleFile() {
+        return singleFile;
     }
 
-    public void setVarTypeId(Long varTypeId) {
-        this.varTypeId = varTypeId;
-    }
-
-    public List<Long> getFileIds() {
-        return fileIds;
-    }
-
-    public void setFileIds(List<Long> fileIds) {
-        this.fileIds = fileIds;
+    public void setSingleFile(boolean singleFile) {
+        this.singleFile = singleFile;
     }
 
 }

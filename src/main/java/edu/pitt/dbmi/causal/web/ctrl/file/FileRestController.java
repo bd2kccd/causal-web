@@ -21,11 +21,14 @@ package edu.pitt.dbmi.causal.web.ctrl.file;
 import edu.pitt.dbmi.causal.web.model.AppUser;
 import edu.pitt.dbmi.causal.web.service.AppUserService;
 import edu.pitt.dbmi.causal.web.service.file.FileManagementService;
+import edu.pitt.dbmi.ccd.db.code.FileFormatCodes;
 import edu.pitt.dbmi.ccd.db.entity.File;
 import edu.pitt.dbmi.ccd.db.entity.FileFormat;
 import edu.pitt.dbmi.ccd.db.entity.UserAccount;
 import edu.pitt.dbmi.ccd.db.service.FileFormatService;
+import edu.pitt.dbmi.ccd.db.service.FileGroupService;
 import edu.pitt.dbmi.ccd.db.service.FileService;
+import java.util.Collections;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -51,13 +54,15 @@ public class FileRestController {
     private final AppUserService appUserService;
     private final FileService fileService;
     private final FileFormatService fileFormatService;
+    private final FileGroupService fileGroupService;
     private final FileManagementService fileManagementService;
 
     @Autowired
-    public FileRestController(AppUserService appUserService, FileService fileService, FileFormatService fileFormatService, FileManagementService fileManagementService) {
+    public FileRestController(AppUserService appUserService, FileService fileService, FileFormatService fileFormatService, FileGroupService fileGroupService, FileManagementService fileManagementService) {
         this.appUserService = appUserService;
         this.fileService = fileService;
         this.fileFormatService = fileFormatService;
+        this.fileGroupService = fileGroupService;
         this.fileManagementService = fileManagementService;
     }
 
@@ -67,6 +72,12 @@ public class FileRestController {
         File file = fileService.getRepository().findByIdAndUserAccount(id, userAccount);
         if (file == null) {
             return ResponseEntity.notFound().build();
+        }
+
+        long count = fileGroupService.getRepository().countByFiles(Collections.singletonList(file));
+        if (count > 0) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Cannot delete file that is in a file group.  Remove the file from the group before first before deleting.");
         }
 
         if (fileManagementService.deleteFile(file, userAccount)) {
@@ -82,16 +93,20 @@ public class FileRestController {
 
         switch (code) {
             case -1:
-                return ResponseEntity.ok(fileService.getRepository().getAllFiles(userAccount));
+                return ResponseEntity.ok(fileService.getAllFiles(userAccount));
             case 0:
-                return ResponseEntity.ok(fileService.getRepository().getUncategorized(userAccount));
-            default:
+                return ResponseEntity.ok(fileService.getRepository().getUncategorizedFiles(userAccount));
+            case FileFormatCodes.TETRAD_KNWL:
+            case FileFormatCodes.TETRAD_TAB:
+            case FileFormatCodes.TETRAD_VAR:
                 FileFormat fileFormat = fileFormatService.findByCode(code);
                 if (fileFormat == null) {
                     return ResponseEntity.notFound().build();
                 } else {
                     return ResponseEntity.ok(fileService.getRepository().getByFileFormat(fileFormat, userAccount));
                 }
+            default:
+                return ResponseEntity.notFound().build();
         }
     }
 

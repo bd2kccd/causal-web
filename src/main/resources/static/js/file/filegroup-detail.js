@@ -1,28 +1,30 @@
-function toHumanReadableSize(fileSize) {
-    var unit = 1000;
-    if (fileSize < unit) {
-        return fileSize + ' B';
-    }
-    var size = ['kB', 'MB', 'GB', 'TB', 'PB', 'EB'];
-    var exp = Math.floor(Math.log(fileSize) / Math.log(unit));
+$("#detail_edit_btn").click(function () {
+    $("#view_detail").hide();
+    $("#edit_detail").show();
+    $('#name').focus();
+});
+$("#detail_cancel_btn").click(function () {
+    $("#view_detail").show();
+    $("#edit_detail").hide();
+});
+$("#file_edit_btn").click(function () {
+    $("#view_file").hide();
+    $("#edit_file").show();
+});
+$("#file_cancel_btn").click(function () {
+    $("#view_file").show();
+    $("#edit_file").hide();
+});
 
-    return Number(fileSize / Math.pow(unit, exp)).toFixed(2) + ' ' + size[exp - 1];
-}
-$('#fileGroupForm').validate({
-    rules: {
-        groupName: {
-            required: true
-        }
-    },
-    messages: {
-        groupName: "Please enter a name for the file group."
-    },
-    highlight: function (element) {
-        $(element).closest('.form-group').addClass('has-error');
-    },
-    unhighlight: function (element) {
-        $(element).closest('.form-group').removeClass('has-error');
-    }
+$('#file_tbl').DataTable({
+    pageLength: 10,
+    responsive: true,
+    "columnDefs": [
+        {"type": 'file-size', "width": "10%", "targets": 1},
+        {"width": "10%", "targets": 2},
+        {"orderable": false, "bSearchable": false, "width": "0", "className": "text-center", "targets": 3}
+    ],
+    "order": [[2, "asc"]]
 });
 
 var var_types = $('input:radio[name="varTypeId"]');
@@ -40,49 +42,22 @@ var_types.click(function () {
 });
 
 $(document).ready(function () {
-    $("#edit_info").click(function () {
-        $("#view_filegroup_detail").hide();
-        $("#edit_filegroup_detail").show();
-        $('#name').focus();
-    });
-    $("#cancel_info").click(function () {
-        $("#view_filegroup_detail").show();
-        $("#edit_filegroup_detail").hide();
-    });
-
     $('input:radio[name="varTypeId"]:checked').click();
 
-    $('#file_tbl').DataTable({
-        pageLength: 10,
-        responsive: true,
-        "sAjaxSource": filegroup_url + '/' + filegroup_id + '/file',
-        "sAjaxDataProp": "",
-        "aoColumns": [
-            {"mData": "name"},
-            {"mData": "fileSize"},
-            {"mData": "creationTime"},
-            {"mData": function (source) {
-                    return {"id": source.id};
-                }}
-        ],
-        "columnDefs": [
-            {"render": function (data) {
-                    return toHumanReadableSize(data);
-                }, "type": 'file-size', "width": "10%", "targets": 1
-            },
-            {"render": function (data) {
-                    return moment(data).format('MMM DD, YYYY hh:mm:ss A');
-                }, "width": "10%", "targets": 2
-            },
-            {"render": function (data) {
-                    var url = file_info_url + '/' + data.id;
-
-                    return '<a class="btn btn-xs btn-success"  href="' + url + '" data-placement="top" data-toggle="tooltip" title="View Details">'
-                            + '<span class="fa fa-info-circle"></span>'
-                            + '</a>';
-                }, "orderable": false, "bSearchable": false, "width": "0", "className": "text-center", "targets": 3
+    $('#fileGroupDetailForm').validate({
+        rules: {
+            name: {
+                required: true
             }
-        ],
-        "order": [[2, "asc"]]
+        },
+        messages: {
+            name: "Please enter a name for the file group."
+        },
+        highlight: function (element) {
+            $(element).closest('.form-group').addClass('has-error');
+        },
+        unhighlight: function (element) {
+            $(element).closest('.form-group').removeClass('has-error');
+        }
     });
 });

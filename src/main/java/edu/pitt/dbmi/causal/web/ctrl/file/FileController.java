@@ -116,6 +116,7 @@ public class FileController {
         }
 
         model.addAttribute("file", file);
+        model.addAttribute("fileDetails", fileDetailService.getFileDetails(file));
         model.addAttribute("categorizationDetails", fileDetailService.getCategorizationDetails(file));
         if (!model.containsAttribute("fileDetailForm")) {
             model.addAttribute("fileDetailForm", fileDetailService.getFileDetailForm(file));
@@ -129,7 +130,7 @@ public class FileController {
         UserAccount userAccount = appUserService.retrieveUserAccount(appUser);
         fileManagementService.syncFilesWithDatabase(userAccount);
 
-        model.addAttribute("fileFormats", fileFormatService.findAll());
+        model.addAttribute("fileFormats", fileFormatService.findAllForUpload());
 
         return SiteViews.FILE;
     }

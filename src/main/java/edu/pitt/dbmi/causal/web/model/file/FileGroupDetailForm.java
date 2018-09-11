@@ -18,35 +18,31 @@
  */
 package edu.pitt.dbmi.causal.web.model.file;
 
-import java.util.List;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 /**
  *
- * Jun 29, 2017 11:02:23 AM
+ * Sep 10, 2018 11:22:26 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class FileGroupForm {
+public class FileGroupDetailForm {
 
     @NotBlank(message = "Please enter a name for the file group.")
     private String name;
 
     private String description;
 
-    @NotNull
-    private Long varTypeId;
-
-    @NotEmpty(message = "Please select at least one file.")
-    private List<Long> fileIds;
-
-    public FileGroupForm() {
+    public FileGroupDetailForm() {
     }
 
-    public FileGroupForm(Long varTypeId) {
-        this.varTypeId = varTypeId;
+    public FileGroupDetailForm(String name) {
+        this.name = name;
+    }
+
+    public FileGroupDetailForm(String name, String description) {
+        this.name = name;
+        this.description = description;
     }
 
     public String getName() {
@@ -63,22 +59,6 @@ public class FileGroupForm {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public Long getVarTypeId() {
-        return varTypeId;
-    }
-
-    public void setVarTypeId(Long varTypeId) {
-        this.varTypeId = varTypeId;
-    }
-
-    public List<Long> getFileIds() {
-        return fileIds;
-    }
-
-    public void setFileIds(List<Long> fileIds) {
-        this.fileIds = fileIds;
     }
 
 }

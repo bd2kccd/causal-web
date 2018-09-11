@@ -56,6 +56,21 @@
                                             </tr>
                                         </thead>
                                         <tbody>
+                                            <tr th:each="jobRun : ${jobRuns}">
+                                                <td th:text="${jobRun.name}"></td>
+                                                <td th:text="${#dates.format(jobRun.creationTime,'MMM dd, yyyy hh:mm:ss aaa')}"></td>   
+                                                <td th:text="${jobRun.status}"></td>
+                                                <td>
+                                                    <a class="btn btn-xs btn-success" th:href="@{${'/secured/job/detail/' + jobRun.id}(queue=true)}" data-placement="top" data-toggle="tooltip" title="View Details">
+                                                        <i class="fa fa-info-circle" aria-hidden="true"></i>
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-danger btn-xs delete" th:disabled="${jobRun.status == 'Canceled'} OR ${jobRun.status == 'Finished'} OR ${jobRun.status == 'Terminated'}" data-placement="top" data-toggle="tooltip" data-title="Stop Job" th:attr="data-href=@{${'/secured/ws/job/queue/' + jobRun.id}}">
+                                                        <i class="fa fa-stop-circle" aria-hidden="true"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -72,28 +87,6 @@
                     </div>
                 </footer>
             </div>
-        </div>
-        <div class="modal fade" id="confirm_cancel" tabindex="-1" role="dialog" aria-labelledby="cancel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
-                        <h4 class="modal-title" id="Heading">Cancel Job Request</h4>
-                    </div>
-                    <div class="modal-body">
-                        <p class="alert alert-danger">
-                            <span class="glyphicon glyphicon-warning-sign"></span> Are you sure you want to cancel the job below?
-                        </p>
-                        <p id="job_name"></p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" id="cancel_btn" class="btn btn-danger" data-row="-1" data-dismiss="modal"><span class="glyphicon glyphicon-ok-sign"></span> Yes</button>
-                        <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> No</button>
-                    </div>
-                </div>
-                <!-- /.modal-content --> 
-            </div>
-            <!-- /.modal-dialog --> 
         </div>
         <script src="../../static/vendor/momentjs/moment.min.js" th:src="@{/vendor/momentjs/moment.min.js}"></script>
         <script src="../../static/js/job/job-queue.js" th:src="@{/js/job/job-queue.min.js}"></script>
