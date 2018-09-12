@@ -69,17 +69,6 @@ public class FileDetailService {
         return form;
     }
 
-    public Map<String, String> getFullFileDetails(File file) {
-        Map<String, String> details = new LinkedHashMap<>();
-        details.put("Name", file.getName());
-        details.put("File Name", file.getFileName());
-        details.put("Creation Time", DateFormatUtils.format(file.getCreationTime()));
-        details.put("Size", FilePrint.toHumanReadableSize(file.getFileSize(), false));
-        details.put("MD5 Checksum", file.getMd5CheckSum());
-
-        return details;
-    }
-
     public Map<String, String> getFileDetails(File file) {
         Map<String, String> details = new LinkedHashMap<>();
         details.put("File Name", file.getFileName());

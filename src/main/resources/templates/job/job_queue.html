@@ -59,14 +59,23 @@
                                             <tr th:each="jobRun : ${jobRuns}">
                                                 <td th:text="${jobRun.name}"></td>
                                                 <td th:text="${#dates.format(jobRun.creationTime,'MMM dd, yyyy hh:mm:ss aaa')}"></td>   
-                                                <td th:text="${jobRun.status}"></td>
+                                                <td th:switch="${jobRun.status}">
+                                                    <span class="alert-warning" th:case="'Canceled'" th:text="${jobRun.status}"></span>
+                                                    <span class="alert-danger" th:case="'Failed'" th:text="${jobRun.status}"></span>
+                                                    <span class="alert-success" th:case="'Finished'" th:text="${jobRun.status}"></span>
+                                                    <span class="alert-info" th:case="'Started'" th:text="${jobRun.status}"></span>
+                                                    <span th:case="*" th:text="${jobRun.status}"></span>
+                                                </td>
                                                 <td>
                                                     <a class="btn btn-xs btn-success" th:href="@{${'/secured/job/detail/' + jobRun.id}(queue=true)}" data-placement="top" data-toggle="tooltip" title="View Details">
                                                         <i class="fa fa-info-circle" aria-hidden="true"></i>
                                                     </a>
                                                 </td>
-                                                <td>
-                                                    <button class="btn btn-danger btn-xs delete" th:disabled="${jobRun.status == 'Canceled'} OR ${jobRun.status == 'Finished'} OR ${jobRun.status == 'Terminated'}" data-placement="top" data-toggle="tooltip" data-title="Stop Job" th:attr="data-href=@{${'/secured/ws/job/queue/' + jobRun.id}}">
+                                                <td th:switch="${jobRun.status}">
+                                                    <button th:case="'Canceled'" class="btn btn-danger btn-xs" disabled="disabled"><i class="fa fa-stop-circle" aria-hidden="true"></i></button>
+                                                    <button th:case="'Failed'" class="btn btn-danger btn-xs" disabled="disabled"><i class="fa fa-stop-circle" aria-hidden="true"></i></button>
+                                                    <button th:case="'Finished'" class="btn btn-danger btn-xs" disabled="disabled"><i class="fa fa-stop-circle" aria-hidden="true"></i></button>
+                                                    <button th:case="*" class="btn btn-danger btn-xs delete" data-placement="top" data-toggle="tooltip" data-title="Stop Job" th:attr="data-href=@{${'/secured/ws/job/queue/' + jobRun.id}}">
                                                         <i class="fa fa-stop-circle" aria-hidden="true"></i>
                                                     </button>
                                                 </td>

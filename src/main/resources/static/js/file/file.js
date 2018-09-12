@@ -151,8 +151,7 @@ function updateList(id) {
     });
 }
 
-
-$('#file_tbl tbody').on('click', 'tr td .delete', function () {
+$('#all_file_tbl tbody').on('click', 'tr td .delete', function () {
     var rowNum = $(this).parents('tr')[0];
     var row = file_tbl.row(rowNum);
     var rowData = row.data();
@@ -160,6 +159,15 @@ $('#file_tbl tbody').on('click', 'tr td .delete', function () {
     $('#del_btn').data('id', row.index());
     $('#confirm_delete').modal('toggle');
 });
+$('#specific_file_tbl tbody').on('click', 'tr td .delete', function () {
+    var rowNum = $(this).parents('tr')[0];
+    var row = file_tbl.row(rowNum);
+    var rowData = row.data();
+    $('#delete_file_name').text(rowData['name']);
+    $('#del_btn').data('id', row.index());
+    $('#confirm_delete').modal('toggle');
+});
+
 
 $(document).on('click', '#del_btn', function (e) {
     var rowNum = $('#del_btn').data('id');

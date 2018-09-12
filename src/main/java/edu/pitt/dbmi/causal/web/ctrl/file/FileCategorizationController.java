@@ -126,7 +126,6 @@ public class FileCategorizationController {
             model.addAttribute("fileCategorizationForm", fileCategorizationService.createForm(file));
         }
         model.addAttribute("file", file);
-        model.addAttribute("fileDetails", fileDetailService.getFullFileDetails(file));
         model.addAttribute("categorizationDetails", fileDetailService.getCategorizationDetails(file));
         model.addAttribute("formatOpts", fileFormatService.getFileFormatOptions());
         model.addAttribute("delimOpts", dataDelimiterService.findAll());
